@@ -423,6 +423,7 @@ def apply_damage(target_name, wounds, damage_dealt, squad_size, d3_damage, d6_da
     feel_no_pain = 0
     fnp_save = 5
     fnp_negates = 0    
+    
     # DOWN TO HERE DELETE
     flat_damage = weapons[5]
     variable_damage = d3_damage + d6_damage
@@ -454,6 +455,7 @@ def apply_damage(target_name, wounds, damage_dealt, squad_size, d3_damage, d6_da
         print(f"{target_name} survived the strikes from {unit_name} with {wounds} wounds remaining")
     return wounds, squad_size
 
+# Run the program
 _, wounds, squad_size = attack(unit_name, weapon_skill, target_name, weapons, target_stats, squad_size, attacks_remaining, wounds, lethal_hit, devastating_wound, sustained_hits)
 if squad_size == 0:
     wounds = 0
