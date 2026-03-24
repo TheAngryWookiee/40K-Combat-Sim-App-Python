@@ -1,0 +1,172 @@
+{
+  "faction": {
+    "name": "Space Wolves",
+    "parent_faction": "Adeptus Astartes",
+    "inherits": {
+      "army_rules": [
+        {
+          "name": "Oath of Moment",
+          "source": "Adeptus Astartes",
+          "rules_text": "",
+          "implemented": false
+        }
+      ]
+    },
+    "derived_keywords": [],
+    "detachments": [
+      {
+        "name": "",
+        "rule": {
+          "name": "",
+          "rules_text": "",
+          "implemented": false
+        },
+        "enhancements": [
+          {
+            "name": "",
+            "rules_text": "",
+            "restrictions": [],
+            "implemented": false
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "",
+            "type": "",
+            "cp_cost": null,
+            "timing": "",
+            "target": "",
+            "effect": "",
+            "restrictions": [],
+            "implemented": false
+          }
+        ]
+      }
+    ]
+  },
+  "units": [
+    {
+      "name": "Logan Grimnar",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Logan Grimnar - Epic Hero",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Storm bolter",
+            "Axe Morkai",
+            "Tyrnak and Fenrir"
+          ]
+        }
+      ],
+      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Imperium",
+        "Terminator",
+        "Chapter Master",
+        "Logan Grimnar"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike, Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "High King of Fenris",
+          "rules_text": "Once per battle round, in your Movement phase, you can select one friendly Space Wolves unit that is in Strategic Reserves. If you do, until the end of the phase, for the purpose of setting up that unit on the battlefield, treat the current battle round number as being one higher than it actually is."
+        },
+        {
+          "name": "Guile of the Wolf (Aura)",
+          "rules_text": "Each time your opponent targets a unit from their army with a Stratagem, if that unit is within 12 inches of this model, increase the cost of that usage of that Stratagem by 1CP."
+        },
+        {
+          "name": "Embarking within Transports",
+          "rules_text": "This model can embark within friendly Adeptus Astartes Transport models that can transport Terminator models. When doing so, it takes up the space of 4 Infantry models."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": ["Wolf Guard Terminators"],
+        "rules_text": "This model can be attached to the following unit: Wolf Guard Terminators."
+      },
+      "wargear_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 5,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 8,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Storm bolter",
+          "keywords": ["Rapid Fire 2"],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Axe Morkai - strike",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "3"
+        },
+        {
+          "name": "Axe Morkai - sweep",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "10",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Tyrnak and Fenrir",
+          "keywords": ["Extra Attacks"],
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1"
+        }
+      ]
+    }
+  ]
+}

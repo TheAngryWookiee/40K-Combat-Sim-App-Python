@@ -1,468 +1,478 @@
 # Created 09-08-22
-# Edited 03-03-25
-# This program is the basis for a combat sim between Warhammer units WIP
-# This is an attempt to use functions to clean up the code
-# First iteration of combat functionality, will be translated and turned into proper C# .NET application
+# Edited 03-24-26
+# This program is the basis for a combat sim between Warhammer units.
+# Unit definitions are loaded from faction JSON files and normalized into
+# the combat engine's internal format at runtime.
 
-import tkinter as tk
-from tkinter import messagebox
+import json
 import random
+import re
+from pathlib import Path
+
+REROLL_HITS_ALL = True
+REROLL_HITS_ONES = False
+REROLL_WOUNDS_ALL = True
+REROLL_WOUNDS_ONES = False
+COVER = False
+DATA_DIR = Path(__file__).parent
+SPACE_MARINE_PARENT_FACTION = "Adeptus Astartes"
+SPACE_MARINE_HEADING = "Imperium - Space Marines"
+
+
 
 def die_roll():
-    roll = random.randint(1,6)
-    return roll
+    return random.randint(1, 6)
+
+
 
 def d3_die_roll():
-    d3_roll = random.randint(1,3)
-    return d3_roll
-
-
-# Variables 
-# Unit Statlines
-armor_save = 0
-toughness = 0 
-unit_name = "Space Marine"
-target_name = "Dark Eldar"
-wounds = 1
-invulnerable_save = 0
-reroll_hits_all = 1
-reroll_hits_1 = 0
-reroll_wounds_all = 1
-reroll_wounds_1 = 0
-squad_size = 0
-unit_size = 0
-feel_no_pain = 0 
-# Weapon Statlines
-attacks = 0
-strength = 0
-armor_piercing = 0
-weapon_name = "Bolt"
-weapon_keywords = ""
-weapon = 0
-weapon_skill = 0
-# Weapon Damage
-flat_damage = 0
-variable_damage = ""
-d3_damage = 0
-d6_damage = 0
-damage_dealt = 0
-# Weapon Modifiers
-hit_modifier = 0
-wound_modifier = 0
-successful_hit = 0
-lethal_hit = 0
-devastating_wound = 0
-anti = 0
-anti_to_wound = 0
-sustained_hits = 0
-total_hits = 0
-hit_result = False
-wound_result = False
-successful_wound = 0
-
-# Conditions
-cover = False
-# Weapon array 
-weapons = [weapon_name, attacks, weapon_skill, strength, armor_piercing, flat_damage, variable_damage, weapon_keywords, anti_to_wound, unit_size]
-
-# Target array
-target_stats = [target_name, toughness, wounds, armor_save, invulnerable_save, squad_size]
-
-# Weapon Selection
-print("\nWarhammer Combat Sim")
-print("\nSelect a unit from the List")
-print("\n1. Lion El'Jonson")
-print("2. Roboute Guilliman")
-print("3. Angron")
-print("4. Deathwing Knights")
-print("5. Devastator Squad")
-
-# Select unit to fight
-unit = (input("\nWhich unit will fight the enemy: "))
-
-# Attacking Units
-if unit == "1":
-    unit_name = "Lion El' Jonson"
-    squad_weapons = 1
-    print("\n1. Fealty Strike: A8 S12 AP-4 D4")
-    print("2. Fealty Sweep: A16 S6 AP-3 D2")
-    weapon = input("\nHow will " + unit_name + " strike? ")
-
-
-    if weapon == "1": 
-        is_valid = True
-        weapons = ["Fealty Strike", 8, 2, 12, 4, 4, "", "LH", 0]
-    if weapon == "2":
-        is_valid = True
-        weapons = ["Fealty Sweep", 16, 2, 6, 3, 2, "", "SH1", 0]
-
-if unit == "2":
-    unit_name = "Roboute Guilliman"
-    print("\n1. Emperor's Sword: A14 S8 AP-3 D2")
-    print("2. Hand of Dominion: A7 S14 AP-4 D4")
-    weapon = input("\nHow will " + unit_name + " strike? ")
-
-
-    if weapon == "1": 
-        is_valid = True
-        weapons = ["Emperor's Sword", 14, 2, 8, 3, 2, "", "DW", 0]
-    if weapon == "2":
-        is_valid = True
-        weapons = ["Hand of Dominion", 7, 2, 14, 4, 4, "", "LH", 0]
-
-if unit == "3":
-    unit_name = "Angron"
-    print("\n1. Samni'arius and Spinegrinder Strike: A8 S16 AP-4 Dd6+2")
-    print("2. Samni'arius and Spinegrinder Sweep: A18 S8 AP-2 D2")
-    weapon = input("\nHow will " + unit_name + " strike? ")
-
-
-    if weapon == "1": 
-        is_valid = True
-        weapons = ["Samni'arius and Spinegrinder Strike", 8, 2, 16, 4, 2, "d6", "", 0]
-    if weapon == "2":
-        is_valid = True
-        weapons = ["Samni'arius and Spinegrinder Sweep", 18, 2, 8, 2, 2, "", "", 0]
-
-if unit == "4":
-    unit_name = "Deathwing Knights"
-    squad_weapons = 2
-    print("\n1. Flail of the Unforgiven: A5 S6 AP-2 D2")
-    print("2. Mace of Absolution: A4 S6 AP-1 D3")
-    weapon = input("\nWhich weapon will " + unit_name + " strike with first? ")
-
-    if weapon == "1":
-        is_valid = True
-        weapons = ["Flail of the Unforgiven", 5, 2, 6, 2, 2, "", "SH1 DW", 0]
-
-    if weapon == "2":
-        is_valid = True
-        weapons = ["Mace of Absolution", 4, 2, 6, 1, 3, "", "", 0]
-
-if unit == "5":
-    unit_name = "Devastator Squad"
-    print("\n1. Grav-cannons [Anti-Vehicle 2+, Heavy]: A3 BS4+ S6 AP-1 D3")
-    print("2. Heavy Bolters [Heavy, Sustained Hits 1]: A3 BS4+ S5 AP-1 D2")
-    print("3. Lascannons [Heavy]: A1 BS4+ S12 AP-3 Dd6+1")
-    print("4. Missile Launchers - Frag [Blast, Heavy]: Ad6 BS4+ S4 AP0 D1")
-    print("5. Missile Launchers - Krak [Heavy]: A1 BS4+ S9 AP-2 Dd6")
-    print("6. Multi-meltas [Heavy, Melta 2]: A2 BS4+ S9 AP-4 Dd6")
-    weapon = input("\nHow will " + unit_name + " strike? ")
-
-    if weapon == "1": 
-        is_valid = True
-        weapons = ["Grav=cannons", 3, 4, 6, 1, 3, "", "anti vehicle", 2]
-    if weapon == "2":
-        is_valid = True
-        weapons = ["Heavy Bolters", 3, 4, 5, 1, 2, "", "Heavy SH1", 0]
+    return random.randint(1, 3)
 
 
 
-
-# Target/Defending units
-print("\n1. Wyches: T3, W1, Sv5+")
-print("2. Talos Pain Engine: T7, W9, Sv3+/5++")
-print("3. Knight Rampager: T12, W22, Sv3+")
-
-# Select target
-target = input(f"\nWhich unit is {unit_name} fighting? ")
-
-if target == "1":
-    is_valid = True
-    target_stats = ["Whyches", 3, 1, 5, 0, 10]
-
-if target == "2":
-    is_valid = True
-    target_stats = ["Talos Pain Engine", 7, 9, 3, 5, 3]
-
-if target == "3":
-    is_valid = True
-    target_stats = ["Knight Rampager", 12, 22, 3, 0, 1, "vehicle imperium knight"]
-
-# Weapon Variable Table
-attacks_remaining = weapons[1]
-weapon_skill = weapons[2] + hit_modifier
-strength = weapons[3]
-armor_piercing = weapons[4]
-attacks_remaining = weapons[1]
-anti_to_wound = weapons[8]
-
-# Target Unit Variable Table
-target_name = target_stats[0]
-toughness = target_stats[1]
-wounds = target_stats[2]
-armor_save = target_stats[3]
-invulnerable_save = target_stats[4]
-squad_size = target_stats[5]
-
-# Wounding Table
-if strength/2 >= toughness:
-    to_wound = 2
-elif strength > toughness: 
-    to_wound = 3
-elif strength == toughness: 
-    to_wound = 4
-elif strength < toughness: 
-    to_wound = 5
-elif strength <= toughness/2:
-    to_wound = 6
-
-to_wound = to_wound + wound_modifier
+def choose_option(prompt, options):
+    while True:
+        choice = input(prompt).strip()
+        if choice in options:
+            return choice
+        print("Invalid selection. Choose one of the listed options.")
 
 
 
-# Shooting Loop
+def roll_value(value):
+    if isinstance(value, int):
+        return value
 
-def attack(unit_name, weapon_skill, target_name, weapons, target_stats, squad_size, attacks_remaining, wounds, lethal_hit, devastating_wound, sustained_hits):
-    for i in range(attacks_remaining):
-        hit_result, lethal_hit, sustained_hits = hit(unit_name, weapon_skill, target_name, squad_size, wounds, lethal_hit, sustained_hits)
-        successful_hit = 1
-        if not hit_result:    
-            continue
-        total_hits = successful_hit + sustained_hits
-        for i in range(total_hits):
-            wound_result, devastating_wound = wound(unit_name, to_wound, target_name, weapons, attacks_remaining, wounds, lethal_hit, devastating_wound, sustained_hits)
-            if not wound_result:    
-                continue
-            if not save(armor_save, armor_piercing, target_stats, devastating_wound):
-                continue
-            wounds, squad_size = apply_damage(target_name, wounds, damage_dealt, squad_size, d3_damage, d6_damage) 
-            if squad_size <= 0:
-                break
-    return True, wounds, squad_size
-    
+    text = str(value).strip().lower()
+    if text.isdigit():
+        return int(text)
+    if text == "d3":
+        return d3_die_roll()
+    if text == "d6":
+        return die_roll()
+    if text == "d6+1":
+        return die_roll() + 1
+    if text == "d6+2":
+        return die_roll() + 2
+    raise ValueError(f"Unsupported roll profile: {value}")
 
 
 
-def hit(unit_name, weapon_skill, target_name, squad_size, wounds, lethal_hit, sustained_hits):
-    hit_roll = die_roll()
-    lethal_hit = 0
-    if squad_size == 0:
-        return False, 0, 0
-    else:
-        print(f"{unit_name} rolls a {hit_roll} to hit")
-        if hit_roll < weapon_skill:
-            print(unit_name + " failed to hit")
-            if reroll_hits_all == 1:
-                hit_roll = die_roll()
-                print(f"{unit_name} re-rolled the failed hit into a {hit_roll} to hit")
-                if hit_roll < weapon_skill:
-                    print(unit_name + " failed to hit")
-                    return False, 0, 0
-                elif hit_roll == 6 and weapons[7] == "LH":
-                    print(f"On a 6 {unit_name} has automatically wounded {target_name} due to having Lethal Hits")
-                    lethal_hit = 1
-                    return True, lethal_hit, 0        
-                elif hit_roll == 6 and weapons[7] == "SH1":
-                    print(f"On a 6 the attack explodes causing 1 extra hit")
-                    sustained_hits = 1
-                    return True, 0, sustained_hits                               
-                else:
-                    return True, 0, 0
-            if reroll_hits_1 == 1:
-                hit_roll = die_roll()
-                print(f"{unit_name} re-rolled the 1 into a {hit_roll} to hit")
-                if hit_roll < weapon_skill:
-                    print(unit_name + " failed to hit again")
-                    return False, 0, 0
-                elif hit_roll == 6 and weapons[7] == "LH":
-                    print(f"On a 6 {unit_name} has automatically wounded {target_name} due to having Lethal Hits")
-                    lethal_hit = 1
-                    return True, lethal_hit, 0        
-                elif hit_roll == 6 and weapons[7] == "SH1":
-                    print(f"On a 6 the attack explodes causing 1 extra hit")
-                    sustained_hits = 1
-                    return True, 0, sustained_hits                                                  
-                else:
-                    return True, 0, 0
-            return False, 0, 0
-        elif hit_roll == 6 and "LH" in weapons[7]:
-            print(f"On a 6 {unit_name} has automatically wounded {target_name} due to having Lethal Hits")
-            lethal_hit = 1
-            return True, lethal_hit, 0        
-        elif hit_roll == 6 and "SH1" in weapons[7]:
-            print(f"On a 6 the attack explodes causing 1 extra hit")
-            sustained_hits = 1
-            return True, 0, sustained_hits
-        return True, 0, 0
-        
+def parse_plus_value(value):
+    match = re.fullmatch(r"\s*(\d+)\+?\s*", str(value))
+    if not match:
+        raise ValueError(f"Unsupported plus value: {value}")
+    return int(match.group(1))
 
 
-def wound(unit_name, to_wound, target_name, weapons, attacks_remaining, wounds, lethal_hit, devastating_wound, sustained_hits):
-    successful_hit = 1
-    devastating_wound = 0
-    total_hits = sustained_hits + successful_hit
-    for i in range(total_hits):    
-        wound_roll = die_roll()
-        if lethal_hit == 1:
-            return True, devastating_wound
-        print(f"{unit_name} rolls a {wound_roll} to wound")
-        if "anti" in weapons[7]:
-            match = []
-            for a in weapons[7].split():  
-                for d in target_stats[6].split():  
-                    if a == d:
-                        match.append(a)    
 
-            if "anti" in weapons[7]:
-                if not match: 
-                    print("No Anti")
+def parse_roll_profile(value):
+    if isinstance(value, int):
+        return value
 
-                else:
-                    if wound_roll >= anti_to_wound:
-                        wound_roll = 6
-                        print("The wound roll becomes a Crtical Wound due to Anti")        
-               
-        if wound_roll < to_wound:
-            print(unit_name + " fails to wound")
-            if reroll_wounds_all == 1:
-                wound_roll = die_roll()
-                print(f"{unit_name} re-rolled the failed wound into a {wound_roll} to wound")
-                if wound_roll < to_wound:
-                    print(unit_name + " failed to wound")
-                    return False, devastating_wound
-                elif wound_roll == 6 and "DW" in weapons[7]:
-                    wounds -= weapons[5]
-                    print(f"On a 6 {unit_name} does {weapons[5]} mortal wounds to {target_name}")
-                    devastating_wound = 1
-                    return True, devastating_wound
-                else:
-                    return True, devastating_wound
-            if reroll_wounds_1 == 1:
-                wound_roll = die_roll()
-                print(f"{unit_name} re-rolled the 1 into a {wound_roll} to wound")
-                
-                if "anti" in weapons[7]:
-                    print(f"This weapon has Anti on a {anti_to_wound}")
-                    match = []
-                    for a in weapons[7].split():  
-                        for d in target_stats[6].split():  
-                            if a == d:
-                                match.append(a)    
-
-                    if "anti" in weapons[7]:
-                        if not match: 
-                            print("No Anti")
-
-                        else:
-                            if wound_roll >= anti_to_wound:
-                                wound_roll = 6
-                                print("The wound roll becomes a Crtical Wound due to Anti")                
-                      
-                if wound_roll < to_wound:
-                    print(unit_name + " failed to wound again")
-                    return False, devastating_wound
-                               
-                else:
-                    return True, devastating_wound
-            return False, devastating_wound
-        
-        
-        elif wound_roll == 6 and "DW" in weapons[7]:
-            wounds -= weapons[5]
-            print(f"On a 6 {unit_name} does {weapons[5]} mortal wounds to {target_name}")
-            devastating_wound = 1
-            return True, devastating_wound
-        return True, devastating_wound
+    text = str(value).strip().lower()
+    if text.isdigit():
+        return int(text)
+    if re.fullmatch(r"d[36](?:\+\d+)?", text):
+        return text
+    raise ValueError(f"Unsupported roll profile: {value}")
 
 
-def save(armor_save, armor_piercing, target_stats, devastating_wound):
-    save_roll = die_roll()
-    if devastating_wound == 1:
-        return True
-    if target_stats[4] > 0:
-        print(f"{target_stats[0]} attempts an invulnerable save with a {target_stats[4]}")
-        if save_roll >= target_stats[4]:
-            print(f"{target_stats[0]} passes the invuln save with a {save_roll}")
-            return False
-        elif save_roll < target_stats[4]:
-            print(f"{target_stats[0]} fails the invulnerable save with a {save_roll}")
-            return True
-    elif cover == True:
-        armor_save -= 1
-        print("The target gets +1 to their armor save due to cover")
-        if armor_save + armor_piercing > 6:
-            print(f"{target_stats[0]} does not get a save as you cannot roll more than a 6")
-            return True
-        elif save_roll < armor_save + armor_piercing:
-            print(f"{target_stats[0]} fails an armor save with a {save_roll}")
-            return True
+
+def parse_numeric_value(value):
+    return int(str(value).strip())
+
+
+
+def parse_ap_value(value):
+    return abs(parse_numeric_value(value))
+
+
+
+def normalize_weapon_keywords(raw_keywords):
+    keywords = []
+    anti_keyword = None
+    anti_value = 0
+
+    for raw_keyword in raw_keywords:
+        keyword = str(raw_keyword).strip()
+        lowered = keyword.lower()
+
+        if lowered == "lethal hits":
+            keywords.append("LH")
+        elif lowered == "sustained hits 1":
+            keywords.append("SH1")
+        elif lowered == "devastating wounds":
+            keywords.append("DW")
         else:
-            print(f"{target_name} successfully saves with a {save_roll}")
-            return False
-    if armor_save + armor_piercing > 6:
-        print(f"{target_stats[0]} does not get a save as you cannot roll more than a 6")
+            keywords.append(keyword)
+
+        anti_match = re.fullmatch(r"anti[- ](.+?)\s+(\d+)\+", keyword, re.IGNORECASE)
+        if anti_match:
+            anti_keyword = anti_match.group(1).strip().lower()
+            anti_value = int(anti_match.group(2))
+
+    return keywords, anti_keyword, anti_value
+
+
+
+def normalize_weapon(weapon_data):
+    keywords, anti_keyword, anti_value = normalize_weapon_keywords(
+        weapon_data.get("keywords", [])
+    )
+    return {
+        "name": weapon_data["name"],
+        "range": weapon_data.get("range", ""),
+        "attacks": parse_roll_profile(weapon_data.get("attacks", 0)),
+        "skill": parse_plus_value(weapon_data["skill"]["value"]),
+        "strength": parse_numeric_value(weapon_data.get("strength", 0)),
+        "ap": parse_ap_value(weapon_data.get("armor_piercing", 0)),
+        "damage": parse_roll_profile(weapon_data.get("damage", 0)),
+        "keywords": keywords,
+        "anti_keyword": anti_keyword,
+        "anti_value": anti_value,
+    }
+
+
+
+def normalize_unit(unit_data):
+    weapons = {
+        str(index): normalize_weapon(weapon)
+        for index, weapon in enumerate(unit_data.get("weapons", []), start=1)
+    }
+    stats = unit_data.get("stats", {})
+    unit_composition = unit_data.get("unit_composition", {})
+    invulnerable_save = stats.get("invulnerable_save", "")
+    target_keywords = [
+        keyword.lower()
+        for keyword in (
+            unit_data.get("keywords", []) + unit_data.get("faction_keywords", [])
+        )
+    ]
+    return {
+        "name": unit_data["name"],
+        "weapons": weapons,
+        "toughness": parse_numeric_value(stats.get("toughness", 0)),
+        "wounds": parse_numeric_value(stats.get("wounds", 0)),
+        "armor_save": parse_plus_value(stats.get("save", "0+")),
+        "invulnerable_save": parse_plus_value(invulnerable_save) if invulnerable_save else 0,
+        "models": parse_numeric_value(unit_composition.get("max_models", 1)),
+        "keywords": target_keywords,
+    }
+
+
+
+def load_faction_file(data_file):
+    with data_file.open(encoding="ascii") as file_handle:
+        data = json.load(file_handle)
+
+    if not isinstance(data, dict) or "faction" not in data or "units" not in data:
+        return None
+
+    faction = data.get("faction", {})
+    loaded_units = data.get("units", [])
+    if not loaded_units:
+        raise ValueError(f"{data_file.name} does not contain any units.")
+
+    return {
+        "name": faction.get("name", data_file.stem.replace("_", " ")),
+        "parent_faction": faction.get("parent_faction", ""),
+        "file_name": data_file.name,
+        "units": {
+            str(index): normalize_unit(unit)
+            for index, unit in enumerate(loaded_units, start=1)
+        },
+    }
+
+
+def load_space_marine_factions(data_dir):
+    factions = []
+
+    for data_file in sorted(data_dir.glob("*.json")):
+        faction_entry = load_faction_file(data_file)
+        if faction_entry is None:
+            continue
+        if faction_entry["parent_faction"] != SPACE_MARINE_PARENT_FACTION:
+            continue
+        factions.append(faction_entry)
+
+    if not factions:
+        raise ValueError("No Space Marine faction files were found.")
+
+    return {
+        str(index): faction_entry
+        for index, faction_entry in enumerate(factions, start=1)
+    }
+
+
+def print_option_list(options, label_key):
+    for option, entry in options.items():
+        print(f"{option}. {entry[label_key]}")
+
+
+def select_unit_from_faction(factions, side_label):
+    print(f"\n{side_label} Faction: {SPACE_MARINE_HEADING}")
+    print_option_list(factions, "name")
+    faction_choice = choose_option(f"\nWhich faction will the {side_label.lower()} use? ", factions)
+    faction = factions[faction_choice]
+
+    print(f"\nSelect a {side_label.lower()} unit from {faction['name']}")
+    print_option_list(faction["units"], "name")
+    unit_choice = choose_option(f"\nWhich unit will be the {side_label.lower()}? ", faction["units"])
+    unit = faction["units"][unit_choice]
+    return faction, unit
+
+
+
+def get_to_wound_threshold(strength, toughness):
+    if strength >= toughness * 2:
+        return 2
+    if strength > toughness:
+        return 3
+    if strength == toughness:
+        return 4
+    if strength * 2 <= toughness:
+        return 6
+    return 5
+
+
+
+def maybe_reroll_hit(hit_roll, skill, unit_name):
+    if hit_roll >= skill:
+        return hit_roll
+    if REROLL_HITS_ALL:
+        new_roll = die_roll()
+        print(f"{unit_name} re-rolled the failed hit into a {new_roll} to hit")
+        return new_roll
+    if REROLL_HITS_ONES and hit_roll == 1:
+        new_roll = die_roll()
+        print(f"{unit_name} re-rolled the 1 into a {new_roll} to hit")
+        return new_roll
+    return hit_roll
+
+
+
+def maybe_reroll_wound(wound_roll, to_wound, unit_name):
+    if wound_roll >= to_wound:
+        return wound_roll
+    if REROLL_WOUNDS_ALL:
+        new_roll = die_roll()
+        print(f"{unit_name} re-rolled the failed wound into a {new_roll} to wound")
+        return new_roll
+    if REROLL_WOUNDS_ONES and wound_roll == 1:
+        new_roll = die_roll()
+        print(f"{unit_name} re-rolled the 1 into a {new_roll} to wound")
+        return new_roll
+    return wound_roll
+
+
+
+def resolve_hit(unit_name, weapon, target_name):
+    hit_roll = die_roll()
+    print(f"{unit_name} rolls a {hit_roll} to hit")
+    hit_roll = maybe_reroll_hit(hit_roll, weapon["skill"], unit_name)
+
+    if hit_roll < weapon["skill"]:
+        print(f"{unit_name} failed to hit")
+        return 0, 0
+
+    critical_hit = hit_roll == 6
+    normal_hits = 1
+    auto_wounds = 0
+
+    if critical_hit and "SH1" in weapon["keywords"]:
+        normal_hits += 1
+        print("On a 6 the attack explodes, causing 1 extra hit")
+
+    if critical_hit and "LH" in weapon["keywords"]:
+        auto_wounds = 1
+        normal_hits -= 1
+        print(f"On a 6 {unit_name} automatically wounds {target_name} due to Lethal Hits")
+
+    return normal_hits, auto_wounds
+
+
+
+def apply_anti_rule(wound_roll, weapon, target):
+    anti_keyword = weapon.get("anti_keyword")
+    anti_value = weapon.get("anti_value", 0)
+    if not anti_keyword or anti_keyword not in target["keywords"]:
+        return wound_roll
+    if wound_roll >= anti_value:
+        print("The wound roll becomes a critical wound due to Anti")
+        return 6
+    return wound_roll
+
+
+
+def resolve_wound(unit_name, weapon, target, to_wound):
+    wound_roll = die_roll()
+    print(f"{unit_name} rolls a {wound_roll} to wound")
+    wound_roll = apply_anti_rule(wound_roll, weapon, target)
+
+    if wound_roll < to_wound:
+        wound_roll = maybe_reroll_wound(wound_roll, to_wound, unit_name)
+        wound_roll = apply_anti_rule(wound_roll, weapon, target)
+
+    if wound_roll < to_wound:
+        print(f"{unit_name} failed to wound")
+        return False, False
+
+    devastating_wound = wound_roll == 6 and "DW" in weapon["keywords"]
+    if devastating_wound:
+        print(f"On a 6 {unit_name} scores a Devastating Wound")
+
+    return True, devastating_wound
+
+
+
+def resolve_save(target, weapon, devastating_wound):
+    if devastating_wound:
+        print(f"{target['name']} cannot make a save against the Devastating Wound")
         return True
-    elif save_roll < armor_save + armor_piercing:
-        print(f"{target_stats[0]} fails an armor save with a {save_roll}")
+
+    armor_required = target["armor_save"] + weapon["ap"]
+    if COVER:
+        armor_required = max(2, armor_required - 1)
+        print("The target gets +1 to its armor save due to cover")
+
+    available_saves = []
+    if armor_required <= 6:
+        available_saves.append((armor_required, "armor"))
+    if target["invulnerable_save"] > 0:
+        available_saves.append((target["invulnerable_save"], "invulnerable"))
+
+    if not available_saves:
+        print(f"{target['name']} does not get a save")
         return True
-    else:
-        print(f"{target_name} successfully saves with a {save_roll}")
+
+    required, save_type = min(available_saves, key=lambda item: item[0])
+    save_roll = die_roll()
+    print(f"{target['name']} attempts a {save_type} save on {required}+")
+
+    if save_roll >= required:
+        print(f"{target['name']} passes the save with a {save_roll}")
         return False
 
+    print(f"{target['name']} fails the save with a {save_roll}")
+    return True
 
-def apply_damage(target_name, wounds, damage_dealt, squad_size, d3_damage, d6_damage):
-    #Add Damage table
-    # Determine if weapon deals d6 damage or not
-    if weapons[6] == "":
-        d6_damage = 0
-    
-    if weapons[6] == "d6":
-        # Roll for d6 damage
-        d6_damage = die_roll()
 
-    # Determine if weapon does d3 damage
-    if weapons[6] == "d3":
-        # Roll for d3 damage
-        d3_damage = d3_die_roll()
-    
-    # Add total damage
-    # DELETE FNP VARIABLE FROM HERE WHEN DONE TESTING
-    damage_reduction = 0
-    damage_halved = 0
-    feel_no_pain = 0
-    fnp_save = 5
-    fnp_negates = 0    
-    
-    # DOWN TO HERE DELETE
-    flat_damage = weapons[5]
-    variable_damage = d3_damage + d6_damage
-    damage_dealt = flat_damage + variable_damage
-    
-    if damage_reduction == 1:
-        damage_dealt -= 1
-    
-    elif damage_halved == 1:
-        damage_dealt = damage_dealt/2
-    
-    if feel_no_pain == 1:
-        for i in range(damage_dealt):
-            if die_roll() >= fnp_save:
-                fnp_negates += 1
-        print(f"The {target_name} has made {fnp_negates} FNP Rolls")
-    
-    damage_dealt -= fnp_negates
-    wounds -= damage_dealt
-    if devastating_wound == 0:
-        print(f"{unit_name} did {damage_dealt} damage to {target_name}")
-    if wounds <= 0:
-        squad_size -= 1
-        wounds = target_stats[2]
-        print(f"There are {squad_size} {target_name}'s left in the squad")
-    elif squad_size == 0:
-        print(f"{target_name} has died to {unit_name}")
+
+def roll_damage(weapon):
+    return roll_value(weapon["damage"])
+
+
+
+def apply_damage(unit_name, weapon, target_state, devastating_wound):
+    damage = roll_damage(weapon)
+    target_state["current_wounds"] -= damage
+
+    if devastating_wound:
+        print(f"{unit_name} deals {damage} damage as a Devastating Wound")
     else:
-        print(f"{target_name} survived the strikes from {unit_name} with {wounds} wounds remaining")
-    return wounds, squad_size
+        print(f"{unit_name} deals {damage} damage to {target_state['name']}")
 
-# Run the program
-_, wounds, squad_size = attack(unit_name, weapon_skill, target_name, weapons, target_stats, squad_size, attacks_remaining, wounds, lethal_hit, devastating_wound, sustained_hits)
-if squad_size == 0:
-    wounds = 0
-if wounds == 0:
-    print(f"The {target_name} have been destroyed")
-if wounds > 0: 
-    print(f"The {target_name} survived the combat with {squad_size} units left with {wounds} wounds remaining")
+    if target_state["current_wounds"] > 0:
+        print(
+            f"{target_state['name']} survives with {target_state['current_wounds']} wounds remaining"
+        )
+        return
+
+    target_state["models"] -= 1
+    if target_state["models"] <= 0:
+        target_state["current_wounds"] = 0
+        print(f"{target_state['name']} has been destroyed")
+        return
+
+    target_state["current_wounds"] = target_state["wounds"]
+    print(f"One {target_state['name']} model is destroyed")
+    print(f"There are {target_state['models']} models left in the unit")
 
 
 
+def attack(unit_name, weapon, target_state):
+    attacks_remaining = roll_value(weapon["attacks"])
+    to_wound = get_to_wound_threshold(weapon["strength"], target_state["toughness"])
+
+    print(f"\n{unit_name} attacks with {weapon['name']}")
+    print(f"Attacks: {attacks_remaining}")
+    print(f"Needs {weapon['skill']}+ to hit")
+    print(f"Needs {to_wound}+ to wound")
+
+    for _ in range(attacks_remaining):
+        if target_state["models"] <= 0:
+            break
+
+        normal_hits, auto_wounds = resolve_hit(unit_name, weapon, target_state["name"])
+
+        for _ in range(auto_wounds):
+            if target_state["models"] <= 0:
+                break
+            if resolve_save(target_state, weapon, False):
+                apply_damage(unit_name, weapon, target_state, False)
+
+        for _ in range(normal_hits):
+            if target_state["models"] <= 0:
+                break
+            wound_succeeds, devastating_wound = resolve_wound(
+                unit_name,
+                weapon,
+                target_state,
+                to_wound,
+            )
+            if not wound_succeeds:
+                continue
+            if resolve_save(target_state, weapon, devastating_wound):
+                apply_damage(unit_name, weapon, target_state, devastating_wound)
+
+
+
+def build_target_state(unit):
+    return {
+        "name": unit["name"],
+        "toughness": unit["toughness"],
+        "wounds": unit["wounds"],
+        "current_wounds": unit["wounds"],
+        "armor_save": unit["armor_save"],
+        "invulnerable_save": unit["invulnerable_save"],
+        "models": unit["models"],
+        "keywords": list(unit["keywords"]),
+    }
+
+
+
+def main():
+    try:
+        factions = load_space_marine_factions(DATA_DIR)
+    except (FileNotFoundError, json.JSONDecodeError, KeyError, ValueError) as exc:
+        print(f"Failed to load unit data: {exc}")
+        return
+
+    print("\nWarhammer Combat Sim")
+    _, attacking_unit = select_unit_from_faction(factions, "Attacker")
+    unit_name = attacking_unit["name"]
+
+    print(f"\nSelect a weapon profile for {unit_name}")
+    for option, weapon in attacking_unit["weapons"].items():
+        print(f"{option}. {weapon['name']}")
+
+    weapon_choice = choose_option("\nHow will this unit strike? ", attacking_unit["weapons"])
+    weapon = attacking_unit["weapons"][weapon_choice]
+
+    _, defending_unit = select_unit_from_faction(factions, "Defender")
+    target_state = build_target_state(defending_unit)
+
+    attack(unit_name, weapon, target_state)
+
+    if target_state["models"] <= 0:
+        print(f"The {target_state['name']} have been destroyed")
+    else:
+        print(
+            f"The {target_state['name']} survived with {target_state['models']} models left "
+            f"and {target_state['current_wounds']} wounds on the current model"
+        )
+
+
+if __name__ == "__main__":
+    main()
