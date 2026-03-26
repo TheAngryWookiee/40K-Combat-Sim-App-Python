@@ -134,7 +134,13 @@
         },
         {
           "name": "The Emperor's Shield",
-          "rules_text": "Each time a melee attack is allocated to this model, on an unmodified saving throw of 6, the attacking unit suffers 1 mortal wound after it has finished making its attacks. In addition, each time an attack targets this model, subtract 1 from the Wound roll."
+          "rules_text": "Each time a melee attack is allocated to this model, on an unmodified saving throw of 6, the attacking unit suffers 1 mortal wound after it has finished making its attacks. In addition, each time an attack targets this model, subtract 1 from the Wound roll.",
+          "effects": [
+            {
+              "type": "incoming_wound_modifier",
+              "value": -1
+            }
+          ]
         },
         {
           "name": "Dark Angels Bodyguard",

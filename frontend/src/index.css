@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Bitter:wght@500;700&family=Work+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  font-family: 'Work Sans', 'Segoe UI', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #201913;
+  background:
+    radial-gradient(circle at top left, rgba(236, 210, 158, 0.4), transparent 28%),
+    linear-gradient(180deg, #efe4d0, #e4d6c1 60%, #d7c4a7 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --paper: #f4ebdc;
+  --paper-soft: #eee2cf;
+  --ink: #201913;
+  --ink-soft: #6b5644;
+  --accent: #a14f27;
+  --line: rgba(78, 56, 37, 0.16);
+  --line-strong: rgba(78, 56, 37, 0.28);
+  --shadow: 0 24px 48px rgba(74, 44, 24, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: 'Bitter', Georgia, serif;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+h1 {
+  font-size: clamp(2.8rem, 6vw, 5.4rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 2vw, 2rem);
+}
+
+h3 {
+  font-size: 1.1rem;
+}
+
+p {
+  margin: 0;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
