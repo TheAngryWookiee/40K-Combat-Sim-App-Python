@@ -10,6 +10,11 @@ export async function fetchFactions() {
   return response.data
 }
 
+export async function fetchFactionDetails(factionName) {
+  const response = await api.get(`/factions/${encodeURIComponent(factionName)}`)
+  return response.data
+}
+
 export async function fetchUnits(factionName) {
   const response = await api.get(`/factions/${encodeURIComponent(factionName)}/units`)
   return response.data

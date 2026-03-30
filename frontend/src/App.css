@@ -229,6 +229,54 @@ input:focus {
   margin-top: 12px;
 }
 
+.active-rules {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(67, 49, 34, 0.12);
+}
+
+.active-rule-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.active-rule-card {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 248, 237, 0.82);
+}
+
+.active-rule-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.active-rule-header h4 {
+  margin: 0;
+  font-size: 0.98rem;
+  color: var(--ink);
+}
+
+.active-rule-source {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.active-rule-card p,
+.active-rule-empty {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+
 .stat-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

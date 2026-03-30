@@ -49,8 +49,24 @@ class CombatSimulator:
         raise CombatSimulationError(f"Unsupported roll profile: {value}")
 
     @staticmethod
-    def weapon_has_keyword(weapon: dict[str, Any], keyword: str) -> bool:
-        return keyword in weapon["keywords"]
+    def combine_feel_no_pain_values(current_value: int, new_value: int) -> int:
+        if current_value <= 0:
+            return new_value
+        if new_value <= 0:
+            return current_value
+        return min(current_value, new_value)
+
+    def weapon_has_keyword(
+        self,
+        weapon: dict[str, Any],
+        keyword: str,
+        attack_context: dict[str, Any] | None = None,
+    ) -> bool:
+        if keyword in weapon["keywords"]:
+            return True
+        if attack_context is None:
+            return False
+        return keyword in attack_context.get("temporary_weapon_keywords", set())
 
     def get_keyword_value(self, weapon: dict[str, Any], keyword_prefix: str) -> int:
         for keyword in weapon["keywords"]:
@@ -68,16 +84,17 @@ class CombatSimulator:
         self,
         attacker_unit: dict[str, Any],
         selected_weapon: dict[str, Any],
+        attack_context: dict[str, Any],
     ) -> list[dict[str, Any]]:
         used_weapons: list[dict[str, Any]] = []
-        if self.weapon_has_keyword(selected_weapon, "Hazardous"):
+        if self.weapon_has_keyword(selected_weapon, "Hazardous", attack_context):
             used_weapons.append(selected_weapon)
 
         if selected_weapon["range"].lower() != "melee":
             return used_weapons
 
         for weapon in self.get_extra_attack_weapons(attacker_unit):
-            if self.weapon_has_keyword(weapon, "Hazardous"):
+            if self.weapon_has_keyword(weapon, "Hazardous", attack_context):
                 used_weapons.append(weapon)
 
         return used_weapons
@@ -87,13 +104,14 @@ class CombatSimulator:
         unit: dict[str, Any],
         selected_weapon: dict[str, Any],
         keyword: str,
+        attack_context: dict[str, Any] | None = None,
     ) -> bool:
-        if self.weapon_has_keyword(selected_weapon, keyword):
+        if self.weapon_has_keyword(selected_weapon, keyword, attack_context):
             return True
         if selected_weapon["range"].lower() != "melee":
             return False
         return any(
-            self.weapon_has_keyword(weapon, keyword)
+            self.weapon_has_keyword(weapon, keyword, attack_context)
             for weapon in self.get_extra_attack_weapons(unit)
         )
 
@@ -169,6 +187,8 @@ class CombatSimulator:
         return (
             self.get_effect_total(attacker_unit.get("effects", []), "outgoing_wound_modifier")
             + self.get_effect_total(target_state.get("effects", []), "incoming_wound_modifier")
+            + attack_context.get("attacker_outgoing_wound_modifier", 0)
+            + attack_context.get("target_incoming_wound_modifier", 0)
             + attack_context.get("oath_of_moment_wound_bonus", 0)
         )
 
@@ -178,7 +198,7 @@ class CombatSimulator:
         attack_context: dict[str, Any],
     ) -> int:
         bonus = 0
-        if attack_context.get("charged_this_turn", False) and "Lance" in weapon["keywords"]:
+        if attack_context.get("charged_this_turn", False) and self.weapon_has_keyword(weapon, "Lance", attack_context):
             bonus += 1
         return bonus
 
@@ -198,8 +218,8 @@ class CombatSimulator:
             if self.is_extra_attacks_weapon(weapon)
         ]
 
-    def is_pistol_weapon(self, weapon: dict[str, Any]) -> bool:
-        return self.weapon_has_keyword(weapon, "Pistol")
+    def is_pistol_weapon(self, weapon: dict[str, Any], attack_context: dict[str, Any] | None = None) -> bool:
+        return self.weapon_has_keyword(weapon, "Pistol", attack_context)
 
     @staticmethod
     def is_monster_or_vehicle(unit: dict[str, Any]) -> bool:
@@ -227,8 +247,13 @@ class CombatSimulator:
                 return int(match.group(1))
         return 0
 
-    def get_blast_bonus(self, weapon: dict[str, Any], target_state: dict[str, Any]) -> int:
-        if not self.weapon_has_keyword(weapon, "Blast"):
+    def get_blast_bonus(
+        self,
+        weapon: dict[str, Any],
+        target_state: dict[str, Any],
+        attack_context: dict[str, Any] | None = None,
+    ) -> int:
+        if not self.weapon_has_keyword(weapon, "Blast", attack_context):
             return 0
         return target_state["models"] // 5
 
@@ -239,10 +264,10 @@ class CombatSimulator:
         return self.get_keyword_value(weapon, "Melta")
 
     def get_hit_roll_modifier(self, weapon: dict[str, Any], attack_context: dict[str, Any]) -> int:
-        modifier = 0
-        if attack_context.get("remained_stationary", False) and "Heavy" in weapon["keywords"]:
+        modifier = attack_context.get("attacker_hit_modifier", 0)
+        if attack_context.get("remained_stationary", False) and self.weapon_has_keyword(weapon, "Heavy", attack_context):
             modifier += 1
-        if attack_context.get("indirect_no_visibility", False) and "Indirect Fire" in weapon["keywords"]:
+        if attack_context.get("indirect_no_visibility", False) and self.weapon_has_keyword(weapon, "Indirect Fire", attack_context):
             modifier -= 1
         return modifier
 
@@ -258,7 +283,7 @@ class CombatSimulator:
         if not attack_context.get("attacker_in_engagement_range", False):
             return
 
-        if self.is_pistol_weapon(weapon):
+        if self.is_pistol_weapon(weapon, attack_context):
             return
 
         if self.is_monster_or_vehicle(attacker_unit):
@@ -274,7 +299,7 @@ class CombatSimulator:
         attack_context: dict[str, Any],
         target_name: str,
     ) -> None:
-        if not self.weapon_has_keyword(weapon, "Blast"):
+        if not self.weapon_has_keyword(weapon, "Blast", attack_context):
             return
         if not attack_context.get("target_in_engagement_range_of_allies", False):
             return
@@ -297,7 +322,7 @@ class CombatSimulator:
         if rerolled_wound != wound_roll:
             return rerolled_wound
 
-        if wound_roll < to_wound and "Twin-Linked" in weapon["keywords"]:
+        if wound_roll < to_wound and self.weapon_has_keyword(weapon, "Twin-Linked"):
             new_roll = self.die_roll()
             self.log(
                 f"{unit_name} re-rolled the failed wound with Twin-Linked into a {new_roll} to wound"
@@ -313,7 +338,7 @@ class CombatSimulator:
         target_name: str,
         attack_context: dict[str, Any],
     ) -> tuple[int, int]:
-        if "Torrent" in weapon["keywords"]:
+        if self.weapon_has_keyword(weapon, "Torrent", attack_context):
             self.log(f"{weapon['name']} automatically hits {target_name} because it has Torrent")
             return 1, 0
 
@@ -326,7 +351,7 @@ class CombatSimulator:
 
         if (
             attack_context.get("indirect_no_visibility", False)
-            and "Indirect Fire" in weapon["keywords"]
+            and self.weapon_has_keyword(weapon, "Indirect Fire", attack_context)
             and hit_roll <= 3
         ):
             self.log(f"{unit_name} fails to hit because Indirect Fire with no visibility fails on 1-3")
@@ -339,7 +364,7 @@ class CombatSimulator:
             modified_hit_roll = hit_roll + hit_modifier
             if (
                 attack_context.get("indirect_no_visibility", False)
-                and "Indirect Fire" in weapon["keywords"]
+                and self.weapon_has_keyword(weapon, "Indirect Fire", attack_context)
                 and hit_roll <= 3
             ):
                 self.log(f"{unit_name} fails to hit because Indirect Fire with no visibility fails on 1-3")
@@ -349,7 +374,7 @@ class CombatSimulator:
             self.log(f"{unit_name} failed to hit")
             return 0, 0
 
-        critical_hit = hit_roll == 6
+        critical_hit = hit_roll >= attack_context.get("critical_hit_threshold", 6)
         normal_hits = 1
         auto_wounds = 0
 
@@ -359,10 +384,10 @@ class CombatSimulator:
             suffix = "" if sustained_hits_bonus == 1 else "s"
             self.log(f"On a 6 the attack explodes, causing {sustained_hits_bonus} extra hit{suffix}")
 
-        if critical_hit and "LH" in weapon["keywords"]:
+        if critical_hit and self.weapon_has_keyword(weapon, "LH", attack_context):
             auto_wounds = 1
             normal_hits -= 1
-            self.log(f"On a 6 {unit_name} automatically wounds {target_name} due to Lethal Hits")
+            self.log(f"On a critical hit {unit_name} automatically wounds {target_name} due to Lethal Hits")
 
         return normal_hits, auto_wounds
 
@@ -382,6 +407,7 @@ class CombatSimulator:
         weapon: dict[str, Any],
         target: dict[str, Any],
         to_wound: int,
+        attack_context: dict[str, Any],
     ) -> tuple[bool, bool]:
         wound_roll = self.die_roll()
         self.log(f"{unit_name} rolls a {wound_roll} to wound")
@@ -395,7 +421,7 @@ class CombatSimulator:
             self.log(f"{unit_name} failed to wound")
             return False, False
 
-        devastating_wound = wound_roll == 6 and "DW" in weapon["keywords"]
+        devastating_wound = wound_roll == 6 and self.weapon_has_keyword(weapon, "DW", attack_context)
         if devastating_wound:
             self.log(f"On a 6 {unit_name} scores a critical wound with Devastating Wounds")
 
@@ -412,18 +438,22 @@ class CombatSimulator:
             self.log(f"{target['name']} cannot make a save against this attack")
             return True
 
-        armor_required = target["armor_save"] + weapon["ap"]
+        effective_ap = max(0, weapon["ap"] + attack_context.get("target_ap_modifier", 0))
+        if attack_context.get("target_ap_modifier", 0) < 0 and weapon["ap"] > 0:
+            self.log("Armour of Contempt worsens the attack's Armour Penetration by 1")
+
+        armor_required = target["armor_save"] + effective_ap
         if (
             (target["has_cover"] or attack_context.get("indirect_cover", False))
             and weapon["range"].lower() != "melee"
-            and "Ignores Cover" not in weapon["keywords"]
-            and not (weapon["ap"] == 0 and target["armor_save"] <= 3)
+            and not self.weapon_has_keyword(weapon, "Ignores Cover", attack_context)
+            and not (effective_ap == 0 and target["armor_save"] <= 3)
         ):
             armor_required = max(2, armor_required - 1)
             self.log("The target gets +1 to its armor save due to cover")
         elif (
             target["has_cover"] or attack_context.get("indirect_cover", False)
-        ) and "Ignores Cover" in weapon["keywords"]:
+        ) and self.weapon_has_keyword(weapon, "Ignores Cover", attack_context):
             self.log(f"{weapon['name']} ignores the benefits of cover")
 
         available_saves: list[tuple[int, str]] = []
@@ -449,10 +479,22 @@ class CombatSimulator:
 
     def roll_damage(self, weapon: dict[str, Any], attack_context: dict[str, Any]) -> tuple[int, int]:
         damage = self.roll_value(weapon["damage"])
+        if weapon["range"].lower() == "melee":
+            damage += attack_context.get("melee_weapon_bonus", 0)
         melta_bonus = self.get_melta_bonus(weapon, attack_context.get("in_half_range", False))
         if melta_bonus > 0:
             damage += melta_bonus
         return damage, melta_bonus
+
+    def apply_temporary_target_modifiers(
+        self,
+        target_state: dict[str, Any],
+        attack_context: dict[str, Any],
+    ) -> None:
+        target_state["feel_no_pain"] = self.combine_feel_no_pain_values(
+            target_state.get("feel_no_pain", 0),
+            attack_context.get("target_feel_no_pain", 0),
+        )
 
     def apply_feel_no_pain(self, target_state: dict[str, Any], damage: int) -> int:
         feel_no_pain = target_state.get("feel_no_pain", 0)
@@ -562,6 +604,11 @@ class CombatSimulator:
             current_wounds = max_wounds
         current_wounds = max(0, min(max_wounds, current_wounds))
 
+        attacker_fnp = self.combine_feel_no_pain_values(
+            self.get_lowest_effect_value(attacking_unit.get("effects", []), "feel_no_pain"),
+            attack_context.get("attacker_feel_no_pain", 0),
+        )
+
         return {
             "name": f"{attacking_unit['name']} Hazardous bearer",
             "wounds": max_wounds,
@@ -569,7 +616,7 @@ class CombatSimulator:
             "models": 1,
             "feel_no_pain": attack_context.get(
                 "hazardous_bearer_feel_no_pain",
-                self.get_lowest_effect_value(attacking_unit.get("effects", []), "feel_no_pain"),
+                attacker_fnp,
             ),
             "armor_save": 0,
             "invulnerable_save": 0,
@@ -585,7 +632,7 @@ class CombatSimulator:
         selected_weapon: dict[str, Any],
         attack_context: dict[str, Any],
     ) -> dict[str, Any] | None:
-        hazardous_weapons = self.get_used_hazardous_weapons(attacker_unit, selected_weapon)
+        hazardous_weapons = self.get_used_hazardous_weapons(attacker_unit, selected_weapon, attack_context)
         if not hazardous_weapons:
             return None
 
@@ -608,10 +655,10 @@ class CombatSimulator:
 
             self.apply_damage(
                 attacker_unit["name"],
-                {"name": weapon["name"], "damage": 3, "keywords": [], "range": "Melee"},
+                {"name": weapon["name"], "damage": 3, "keywords": [], "range": "Melee", "ap": 0},
                 hazardous_bearer_state,
                 "mortal_no_spill",
-                {"in_half_range": False},
+                {"in_half_range": False, "melee_weapon_bonus": 0},
             )
 
         return hazardous_bearer_state
@@ -625,16 +672,25 @@ class CombatSimulator:
     ) -> None:
         unit_name = attacker_unit["name"]
         attacks_remaining = self.roll_value(weapon["attacks"])
+        if weapon["range"].lower() == "melee":
+            attacks_remaining += attack_context.get("melee_weapon_bonus", 0)
         rapid_fire_bonus = self.get_rapid_fire_bonus(weapon, attack_context.get("in_half_range", False))
-        blast_bonus = self.get_blast_bonus(weapon, target_state)
+        blast_bonus = self.get_blast_bonus(weapon, target_state, attack_context)
         attacks_remaining += rapid_fire_bonus + blast_bonus
-        base_to_wound = self.get_to_wound_threshold(weapon["strength"], target_state["toughness"])
+        effective_strength = weapon["strength"]
+        if weapon["range"].lower() == "melee":
+            effective_strength += attack_context.get("melee_weapon_bonus", 0)
+        base_to_wound = self.get_to_wound_threshold(effective_strength, target_state["toughness"])
         wound_roll_modifier = self.get_wound_roll_modifier(attacker_unit, target_state, attack_context)
         wound_roll_modifier += self.get_weapon_wound_bonus(weapon, attack_context)
         to_wound = self.clamp_target_number(base_to_wound - wound_roll_modifier)
 
         self.log(f"\n{unit_name} attacks with {weapon['name']}")
         self.log(f"Attacks: {attacks_remaining}")
+        if attack_context.get("melee_weapon_bonus", 0) > 0 and weapon["range"].lower() == "melee":
+            self.log(
+                f"Detachment enhancement adds +{attack_context['melee_weapon_bonus']} Attacks, Strength and Damage"
+            )
         if rapid_fire_bonus > 0:
             self.log(f"Rapid Fire adds {rapid_fire_bonus} attacks at this range")
         if blast_bonus > 0:
@@ -643,6 +699,8 @@ class CombatSimulator:
             self.log("Oath of Moment is active against this target")
         if attack_context.get("oath_of_moment_wound_bonus", 0) > 0:
             self.log("Oath of Moment adds +1 to wound for this attack")
+        if attack_context.get("critical_hit_threshold", 6) < 6:
+            self.log(f"Critical hits are scored on {attack_context['critical_hit_threshold']}+ for this attack")
         self.log(f"Needs {weapon['skill']}+ to hit")
         self.log(f"Needs {to_wound}+ to wound")
         active_hit_modifier = self.get_hit_roll_modifier(weapon, attack_context)
@@ -676,6 +734,7 @@ class CombatSimulator:
                     weapon,
                     target_state,
                     to_wound,
+                    attack_context,
                 )
                 if not wound_succeeds:
                     continue
@@ -739,6 +798,34 @@ class CombatSimulator:
         target_has_cover: bool,
     ) -> dict[str, Any]:
         indirect_target_visible = options.get("indirect_target_visible", True)
+
+        temporary_weapon_keywords: set[str] = set()
+        if bool(options.get("attacker_fire_discipline_active", False)) and weapon["range"].lower() != "melee":
+            temporary_weapon_keywords.update({"Heavy", "Ignores Cover", "Assault"})
+        if bool(options.get("attacker_unforgiven_fury_active", False)):
+            temporary_weapon_keywords.add("LH")
+
+        attacker_hit_modifier = 0
+        attacker_outgoing_wound_modifier = 0
+        if bool(options.get("attacker_stubborn_tenacity_active", False)) and bool(options.get("attacker_below_starting_strength", False)):
+            attacker_hit_modifier += 1
+            if bool(options.get("attacker_battleshocked", False)):
+                attacker_outgoing_wound_modifier += 1
+
+        melee_weapon_bonus = 0
+        if bool(options.get("attacker_weapons_of_the_first_legion_active", False)):
+            melee_weapon_bonus = 2 if bool(options.get("attacker_battleshocked", False)) else 1
+
+        attacker_feel_no_pain = 0
+        if bool(options.get("attacker_pennant_of_remembrance_active", False)):
+            attacker_feel_no_pain = 4 if bool(options.get("attacker_battleshocked", False)) else 6
+
+        target_incoming_wound_modifier = -1 if bool(options.get("defender_unbreakable_lines_active", False)) else 0
+        target_ap_modifier = -1 if bool(options.get("defender_armour_of_contempt_active", False)) else 0
+        target_feel_no_pain = 0
+        if bool(options.get("defender_pennant_of_remembrance_active", False)):
+            target_feel_no_pain = 4 if bool(options.get("defender_battleshocked", False)) else 6
+
         attack_context = {
             "in_half_range": bool(options.get("in_half_range", False)),
             "charged_this_turn": bool(options.get("charged_this_turn", False)),
@@ -746,6 +833,7 @@ class CombatSimulator:
             "hazardous_overwatch_charge_phase": bool(options.get("hazardous_overwatch_charge_phase", False)),
             "hazardous_bearer_current_wounds": options.get("hazardous_bearer_current_wounds"),
             "hazardous_bearer_feel_no_pain": options.get("hazardous_bearer_feel_no_pain"),
+            "attacker_feel_no_pain": attacker_feel_no_pain,
             "indirect_no_visibility": self.weapon_has_keyword(weapon, "Indirect Fire") and not indirect_target_visible,
             "indirect_cover": self.weapon_has_keyword(weapon, "Indirect Fire") and not indirect_target_visible,
             "precision_target": None,
@@ -754,12 +842,26 @@ class CombatSimulator:
             "oath_of_moment_active": bool(options.get("oath_of_moment_active", False))
             and self.unit_has_oath_of_moment(attacker_unit),
             "oath_of_moment_wound_bonus": 0,
+            "temporary_weapon_keywords": temporary_weapon_keywords,
+            "critical_hit_threshold": (
+                5
+                if bool(options.get("attacker_unforgiven_fury_active", False))
+                and bool(options.get("attacker_unforgiven_fury_army_battleshocked", False))
+                else 6
+            ),
+            "attacker_hit_modifier": attacker_hit_modifier,
+            "attacker_outgoing_wound_modifier": attacker_outgoing_wound_modifier,
+            "melee_weapon_bonus": melee_weapon_bonus,
+            "target_incoming_wound_modifier": target_incoming_wound_modifier,
+            "target_ap_modifier": target_ap_modifier,
+            "target_feel_no_pain": target_feel_no_pain,
         }
         if attack_context["oath_of_moment_active"] and self.unit_gets_oath_wound_bonus(attacker_unit):
             attack_context["oath_of_moment_wound_bonus"] = 1
         if attached_character_unit is not None:
             precision_target = self.build_target_state(attached_character_unit)
             precision_target["has_cover"] = target_has_cover
+            self.apply_temporary_target_modifiers(precision_target, attack_context)
             attack_context["precision_target"] = precision_target
         return attack_context
 
@@ -773,7 +875,7 @@ class CombatSimulator:
     ) -> None:
         self.validate_ranged_attack_context(attacker_unit, weapon, attack_context)
         self.validate_blast_target_context(weapon, attack_context, defender_unit["name"])
-        if attached_character_unit is not None and not self.attack_sequence_has_keyword(attacker_unit, weapon, "Precision"):
+        if attached_character_unit is not None and not self.attack_sequence_has_keyword(attacker_unit, weapon, "Precision", attack_context):
             raise CombatSimulationError("Attached character selection is only valid for attacks that can use Precision.")
 
     def simulate(
@@ -797,6 +899,7 @@ class CombatSimulator:
             attached_character_unit,
             target_has_cover,
         )
+        self.apply_temporary_target_modifiers(target_state, attack_context)
 
         self.validate_simulation_request(
             attacker_unit,

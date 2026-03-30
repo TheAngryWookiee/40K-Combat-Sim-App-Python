@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import {
   fetchFactions,
+  fetchFactionDetails,
   fetchUnitDetails,
   fetchUnits,
   simulateCombat,
@@ -32,6 +33,86 @@ const initialOptions = {
   attached_character_name: '',
   hazardous_overwatch_charge_phase: false,
   hazardous_bearer_current_wounds: '',
+  attacker_fire_discipline_active: false,
+  attacker_unforgiven_fury_active: false,
+  attacker_unforgiven_fury_army_battleshocked: false,
+  attacker_stubborn_tenacity_active: false,
+  attacker_weapons_of_the_first_legion_active: false,
+  attacker_pennant_of_remembrance_active: false,
+  attacker_below_starting_strength: false,
+  attacker_battleshocked: false,
+  defender_armour_of_contempt_active: false,
+  defender_unbreakable_lines_active: false,
+  defender_pennant_of_remembrance_active: false,
+  defender_battleshocked: false,
+}
+
+const UNFORGIVEN_TASK_FORCE = 'Unforgiven Task Force'
+const OATH_EXCLUDED_KEYWORDS = [
+  'black templars',
+  'blood angels',
+  'dark angels',
+  'deathwatch',
+  'space wolves',
+]
+
+function getDetachmentByName(factionDetails, detachmentName) {
+  return factionDetails?.detachments?.find((detachment) => detachment.name === detachmentName) || null
+}
+
+function getAttackerEnhancementOptions(detachment, selectedWeapon, hasHazardous) {
+  if (!detachment || detachment.name !== UNFORGIVEN_TASK_FORCE) {
+    return []
+  }
+
+  return (detachment.enhancements || []).filter((enhancement) => {
+    if (enhancement.name === 'Stubborn Tenacity') {
+      return true
+    }
+    if (enhancement.name === 'Weapons of the First Legion') {
+      return selectedWeapon?.range === 'Melee'
+    }
+    if (enhancement.name === 'Pennant of Remembrance') {
+      return hasHazardous
+    }
+    return false
+  })
+}
+
+function getDefenderEnhancementOptions(detachment) {
+  if (!detachment || detachment.name !== UNFORGIVEN_TASK_FORCE) {
+    return []
+  }
+
+  return (detachment.enhancements || []).filter(
+    (enhancement) => enhancement.name === 'Pennant of Remembrance',
+  )
+}
+
+function getAttackerStratagemOptions(detachment, isRangedWeapon) {
+  if (!detachment || detachment.name !== UNFORGIVEN_TASK_FORCE) {
+    return []
+  }
+
+  return (detachment.stratagems || []).filter((stratagem) => {
+    if (stratagem.name === 'Fire Discipline') {
+      return isRangedWeapon
+    }
+    return stratagem.name === 'Unforgiven Fury'
+  })
+}
+
+function getDefenderStratagemOptions(detachment, selectedWeapon) {
+  if (!detachment || detachment.name !== UNFORGIVEN_TASK_FORCE) {
+    return []
+  }
+
+  return (detachment.stratagems || []).filter((stratagem) => {
+    if (stratagem.name === 'Armour of Contempt') {
+      return Number(selectedWeapon?.ap || 0) > 0
+    }
+    return stratagem.name === 'Unbreakable Lines'
+  })
 }
 
 function formatError(error) {
@@ -52,6 +133,18 @@ function buildSimulationPayload(state) {
     remained_stationary: state.remainedStationary,
     indirect_target_visible: state.indirectTargetVisible,
     hazardous_overwatch_charge_phase: state.hazardousOverwatchChargePhase,
+    attacker_fire_discipline_active: state.attackerFireDisciplineActive,
+    attacker_unforgiven_fury_active: state.attackerUnforgivenFuryActive,
+    attacker_unforgiven_fury_army_battleshocked: state.attackerUnforgivenFuryArmyBattleshocked,
+    attacker_stubborn_tenacity_active: state.attackerStubbornTenacityActive,
+    attacker_weapons_of_the_first_legion_active: state.attackerWeaponsOfTheFirstLegionActive,
+    attacker_pennant_of_remembrance_active: state.attackerPennantOfRemembranceActive,
+    attacker_below_starting_strength: state.attackerBelowStartingStrength,
+    attacker_battleshocked: state.attackerBattleshocked,
+    defender_armour_of_contempt_active: state.defenderArmourOfContemptActive,
+    defender_unbreakable_lines_active: state.defenderUnbreakableLinesActive,
+    defender_pennant_of_remembrance_active: state.defenderPennantOfRemembranceActive,
+    defender_battleshocked: state.defenderBattleshocked,
   }
 
   if (state.attachedCharacterName) {
@@ -103,6 +196,167 @@ function unitHasOathOfMoment(unit) {
     const rulesText = String(ability.rules_text || '').toLowerCase()
     return name.includes('oath of moment') || rulesText.includes('oath of moment')
   })
+}
+
+function unitGetsOathWoundBonus(unit) {
+  const combinedKeywords = [
+    ...(unit?.keywords || []),
+    ...(unit?.faction_keywords || []),
+  ].map((keyword) => String(keyword).toLowerCase())
+
+  return !OATH_EXCLUDED_KEYWORDS.some((keyword) => combinedKeywords.includes(keyword))
+}
+
+function getDetachmentEntry(detachment, collectionName, entryName) {
+  return detachment?.[collectionName]?.find((entry) => entry.name === entryName) || null
+}
+
+function getRelevantUnitRules(unit, role, hasHazardousWeapon) {
+  const relevantEffectTypes = role === 'attacker'
+    ? new Set(['outgoing_wound_modifier', ...(hasHazardousWeapon ? ['feel_no_pain'] : [])])
+    : new Set(['incoming_wound_modifier', 'feel_no_pain'])
+
+  const ruleCollections = [...(unit?.abilities || []), ...(unit?.wargear_abilities || [])]
+
+  return ruleCollections
+    .filter((rule) => (rule.effects || []).some((effect) => relevantEffectTypes.has(effect.type)))
+    .map((rule) => ({
+      name: rule.name,
+      source: 'Datasheet Ability',
+      text: rule.rules_text,
+    }))
+}
+
+function buildAttackerActiveRules({
+  attackerUnitDetails,
+  oathOfMomentActive,
+  attackerDetachment,
+  attackerFireDisciplineActive,
+  attackerUnforgivenFuryActive,
+  attackerStubbornTenacityActive,
+  attackerWeaponsOfTheFirstLegionActive,
+  attackerPennantOfRemembranceActive,
+  attackerBelowStartingStrength,
+  hasHazardous,
+}) {
+  const rules = [
+    ...getRelevantUnitRules(attackerUnitDetails, 'attacker', hasHazardous),
+  ]
+
+  if (oathOfMomentActive && unitHasOathOfMoment(attackerUnitDetails)) {
+    const woundBonusText = unitGetsOathWoundBonus(attackerUnitDetails)
+      ? ' Re-roll Hit rolls against the selected target, and this attack also gets +1 to the Wound roll.'
+      : ' Re-roll Hit rolls against the selected target.'
+    rules.unshift({
+      name: 'Oath of Moment',
+      source: 'Army Rule',
+      text: `This unit is attacking its Oath of Moment target.${woundBonusText}`,
+    })
+  }
+
+  if (attackerFireDisciplineActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Fire Discipline')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerUnforgivenFuryActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Unforgiven Fury')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerStubbornTenacityActive && attackerBelowStartingStrength) {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Stubborn Tenacity')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerWeaponsOfTheFirstLegionActive) {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Weapons of the First Legion')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerPennantOfRemembranceActive) {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Pennant of Remembrance')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  return rules
+}
+
+function buildDefenderActiveRules({
+  defenderUnitDetails,
+  defenderDetachment,
+  defenderArmourOfContemptActive,
+  defenderUnbreakableLinesActive,
+  defenderPennantOfRemembranceActive,
+}) {
+  const rules = [
+    ...getRelevantUnitRules(defenderUnitDetails, 'defender', false),
+  ]
+
+  if (defenderArmourOfContemptActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Armour of Contempt')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${defenderDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (defenderUnbreakableLinesActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Unbreakable Lines')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${defenderDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (defenderPennantOfRemembranceActive) {
+    const enhancement = getDetachmentEntry(defenderDetachment, 'enhancements', 'Pennant of Remembrance')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${defenderDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  return rules
 }
 
 function renderStatsGrid(stats) {
@@ -174,6 +428,8 @@ function App() {
   const [factions, setFactions] = useState([])
   const [attackerUnits, setAttackerUnits] = useState([])
   const [defenderUnits, setDefenderUnits] = useState([])
+  const [attackerFactionDetails, setAttackerFactionDetails] = useState(null)
+  const [defenderFactionDetails, setDefenderFactionDetails] = useState(null)
   const [attackerUnitDetails, setAttackerUnitDetails] = useState(null)
   const [defenderUnitDetails, setDefenderUnitDetails] = useState(null)
   const [result, setResult] = useState(null)
@@ -187,6 +443,10 @@ function App() {
   const [defenderFaction, setDefenderFaction] = useState('')
   const [defenderUnit, setDefenderUnit] = useState('')
   const [attachedCharacterName, setAttachedCharacterName] = useState('')
+  const [attackerDetachmentName, setAttackerDetachmentName] = useState('')
+  const [defenderDetachmentName, setDefenderDetachmentName] = useState('')
+  const [attackerEnhancementName, setAttackerEnhancementName] = useState('')
+  const [defenderEnhancementName, setDefenderEnhancementName] = useState('')
 
   const [targetHasCover, setTargetHasCover] = useState(initialOptions.target_has_cover)
   const [attackerInEngagementRange, setAttackerInEngagementRange] = useState(initialOptions.attacker_in_engagement_range)
@@ -198,6 +458,18 @@ function App() {
   const [indirectTargetVisible, setIndirectTargetVisible] = useState(initialOptions.indirect_target_visible)
   const [hazardousOverwatchChargePhase, setHazardousOverwatchChargePhase] = useState(initialOptions.hazardous_overwatch_charge_phase)
   const [hazardousBearerCurrentWounds, setHazardousBearerCurrentWounds] = useState(initialOptions.hazardous_bearer_current_wounds)
+  const [attackerFireDisciplineActive, setAttackerFireDisciplineActive] = useState(initialOptions.attacker_fire_discipline_active)
+  const [attackerUnforgivenFuryActive, setAttackerUnforgivenFuryActive] = useState(initialOptions.attacker_unforgiven_fury_active)
+  const [attackerUnforgivenFuryArmyBattleshocked, setAttackerUnforgivenFuryArmyBattleshocked] = useState(initialOptions.attacker_unforgiven_fury_army_battleshocked)
+  const [attackerStubbornTenacityActive, setAttackerStubbornTenacityActive] = useState(initialOptions.attacker_stubborn_tenacity_active)
+  const [attackerWeaponsOfTheFirstLegionActive, setAttackerWeaponsOfTheFirstLegionActive] = useState(initialOptions.attacker_weapons_of_the_first_legion_active)
+  const [attackerPennantOfRemembranceActive, setAttackerPennantOfRemembranceActive] = useState(initialOptions.attacker_pennant_of_remembrance_active)
+  const [attackerBelowStartingStrength, setAttackerBelowStartingStrength] = useState(initialOptions.attacker_below_starting_strength)
+  const [attackerBattleshocked, setAttackerBattleshocked] = useState(initialOptions.attacker_battleshocked)
+  const [defenderArmourOfContemptActive, setDefenderArmourOfContemptActive] = useState(initialOptions.defender_armour_of_contempt_active)
+  const [defenderUnbreakableLinesActive, setDefenderUnbreakableLinesActive] = useState(initialOptions.defender_unbreakable_lines_active)
+  const [defenderPennantOfRemembranceActive, setDefenderPennantOfRemembranceActive] = useState(initialOptions.defender_pennant_of_remembrance_active)
+  const [defenderBattleshocked, setDefenderBattleshocked] = useState(initialOptions.defender_battleshocked)
 
   useEffect(() => {
     async function loadFactions() {
@@ -258,6 +530,40 @@ function App() {
   }, [attackerFaction])
 
   useEffect(() => {
+    if (!attackerFaction) {
+      return
+    }
+
+    let active = true
+
+    async function loadAttackerFactionDetails() {
+      try {
+        const data = await fetchFactionDetails(attackerFaction)
+        if (!active) {
+          return
+        }
+        setAttackerFactionDetails(data)
+        setAttackerDetachmentName((currentDetachment) => (
+          data.detachments?.some((detachment) => detachment.name === currentDetachment)
+            ? currentDetachment
+            : data.detachments?.[0]?.name || ''
+        ))
+        setError('')
+      } catch (requestError) {
+        if (active) {
+          setError(formatError(requestError))
+        }
+      }
+    }
+
+    loadAttackerFactionDetails()
+
+    return () => {
+      active = false
+    }
+  }, [attackerFaction])
+
+  useEffect(() => {
     if (!defenderFaction) {
       return
     }
@@ -288,6 +594,40 @@ function App() {
     }
 
     loadDefenderUnits()
+
+    return () => {
+      active = false
+    }
+  }, [defenderFaction])
+
+  useEffect(() => {
+    if (!defenderFaction) {
+      return
+    }
+
+    let active = true
+
+    async function loadDefenderFactionDetails() {
+      try {
+        const data = await fetchFactionDetails(defenderFaction)
+        if (!active) {
+          return
+        }
+        setDefenderFactionDetails(data)
+        setDefenderDetachmentName((currentDetachment) => (
+          data.detachments?.some((detachment) => detachment.name === currentDetachment)
+            ? currentDetachment
+            : data.detachments?.[0]?.name || ''
+        ))
+        setError('')
+      } catch (requestError) {
+        if (active) {
+          setError(formatError(requestError))
+        }
+      }
+    }
+
+    loadDefenderFactionDetails()
 
     return () => {
       active = false
@@ -361,6 +701,16 @@ function App() {
     return attackerUnitDetails?.weapons?.find((weapon) => weapon.name === weaponName) || null
   }, [attackerUnitDetails, weaponName])
 
+  const selectedAttackerDetachment = useMemo(
+    () => getDetachmentByName(attackerFactionDetails, attackerDetachmentName),
+    [attackerFactionDetails, attackerDetachmentName],
+  )
+
+  const selectedDefenderDetachment = useMemo(
+    () => getDetachmentByName(defenderFactionDetails, defenderDetachmentName),
+    [defenderFactionDetails, defenderDetachmentName],
+  )
+
   const weaponKeywords = selectedWeapon?.keywords || []
   const isRangedWeapon = selectedWeapon ? selectedWeapon.range !== 'Melee' : false
   const isMeleeWeapon = selectedWeapon ? selectedWeapon.range === 'Melee' : false
@@ -372,6 +722,69 @@ function App() {
   const canUseLance = weaponKeywords.includes('Lance')
   const canUseCover = isRangedWeapon
   const hasOathOfMoment = unitHasOathOfMoment(attackerUnitDetails)
+  const attackerEnhancementOptions = useMemo(
+    () => getAttackerEnhancementOptions(selectedAttackerDetachment, selectedWeapon, hasHazardous),
+    [selectedAttackerDetachment, selectedWeapon, hasHazardous],
+  )
+  const defenderEnhancementOptions = useMemo(
+    () => getDefenderEnhancementOptions(selectedDefenderDetachment),
+    [selectedDefenderDetachment],
+  )
+  const attackerStratagemOptions = useMemo(
+    () => getAttackerStratagemOptions(selectedAttackerDetachment, isRangedWeapon),
+    [selectedAttackerDetachment, isRangedWeapon],
+  )
+  const defenderStratagemOptions = useMemo(
+    () => getDefenderStratagemOptions(selectedDefenderDetachment, selectedWeapon),
+    [selectedDefenderDetachment, selectedWeapon],
+  )
+
+  const canUseAttackerFireDiscipline = attackerStratagemOptions.some((item) => item.name === 'Fire Discipline')
+  const canUseAttackerUnforgivenFury = attackerStratagemOptions.some((item) => item.name === 'Unforgiven Fury')
+  const canUseDefenderArmourOfContempt = defenderStratagemOptions.some((item) => item.name === 'Armour of Contempt')
+  const canUseDefenderUnbreakableLines = defenderStratagemOptions.some((item) => item.name === 'Unbreakable Lines')
+  const attackerActiveRules = useMemo(
+    () => buildAttackerActiveRules({
+      attackerUnitDetails,
+      oathOfMomentActive,
+      attackerDetachment: selectedAttackerDetachment,
+      attackerFireDisciplineActive,
+      attackerUnforgivenFuryActive,
+      attackerStubbornTenacityActive,
+      attackerWeaponsOfTheFirstLegionActive,
+      attackerPennantOfRemembranceActive,
+      attackerBelowStartingStrength,
+      hasHazardous,
+    }),
+    [
+      attackerUnitDetails,
+      oathOfMomentActive,
+      selectedAttackerDetachment,
+      attackerFireDisciplineActive,
+      attackerUnforgivenFuryActive,
+      attackerStubbornTenacityActive,
+      attackerWeaponsOfTheFirstLegionActive,
+      attackerPennantOfRemembranceActive,
+      attackerBelowStartingStrength,
+      hasHazardous,
+    ],
+  )
+  const defenderActiveRules = useMemo(
+    () => buildDefenderActiveRules({
+      defenderUnitDetails,
+      defenderDetachment: selectedDefenderDetachment,
+      defenderArmourOfContemptActive,
+      defenderUnbreakableLinesActive,
+      defenderPennantOfRemembranceActive,
+    }),
+    [
+      defenderUnitDetails,
+      selectedDefenderDetachment,
+      defenderArmourOfContemptActive,
+      defenderUnbreakableLinesActive,
+      defenderPennantOfRemembranceActive,
+    ],
+  )
 
   const readyToSimulate = attackerFaction && attackerUnit && weaponName && defenderFaction && defenderUnit
 
@@ -386,6 +799,73 @@ function App() {
       setOathOfMomentActive(false)
     }
   }, [hasOathOfMoment, oathOfMomentActive])
+
+  useEffect(() => {
+    if (!attackerEnhancementOptions.some((item) => item.name === attackerEnhancementName)) {
+      setAttackerEnhancementName('')
+    }
+  }, [attackerEnhancementOptions, attackerEnhancementName])
+
+  useEffect(() => {
+    if (!defenderEnhancementOptions.some((item) => item.name === defenderEnhancementName)) {
+      setDefenderEnhancementName('')
+    }
+  }, [defenderEnhancementOptions, defenderEnhancementName])
+
+  useEffect(() => {
+    if (!canUseAttackerFireDiscipline && attackerFireDisciplineActive) {
+      setAttackerFireDisciplineActive(false)
+    }
+  }, [canUseAttackerFireDiscipline, attackerFireDisciplineActive])
+
+  useEffect(() => {
+    if (!canUseAttackerUnforgivenFury) {
+      if (attackerUnforgivenFuryActive) {
+        setAttackerUnforgivenFuryActive(false)
+      }
+      if (attackerUnforgivenFuryArmyBattleshocked) {
+        setAttackerUnforgivenFuryArmyBattleshocked(false)
+      }
+    }
+  }, [canUseAttackerUnforgivenFury, attackerUnforgivenFuryActive, attackerUnforgivenFuryArmyBattleshocked])
+
+  useEffect(() => {
+    if (!canUseDefenderArmourOfContempt && defenderArmourOfContemptActive) {
+      setDefenderArmourOfContemptActive(false)
+    }
+  }, [canUseDefenderArmourOfContempt, defenderArmourOfContemptActive])
+
+  useEffect(() => {
+    if (!canUseDefenderUnbreakableLines && defenderUnbreakableLinesActive) {
+      setDefenderUnbreakableLinesActive(false)
+    }
+  }, [canUseDefenderUnbreakableLines, defenderUnbreakableLinesActive])
+
+  useEffect(() => {
+    const active = attackerEnhancementName === 'Stubborn Tenacity'
+    setAttackerStubbornTenacityActive(active)
+    if (!active && attackerBelowStartingStrength) {
+      setAttackerBelowStartingStrength(false)
+    }
+  }, [attackerEnhancementName, attackerBelowStartingStrength])
+
+  useEffect(() => {
+    const active = attackerEnhancementName === 'Weapons of the First Legion'
+    setAttackerWeaponsOfTheFirstLegionActive(active)
+  }, [attackerEnhancementName])
+
+  useEffect(() => {
+    const active = attackerEnhancementName === 'Pennant of Remembrance'
+    setAttackerPennantOfRemembranceActive(active)
+  }, [attackerEnhancementName])
+
+  useEffect(() => {
+    const active = defenderEnhancementName === 'Pennant of Remembrance'
+    setDefenderPennantOfRemembranceActive(active)
+    if (!active && defenderBattleshocked) {
+      setDefenderBattleshocked(false)
+    }
+  }, [defenderEnhancementName, defenderBattleshocked])
 
   async function handleSimulate(event) {
     event.preventDefault()
@@ -413,6 +893,18 @@ function App() {
         attachedCharacterName,
         hazardousOverwatchChargePhase,
         hazardousBearerCurrentWounds,
+        attackerFireDisciplineActive,
+        attackerUnforgivenFuryActive,
+        attackerUnforgivenFuryArmyBattleshocked,
+        attackerStubbornTenacityActive,
+        attackerWeaponsOfTheFirstLegionActive,
+        attackerPennantOfRemembranceActive,
+        attackerBelowStartingStrength,
+        attackerBattleshocked,
+        defenderArmourOfContemptActive,
+        defenderUnbreakableLinesActive,
+        defenderPennantOfRemembranceActive,
+        defenderBattleshocked,
       })
       const data = await simulateCombat(payload)
       setResult(data)
@@ -436,6 +928,20 @@ function App() {
     setAttachedCharacterName(initialOptions.attached_character_name)
     setHazardousOverwatchChargePhase(initialOptions.hazardous_overwatch_charge_phase)
     setHazardousBearerCurrentWounds(initialOptions.hazardous_bearer_current_wounds)
+    setAttackerFireDisciplineActive(initialOptions.attacker_fire_discipline_active)
+    setAttackerUnforgivenFuryActive(initialOptions.attacker_unforgiven_fury_active)
+    setAttackerUnforgivenFuryArmyBattleshocked(initialOptions.attacker_unforgiven_fury_army_battleshocked)
+    setAttackerStubbornTenacityActive(initialOptions.attacker_stubborn_tenacity_active)
+    setAttackerWeaponsOfTheFirstLegionActive(initialOptions.attacker_weapons_of_the_first_legion_active)
+    setAttackerPennantOfRemembranceActive(initialOptions.attacker_pennant_of_remembrance_active)
+    setAttackerBelowStartingStrength(initialOptions.attacker_below_starting_strength)
+    setAttackerBattleshocked(initialOptions.attacker_battleshocked)
+    setDefenderArmourOfContemptActive(initialOptions.defender_armour_of_contempt_active)
+    setDefenderUnbreakableLinesActive(initialOptions.defender_unbreakable_lines_active)
+    setDefenderPennantOfRemembranceActive(initialOptions.defender_pennant_of_remembrance_active)
+    setDefenderBattleshocked(initialOptions.defender_battleshocked)
+    setAttackerEnhancementName('')
+    setDefenderEnhancementName('')
   }
 
   return (
@@ -443,7 +949,7 @@ function App() {
       <header className="hero-band">
         <p className="eyebrow">Warhammer 40,000 Combat Simulator</p>
         <div className="hero-copy">
-          <h1>Resolve attacks without digging through five rules sections.</h1>
+          <h1>Check Unit Effectiveness</h1>
           <p>
             Pick an attacker, a weapon profile, a defender, and the combat context.
             Applies the rules engine and returns a full combat log.
@@ -515,6 +1021,40 @@ function App() {
               </label>
             </div>
 
+            {(attackerFactionDetails?.detachments?.length || defenderFactionDetails?.detachments?.length) ? (
+              <div className="cluster two-up">
+                <label>
+                  <span>Attacker Detachment</span>
+                  <select
+                    value={attackerDetachmentName}
+                    onChange={(event) => setAttackerDetachmentName(event.target.value)}
+                  >
+                    <option value="">No detachment</option>
+                    {(attackerFactionDetails?.detachments || []).map((detachment) => (
+                      <option key={detachment.name} value={detachment.name}>
+                        {detachment.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  <span>Defender Detachment</span>
+                  <select
+                    value={defenderDetachmentName}
+                    onChange={(event) => setDefenderDetachmentName(event.target.value)}
+                  >
+                    <option value="">No detachment</option>
+                    {(defenderFactionDetails?.detachments || []).map((detachment) => (
+                      <option key={detachment.name} value={detachment.name}>
+                        {detachment.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            ) : null}
+
             <label>
               <span>Weapon Profile</span>
               <select value={weaponName} onChange={(event) => setWeaponName(event.target.value)}>
@@ -539,6 +1079,95 @@ function App() {
             ) : null}
 
             <div className="rule-grid">
+              {attackerEnhancementOptions.length ? (
+                <label>
+                  <span>Attacker Enhancement</span>
+                  <select
+                    value={attackerEnhancementName}
+                    onChange={(event) => setAttackerEnhancementName(event.target.value)}
+                  >
+                    <option value="">No enhancement</option>
+                    {attackerEnhancementOptions.map((enhancement) => (
+                      <option key={enhancement.name} value={enhancement.name}>
+                        {enhancement.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {defenderEnhancementOptions.length ? (
+                <label>
+                  <span>Defender Enhancement</span>
+                  <select
+                    value={defenderEnhancementName}
+                    onChange={(event) => setDefenderEnhancementName(event.target.value)}
+                  >
+                    <option value="">No enhancement</option>
+                    {defenderEnhancementOptions.map((enhancement) => (
+                      <option key={enhancement.name} value={enhancement.name}>
+                        {enhancement.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerFireDiscipline ? (
+                <label className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={attackerFireDisciplineActive}
+                    onChange={(event) => setAttackerFireDisciplineActive(event.target.checked)}
+                  />
+                  <span>Use Fire Discipline</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerUnforgivenFury ? (
+                <label className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={attackerUnforgivenFuryActive}
+                    onChange={(event) => setAttackerUnforgivenFuryActive(event.target.checked)}
+                  />
+                  <span>Use Unforgiven Fury</span>
+                </label>
+              ) : null}
+
+              {attackerUnforgivenFuryActive ? (
+                <label className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={attackerUnforgivenFuryArmyBattleshocked}
+                    onChange={(event) => setAttackerUnforgivenFuryArmyBattleshocked(event.target.checked)}
+                  />
+                  <span>Attacker army has a Battle-shocked Adeptus Astartes unit</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderArmourOfContempt ? (
+                <label className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={defenderArmourOfContemptActive}
+                    onChange={(event) => setDefenderArmourOfContemptActive(event.target.checked)}
+                  />
+                  <span>Defender uses Armour of Contempt</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderUnbreakableLines ? (
+                <label className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={defenderUnbreakableLinesActive}
+                    onChange={(event) => setDefenderUnbreakableLinesActive(event.target.checked)}
+                  />
+                  <span>Defender uses Unbreakable Lines</span>
+                </label>
+              ) : null}
+
               {canUseCover ? (
                 <label className="checkbox-row">
                   <input
@@ -627,6 +1256,41 @@ function App() {
                 </label>
               ) : null}
 
+              {attackerEnhancementName === 'Stubborn Tenacity' ? (
+                <label className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={attackerBelowStartingStrength}
+                    onChange={(event) => setAttackerBelowStartingStrength(event.target.checked)}
+                  />
+                  <span>Attacker is below Starting Strength</span>
+                </label>
+              ) : null}
+
+              {(attackerEnhancementName === 'Stubborn Tenacity'
+                || attackerEnhancementName === 'Weapons of the First Legion'
+                || attackerEnhancementName === 'Pennant of Remembrance') ? (
+                <label className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={attackerBattleshocked}
+                    onChange={(event) => setAttackerBattleshocked(event.target.checked)}
+                  />
+                  <span>Attacker is Battle-shocked</span>
+                </label>
+              ) : null}
+
+              {defenderEnhancementName === 'Pennant of Remembrance' ? (
+                <label className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={defenderBattleshocked}
+                    onChange={(event) => setDefenderBattleshocked(event.target.checked)}
+                  />
+                  <span>Defender is Battle-shocked</span>
+                </label>
+              ) : null}
+
               {canUsePrecision ? (
                 <label>
                   <span>Attached Character</span>
@@ -690,6 +1354,24 @@ function App() {
               <div className="datasheet-stats">
                 {renderStatsGrid(attackerUnitDetails?.stats)}
               </div>
+              <div className="active-rules">
+                <p className="kicker">Active Rules</p>
+                {attackerActiveRules.length ? (
+                  <div className="active-rule-list">
+                    {attackerActiveRules.map((rule) => (
+                      <article key={`${rule.source}-${rule.name}`} className="active-rule-card">
+                        <div className="active-rule-header">
+                          <h4>{rule.name}</h4>
+                          <span className="active-rule-source">{rule.source}</span>
+                        </div>
+                        <p>{rule.text}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="active-rule-empty">No active rules affecting this attack.</p>
+                )}
+              </div>
             </article>
 
             <article className="datasheet-card">
@@ -698,6 +1380,24 @@ function App() {
               <p>{defenderFaction || 'Faction not set'}</p>
               <div className="datasheet-stats">
                 {renderStatsGrid(defenderUnitDetails?.stats)}
+              </div>
+              <div className="active-rules">
+                <p className="kicker">Active Rules</p>
+                {defenderActiveRules.length ? (
+                  <div className="active-rule-list">
+                    {defenderActiveRules.map((rule) => (
+                      <article key={`${rule.source}-${rule.name}`} className="active-rule-card">
+                        <div className="active-rule-header">
+                          <h4>{rule.name}</h4>
+                          <span className="active-rule-source">{rule.source}</span>
+                        </div>
+                        <p>{rule.text}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="active-rule-empty">No active rules affecting this attack.</p>
+                )}
               </div>
             </article>
           </div>

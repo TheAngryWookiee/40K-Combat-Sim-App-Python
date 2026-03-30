@@ -33,6 +33,18 @@ class SimulationOptions(BaseModel):
     hazardous_overwatch_charge_phase: bool = False
     hazardous_bearer_current_wounds: int | None = Field(default=None, ge=0)
     hazardous_bearer_feel_no_pain: int | None = Field(default=None, ge=2, le=6)
+    attacker_fire_discipline_active: bool = False
+    attacker_unforgiven_fury_active: bool = False
+    attacker_unforgiven_fury_army_battleshocked: bool = False
+    attacker_stubborn_tenacity_active: bool = False
+    attacker_weapons_of_the_first_legion_active: bool = False
+    attacker_pennant_of_remembrance_active: bool = False
+    attacker_below_starting_strength: bool = False
+    attacker_battleshocked: bool = False
+    defender_armour_of_contempt_active: bool = False
+    defender_unbreakable_lines_active: bool = False
+    defender_pennant_of_remembrance_active: bool = False
+    defender_battleshocked: bool = False
 
 
 class SimulationRequest(BaseModel):
