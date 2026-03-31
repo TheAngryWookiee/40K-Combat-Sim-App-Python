@@ -21,6 +21,32 @@ class CombatSimulator:
     def __init__(self, seed: int | None = None) -> None:
         self.rng = random.Random(seed)
         self.log_messages: list[str] = []
+        self.stats: dict[str, int] = {}
+
+    @staticmethod
+    def build_empty_stats() -> dict[str, int]:
+        return {
+            "attack_instances": 0,
+            "hit_rolls": 0,
+            "auto_hit_attacks": 0,
+            "successful_hit_attacks": 0,
+            "failed_hit_attacks": 0,
+            "critical_hit_attacks": 0,
+            "extra_hits_generated": 0,
+            "hit_rerolls_used": 0,
+            "hit_reroll_successes": 0,
+            "wound_rolls": 0,
+            "auto_wounds": 0,
+            "successful_wound_rolls": 0,
+            "failed_wound_rolls": 0,
+            "critical_wounds": 0,
+            "wound_rerolls_used": 0,
+            "wound_reroll_successes": 0,
+            "save_attempts": 0,
+            "saves_passed": 0,
+            "saves_failed": 0,
+            "unsavable_wounds": 0,
+        }
 
     def log(self, message: str) -> None:
         self.log_messages.append(message)
@@ -320,10 +346,16 @@ class CombatSimulator:
     ) -> int:
         rerolled_wound = self.maybe_reroll_wound(wound_roll, to_wound, unit_name)
         if rerolled_wound != wound_roll:
+            self.stats["wound_rerolls_used"] += 1
+            if rerolled_wound >= to_wound:
+                self.stats["wound_reroll_successes"] += 1
             return rerolled_wound
 
         if wound_roll < to_wound and self.weapon_has_keyword(weapon, "Twin-Linked"):
             new_roll = self.die_roll()
+            self.stats["wound_rerolls_used"] += 1
+            if new_roll >= to_wound:
+                self.stats["wound_reroll_successes"] += 1
             self.log(
                 f"{unit_name} re-rolled the failed wound with Twin-Linked into a {new_roll} to wound"
             )
@@ -338,10 +370,14 @@ class CombatSimulator:
         target_name: str,
         attack_context: dict[str, Any],
     ) -> tuple[int, int]:
+        self.stats["attack_instances"] += 1
         if self.weapon_has_keyword(weapon, "Torrent", attack_context):
+            self.stats["auto_hit_attacks"] += 1
+            self.stats["successful_hit_attacks"] += 1
             self.log(f"{weapon['name']} automatically hits {target_name} because it has Torrent")
             return 1, 0
 
+        self.stats["hit_rolls"] += 1
         hit_roll = self.die_roll()
         self.log(f"{unit_name} rolls a {hit_roll} to hit")
         hit_modifier = self.get_hit_roll_modifier(weapon, attack_context)
@@ -354,10 +390,12 @@ class CombatSimulator:
             and self.weapon_has_keyword(weapon, "Indirect Fire", attack_context)
             and hit_roll <= 3
         ):
+            self.stats["failed_hit_attacks"] += 1
             self.log(f"{unit_name} fails to hit because Indirect Fire with no visibility fails on 1-3")
             return 0, 0
 
         if modified_hit_roll < weapon["skill"] and attack_context.get("oath_of_moment_active", False):
+            self.stats["hit_rerolls_used"] += 1
             reroll_hit = self.die_roll()
             self.log(f"{unit_name} re-rolls the failed hit with Oath of Moment into a {reroll_hit}")
             hit_roll = reroll_hit
@@ -367,26 +405,35 @@ class CombatSimulator:
                 and self.weapon_has_keyword(weapon, "Indirect Fire", attack_context)
                 and hit_roll <= 3
             ):
+                self.stats["failed_hit_attacks"] += 1
                 self.log(f"{unit_name} fails to hit because Indirect Fire with no visibility fails on 1-3")
                 return 0, 0
+            if modified_hit_roll >= weapon["skill"]:
+                self.stats["hit_reroll_successes"] += 1
 
         if modified_hit_roll < weapon["skill"]:
+            self.stats["failed_hit_attacks"] += 1
             self.log(f"{unit_name} failed to hit")
             return 0, 0
 
         critical_hit = hit_roll >= attack_context.get("critical_hit_threshold", 6)
+        self.stats["successful_hit_attacks"] += 1
+        if critical_hit:
+            self.stats["critical_hit_attacks"] += 1
         normal_hits = 1
         auto_wounds = 0
 
         sustained_hits_bonus = self.get_sustained_hits_bonus(weapon)
         if critical_hit and sustained_hits_bonus > 0:
             normal_hits += sustained_hits_bonus
+            self.stats["extra_hits_generated"] += sustained_hits_bonus
             suffix = "" if sustained_hits_bonus == 1 else "s"
             self.log(f"On a 6 the attack explodes, causing {sustained_hits_bonus} extra hit{suffix}")
 
         if critical_hit and self.weapon_has_keyword(weapon, "LH", attack_context):
             auto_wounds = 1
             normal_hits -= 1
+            self.stats["auto_wounds"] += 1
             self.log(f"On a critical hit {unit_name} automatically wounds {target_name} due to Lethal Hits")
 
         return normal_hits, auto_wounds
@@ -409,6 +456,7 @@ class CombatSimulator:
         to_wound: int,
         attack_context: dict[str, Any],
     ) -> tuple[bool, bool]:
+        self.stats["wound_rolls"] += 1
         wound_roll = self.die_roll()
         self.log(f"{unit_name} rolls a {wound_roll} to wound")
         wound_roll = self.apply_anti_rule(wound_roll, weapon, target)
@@ -418,10 +466,15 @@ class CombatSimulator:
             wound_roll = self.apply_anti_rule(wound_roll, weapon, target)
 
         if wound_roll < to_wound:
+            self.stats["failed_wound_rolls"] += 1
             self.log(f"{unit_name} failed to wound")
             return False, False
 
-        devastating_wound = wound_roll == 6 and self.weapon_has_keyword(weapon, "DW", attack_context)
+        critical_wound = wound_roll == 6
+        devastating_wound = critical_wound and self.weapon_has_keyword(weapon, "DW", attack_context)
+        self.stats["successful_wound_rolls"] += 1
+        if critical_wound:
+            self.stats["critical_wounds"] += 1
         if devastating_wound:
             self.log(f"On a 6 {unit_name} scores a critical wound with Devastating Wounds")
 
@@ -435,6 +488,7 @@ class CombatSimulator:
         attack_context: dict[str, Any],
     ) -> bool:
         if no_save_allowed:
+            self.stats["unsavable_wounds"] += 1
             self.log(f"{target['name']} cannot make a save against this attack")
             return True
 
@@ -463,17 +517,21 @@ class CombatSimulator:
             available_saves.append((target["invulnerable_save"], "invulnerable"))
 
         if not available_saves:
+            self.stats["unsavable_wounds"] += 1
             self.log(f"{target['name']} does not get a save")
             return True
 
         required, save_type = min(available_saves, key=lambda item: item[0])
+        self.stats["save_attempts"] += 1
         save_roll = self.die_roll()
         self.log(f"{target['name']} attempts a {save_type} save on {required}+")
 
         if save_roll >= required:
+            self.stats["saves_passed"] += 1
             self.log(f"{target['name']} passes the save with a {save_roll}")
             return False
 
+        self.stats["saves_failed"] += 1
         self.log(f"{target['name']} fails the save with a {save_roll}")
         return True
 
@@ -888,6 +946,7 @@ class CombatSimulator:
     ) -> dict[str, Any]:
         options = options or {}
         self.log_messages = []
+        self.stats = self.build_empty_stats()
 
         target_state = self.build_target_state(defender_unit)
         target_has_cover = bool(options.get("target_has_cover", False))
@@ -914,6 +973,7 @@ class CombatSimulator:
 
         result = {
             "log": list(self.log_messages),
+            "stats": dict(self.stats),
             "target": self.summarize_state(target_state),
             "attached_character": (
                 self.summarize_state(attack_context["precision_target"])

@@ -55,6 +55,8 @@ const OATH_EXCLUDED_KEYWORDS = [
   'deathwatch',
   'space wolves',
 ]
+const OATH_OF_MOMENT_RULE_TEXT = 'Select one enemy unit. Each time a model with Oath of Moment makes an attack that targets that unit, you can re-roll the Hit roll.'
+const OATH_OF_MOMENT_CODEX_RIDER_TEXT = 'If you are using a Codex: Space Marines Detachment and your army does not include Black Templars, Blood Angels, Dark Angels, Deathwatch, or Space Wolves units, add 1 to the Wound roll as well.'
 
 function getDetachmentByName(factionDetails, detachmentName) {
   return factionDetails?.detachments?.find((detachment) => detachment.name === detachmentName) || null
@@ -211,6 +213,177 @@ function getDetachmentEntry(detachment, collectionName, entryName) {
   return detachment?.[collectionName]?.find((entry) => entry.name === entryName) || null
 }
 
+function getUnitAbility(unit, matcher) {
+  return (unit?.abilities || []).find((ability) => matcher(ability))
+    || (unit?.wargear_abilities || []).find((ability) => matcher(ability))
+    || null
+}
+
+function buildTooltip(...sections) {
+  return sections
+    .map((section) => String(section || '').trim())
+    .filter(Boolean)
+    .join('\n\n')
+}
+
+function formatDetachmentTooltip(detachment) {
+  if (!detachment) {
+    return 'No detachment selected.'
+  }
+
+  const restrictionText = String(detachment.restrictions || '').trim()
+  return buildTooltip(
+    detachment.rule?.name ? `${detachment.rule.name}: ${detachment.rule.rules_text || ''}` : '',
+    restrictionText ? `Restrictions: ${restrictionText}` : '',
+  ) || detachment.name
+}
+
+function formatEnhancementTooltip(enhancement) {
+  if (!enhancement) {
+    return 'No enhancement selected.'
+  }
+
+  const restrictionText = Array.isArray(enhancement.restrictions)
+    ? enhancement.restrictions.join(' ')
+    : String(enhancement.restrictions || '')
+
+  return buildTooltip(
+    enhancement.rules_text,
+    restrictionText ? `Restrictions: ${restrictionText}` : '',
+  ) || enhancement.name
+}
+
+function formatStratagemTooltip(stratagem) {
+  if (!stratagem) {
+    return ''
+  }
+
+  return buildTooltip(
+    stratagem.type ? `${stratagem.type} Stratagem` : '',
+    stratagem.timing ? `When: ${stratagem.timing}` : '',
+    stratagem.target ? `Target: ${stratagem.target}` : '',
+    stratagem.effect ? `Effect: ${stratagem.effect}` : '',
+  ) || stratagem.name
+}
+
+function parsePlusValue(value) {
+  const match = String(value || '').match(/(\d+)/)
+  return match ? Number(match[1]) : 0
+}
+
+function weaponHasRawKeyword(weapon, keyword) {
+  return (weapon?.raw_keywords || []).some(
+    (rawKeyword) => String(rawKeyword).toLowerCase() === keyword.toLowerCase(),
+  )
+}
+
+function getWeaponKeywordValue(weapon, keywordPrefix) {
+  const matchingKeyword = (weapon?.raw_keywords || []).find((rawKeyword) => (
+    new RegExp(`^${keywordPrefix}\\s+(\\d+)`, 'i').test(String(rawKeyword))
+  ))
+  if (!matchingKeyword) {
+    return 0
+  }
+  const match = String(matchingKeyword).match(/(\d+)/)
+  return match ? Number(match[1]) : 0
+}
+
+function defenderGetsCoverBenefit({
+  selectedWeapon,
+  defenderUnitDetails,
+  targetHasCover,
+  indirectTargetVisible,
+  attackerFireDisciplineActive,
+}) {
+  if (!selectedWeapon || selectedWeapon.range === 'Melee') {
+    return false
+  }
+
+  const hasIndirectNoVisibility = weaponHasRawKeyword(selectedWeapon, 'Indirect Fire') && !indirectTargetVisible
+  const hasCoverSource = targetHasCover || hasIndirectNoVisibility
+  if (!hasCoverSource) {
+    return false
+  }
+
+  const ignoresCover = weaponHasRawKeyword(selectedWeapon, 'Ignores Cover') || attackerFireDisciplineActive
+  if (ignoresCover) {
+    return false
+  }
+
+  const armorSave = parsePlusValue(defenderUnitDetails?.stats?.save)
+  const effectiveAp = Number(selectedWeapon?.ap || 0)
+  return !(effectiveAp === 0 && armorSave > 0 && armorSave <= 3)
+}
+
+function average(values) {
+  if (!values.length) {
+    return 0
+  }
+  return values.reduce((total, value) => total + value, 0) / values.length
+}
+
+function formatAverage(value) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2)
+}
+
+function formatPercent(value, total) {
+  if (!total) {
+    return '0%'
+  }
+  return `${((value / total) * 100).toFixed(1)}%`
+}
+
+function sumBy(items, selector) {
+  return items.reduce((total, item) => total + selector(item), 0)
+}
+
+function buildRunSummary(runs) {
+  const totalRuns = runs.length
+  const targets = runs.map((run) => run.result.target)
+  const combatStats = runs.map((run) => run.result.stats || {})
+  const attachedCharacters = runs
+    .map((run) => run.result.attached_character)
+    .filter(Boolean)
+  const hazardousBearers = runs
+    .map((run) => run.result.hazardous_bearer)
+    .filter(Boolean)
+
+  return {
+    totalRuns,
+    targetDestroyedCount: targets.filter((item) => item.destroyed).length,
+    averageTargetModelsRemaining: average(targets.map((item) => item.models_remaining)),
+    averageTargetCurrentWounds: average(targets.map((item) => item.current_model_wounds)),
+    attachedCharacterRuns: attachedCharacters.length,
+    attachedCharacterDestroyedCount: attachedCharacters.filter((item) => item.destroyed).length,
+    averageAttachedCharacterWounds: average(attachedCharacters.map((item) => item.current_model_wounds)),
+    hazardousBearerRuns: hazardousBearers.length,
+    hazardousBearerDestroyedCount: hazardousBearers.filter((item) => item.destroyed).length,
+    averageHazardousBearerWounds: average(hazardousBearers.map((item) => item.current_model_wounds)),
+    combat: {
+      attackInstances: sumBy(combatStats, (stat) => stat.attack_instances || 0),
+      hitRolls: sumBy(combatStats, (stat) => stat.hit_rolls || 0),
+      autoHitAttacks: sumBy(combatStats, (stat) => stat.auto_hit_attacks || 0),
+      successfulHitAttacks: sumBy(combatStats, (stat) => stat.successful_hit_attacks || 0),
+      failedHitAttacks: sumBy(combatStats, (stat) => stat.failed_hit_attacks || 0),
+      criticalHitAttacks: sumBy(combatStats, (stat) => stat.critical_hit_attacks || 0),
+      extraHitsGenerated: sumBy(combatStats, (stat) => stat.extra_hits_generated || 0),
+      hitRerollsUsed: sumBy(combatStats, (stat) => stat.hit_rerolls_used || 0),
+      hitRerollSuccesses: sumBy(combatStats, (stat) => stat.hit_reroll_successes || 0),
+      woundRolls: sumBy(combatStats, (stat) => stat.wound_rolls || 0),
+      autoWounds: sumBy(combatStats, (stat) => stat.auto_wounds || 0),
+      successfulWoundRolls: sumBy(combatStats, (stat) => stat.successful_wound_rolls || 0),
+      failedWoundRolls: sumBy(combatStats, (stat) => stat.failed_wound_rolls || 0),
+      criticalWounds: sumBy(combatStats, (stat) => stat.critical_wounds || 0),
+      woundRerollsUsed: sumBy(combatStats, (stat) => stat.wound_rerolls_used || 0),
+      woundRerollSuccesses: sumBy(combatStats, (stat) => stat.wound_reroll_successes || 0),
+      saveAttempts: sumBy(combatStats, (stat) => stat.save_attempts || 0),
+      savesPassed: sumBy(combatStats, (stat) => stat.saves_passed || 0),
+      savesFailed: sumBy(combatStats, (stat) => stat.saves_failed || 0),
+      unsavableWounds: sumBy(combatStats, (stat) => stat.unsavable_wounds || 0),
+    },
+  }
+}
+
 function getRelevantUnitRules(unit, role, hasHazardousWeapon) {
   const relevantEffectTypes = role === 'attacker'
     ? new Set(['outgoing_wound_modifier', ...(hasHazardousWeapon ? ['feel_no_pain'] : [])])
@@ -229,6 +402,7 @@ function getRelevantUnitRules(unit, role, hasHazardousWeapon) {
 
 function buildAttackerActiveRules({
   attackerUnitDetails,
+  selectedWeapon,
   oathOfMomentActive,
   attackerDetachment,
   attackerFireDisciplineActive,
@@ -237,6 +411,11 @@ function buildAttackerActiveRules({
   attackerWeaponsOfTheFirstLegionActive,
   attackerPennantOfRemembranceActive,
   attackerBelowStartingStrength,
+  inHalfRange,
+  remainedStationary,
+  chargedThisTurn,
+  indirectTargetVisible,
+  attackerInEngagementRange,
   hasHazardous,
 }) {
   const rules = [
@@ -309,15 +488,74 @@ function buildAttackerActiveRules({
     }
   }
 
+  if (selectedWeapon && inHalfRange) {
+    const rapidFireValue = getWeaponKeywordValue(selectedWeapon, 'Rapid Fire')
+    if (rapidFireValue > 0) {
+      rules.push({
+        name: `Rapid Fire ${rapidFireValue}`,
+        source: 'Weapon Rule',
+        text: `This weapon is in half range, so it gains ${rapidFireValue} additional attack${rapidFireValue === 1 ? '' : 's'}.`,
+      })
+    }
+
+    const meltaValue = getWeaponKeywordValue(selectedWeapon, 'Melta')
+    if (meltaValue > 0) {
+      rules.push({
+        name: `Melta ${meltaValue}`,
+        source: 'Weapon Rule',
+        text: `This weapon is in half range, so each unsaved attack gets +${meltaValue} damage.`,
+      })
+    }
+  }
+
+  if (selectedWeapon && remainedStationary) {
+    const hasHeavyRule = weaponHasRawKeyword(selectedWeapon, 'Heavy') || attackerFireDisciplineActive
+    if (hasHeavyRule && selectedWeapon.range !== 'Melee') {
+      rules.push({
+        name: 'Heavy',
+        source: 'Weapon Rule',
+        text: 'This unit remained Stationary, so this attack gets +1 to the Hit roll.',
+      })
+    }
+  }
+
+  if (selectedWeapon && chargedThisTurn && weaponHasRawKeyword(selectedWeapon, 'Lance')) {
+    rules.push({
+      name: 'Lance',
+      source: 'Weapon Rule',
+      text: 'This unit charged this turn, so this attack gets +1 to the Wound roll.',
+    })
+  }
+
+  if (selectedWeapon && attackerInEngagementRange && weaponHasRawKeyword(selectedWeapon, 'Pistol')) {
+    rules.push({
+      name: 'Pistol',
+      source: 'Weapon Rule',
+      text: 'This unit is in Engagement Range, but this ranged attack is still legal because the selected weapon is a Pistol.',
+    })
+  }
+
+  if (selectedWeapon && weaponHasRawKeyword(selectedWeapon, 'Indirect Fire') && !indirectTargetVisible) {
+    rules.push({
+      name: 'Indirect Fire',
+      source: 'Weapon Rule',
+      text: 'This attack is being made without visibility, so it takes -1 to Hit and unmodified hit rolls of 1-3 fail.',
+    })
+  }
+
   return rules
 }
 
 function buildDefenderActiveRules({
   defenderUnitDetails,
+  selectedWeapon,
   defenderDetachment,
   defenderArmourOfContemptActive,
   defenderUnbreakableLinesActive,
   defenderPennantOfRemembranceActive,
+  targetHasCover,
+  indirectTargetVisible,
+  attackerFireDisciplineActive,
 }) {
   const rules = [
     ...getRelevantUnitRules(defenderUnitDetails, 'defender', false),
@@ -354,6 +592,20 @@ function buildDefenderActiveRules({
         text: enhancement.rules_text,
       })
     }
+  }
+
+  if (defenderGetsCoverBenefit({
+    selectedWeapon,
+    defenderUnitDetails,
+    targetHasCover,
+    indirectTargetVisible,
+    attackerFireDisciplineActive,
+  })) {
+    rules.push({
+      name: 'Cover',
+      source: 'Terrain Rule',
+      text: 'This target gets +1 to its armor save against this ranged attack.',
+    })
   }
 
   return rules
@@ -432,7 +684,8 @@ function App() {
   const [defenderFactionDetails, setDefenderFactionDetails] = useState(null)
   const [attackerUnitDetails, setAttackerUnitDetails] = useState(null)
   const [defenderUnitDetails, setDefenderUnitDetails] = useState(null)
-  const [result, setResult] = useState(null)
+  const [simulationRuns, setSimulationRuns] = useState([])
+  const [activeRunView, setActiveRunView] = useState('summary')
   const [loading, setLoading] = useState(true)
   const [simulating, setSimulating] = useState(false)
   const [error, setError] = useState('')
@@ -447,6 +700,7 @@ function App() {
   const [defenderDetachmentName, setDefenderDetachmentName] = useState('')
   const [attackerEnhancementName, setAttackerEnhancementName] = useState('')
   const [defenderEnhancementName, setDefenderEnhancementName] = useState('')
+  const [runCount, setRunCount] = useState('1')
 
   const [targetHasCover, setTargetHasCover] = useState(initialOptions.target_has_cover)
   const [attackerInEngagementRange, setAttackerInEngagementRange] = useState(initialOptions.attacker_in_engagement_range)
@@ -721,6 +975,10 @@ function App() {
   const canUsePrecision = weaponKeywords.includes('Precision')
   const canUseLance = weaponKeywords.includes('Lance')
   const canUseCover = isRangedWeapon
+  const canUseHalfRange = isRangedWeapon && (
+    getWeaponKeywordValue(selectedWeapon, 'Rapid Fire') > 0
+    || getWeaponKeywordValue(selectedWeapon, 'Melta') > 0
+  )
   const hasOathOfMoment = unitHasOathOfMoment(attackerUnitDetails)
   const attackerEnhancementOptions = useMemo(
     () => getAttackerEnhancementOptions(selectedAttackerDetachment, selectedWeapon, hasHazardous),
@@ -743,9 +1001,94 @@ function App() {
   const canUseAttackerUnforgivenFury = attackerStratagemOptions.some((item) => item.name === 'Unforgiven Fury')
   const canUseDefenderArmourOfContempt = defenderStratagemOptions.some((item) => item.name === 'Armour of Contempt')
   const canUseDefenderUnbreakableLines = defenderStratagemOptions.some((item) => item.name === 'Unbreakable Lines')
+  const selectedAttackerEnhancement = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'enhancements', attackerEnhancementName),
+    [selectedAttackerDetachment, attackerEnhancementName],
+  )
+  const selectedDefenderEnhancement = useMemo(
+    () => getDetachmentEntry(selectedDefenderDetachment, 'enhancements', defenderEnhancementName),
+    [selectedDefenderDetachment, defenderEnhancementName],
+  )
+  const fireDisciplineEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Fire Discipline'),
+    [selectedAttackerDetachment],
+  )
+  const unforgivenFuryEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Unforgiven Fury'),
+    [selectedAttackerDetachment],
+  )
+  const armourOfContemptEntry = useMemo(
+    () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Armour of Contempt'),
+    [selectedDefenderDetachment],
+  )
+  const unbreakableLinesEntry = useMemo(
+    () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Unbreakable Lines'),
+    [selectedDefenderDetachment],
+  )
+  const oathAbility = useMemo(
+    () => getUnitAbility(attackerUnitDetails, (ability) => {
+      const name = String(ability.name || '').toLowerCase()
+      const rulesText = String(ability.rules_text || '').toLowerCase()
+      return name.includes('oath of moment') || rulesText.includes('oath of moment')
+    }),
+    [attackerUnitDetails],
+  )
+  const rapidFireValue = getWeaponKeywordValue(selectedWeapon, 'Rapid Fire')
+  const meltaValue = getWeaponKeywordValue(selectedWeapon, 'Melta')
+  const attackerDetachmentTooltip = formatDetachmentTooltip(selectedAttackerDetachment)
+  const defenderDetachmentTooltip = formatDetachmentTooltip(selectedDefenderDetachment)
+  const attackerEnhancementTooltip = formatEnhancementTooltip(selectedAttackerEnhancement)
+  const defenderEnhancementTooltip = formatEnhancementTooltip(selectedDefenderEnhancement)
+  const fireDisciplineTooltip = formatStratagemTooltip(fireDisciplineEntry)
+  const unforgivenFuryTooltip = formatStratagemTooltip(unforgivenFuryEntry)
+  const armourOfContemptTooltip = formatStratagemTooltip(armourOfContemptEntry)
+  const unbreakableLinesTooltip = formatStratagemTooltip(unbreakableLinesEntry)
+  const oathTooltip = buildTooltip(
+    OATH_OF_MOMENT_RULE_TEXT,
+    unitGetsOathWoundBonus(attackerUnitDetails)
+      ? OATH_OF_MOMENT_CODEX_RIDER_TEXT
+      : '',
+    oathAbility?.rules_text && oathAbility.rules_text !== 'Oath of Moment'
+      ? `Datasheet entry: ${oathAbility.rules_text}`
+      : '',
+  )
+  const halfRangeTooltip = buildTooltip(
+    rapidFireValue > 0
+      ? `Rapid Fire ${rapidFireValue}: if the target is in half range, this weapon gains ${rapidFireValue} additional attack${rapidFireValue === 1 ? '' : 's'}.`
+      : '',
+    meltaValue > 0
+      ? `Melta ${meltaValue}: if the target is in half range, each unsaved attack gets +${meltaValue} damage.`
+      : '',
+  )
+  const coverTooltip = 'Benefit of Cover improves the armor save by 1 against ranged attacks. It does not improve invulnerable saves and does not help a 3+ or better save against AP 0.'
+  const engagementTooltip = weaponHasRawKeyword(selectedWeapon, 'Pistol')
+    ? 'Pistol: this ranged attack can still be made while the attacker is in Engagement Range, but it must target an enemy unit within Engagement Range.'
+    : 'Non-Pistol ranged weapons are usually not allowed while the attacker is in Engagement Range unless the attacker is a Monster or Vehicle.'
+  const heavyTooltip = 'Heavy: if the unit remained Stationary, add 1 to the Hit roll for this attack.'
+  const blastTooltip = 'Blast: this weapon cannot target a unit that is within Engagement Range of allied units.'
+  const indirectTooltip = 'Indirect Fire: if no defender models are visible, the attack takes -1 to Hit, hit rolls of 1-3 always fail, and the defender gets the benefit of cover.'
+  const lanceTooltip = 'Lance: if the bearer made a charge move this turn, add 1 to the Wound roll for this attack.'
+  const attackerArmyBattleshockTooltip = 'Unforgiven Fury: if one or more Adeptus Astartes units from your army are Battle-shocked, successful unmodified Hit rolls of 5+ score a Critical Hit until the end of the phase.'
+  const attackerBelowStartingStrengthTooltip = attackerEnhancementTooltip
+  const attackerBattleshockedTooltip = buildTooltip(
+    attackerEnhancementName === 'Weapons of the First Legion'
+      ? 'Weapons of the First Legion improves further while the bearer is Battle-shocked.'
+      : '',
+    attackerEnhancementName === 'Pennant of Remembrance'
+      ? 'Pennant of Remembrance improves Feel No Pain while the bearer is Battle-shocked.'
+      : '',
+    attackerEnhancementName === 'Stubborn Tenacity'
+      ? 'Stubborn Tenacity can add an additional +1 to Wound while the bearer is Battle-shocked and below Starting Strength.'
+      : '',
+  )
+  const defenderBattleshockedTooltip = defenderEnhancementTooltip
+  const attachedCharacterTooltip = 'Precision: successful wounds from this attack can be allocated to the attached Character first.'
+  const hazardousOverwatchTooltip = 'If this Hazardous weapon was used for Fire Overwatch in the opponent charge phase, the self-inflicted mortal wounds are allocated after the charging unit ends its charge move.'
+  const hazardousBearerTooltip = 'Set the current wounds on the Hazardous bearer so self-damage is allocated against the correct model state.'
   const attackerActiveRules = useMemo(
     () => buildAttackerActiveRules({
       attackerUnitDetails,
+      selectedWeapon,
       oathOfMomentActive,
       attackerDetachment: selectedAttackerDetachment,
       attackerFireDisciplineActive,
@@ -754,10 +1097,16 @@ function App() {
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
       attackerBelowStartingStrength,
+      inHalfRange,
+      remainedStationary,
+      chargedThisTurn,
+      indirectTargetVisible,
+      attackerInEngagementRange,
       hasHazardous,
     }),
     [
       attackerUnitDetails,
+      selectedWeapon,
       oathOfMomentActive,
       selectedAttackerDetachment,
       attackerFireDisciplineActive,
@@ -766,25 +1115,45 @@ function App() {
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
       attackerBelowStartingStrength,
+      inHalfRange,
+      remainedStationary,
+      chargedThisTurn,
+      indirectTargetVisible,
+      attackerInEngagementRange,
       hasHazardous,
     ],
   )
   const defenderActiveRules = useMemo(
     () => buildDefenderActiveRules({
       defenderUnitDetails,
+      selectedWeapon,
       defenderDetachment: selectedDefenderDetachment,
       defenderArmourOfContemptActive,
       defenderUnbreakableLinesActive,
       defenderPennantOfRemembranceActive,
+      targetHasCover,
+      indirectTargetVisible,
+      attackerFireDisciplineActive,
     }),
     [
       defenderUnitDetails,
+      selectedWeapon,
       selectedDefenderDetachment,
       defenderArmourOfContemptActive,
       defenderUnbreakableLinesActive,
       defenderPennantOfRemembranceActive,
+      targetHasCover,
+      indirectTargetVisible,
+      attackerFireDisciplineActive,
     ],
   )
+  const summaryStats = useMemo(() => buildRunSummary(simulationRuns), [simulationRuns])
+  const activeRun = useMemo(() => {
+    if (activeRunView === 'summary') {
+      return null
+    }
+    return simulationRuns.find((run) => run.runIndex === activeRunView) || null
+  }, [activeRunView, simulationRuns])
 
   const readyToSimulate = attackerFaction && attackerUnit && weaponName && defenderFaction && defenderUnit
 
@@ -793,6 +1162,12 @@ function App() {
       setTargetHasCover(false)
     }
   }, [canUseCover, targetHasCover])
+
+  useEffect(() => {
+    if (!canUseHalfRange && inHalfRange) {
+      setInHalfRange(false)
+    }
+  }, [canUseHalfRange, inHalfRange])
 
   useEffect(() => {
     if (!hasOathOfMoment && oathOfMomentActive) {
@@ -867,6 +1242,19 @@ function App() {
     }
   }, [defenderEnhancementName, defenderBattleshocked])
 
+  useEffect(() => {
+    setSimulationRuns([])
+    setActiveRunView('summary')
+  }, [
+    attackerFaction,
+    attackerUnit,
+    weaponName,
+    defenderFaction,
+    defenderUnit,
+    attackerDetachmentName,
+    defenderDetachmentName,
+  ])
+
   async function handleSimulate(event) {
     event.preventDefault()
     if (!readyToSimulate) {
@@ -876,6 +1264,7 @@ function App() {
     try {
       setSimulating(true)
       setError('')
+      setSimulationRuns([])
       const payload = buildSimulationPayload({
         attackerFaction,
         attackerUnit,
@@ -906,11 +1295,23 @@ function App() {
         defenderPennantOfRemembranceActive,
         defenderBattleshocked,
       })
-      const data = await simulateCombat(payload)
-      setResult(data)
+      const runsToExecute = Math.max(1, Number(runCount) || 1)
+      const seedBase = Date.now()
+      const responses = await Promise.all(
+        Array.from({ length: runsToExecute }, (_, index) => simulateCombat({
+          ...payload,
+          seed: seedBase + index,
+        })),
+      )
+      const runs = responses.map((data, index) => ({
+        ...data,
+        runIndex: index + 1,
+      }))
+      setSimulationRuns(runs)
+      setActiveRunView('summary')
     } catch (requestError) {
       setError(formatError(requestError))
-      setResult(null)
+      setSimulationRuns([])
     } finally {
       setSimulating(false)
     }
@@ -942,6 +1343,7 @@ function App() {
     setDefenderBattleshocked(initialOptions.defender_battleshocked)
     setAttackerEnhancementName('')
     setDefenderEnhancementName('')
+    setRunCount('1')
   }
 
   return (
@@ -1023,30 +1425,40 @@ function App() {
 
             {(attackerFactionDetails?.detachments?.length || defenderFactionDetails?.detachments?.length) ? (
               <div className="cluster two-up">
-                <label>
+                <label title={attackerDetachmentTooltip}>
                   <span>Attacker Detachment</span>
                   <select
+                    title={attackerDetachmentTooltip}
                     value={attackerDetachmentName}
                     onChange={(event) => setAttackerDetachmentName(event.target.value)}
                   >
                     <option value="">No detachment</option>
                     {(attackerFactionDetails?.detachments || []).map((detachment) => (
-                      <option key={detachment.name} value={detachment.name}>
+                      <option
+                        key={detachment.name}
+                        value={detachment.name}
+                        title={formatDetachmentTooltip(detachment)}
+                      >
                         {detachment.name}
                       </option>
                     ))}
                   </select>
                 </label>
 
-                <label>
+                <label title={defenderDetachmentTooltip}>
                   <span>Defender Detachment</span>
                   <select
+                    title={defenderDetachmentTooltip}
                     value={defenderDetachmentName}
                     onChange={(event) => setDefenderDetachmentName(event.target.value)}
                   >
                     <option value="">No detachment</option>
                     {(defenderFactionDetails?.detachments || []).map((detachment) => (
-                      <option key={detachment.name} value={detachment.name}>
+                      <option
+                        key={detachment.name}
+                        value={detachment.name}
+                        title={formatDetachmentTooltip(detachment)}
+                      >
                         {detachment.name}
                       </option>
                     ))}
@@ -1066,6 +1478,17 @@ function App() {
               </select>
             </label>
 
+            <label>
+              <span>Number of Runs</span>
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={runCount}
+                onChange={(event) => setRunCount(event.target.value)}
+              />
+            </label>
+
             {selectedWeapon ? (
               <div className="weapon-card">
                 <div>
@@ -1080,15 +1503,20 @@ function App() {
 
             <div className="rule-grid">
               {attackerEnhancementOptions.length ? (
-                <label>
+                <label title={attackerEnhancementTooltip}>
                   <span>Attacker Enhancement</span>
                   <select
+                    title={attackerEnhancementTooltip}
                     value={attackerEnhancementName}
                     onChange={(event) => setAttackerEnhancementName(event.target.value)}
                   >
                     <option value="">No enhancement</option>
                     {attackerEnhancementOptions.map((enhancement) => (
-                      <option key={enhancement.name} value={enhancement.name}>
+                      <option
+                        key={enhancement.name}
+                        value={enhancement.name}
+                        title={formatEnhancementTooltip(enhancement)}
+                      >
                         {enhancement.name}
                       </option>
                     ))}
@@ -1097,15 +1525,20 @@ function App() {
               ) : null}
 
               {defenderEnhancementOptions.length ? (
-                <label>
+                <label title={defenderEnhancementTooltip}>
                   <span>Defender Enhancement</span>
                   <select
+                    title={defenderEnhancementTooltip}
                     value={defenderEnhancementName}
                     onChange={(event) => setDefenderEnhancementName(event.target.value)}
                   >
                     <option value="">No enhancement</option>
                     {defenderEnhancementOptions.map((enhancement) => (
-                      <option key={enhancement.name} value={enhancement.name}>
+                      <option
+                        key={enhancement.name}
+                        value={enhancement.name}
+                        title={formatEnhancementTooltip(enhancement)}
+                      >
                         {enhancement.name}
                       </option>
                     ))}
@@ -1114,7 +1547,7 @@ function App() {
               ) : null}
 
               {canUseAttackerFireDiscipline ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={fireDisciplineTooltip}>
                   <input
                     type="checkbox"
                     checked={attackerFireDisciplineActive}
@@ -1125,7 +1558,7 @@ function App() {
               ) : null}
 
               {canUseAttackerUnforgivenFury ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={unforgivenFuryTooltip}>
                   <input
                     type="checkbox"
                     checked={attackerUnforgivenFuryActive}
@@ -1136,7 +1569,7 @@ function App() {
               ) : null}
 
               {attackerUnforgivenFuryActive ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={attackerArmyBattleshockTooltip}>
                   <input
                     type="checkbox"
                     checked={attackerUnforgivenFuryArmyBattleshocked}
@@ -1147,7 +1580,7 @@ function App() {
               ) : null}
 
               {canUseDefenderArmourOfContempt ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={armourOfContemptTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderArmourOfContemptActive}
@@ -1158,7 +1591,7 @@ function App() {
               ) : null}
 
               {canUseDefenderUnbreakableLines ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={unbreakableLinesTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderUnbreakableLinesActive}
@@ -1169,7 +1602,7 @@ function App() {
               ) : null}
 
               {canUseCover ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={coverTooltip}>
                   <input
                     type="checkbox"
                     checked={targetHasCover}
@@ -1180,7 +1613,7 @@ function App() {
               ) : null}
 
               {hasOathOfMoment ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={oathTooltip}>
                   <input
                     type="checkbox"
                     checked={oathOfMomentActive}
@@ -1190,8 +1623,8 @@ function App() {
                 </label>
               ) : null}
 
-              {isRangedWeapon ? (
-                <label className="checkbox-row">
+              {canUseHalfRange ? (
+                <label className="checkbox-row" title={halfRangeTooltip}>
                   <input
                     type="checkbox"
                     checked={inHalfRange}
@@ -1202,7 +1635,7 @@ function App() {
               ) : null}
 
               {isRangedWeapon ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={engagementTooltip}>
                   <input
                     type="checkbox"
                     checked={attackerInEngagementRange}
@@ -1213,7 +1646,7 @@ function App() {
               ) : null}
 
               {hasHeavy ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={heavyTooltip}>
                   <input
                     type="checkbox"
                     checked={remainedStationary}
@@ -1224,7 +1657,7 @@ function App() {
               ) : null}
 
               {hasBlast ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={blastTooltip}>
                   <input
                     type="checkbox"
                     checked={targetInEngagementRangeOfAllies}
@@ -1235,7 +1668,7 @@ function App() {
               ) : null}
 
               {hasIndirectFire ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={indirectTooltip}>
                   <input
                     type="checkbox"
                     checked={indirectTargetVisible}
@@ -1246,7 +1679,7 @@ function App() {
               ) : null}
 
               {canUseLance && isMeleeWeapon ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={lanceTooltip}>
                   <input
                     type="checkbox"
                     checked={chargedThisTurn}
@@ -1257,7 +1690,7 @@ function App() {
               ) : null}
 
               {attackerEnhancementName === 'Stubborn Tenacity' ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={attackerBelowStartingStrengthTooltip}>
                   <input
                     type="checkbox"
                     checked={attackerBelowStartingStrength}
@@ -1270,7 +1703,7 @@ function App() {
               {(attackerEnhancementName === 'Stubborn Tenacity'
                 || attackerEnhancementName === 'Weapons of the First Legion'
                 || attackerEnhancementName === 'Pennant of Remembrance') ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={attackerBattleshockedTooltip}>
                   <input
                     type="checkbox"
                     checked={attackerBattleshocked}
@@ -1281,7 +1714,7 @@ function App() {
               ) : null}
 
               {defenderEnhancementName === 'Pennant of Remembrance' ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={defenderBattleshockedTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderBattleshocked}
@@ -1292,9 +1725,10 @@ function App() {
               ) : null}
 
               {canUsePrecision ? (
-                <label>
+                <label title={attachedCharacterTooltip}>
                   <span>Attached Character</span>
                   <select
+                    title={attachedCharacterTooltip}
                     value={attachedCharacterName}
                     onChange={(event) => setAttachedCharacterName(event.target.value)}
                   >
@@ -1309,7 +1743,7 @@ function App() {
               ) : null}
 
               {hasHazardous ? (
-                <label className="checkbox-row">
+                <label className="checkbox-row" title={hazardousOverwatchTooltip}>
                   <input
                     type="checkbox"
                     checked={hazardousOverwatchChargePhase}
@@ -1320,9 +1754,10 @@ function App() {
               ) : null}
 
               {hasHazardous ? (
-                <label>
+                <label title={hazardousBearerTooltip}>
                   <span>Hazardous Bearer Current Wounds</span>
                   <input
+                    title={hazardousBearerTooltip}
                     type="number"
                     min="0"
                     value={hazardousBearerCurrentWounds}
@@ -1333,7 +1768,7 @@ function App() {
             </div>
 
             <button type="submit" className="primary-button" disabled={!readyToSimulate || simulating}>
-              {simulating ? 'Resolving Combat...' : 'Simulate Attack'}
+              {simulating ? 'Running Simulations...' : 'Run Simulations'}
             </button>
           </form>
         </section>
@@ -1402,48 +1837,141 @@ function App() {
             </article>
           </div>
 
-          {result ? (
-            <div className="outcome-grid">
-              <article className="result-card accent">
-                <p className="kicker">Outcome</p>
-                <h3>{result.result.target.name}</h3>
-                <p>
-                  {result.result.target.destroyed
-                    ? 'Destroyed'
-                    : `${result.result.target.models_remaining} models remain`}
-                </p>
-                <p>Current model wounds: {result.result.target.current_model_wounds}</p>
-              </article>
+          {simulationRuns.length ? (
+            <>
+              <div className="run-tabs">
+                <button
+                  type="button"
+                  className={`run-tab ${activeRunView === 'summary' ? 'active' : ''}`}
+                  onClick={() => setActiveRunView('summary')}
+                >
+                  Summary
+                </button>
+                {simulationRuns.map((run) => (
+                  <button
+                    key={run.runIndex}
+                    type="button"
+                    className={`run-tab ${activeRunView === run.runIndex ? 'active' : ''}`}
+                    onClick={() => setActiveRunView(run.runIndex)}
+                  >
+                    Run {run.runIndex}
+                  </button>
+                ))}
+              </div>
 
-              {result.result.attached_character ? (
-                <article className="result-card">
-                  <p className="kicker">Attached Character</p>
-                  <h3>{result.result.attached_character.name}</h3>
-                  <p>
-                    {result.result.attached_character.destroyed
-                      ? 'Destroyed'
-                      : `${result.result.attached_character.models_remaining} model remains`}
-                  </p>
-                  <p>Current wounds: {result.result.attached_character.current_model_wounds}</p>
-                </article>
-              ) : null}
+              {activeRunView === 'summary' ? (
+                <div className="outcome-grid">
+                  <article className="result-card accent">
+                    <p className="kicker">Target Summary</p>
+                    <h3>{defenderUnit || 'Defender'}</h3>
+                    <p>{summaryStats.totalRuns} runs completed</p>
+                    <p>Destroyed: {summaryStats.targetDestroyedCount} ({formatPercent(summaryStats.targetDestroyedCount, summaryStats.totalRuns)})</p>
+                    <p>Avg models remaining: {formatAverage(summaryStats.averageTargetModelsRemaining)}</p>
+                    <p>Avg current model wounds: {formatAverage(summaryStats.averageTargetCurrentWounds)}</p>
+                  </article>
 
-              {result.result.hazardous_bearer ? (
-                <article className="result-card warning">
-                  <p className="kicker">Hazardous Bearer</p>
-                  <h3>{result.result.hazardous_bearer.name}</h3>
-                  <p>
-                    {result.result.hazardous_bearer.destroyed
-                      ? 'Destroyed'
-                      : `${result.result.hazardous_bearer.models_remaining} model remains`}
-                  </p>
-                  <p>Current wounds: {result.result.hazardous_bearer.current_model_wounds}</p>
-                </article>
+                  <article className="result-card">
+                    <p className="kicker">Hit Breakdown</p>
+                    <h3>Accuracy</h3>
+                    <p>Attack instances: {summaryStats.combat.attackInstances}</p>
+                    <p>Hits landed: {summaryStats.combat.successfulHitAttacks + summaryStats.combat.autoHitAttacks} ({formatPercent(summaryStats.combat.successfulHitAttacks + summaryStats.combat.autoHitAttacks, summaryStats.combat.attackInstances)})</p>
+                    <p>Auto-hits: {summaryStats.combat.autoHitAttacks}</p>
+                    <p>Critical hits: {summaryStats.combat.criticalHitAttacks} ({formatPercent(summaryStats.combat.criticalHitAttacks, summaryStats.combat.attackInstances)})</p>
+                    <p>Extra hits generated: {summaryStats.combat.extraHitsGenerated}</p>
+                  </article>
+
+                  <article className="result-card">
+                    <p className="kicker">Wound Breakdown</p>
+                    <h3>Conversion</h3>
+                    <p>Wound rolls made: {summaryStats.combat.woundRolls}</p>
+                    <p>Successful wound rolls: {summaryStats.combat.successfulWoundRolls} ({formatPercent(summaryStats.combat.successfulWoundRolls, summaryStats.combat.woundRolls)})</p>
+                    <p>Auto-wounds: {summaryStats.combat.autoWounds}</p>
+                    <p>Critical wounds: {summaryStats.combat.criticalWounds} ({formatPercent(summaryStats.combat.criticalWounds, summaryStats.combat.woundRolls + summaryStats.combat.autoWounds)})</p>
+                    <p>Total wounds created: {summaryStats.combat.successfulWoundRolls + summaryStats.combat.autoWounds}</p>
+                  </article>
+
+                  <article className="result-card">
+                    <p className="kicker">Save Breakdown</p>
+                    <h3>Defense</h3>
+                    <p>Save attempts: {summaryStats.combat.saveAttempts}</p>
+                    <p>Failed saves: {summaryStats.combat.savesFailed} ({formatPercent(summaryStats.combat.savesFailed, summaryStats.combat.saveAttempts)})</p>
+                    <p>Passed saves: {summaryStats.combat.savesPassed} ({formatPercent(summaryStats.combat.savesPassed, summaryStats.combat.saveAttempts)})</p>
+                    <p>Unsavable wounds: {summaryStats.combat.unsavableWounds}</p>
+                  </article>
+
+                  <article className="result-card">
+                    <p className="kicker">Re-roll Breakdown</p>
+                    <h3>Efficiency</h3>
+                    <p>Hit re-rolls used: {summaryStats.combat.hitRerollsUsed}</p>
+                    <p>Hit re-roll success: {summaryStats.combat.hitRerollSuccesses} ({formatPercent(summaryStats.combat.hitRerollSuccesses, summaryStats.combat.hitRerollsUsed)})</p>
+                    <p>Wound re-rolls used: {summaryStats.combat.woundRerollsUsed}</p>
+                    <p>Wound re-roll success: {summaryStats.combat.woundRerollSuccesses} ({formatPercent(summaryStats.combat.woundRerollSuccesses, summaryStats.combat.woundRerollsUsed)})</p>
+                  </article>
+
+                  {summaryStats.attachedCharacterRuns > 0 ? (
+                    <article className="result-card">
+                      <p className="kicker">Attached Character Summary</p>
+                      <h3>{attachedCharacterName || 'Attached Character'}</h3>
+                      <p>Tracked in {summaryStats.attachedCharacterRuns} runs</p>
+                      <p>Destroyed: {summaryStats.attachedCharacterDestroyedCount} ({formatPercent(summaryStats.attachedCharacterDestroyedCount, summaryStats.attachedCharacterRuns)})</p>
+                      <p>Avg current wounds: {formatAverage(summaryStats.averageAttachedCharacterWounds)}</p>
+                    </article>
+                  ) : null}
+
+                  {summaryStats.hazardousBearerRuns > 0 ? (
+                    <article className="result-card warning">
+                      <p className="kicker">Hazardous Summary</p>
+                      <h3>{attackerUnit || 'Hazardous Bearer'}</h3>
+                      <p>Triggered in {summaryStats.hazardousBearerRuns} runs</p>
+                      <p>Destroyed: {summaryStats.hazardousBearerDestroyedCount} ({formatPercent(summaryStats.hazardousBearerDestroyedCount, summaryStats.hazardousBearerRuns)})</p>
+                      <p>Avg current wounds: {formatAverage(summaryStats.averageHazardousBearerWounds)}</p>
+                    </article>
+                  ) : null}
+                </div>
+              ) : activeRun ? (
+                <div className="outcome-grid">
+                  <article className="result-card accent">
+                    <p className="kicker">Run {activeRun.runIndex}</p>
+                    <h3>{activeRun.result.target.name}</h3>
+                    <p>
+                      {activeRun.result.target.destroyed
+                        ? 'Destroyed'
+                        : `${activeRun.result.target.models_remaining} models remain`}
+                    </p>
+                    <p>Current model wounds: {activeRun.result.target.current_model_wounds}</p>
+                  </article>
+
+                  {activeRun.result.attached_character ? (
+                    <article className="result-card">
+                      <p className="kicker">Attached Character</p>
+                      <h3>{activeRun.result.attached_character.name}</h3>
+                      <p>
+                        {activeRun.result.attached_character.destroyed
+                          ? 'Destroyed'
+                          : `${activeRun.result.attached_character.models_remaining} model remains`}
+                      </p>
+                      <p>Current wounds: {activeRun.result.attached_character.current_model_wounds}</p>
+                    </article>
+                  ) : null}
+
+                  {activeRun.result.hazardous_bearer ? (
+                    <article className="result-card warning">
+                      <p className="kicker">Hazardous Bearer</p>
+                      <h3>{activeRun.result.hazardous_bearer.name}</h3>
+                      <p>
+                        {activeRun.result.hazardous_bearer.destroyed
+                          ? 'Destroyed'
+                          : `${activeRun.result.hazardous_bearer.models_remaining} model remains`}
+                      </p>
+                      <p>Current wounds: {activeRun.result.hazardous_bearer.current_model_wounds}</p>
+                    </article>
+                  ) : null}
+                </div>
               ) : null}
-            </div>
+            </>
           ) : (
             <div className="empty-state">
-              <p>Run a simulation to see combat results and the full rules trace.</p>
+              <p>Run one or more simulations to see summary statistics and individual combat logs.</p>
             </div>
           )}
         </section>
@@ -1453,19 +1981,39 @@ function App() {
         <div className="panel-heading">
           <div>
             <p className="kicker">Resolution</p>
-            <h2>Combat Log</h2>
+            <h2>{activeRunView === 'summary' ? 'Run Index' : `Combat Log: Run ${activeRunView}`}</h2>
           </div>
         </div>
 
-        {result?.result?.log?.length ? (
+        {simulationRuns.length && activeRunView === 'summary' ? (
+          <div className="summary-index">
+            <p className="summary-index-copy">
+              Use the tabs above to switch between the summary page and each individual run.
+            </p>
+            <div className="summary-index-grid">
+              {simulationRuns.map((run) => (
+                <button
+                  key={run.runIndex}
+                  type="button"
+                  className="summary-index-card"
+                  onClick={() => setActiveRunView(run.runIndex)}
+                >
+                  <strong>Run {run.runIndex}</strong>
+                  <span>{run.result.target.destroyed ? 'Target destroyed' : `${run.result.target.models_remaining} models remain`}</span>
+                  <span>Current wounds: {run.result.target.current_model_wounds}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : activeRun?.result?.log?.length ? (
           <ol className="combat-log">
-            {result.result.log.map((line, index) => (
+            {activeRun.result.log.map((line, index) => (
               <li key={`${index}-${line}`}>{line}</li>
             ))}
           </ol>
         ) : (
           <div className="empty-state compact">
-            <p>The combat log will appear here after a simulation.</p>
+            <p>The run index and combat logs will appear here after a simulation.</p>
           </div>
         )}
       </section>
