@@ -21,8 +21,30 @@ export async function fetchUnits(factionName) {
 }
 
 export async function fetchUnitDetails(factionName, unitName) {
+  return fetchUnitDetailsWithLoadout(factionName, unitName, {}, null)
+}
+
+export async function fetchUnitDetailsWithLoadout(
+  factionName,
+  unitName,
+  loadoutSelections = {},
+  modelCount = null,
+  modelCounts = {},
+) {
+  const params = {}
+  if (Object.keys(loadoutSelections).length) {
+    params.loadout = JSON.stringify(loadoutSelections)
+  }
+  if (modelCount !== null && modelCount !== undefined && modelCount !== '') {
+    params.model_count = Number(modelCount)
+  }
+  if (modelCounts && Object.keys(modelCounts).length) {
+    params.model_counts = JSON.stringify(modelCounts)
+  }
+
   const response = await api.get(
     `/factions/${encodeURIComponent(factionName)}/units/${encodeURIComponent(unitName)}`,
+    { params: Object.keys(params).length ? params : undefined },
   )
   return response.data
 }
