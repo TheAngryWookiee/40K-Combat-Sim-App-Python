@@ -1,0 +1,10 @@
+{
+  "name": "40k-combat-sim",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm --workspace frontend run build"
+  }
+}
