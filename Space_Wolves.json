@@ -1644,7 +1644,7 @@
     {
       "name": "Grey Hunters",
       "unit_composition": {
-        "min_models": 10,
+        "min_models": 5,
         "max_models": 10
       },
       "models": [
@@ -1663,7 +1663,7 @@
         {
           "name": "Grey Hunter",
           "count": {
-            "min": 9,
+            "min": 4,
             "max": 9
           },
           "default_wargear": [

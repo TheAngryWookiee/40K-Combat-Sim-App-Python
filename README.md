@@ -1,5 +1,22 @@
 # 40K Combat Sim
 
+## Start Both Servers
+
+From the repo root:
+
+```powershell
+npm run dev
+```
+
+This starts:
+
+- API: `http://127.0.0.1:8000`
+- Frontend: `http://127.0.0.1:5173`
+
+The frontend opens automatically in your default browser once Vite is ready.
+
+Press `Ctrl+C` in that terminal to stop both.
+
 ## Backend
 
 Install dependencies:
@@ -10,10 +27,10 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Run the API:
+Run only the API:
 
 ```powershell
-uvicorn api:app --reload
+npm run dev:backend
 ```
 
 API endpoints:
@@ -62,5 +79,5 @@ Suggested frontend shape:
 Typical dev flow:
 
 1. Start `uvicorn api:app --reload`
-2. Start `npm run dev` inside `frontend`
+2. Start `npm run dev:frontend` from the repo root
 3. Call the backend from React at `http://localhost:8000`
