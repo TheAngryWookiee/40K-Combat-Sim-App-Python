@@ -3145,6 +3145,8 @@ class CombatSimulator:
         attacks_remaining = self.roll_value(weapon["attacks"]) * weapon_bearer_count
         if weapon["range"].lower() == "melee":
             attacks_remaining += attack_context.get("melee_attack_bonus", 0) * weapon_bearer_count
+        else:
+            attacks_remaining += attack_context.get("ranged_attack_bonus", 0) * weapon_bearer_count
         rapid_fire_bonus = (
             self.get_rapid_fire_bonus(weapon, attack_context.get("in_half_range", False))
             * weapon_bearer_count
@@ -3175,8 +3177,11 @@ class CombatSimulator:
                 self.log(f"Active melee strength bonus: +{melee_strength_bonus}")
             if melee_damage_bonus > 0:
                 self.log(f"Active melee damage bonus: +{melee_damage_bonus}")
-        elif attack_context.get("ranged_damage_bonus", 0) > 0:
-            self.log(f"Active ranged damage bonus: +{attack_context['ranged_damage_bonus']}")
+        else:
+            if attack_context.get("ranged_attack_bonus", 0) > 0:
+                self.log(f"Active ranged attack bonus: +{attack_context['ranged_attack_bonus']}")
+            if attack_context.get("ranged_damage_bonus", 0) > 0:
+                self.log(f"Active ranged damage bonus: +{attack_context['ranged_damage_bonus']}")
         if rapid_fire_bonus > 0:
             self.log(f"Rapid Fire adds {rapid_fire_bonus} attacks at this range")
         if blast_bonus > 0:
@@ -3610,6 +3615,18 @@ class CombatSimulator:
         melee_strength_bonus = 0
         melee_damage_bonus = 0
         ranged_damage_bonus = 0
+        ranged_attack_bonus = 0
+        attacker_active_ability_names = {
+            str(name).lower()
+            for name in options.get("attacker_active_ability_names", [])
+        }
+        weapon_base_name = self.normalize_wargear_name(weapon["name"]).split(" - ", 1)[-1]
+        if (
+            "hail of bullets" in attacker_active_ability_names
+            and weapon["range"].lower() != "melee"
+            and weapon_base_name == "bolt rifle"
+        ):
+            ranged_attack_bonus += 2
         if bool(options.get("attacker_weapons_of_the_first_legion_active", False)):
             weapons_of_the_first_legion_bonus = 2 if bool(options.get("attacker_battleshocked", False)) else 1
             melee_attack_bonus += weapons_of_the_first_legion_bonus
@@ -3837,6 +3854,7 @@ class CombatSimulator:
             "melee_attack_bonus": melee_attack_bonus,
             "melee_strength_bonus": melee_strength_bonus,
             "melee_damage_bonus": melee_damage_bonus,
+            "ranged_attack_bonus": ranged_attack_bonus,
             "ranged_damage_bonus": ranged_damage_bonus,
             "target_incoming_wound_modifier": target_incoming_wound_modifier,
             "target_ap_modifier": target_ap_modifier,

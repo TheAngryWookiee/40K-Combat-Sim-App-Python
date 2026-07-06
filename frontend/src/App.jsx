@@ -878,6 +878,28 @@ function unitIsEpicHero(unit) {
   return (unit?.keywords || []).some((keyword) => String(keyword).toLowerCase() === 'epic hero')
 }
 
+function getEpicHeroNamesFromUnit(unit) {
+  if (!unit) {
+    return []
+  }
+
+  const names = []
+  const addEpicHero = (unitDetails) => {
+    if (unitDetails && unitIsEpicHero(unitDetails)) {
+      names.push(getDisplayModelName(unitDetails.bodyguard_name || unitDetails.name))
+    }
+  }
+
+  const hasAttachedModels = Boolean(unit.attached_leader || unit.attached_support)
+  if (!hasAttachedModels) {
+    addEpicHero(unit)
+  }
+  addEpicHero(unit.attached_leader)
+  addEpicHero(unit.attached_support)
+
+  return Array.from(new Set(names.filter(Boolean)))
+}
+
 function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attackerUnit, selectedWeapon, hasHazardous) {
   if (!detachment || !enhancementBearerUnit || unitIsEpicHero(enhancementBearerUnit)) {
     return []
@@ -1185,6 +1207,7 @@ function buildSimulationPayload(state) {
     attacker_boast_achieved: state.attackerBoastAchieved,
     attacker_hordeslayer_outnumbered: state.attackerHordeslayerOutnumbered,
     attacker_heroes_all_reroll_type: state.attackerHeroesAllRerollType || null,
+    attacker_active_ability_names: state.attackerActiveAbilityNames || [],
     attacker_unbridled_ferocity_active: state.attackerUnbridledFerocityActive,
     attacker_waaagh_active: state.attackerWaaaghActive,
     defender_waaagh_active: state.defenderWaaaghActive,
@@ -1487,6 +1510,15 @@ function resolveCombatWeaponSelection({
     .filter((selectedWeapon) => selectedWeapon && getWeaponSelectionOwnerKey(selectedWeapon) === ownerKey)
   const sourceUnit = ownerKey === 'leader' ? attachedLeaderUnitDetails : unitDetails
   const sourceModelCount = Math.max(1, Number(sourceUnit?.model_count ?? 1) || 1)
+  if (weapon.range !== 'Melee') {
+    return [
+      ...withoutSameProfileGroup.filter((name) => {
+        const selectedWeapon = weaponByName.get(name)
+        return getWeaponSelectionOwnerKey(selectedWeapon) !== ownerKey || selectedWeapon.range !== 'Melee'
+      }),
+      weapon.name,
+    ]
+  }
   const canSplitMeleeProfiles = (
     weapon.range === 'Melee'
     && sourceModelCount > 1
@@ -1511,12 +1543,9 @@ function getWeaponProfileGroupName(weapon) {
   return name.split(/\s+-\s+/)[0].trim().toLowerCase() || name.toLowerCase()
 }
 
-function resolveBattlefieldWeaponSelection(currentWeaponNames, weapon, checked, weaponOptions, limitToSingleWeapon) {
+function resolveBattlefieldWeaponSelection(currentWeaponNames, weapon, checked, weaponOptions) {
   if (!checked) {
     return currentWeaponNames.filter((name) => name !== weapon.name)
-  }
-  if (limitToSingleWeapon) {
-    return [weapon.name]
   }
 
   const selectedGroupName = getWeaponProfileGroupName(weapon)
@@ -3342,6 +3371,46 @@ function getRelevantUnitRules(unit, role, hasHazardousWeapon) {
     }))
 }
 
+function getCombatTriggerAbilities(unit, phaseId, selectedWeapons = []) {
+  if (!unit || !['shooting', 'fight'].includes(phaseId)) {
+    return []
+  }
+
+  const selectedWeaponNames = selectedWeapons.map((weapon) => String(weapon.name || '').toLowerCase())
+  const collections = [
+    ...(unit.abilities || []).map((ability) => ({ ability, fallback: 'Datasheet Ability' })),
+    ...(unit.wargear_abilities || []).map((ability) => ({ ability, fallback: 'Wargear Ability' })),
+    ...(unit.selectable_abilities || []).map((ability) => ({ ability, fallback: 'Selectable Ability' })),
+  ]
+
+  return collections
+    .filter(({ ability }) => {
+      const name = String(ability.name || '').toLowerCase()
+      const rulesText = String(ability.rules_text || '').toLowerCase()
+      const text = `${name} ${rulesText}`
+      if (phaseId === 'shooting') {
+        return (
+          text.includes('selected to shoot')
+          || text.includes('when this unit shoots')
+          || text.includes('in your shooting phase')
+          || text.includes('ranged weapons equipped')
+          || (name === 'hail of bullets' && selectedWeaponNames.some((weaponName) => weaponName.includes('bolt rifle')))
+        )
+      }
+      return (
+        text.includes('selected to fight')
+        || text.includes('when this unit fights')
+        || text.includes('in the fight phase')
+        || text.includes('melee weapons equipped')
+      )
+    })
+    .map(({ ability, fallback }) => ({
+      name: ability.name,
+      source: getAbilitySourceLabel(ability, fallback),
+      text: ability.rules_text,
+    }))
+}
+
 function buildAttackerActiveRules({
   attackerUnitDetails,
   attackerPackageIsCharacterUnit,
@@ -3366,6 +3435,7 @@ function buildAttackerActiveRules({
   attackerWeaponsOfTheFirstLegionActive,
   attackerPennantOfRemembranceActive,
   attackerBelowStartingStrength,
+  attackerActiveAbilityNames,
   inHalfRange,
   remainedStationary,
   chargedThisTurn,
@@ -3378,6 +3448,16 @@ function buildAttackerActiveRules({
   const rules = [
     ...getRelevantUnitRules(attackerUnitDetails, 'attacker', hasHazardous),
   ]
+  const activeAbilityNameSet = new Set((attackerActiveAbilityNames || []).map((name) => String(name).toLowerCase()))
+  getCombatTriggerAbilities(
+    attackerUnitDetails,
+    selectedAttackWeapons.some((weapon) => weapon.range !== 'Melee') ? 'shooting' : 'fight',
+    selectedAttackWeapons,
+  ).forEach((ability) => {
+    if (activeAbilityNameSet.has(String(ability.name || '').toLowerCase())) {
+      rules.push(ability)
+    }
+  })
   const defenderKeywordSet = new Set((defenderUnitDetails?.keywords || []).map((keyword) => String(keyword).toLowerCase()))
   const packsQuarryActive = attackerDetachment?.name === SAGA_OF_THE_HUNTER
     && selectedWeapon?.range === 'Melee'
@@ -3819,9 +3899,11 @@ function buildDefenderActiveRules({
   return rules
 }
 
-function renderStatsGrid(stats, battleShocked = false) {
-  return statDisplayRows.map((row, index) => (
-    <div key={index} className="stat-row">
+function renderStatsGrid(stats, battleShocked = false, variant = 'default') {
+  const rows = variant === 'compact' ? [statDisplayRows.flat()] : statDisplayRows
+
+  return rows.map((row, index) => (
+    <div key={index} className={`stat-row ${variant === 'compact' ? 'compact' : ''}`}>
       {row.map(([key, label, formatValue]) => {
         const value = battleShocked && key === 'objective_control' ? '-' : stats?.[key]
         if (value === undefined || value === null || value === '') {
@@ -3932,7 +4014,7 @@ function buildUnitModelStatProfiles(unitDetails) {
   return profiles.length > 1 ? profiles : []
 }
 
-function renderUnitModelStatProfiles(unitDetails, battleShocked = false) {
+function renderUnitModelStatProfiles(unitDetails, battleShocked = false, variant = 'default') {
   const profiles = buildUnitModelStatProfiles(unitDetails)
   if (!profiles.length) {
     return null
@@ -3951,7 +4033,7 @@ function renderUnitModelStatProfiles(unitDetails, battleShocked = false) {
             </span>
           </div>
           <div className="model-profile-stats">
-            {renderStatsGrid(profile.stats, battleShocked)}
+            {renderStatsGrid(profile.stats, battleShocked, variant)}
           </div>
         </article>
       ))}
@@ -3959,25 +4041,28 @@ function renderUnitModelStatProfiles(unitDetails, battleShocked = false) {
   )
 }
 
-function renderWeaponStatsGrid(weapon) {
+function renderWeaponStatsGrid(weapon, variant = 'default') {
   if (!weapon) {
     return null
   }
 
-  const topRow = [
-    ['Range', formatRangeValue(weapon.range)],
-    ['A', String(weapon.attacks)],
-    [weapon.skill_type || 'BS', weapon.skill_display],
+  const statRows = [
+    [
+      [variant === 'compact' ? 'R' : 'Range', formatRangeValue(weapon.range)],
+      ['A', String(weapon.attacks)],
+      [weapon.skill_type || 'BS', weapon.skill_display],
+    ],
+    [
+      ['S', String(weapon.strength)],
+      ['AP', weapon.ap_display],
+      ['D', weapon.damage_display],
+    ],
   ]
 
-  const bottomRow = [
-    ['S', String(weapon.strength)],
-    ['AP', weapon.ap_display],
-    ['D', weapon.damage_display],
-  ]
+  const rows = variant === 'compact' ? [statRows.flat()] : statRows
 
-  return [topRow, bottomRow].map((row, index) => (
-    <div key={index} className="stat-row">
+  return rows.map((row, index) => (
+    <div key={index} className={`stat-row ${variant === 'compact' ? 'compact weapon' : ''}`}>
       {row.map(([label, value]) => (
         <div key={label} className="stat-chip">
           <span className="stat-label">{label}</span>
@@ -3986,6 +4071,26 @@ function renderWeaponStatsGrid(weapon) {
       ))}
     </div>
   ))
+}
+
+function renderSelectedWeaponProfileRows(weapons) {
+  const selectedWeapons = (weapons || []).filter(Boolean)
+  if (!selectedWeapons.length) {
+    return null
+  }
+
+  return (
+    <div className="selected-weapon-profile-list">
+      {selectedWeapons.map((weapon) => (
+        <article key={`${weapon.name}-${weapon.range}-${weapon.attacks}`} className="selected-weapon-profile-card">
+          <div className="selected-weapon-profile-header">
+            <h4>{formatWeaponName(weapon)}</h4>
+          </div>
+          {renderWeaponStatsGrid(weapon, 'compact')}
+        </article>
+      ))}
+    </div>
+  )
 }
 
 function App() {
@@ -4043,12 +4148,26 @@ function App() {
   const [battlefieldUsedStratagems, setBattlefieldUsedStratagems] = useState([])
   const [selectedBattlefieldTool, setSelectedBattlefieldTool] = useState('stratagems')
   const [battlefieldExtraUnits, setBattlefieldExtraUnits] = useState([])
+  const [battlefieldAddAttackerFaction, setBattlefieldAddAttackerFaction] = useState('')
+  const [battlefieldAddAttackerUnits, setBattlefieldAddAttackerUnits] = useState([])
+  const [battlefieldAddAttackerFactionDetails, setBattlefieldAddAttackerFactionDetails] = useState(null)
+  const [battlefieldAddAttackerUnitName, setBattlefieldAddAttackerUnitName] = useState('')
+  const [battlefieldAddAttackerUnitDetails, setBattlefieldAddAttackerUnitDetails] = useState(null)
+  const [battlefieldAddAttackerDetachmentName, setBattlefieldAddAttackerDetachmentName] = useState('')
+  const [battlefieldAddAttackerModelCount, setBattlefieldAddAttackerModelCount] = useState('')
+  const [battlefieldAddAttackerModelCounts, setBattlefieldAddAttackerModelCounts] = useState({})
+  const [battlefieldAddDefenderFaction, setBattlefieldAddDefenderFaction] = useState('')
+  const [battlefieldAddDefenderUnits, setBattlefieldAddDefenderUnits] = useState([])
+  const [battlefieldAddDefenderFactionDetails, setBattlefieldAddDefenderFactionDetails] = useState(null)
+  const [battlefieldAddDefenderUnitName, setBattlefieldAddDefenderUnitName] = useState('')
+  const [battlefieldAddDefenderUnitDetails, setBattlefieldAddDefenderUnitDetails] = useState(null)
+  const [battlefieldAddDefenderDetachmentName, setBattlefieldAddDefenderDetachmentName] = useState('')
+  const [battlefieldAddDefenderModelCount, setBattlefieldAddDefenderModelCount] = useState('')
+  const [battlefieldAddDefenderModelCounts, setBattlefieldAddDefenderModelCounts] = useState({})
   const [battlefieldBaseUnitDeployment, setBattlefieldBaseUnitDeployment] = useState({
     attacker: false,
     defender: false,
   })
-  const [battlefieldAddAttackerUnitName, setBattlefieldAddAttackerUnitName] = useState('')
-  const [battlefieldAddDefenderUnitName, setBattlefieldAddDefenderUnitName] = useState('')
   const [battlefieldAddAttackerArmyListEntryId, setBattlefieldAddAttackerArmyListEntryId] = useState('')
   const [battlefieldAddDefenderArmyListEntryId, setBattlefieldAddDefenderArmyListEntryId] = useState('')
   const [battlefieldPositions, setBattlefieldPositions] = useState({
@@ -4175,6 +4294,8 @@ function App() {
   const [attackerInEngagementRange, setAttackerInEngagementRange] = useState(initialOptions.attacker_in_engagement_range)
   const [targetInEngagementRangeOfAllies, setTargetInEngagementRangeOfAllies] = useState(initialOptions.target_in_engagement_range_of_allies)
   const [inHalfRange, setInHalfRange] = useState(initialOptions.in_half_range)
+  const [attackerActiveAbilityNames, setAttackerActiveAbilityNames] = useState([])
+  const [battlefieldActiveAbilityNames, setBattlefieldActiveAbilityNames] = useState([])
   const [oathOfMomentActive, setOathOfMomentActive] = useState(initialOptions.oath_of_moment_active)
   const [chargedThisTurn, setChargedThisTurn] = useState(initialOptions.charged_this_turn)
   const [remainedStationary, setRemainedStationary] = useState(initialOptions.remained_stationary)
@@ -4242,6 +4363,8 @@ function App() {
           setAttackerFaction(items[0].name)
           setDefenderFaction(items[0].name)
           setArmyListFaction(items[0].name)
+          setBattlefieldAddAttackerFaction(items[0].name)
+          setBattlefieldAddDefenderFaction(items[0].name)
         }
       } catch (requestError) {
         setError(formatError(requestError))
@@ -4354,11 +4477,6 @@ function App() {
             ? currentUnit
             : items[0]?.name || ''
         ))
-        setBattlefieldAddAttackerUnitName((currentUnit) => (
-          items.some((unit) => unit.name === currentUnit)
-            ? currentUnit
-            : items[0]?.name || ''
-        ))
         setError('')
       } catch (requestError) {
         if (active) {
@@ -4373,6 +4491,154 @@ function App() {
       active = false
     }
   }, [attackerFaction])
+
+  useEffect(() => {
+    if (!battlefieldAddAttackerFaction) {
+      setBattlefieldAddAttackerUnits([])
+      setBattlefieldAddAttackerUnitName('')
+      setBattlefieldAddAttackerUnitDetails(null)
+      return
+    }
+
+    let active = true
+    setBattlefieldAddAttackerUnitDetails(null)
+
+    async function loadBattlefieldAttackerUnits() {
+      try {
+        const data = await fetchUnits(battlefieldAddAttackerFaction)
+        if (!active) {
+          return
+        }
+        const items = data.items || []
+        setBattlefieldAddAttackerUnits(items)
+        setBattlefieldAddAttackerUnitName((currentUnit) => (
+          items.some((unit) => unit.name === currentUnit)
+            ? currentUnit
+            : items[0]?.name || ''
+        ))
+        setError('')
+      } catch (requestError) {
+        if (active) {
+          setError(formatError(requestError))
+        }
+      }
+    }
+
+    loadBattlefieldAttackerUnits()
+
+    return () => {
+      active = false
+    }
+  }, [battlefieldAddAttackerFaction])
+
+  useEffect(() => {
+    if (!battlefieldAddAttackerFaction) {
+      setBattlefieldAddAttackerFactionDetails(null)
+      return
+    }
+
+    let active = true
+
+    async function loadBattlefieldAttackerFactionDetails() {
+      try {
+        const data = await fetchFactionDetails(battlefieldAddAttackerFaction)
+        if (!active) {
+          return
+        }
+        setBattlefieldAddAttackerFactionDetails(data)
+        setBattlefieldAddAttackerDetachmentName((currentDetachment) => (
+          data.detachments?.some((detachment) => detachment.name === currentDetachment)
+            ? currentDetachment
+            : data.detachments?.[0]?.name || ''
+        ))
+        setError('')
+      } catch (requestError) {
+        if (active) {
+          setError(formatError(requestError))
+        }
+      }
+    }
+
+    loadBattlefieldAttackerFactionDetails()
+
+    return () => {
+      active = false
+    }
+  }, [battlefieldAddAttackerFaction])
+
+  useEffect(() => {
+    setBattlefieldAddAttackerModelCount('')
+    setBattlefieldAddAttackerModelCounts({})
+    setBattlefieldAddAttackerUnitDetails(null)
+  }, [battlefieldAddAttackerFaction, battlefieldAddAttackerUnitName])
+
+  useEffect(() => {
+    if (
+      !battlefieldAddAttackerFaction
+      || !battlefieldAddAttackerUnitName
+      || !battlefieldAddAttackerUnits.some((unit) => unit.name === battlefieldAddAttackerUnitName)
+    ) {
+      return
+    }
+
+    let active = true
+
+    async function loadBattlefieldAttackerUnitDetails() {
+      try {
+        const data = await fetchUnitDetailsWithLoadout(
+          battlefieldAddAttackerFaction,
+          battlefieldAddAttackerUnitName,
+          {},
+          battlefieldAddAttackerModelCount,
+          battlefieldAddAttackerModelCounts,
+        )
+        if (!active) {
+          return
+        }
+        setBattlefieldAddAttackerUnitDetails(data)
+        setBattlefieldAddAttackerModelCount((currentModelCount) => {
+          if (unitUsesModelBreakdownSelectors(data)) {
+            return String(data.model_count ?? data.unit_composition?.min_models ?? 1)
+          }
+          const currentValue = currentModelCount === '' ? null : Number(currentModelCount)
+          const minimumModels = Number(data.unit_composition?.min_models ?? data.model_count ?? 1)
+          const maximumModels = Number(data.unit_composition?.max_models ?? minimumModels)
+          if (
+            currentValue === null
+            || Number.isNaN(currentValue)
+            || currentValue < minimumModels
+            || currentValue > maximumModels
+          ) {
+            return String(data.model_count ?? minimumModels)
+          }
+          return currentModelCount
+        })
+        setBattlefieldAddAttackerModelCounts((currentModelCounts) => {
+          const nextModelCounts = unitUsesModelBreakdownSelectors(data) ? (data.model_counts_by_name || {}) : {}
+          return areModelCountSelectionsEqual(currentModelCounts, nextModelCounts)
+            ? currentModelCounts
+            : nextModelCounts
+        })
+        setError('')
+      } catch (requestError) {
+        if (active) {
+          setError(formatError(requestError))
+        }
+      }
+    }
+
+    loadBattlefieldAttackerUnitDetails()
+
+    return () => {
+      active = false
+    }
+  }, [
+    battlefieldAddAttackerFaction,
+    battlefieldAddAttackerModelCount,
+    battlefieldAddAttackerModelCounts,
+    battlefieldAddAttackerUnitName,
+    battlefieldAddAttackerUnits,
+  ])
 
   useEffect(() => {
     if (!armyListFaction) {
@@ -4416,17 +4682,17 @@ function App() {
     if (sideEntries.length) {
       return sideEntries
     }
-    const matchingEntries = armyListEntries.filter((entry) => !attackerFaction || entry.faction === attackerFaction)
+    const matchingEntries = armyListEntries.filter((entry) => !battlefieldAddAttackerFaction || entry.faction === battlefieldAddAttackerFaction)
     return matchingEntries.length ? matchingEntries : armyListEntries
-  }, [armyListEntries, attackerFaction])
+  }, [armyListEntries, battlefieldAddAttackerFaction])
   const defenderArmyListDeploymentEntries = useMemo(() => {
     const sideEntries = armyListEntries.filter((entry) => entry.battlefieldRosterSide === 'defender')
     if (sideEntries.length) {
       return sideEntries
     }
-    const matchingEntries = armyListEntries.filter((entry) => !defenderFaction || entry.faction === defenderFaction)
+    const matchingEntries = armyListEntries.filter((entry) => !battlefieldAddDefenderFaction || entry.faction === battlefieldAddDefenderFaction)
     return matchingEntries.length ? matchingEntries : armyListEntries
-  }, [armyListEntries, defenderFaction])
+  }, [armyListEntries, battlefieldAddDefenderFaction])
 
   useEffect(() => {
     setBattlefieldAddAttackerArmyListEntryId((currentEntryId) => (
@@ -4497,11 +4763,6 @@ function App() {
             ? currentUnit
             : items[0]?.name || ''
         ))
-        setBattlefieldAddDefenderUnitName((currentUnit) => (
-          items.some((unit) => unit.name === currentUnit)
-            ? currentUnit
-            : items[0]?.name || ''
-        ))
         setError('')
       } catch (requestError) {
         if (active) {
@@ -4516,6 +4777,154 @@ function App() {
       active = false
     }
   }, [defenderFaction])
+
+  useEffect(() => {
+    if (!battlefieldAddDefenderFaction) {
+      setBattlefieldAddDefenderUnits([])
+      setBattlefieldAddDefenderUnitName('')
+      setBattlefieldAddDefenderUnitDetails(null)
+      return
+    }
+
+    let active = true
+    setBattlefieldAddDefenderUnitDetails(null)
+
+    async function loadBattlefieldDefenderUnits() {
+      try {
+        const data = await fetchUnits(battlefieldAddDefenderFaction)
+        if (!active) {
+          return
+        }
+        const items = data.items || []
+        setBattlefieldAddDefenderUnits(items)
+        setBattlefieldAddDefenderUnitName((currentUnit) => (
+          items.some((unit) => unit.name === currentUnit)
+            ? currentUnit
+            : items[0]?.name || ''
+        ))
+        setError('')
+      } catch (requestError) {
+        if (active) {
+          setError(formatError(requestError))
+        }
+      }
+    }
+
+    loadBattlefieldDefenderUnits()
+
+    return () => {
+      active = false
+    }
+  }, [battlefieldAddDefenderFaction])
+
+  useEffect(() => {
+    if (!battlefieldAddDefenderFaction) {
+      setBattlefieldAddDefenderFactionDetails(null)
+      return
+    }
+
+    let active = true
+
+    async function loadBattlefieldDefenderFactionDetails() {
+      try {
+        const data = await fetchFactionDetails(battlefieldAddDefenderFaction)
+        if (!active) {
+          return
+        }
+        setBattlefieldAddDefenderFactionDetails(data)
+        setBattlefieldAddDefenderDetachmentName((currentDetachment) => (
+          data.detachments?.some((detachment) => detachment.name === currentDetachment)
+            ? currentDetachment
+            : data.detachments?.[0]?.name || ''
+        ))
+        setError('')
+      } catch (requestError) {
+        if (active) {
+          setError(formatError(requestError))
+        }
+      }
+    }
+
+    loadBattlefieldDefenderFactionDetails()
+
+    return () => {
+      active = false
+    }
+  }, [battlefieldAddDefenderFaction])
+
+  useEffect(() => {
+    setBattlefieldAddDefenderModelCount('')
+    setBattlefieldAddDefenderModelCounts({})
+    setBattlefieldAddDefenderUnitDetails(null)
+  }, [battlefieldAddDefenderFaction, battlefieldAddDefenderUnitName])
+
+  useEffect(() => {
+    if (
+      !battlefieldAddDefenderFaction
+      || !battlefieldAddDefenderUnitName
+      || !battlefieldAddDefenderUnits.some((unit) => unit.name === battlefieldAddDefenderUnitName)
+    ) {
+      return
+    }
+
+    let active = true
+
+    async function loadBattlefieldDefenderUnitDetails() {
+      try {
+        const data = await fetchUnitDetailsWithLoadout(
+          battlefieldAddDefenderFaction,
+          battlefieldAddDefenderUnitName,
+          {},
+          battlefieldAddDefenderModelCount,
+          battlefieldAddDefenderModelCounts,
+        )
+        if (!active) {
+          return
+        }
+        setBattlefieldAddDefenderUnitDetails(data)
+        setBattlefieldAddDefenderModelCount((currentModelCount) => {
+          if (unitUsesModelBreakdownSelectors(data)) {
+            return String(data.model_count ?? data.unit_composition?.min_models ?? 1)
+          }
+          const currentValue = currentModelCount === '' ? null : Number(currentModelCount)
+          const minimumModels = Number(data.unit_composition?.min_models ?? data.model_count ?? 1)
+          const maximumModels = Number(data.unit_composition?.max_models ?? minimumModels)
+          if (
+            currentValue === null
+            || Number.isNaN(currentValue)
+            || currentValue < minimumModels
+            || currentValue > maximumModels
+          ) {
+            return String(data.model_count ?? minimumModels)
+          }
+          return currentModelCount
+        })
+        setBattlefieldAddDefenderModelCounts((currentModelCounts) => {
+          const nextModelCounts = unitUsesModelBreakdownSelectors(data) ? (data.model_counts_by_name || {}) : {}
+          return areModelCountSelectionsEqual(currentModelCounts, nextModelCounts)
+            ? currentModelCounts
+            : nextModelCounts
+        })
+        setError('')
+      } catch (requestError) {
+        if (active) {
+          setError(formatError(requestError))
+        }
+      }
+    }
+
+    loadBattlefieldDefenderUnitDetails()
+
+    return () => {
+      active = false
+    }
+  }, [
+    battlefieldAddDefenderFaction,
+    battlefieldAddDefenderModelCount,
+    battlefieldAddDefenderModelCounts,
+    battlefieldAddDefenderUnitName,
+    battlefieldAddDefenderUnits,
+  ])
 
   useEffect(() => {
     if (!defenderFaction) {
@@ -4811,10 +5220,6 @@ function App() {
     () => selectedAttackEntries.map((entry) => entry.weapon),
     [selectedAttackEntries],
   )
-  const selectedAttackWeaponLabels = useMemo(
-    () => selectedAttackEntries.map((entry) => entry.label),
-    [selectedAttackEntries],
-  )
   const selectedWeapon = useMemo(
     () => buildWeaponSelectionProfile(
       selectedAttackWeapons,
@@ -4822,6 +5227,15 @@ function App() {
     ),
     [selectedAttackWeapons, selectedCombatWeaponOptions],
   )
+  const selectedCombatPhaseId = selectedAttackWeapons.some((weapon) => weapon.range !== 'Melee') ? 'shooting' : 'fight'
+  const attackerCombatTriggerAbilityOptions = useMemo(
+    () => getCombatTriggerAbilities(attackerUnitDetails, selectedCombatPhaseId, selectedAttackWeapons),
+    [attackerUnitDetails, selectedAttackWeapons, selectedCombatPhaseId],
+  )
+  useEffect(() => {
+    const availableAbilityNames = new Set(attackerCombatTriggerAbilityOptions.map((ability) => ability.name))
+    setAttackerActiveAbilityNames((currentNames) => currentNames.filter((name) => availableAbilityNames.has(name)))
+  }, [attackerCombatTriggerAbilityOptions])
   const attackerPackageIsCharacterUnit = unitHasKeyword(attackerUnitDetails, 'character') || unitHasKeyword(attackerAttachedLeaderUnitDetails, 'character')
   const attackerPackageModelCount = Number(attackerUnitDetails?.model_count ?? 0) + Number(attackerAttachedLeaderUnitDetails?.model_count ?? 0)
   const defenderPackageModelCount = Number(defenderUnitDetails?.model_count ?? 0) + Number(attachedCharacterUnitDetails?.model_count ?? 0)
@@ -5585,6 +5999,7 @@ function App() {
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
       attackerBelowStartingStrength,
+      attackerActiveAbilityNames,
       inHalfRange,
       remainedStationary,
       chargedThisTurn,
@@ -5618,6 +6033,7 @@ function App() {
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
       attackerBelowStartingStrength,
+      attackerActiveAbilityNames,
       inHalfRange,
       remainedStationary,
       chargedThisTurn,
@@ -6208,14 +6624,17 @@ function App() {
     () => selectedBattlefieldCombatant?.eligibleWeapons || [],
     [selectedBattlefieldCombatant],
   )
-  const battlefieldWeaponSelectionLimited = Boolean(
-    selectedBattlefieldCombatant
-      && !unitIsMonsterOrVehicle(selectedBattlefieldCombatant.attackerDetails)
-      && battlefieldCombatWeaponOptions.some((weapon) => weapon.range !== 'Melee'),
-  )
   const selectedBattlefieldCombatWeapons = useMemo(
     () => battlefieldCombatWeaponOptions.filter((weapon) => battlefieldCombatWeaponNames.includes(weapon.name)),
     [battlefieldCombatWeaponNames, battlefieldCombatWeaponOptions],
+  )
+  const battlefieldCombatTriggerAbilityOptions = useMemo(
+    () => getCombatTriggerAbilities(
+      selectedBattlefieldCombatant?.attackerDetails,
+      activeGamePhase?.id,
+      selectedBattlefieldCombatWeapons,
+    ),
+    [activeGamePhase?.id, selectedBattlefieldCombatWeapons, selectedBattlefieldCombatant],
   )
   const selectedBattlefieldCombatWeaponLabels = useMemo(
     () => selectedBattlefieldCombatWeapons.map((weapon) => formatWeaponName(weapon)),
@@ -6276,6 +6695,55 @@ function App() {
       .map((weapon) => formatWeaponName(weapon))
   }, [battlefieldClosestModelGapInches, battlefieldInEngagementRange, selectedBattlefieldWeaponRanges])
   const showBattlefieldRangeLine = !battlefieldInEngagementRange && inRangeWeaponNames.length > 0 && selectedBattlefieldUnit && selectedBattlefieldDisplayTarget
+  const battlefieldRangeLineEndpoints = useMemo(() => {
+    if (!selectedBattlefieldUnit) {
+      return []
+    }
+    const targetUnits = ['shooting', 'fight'].includes(activeGamePhase?.id)
+      ? battlefieldCombatOptions
+        .filter((option) => option.attackerId === selectedBattlefieldUnit.id)
+        .map((option) => battlefieldUnitMap[option.defenderId])
+        .filter(Boolean)
+      : [selectedBattlefieldDisplayTarget].filter(Boolean)
+
+    return targetUnits.flatMap((targetUnit) => {
+      const targetModels = battlefieldModelGroups[targetUnit.id] || []
+      let closestPair = null
+      for (const attackerModel of selectedBattlefieldModels) {
+        for (const targetModel of targetModels) {
+          const distance = getModelHorizontalGapInches(attackerModel, targetModel)
+          if (!closestPair || distance < closestPair.distance) {
+            closestPair = { attackerModel, targetModel, distance }
+          }
+        }
+      }
+      const fallbackAttacker = battlefieldPositions[selectedBattlefieldUnit.id] || selectedBattlefieldUnit
+      const fallbackTarget = battlefieldPositions[targetUnit.id] || targetUnit
+      const start = closestPair?.attackerModel
+        ? battlefieldInchesToPercent(closestPair.attackerModel)
+        : {
+          x: selectedBattlefieldModelPercent?.x ?? fallbackAttacker.x,
+          y: selectedBattlefieldModelPercent?.y ?? fallbackAttacker.y,
+        }
+      const end = closestPair?.targetModel
+        ? battlefieldInchesToPercent(closestPair.targetModel)
+        : {
+          x: fallbackTarget.x,
+          y: fallbackTarget.y,
+        }
+      return [{ id: targetUnit.id, start, end }]
+    })
+  }, [
+    activeGamePhase?.id,
+    battlefieldCombatOptions,
+    battlefieldModelGroups,
+    battlefieldPositions,
+    battlefieldUnitMap,
+    selectedBattlefieldDisplayTarget,
+    selectedBattlefieldModelPercent,
+    selectedBattlefieldModels,
+    selectedBattlefieldUnit,
+  ])
   const battlefieldCombatWeaponModelCounts = useMemo(() => (
     Object.fromEntries(battlefieldCombatWeaponOptions.map((weapon) => [
       weapon.name,
@@ -7029,32 +7497,34 @@ function App() {
     const validWeapons = battlefieldCombatWeaponNames
       .map((weaponName) => weaponByName.get(weaponName))
       .filter(Boolean)
-    const limitedValidWeaponNames = []
+    const validWeaponNames = []
     const selectedProfileGroups = new Set()
     for (const weapon of validWeapons) {
-      if (battlefieldWeaponSelectionLimited && limitedValidWeaponNames.length > 0) {
-        break
-      }
       const profileGroupName = getWeaponProfileGroupName(weapon)
       if (selectedProfileGroups.has(profileGroupName)) {
         continue
       }
       selectedProfileGroups.add(profileGroupName)
-      limitedValidWeaponNames.push(weapon.name)
+      validWeaponNames.push(weapon.name)
     }
     if (
-      limitedValidWeaponNames.length === battlefieldCombatWeaponNames.length
-      && limitedValidWeaponNames.length > 0
-      && limitedValidWeaponNames.every((weaponName, index) => weaponName === battlefieldCombatWeaponNames[index])
+      validWeaponNames.length === battlefieldCombatWeaponNames.length
+      && validWeaponNames.length > 0
+      && validWeaponNames.every((weaponName, index) => weaponName === battlefieldCombatWeaponNames[index])
     ) {
       return
     }
-    if (limitedValidWeaponNames.length > 0) {
-      setBattlefieldCombatWeaponNames(limitedValidWeaponNames)
+    if (validWeaponNames.length > 0) {
+      setBattlefieldCombatWeaponNames(validWeaponNames)
       return
     }
     setBattlefieldCombatWeaponNames([battlefieldCombatWeaponOptions[0].name])
-  }, [battlefieldCombatWeaponNames, battlefieldCombatWeaponOptions, battlefieldWeaponSelectionLimited])
+  }, [battlefieldCombatWeaponNames, battlefieldCombatWeaponOptions])
+
+  useEffect(() => {
+    const availableAbilityNames = new Set(battlefieldCombatTriggerAbilityOptions.map((ability) => ability.name))
+    setBattlefieldActiveAbilityNames((currentNames) => currentNames.filter((name) => availableAbilityNames.has(name)))
+  }, [battlefieldCombatTriggerAbilityOptions])
 
   useEffect(() => {
     battlefieldDragStateRef.current = {
@@ -7582,6 +8052,7 @@ function App() {
       attackerBoastAchieved,
       attackerHordeslayerOutnumbered,
       attackerHeroesAllRerollType,
+      attackerActiveAbilityNames,
       attackerUnbridledFerocityActive,
       defenderArmourOfContemptActive,
       defenderOverwhelmingOnslaughtActive,
@@ -7655,6 +8126,7 @@ function App() {
         target_engaged_monster_vehicle: Boolean(selectedBattlefieldCombatant.targetEngagedMonsterVehicle),
         in_half_range: battlefieldHalfRangeActive,
         attacker_eligible_model_count: selectedBattlefieldEligibleAttackerModelCount,
+        attacker_active_ability_names: battlefieldActiveAbilityNames,
         defender_current_model_count: selectedBattlefieldCombatTargetModels.length,
         plunging_fire_active: plungingFireActive,
       },
@@ -8290,10 +8762,10 @@ function App() {
     if (setFactionForSide && battlefieldRosterSide) {
       const listFaction = hydratedEntries.find((entry) => entry.faction)?.faction || ''
       if (battlefieldRosterSide === 'attacker' && listFaction) {
-        setAttackerFaction(listFaction)
+        setBattlefieldAddAttackerFaction(listFaction)
       }
       if (battlefieldRosterSide === 'defender' && listFaction) {
-        setDefenderFaction(listFaction)
+        setBattlefieldAddDefenderFaction(listFaction)
       }
     }
 
@@ -8648,18 +9120,42 @@ function App() {
     )
   }
 
+  function getDuplicateBattlefieldEpicHeroNames(unitDetails) {
+    const newEpicHeroNames = getEpicHeroNamesFromUnit(unitDetails)
+    if (!newEpicHeroNames.length) {
+      return []
+    }
+
+    const deployedEpicHeroNames = new Set(
+      battlefieldUnits.flatMap((unit) => getEpicHeroNamesFromUnit(unit.unitDetails)),
+    )
+    return newEpicHeroNames.filter((name) => deployedEpicHeroNames.has(name))
+  }
+
   async function addBattlefieldUnitInstance(sourceSide) {
-    const factionName = sourceSide === 'attacker' ? attackerFaction : defenderFaction
+    const factionName = sourceSide === 'attacker' ? battlefieldAddAttackerFaction : battlefieldAddDefenderFaction
     const unitName = sourceSide === 'attacker' ? battlefieldAddAttackerUnitName : battlefieldAddDefenderUnitName
+    const modelCount = sourceSide === 'attacker' ? battlefieldAddAttackerModelCount : battlefieldAddDefenderModelCount
+    const modelCounts = sourceSide === 'attacker' ? battlefieldAddAttackerModelCounts : battlefieldAddDefenderModelCounts
     if (!factionName || !unitName) {
       return
     }
-    let unitDetails = null
+    let unitDetails = sourceSide === 'attacker'
+      ? battlefieldAddAttackerUnitDetails
+      : battlefieldAddDefenderUnitDetails
     try {
-      unitDetails = await fetchUnitDetailsWithLoadout(factionName, unitName, {}, null, {})
+      if (!unitDetails) {
+        unitDetails = await fetchUnitDetailsWithLoadout(factionName, unitName, {}, modelCount, modelCounts)
+      }
       setError('')
     } catch (requestError) {
       setError(formatError(requestError))
+      return
+    }
+
+    const duplicateEpicHeroNames = getDuplicateBattlefieldEpicHeroNames(unitDetails)
+    if (duplicateEpicHeroNames.length) {
+      setError(`Cannot deploy more than one of the same Epic Hero: ${duplicateEpicHeroNames.join(', ')}.`)
       return
     }
 
@@ -8679,6 +9175,7 @@ function App() {
         role: sourceSide === 'attacker' ? 'Attacker' : 'Defender',
         unitName: unitDetails.name,
         unitDetails,
+        faction: factionName,
         x: position.x,
         y: position.y,
         instanceNumber,
@@ -8688,21 +9185,6 @@ function App() {
     setSelectedBattlefieldUnitId(id)
   }
 
-  function deployBaseBattlefieldUnit(sourceSide) {
-    const unitDetails = sourceSide === 'attacker' ? attackerUnitDetails : defenderUnitDetails
-    if (!unitDetails || battlefieldBaseUnitDeployment[sourceSide]) {
-      return
-    }
-    pushBattlefieldUndo(`Deploy ${sourceSide} unit`)
-    const position = findAvailableBattlefieldPosition(sourceSide, unitDetails)
-    setBattlefieldBaseUnitDeployment((current) => ({
-      ...current,
-      [sourceSide]: true,
-    }))
-    initializeBattlefieldUnitState(sourceSide, unitDetails, position)
-    setSelectedBattlefieldUnitId(sourceSide)
-  }
-
   function addBattlefieldArmyListEntryInstance(sourceSide) {
     const entryId = sourceSide === 'attacker'
       ? battlefieldAddAttackerArmyListEntryId
@@ -8710,6 +9192,12 @@ function App() {
     const armyListEntry = armyListEntries.find((entry) => entry.id === entryId)
     const unitDetails = getArmyListEntryBattlefieldDetails(armyListEntry)
     if (!armyListEntry || !unitDetails) {
+      return
+    }
+
+    const duplicateEpicHeroNames = getDuplicateBattlefieldEpicHeroNames(unitDetails)
+    if (duplicateEpicHeroNames.length) {
+      setError(`Cannot deploy more than one of the same Epic Hero: ${duplicateEpicHeroNames.join(', ')}.`)
       return
     }
 
@@ -9221,6 +9709,8 @@ function App() {
     setAttackerInEngagementRange(initialOptions.attacker_in_engagement_range)
     setTargetInEngagementRangeOfAllies(initialOptions.target_in_engagement_range_of_allies)
     setInHalfRange(initialOptions.in_half_range)
+    setAttackerActiveAbilityNames([])
+    setBattlefieldActiveAbilityNames([])
     setOathOfMomentActive(initialOptions.oath_of_moment_active)
     setChargedThisTurn(initialOptions.charged_this_turn)
     setRemainedStationary(initialOptions.remained_stationary)
@@ -9626,15 +10116,35 @@ function App() {
               <div className="weapon-card">
                 <div>
                   <p className="kicker">Selected Weapons</p>
-                  <h3>{formatWeaponName(selectedWeapon)}</h3>
                 </div>
-                {selectedAttackWeapons.length > 1 ? (
-                  <p>{selectedAttackWeaponLabels.join(', ')}</p>
-                ) : (
-                  <div className="datasheet-stats">
-                    {renderWeaponStatsGrid(selectedWeapon)}
-                  </div>
-                )}
+                {renderSelectedWeaponProfileRows(selectedAttackWeapons)}
+              </div>
+            ) : null}
+
+            {attackerCombatTriggerAbilityOptions.length ? (
+              <div className="weapon-selection-panel">
+                <div className="weapon-selection-header">
+                  <span>Combat Triggers</span>
+                  <span>{attackerActiveAbilityNames.length} active</span>
+                </div>
+                <div className="weapon-selection-grid">
+                  {attackerCombatTriggerAbilityOptions.map((ability) => (
+                    <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
+                      <input
+                        type="checkbox"
+                        checked={attackerActiveAbilityNames.includes(ability.name)}
+                        onChange={(event) => {
+                          setAttackerActiveAbilityNames((currentNames) => (
+                            event.target.checked
+                              ? Array.from(new Set([...currentNames, ability.name]))
+                              : currentNames.filter((name) => name !== ability.name)
+                          ))
+                        }}
+                      />
+                      <span>{ability.name}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             ) : null}
 
@@ -10431,8 +10941,8 @@ function App() {
                 Add To Army List
               </button>
               <div className="datasheet-stats">
-                {renderStatsGrid(attackerUnitDetails?.stats, attackerBattleshocked)}
-                {renderUnitModelStatProfiles(attackerUnitDetails, attackerBattleshocked)}
+                {renderStatsGrid(attackerUnitDetails?.stats, attackerBattleshocked, 'compact')}
+                {renderUnitModelStatProfiles(attackerUnitDetails, attackerBattleshocked, 'compact')}
               </div>
               <div className="active-rules">
                 <p className="kicker">Active Rules</p>
@@ -10467,8 +10977,8 @@ function App() {
                 Add To Army List
               </button>
               <div className="datasheet-stats">
-                {renderStatsGrid(defenderUnitDetails?.stats, defenderBattleshocked)}
-                {renderUnitModelStatProfiles(defenderUnitDetails, defenderBattleshocked)}
+                {renderStatsGrid(defenderUnitDetails?.stats, defenderBattleshocked, 'compact')}
+                {renderUnitModelStatProfiles(defenderUnitDetails, defenderBattleshocked, 'compact')}
               </div>
               <div className="active-rules">
                 <p className="kicker">Active Rules</p>
@@ -11111,48 +11621,65 @@ function App() {
                 <div className="battlefield-squad-controls cluster two-up">
                   {renderModelCountSelector(
                     'Attacker',
-                    attackerUnitDetails,
-                    attackerModelCount,
-                    setAttackerModelCount,
-                    attackerModelCounts,
-                    setAttackerModelCounts,
+                    battlefieldAddAttackerUnitDetails,
+                    battlefieldAddAttackerModelCount,
+                    setBattlefieldAddAttackerModelCount,
+                    battlefieldAddAttackerModelCounts,
+                    setBattlefieldAddAttackerModelCounts,
                   )}
                   {renderModelCountSelector(
                     'Defender',
-                    defenderUnitDetails,
-                    defenderModelCount,
-                    setDefenderModelCount,
-                    defenderModelCounts,
-                    setDefenderModelCounts,
+                    battlefieldAddDefenderUnitDetails,
+                    battlefieldAddDefenderModelCount,
+                    setBattlefieldAddDefenderModelCount,
+                    battlefieldAddDefenderModelCounts,
+                    setBattlefieldAddDefenderModelCounts,
                   )}
                 </div>
                 <div className="battlefield-instance-controls">
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    onClick={() => deployBaseBattlefieldUnit('attacker')}
-                    disabled={!attackerUnitDetails || battlefieldBaseUnitDeployment.attacker}
-                  >
-                    Deploy Base Attacker
-                  </button>
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    onClick={() => deployBaseBattlefieldUnit('defender')}
-                    disabled={!defenderUnitDetails || battlefieldBaseUnitDeployment.defender}
-                  >
-                    Deploy Base Defender
-                  </button>
-                  <label>
-                    <span>Add Attacker Unit</span>
+                  <label className="battlefield-side-field">
+                    <span>Attacker Faction</span>
+                    <select
+                      value={battlefieldAddAttackerFaction}
+                      onChange={(event) => setBattlefieldAddAttackerFaction(event.target.value)}
+                      disabled={!factions.length}
+                    >
+                      {factions.map((faction) => (
+                        <option key={faction.name} value={faction.name}>
+                          {faction.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="battlefield-side-field">
+                    <span>Attacker Unit</span>
                     <select
                       value={battlefieldAddAttackerUnitName}
                       onChange={(event) => setBattlefieldAddAttackerUnitName(event.target.value)}
-                      disabled={!attackerUnits.length}
+                      disabled={!battlefieldAddAttackerUnits.length}
                     >
-                      {attackerUnits.map((unit) => (
+                      {battlefieldAddAttackerUnits.map((unit) => (
                         <option key={unit.name} value={unit.name}>
                           {unit.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="battlefield-side-field">
+                    <span>Attacker Detachment</span>
+                    <select
+                      value={battlefieldAddAttackerDetachmentName}
+                      onChange={(event) => setBattlefieldAddAttackerDetachmentName(event.target.value)}
+                      disabled={!battlefieldAddAttackerFactionDetails?.detachments?.length}
+                    >
+                      <option value="">No detachment</option>
+                      {(battlefieldAddAttackerFactionDetails?.detachments || []).map((detachment) => (
+                        <option
+                          key={detachment.name}
+                          value={detachment.name}
+                          title={formatDetachmentTooltip(detachment)}
+                        >
+                          {detachment.name}
                         </option>
                       ))}
                     </select>
@@ -11161,20 +11688,53 @@ function App() {
                     type="button"
                     className="secondary-button"
                     onClick={() => addBattlefieldUnitInstance('attacker')}
-                    disabled={!attackerFaction || !battlefieldAddAttackerUnitName}
+                    disabled={!battlefieldAddAttackerFaction || !battlefieldAddAttackerUnitName || !battlefieldAddAttackerUnitDetails}
                   >
                     Add Attacker
                   </button>
-                  <label>
-                    <span>Add Defender Unit</span>
+                  <label className="battlefield-side-field">
+                    <span>Defender Faction</span>
+                    <select
+                      value={battlefieldAddDefenderFaction}
+                      onChange={(event) => setBattlefieldAddDefenderFaction(event.target.value)}
+                      disabled={!factions.length}
+                    >
+                      {factions.map((faction) => (
+                        <option key={faction.name} value={faction.name}>
+                          {faction.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="battlefield-side-field">
+                    <span>Defender Unit</span>
                     <select
                       value={battlefieldAddDefenderUnitName}
                       onChange={(event) => setBattlefieldAddDefenderUnitName(event.target.value)}
-                      disabled={!defenderUnits.length}
+                      disabled={!battlefieldAddDefenderUnits.length}
                     >
-                      {defenderUnits.map((unit) => (
+                      {battlefieldAddDefenderUnits.map((unit) => (
                         <option key={unit.name} value={unit.name}>
                           {unit.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="battlefield-side-field">
+                    <span>Defender Detachment</span>
+                    <select
+                      value={battlefieldAddDefenderDetachmentName}
+                      onChange={(event) => setBattlefieldAddDefenderDetachmentName(event.target.value)}
+                      disabled={!battlefieldAddDefenderFactionDetails?.detachments?.length}
+                    >
+                      <option value="">No detachment</option>
+                      {(battlefieldAddDefenderFactionDetails?.detachments || []).map((detachment) => (
+                        <option
+                          key={detachment.name}
+                          value={detachment.name}
+                          title={formatDetachmentTooltip(detachment)}
+                        >
+                          {detachment.name}
                         </option>
                       ))}
                     </select>
@@ -11183,7 +11743,7 @@ function App() {
                     type="button"
                     className="secondary-button"
                     onClick={() => addBattlefieldUnitInstance('defender')}
-                    disabled={!defenderFaction || !battlefieldAddDefenderUnitName}
+                    disabled={!battlefieldAddDefenderFaction || !battlefieldAddDefenderUnitName || !battlefieldAddDefenderUnitDetails}
                   >
                     Add Defender
                   </button>
@@ -11607,15 +12167,18 @@ function App() {
                       }}
                     />
                   )) : null}
-                  {showBattlefieldRangeLine ? (
+                  {showBattlefieldRangeLine && battlefieldRangeLineEndpoints.length ? (
                     <svg className="battlefield-range-line-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      <line
-                        className="battlefield-range-line"
-                        x1={selectedBattlefieldModelPercent?.x ?? battlefieldPositions[selectedBattlefieldUnit.id]?.x ?? selectedBattlefieldUnit.x}
-                        y1={selectedBattlefieldModelPercent?.y ?? battlefieldPositions[selectedBattlefieldUnit.id]?.y ?? selectedBattlefieldUnit.y}
-                        x2={battlefieldPositions[selectedBattlefieldDisplayTarget.id]?.x ?? selectedBattlefieldDisplayTarget.x}
-                        y2={battlefieldPositions[selectedBattlefieldDisplayTarget.id]?.y ?? selectedBattlefieldDisplayTarget.y}
-                      />
+                      {battlefieldRangeLineEndpoints.map((endpoint) => (
+                        <line
+                          key={endpoint.id}
+                          className="battlefield-range-line"
+                          x1={endpoint.start.x}
+                          y1={endpoint.start.y}
+                          x2={endpoint.end.x}
+                          y2={endpoint.end.y}
+                        />
+                      ))}
                     </svg>
                   ) : null}
                   {battlefieldUnits.filter((unit) => (
@@ -12086,9 +12649,6 @@ function App() {
                           {activeGamePhase.id === 'fight' ? 'Eligible fighting models' : 'Eligible firing models'}: {selectedBattlefieldEligibleAttackerModelCount}
                           /{selectedBattlefieldCombatAttackerModels.length}
                         </p>
-                        {battlefieldWeaponSelectionLimited ? (
-                          <p className="empty-state compact">Non-MONSTER/VEHICLE units can select one ranged weapon profile.</p>
-                        ) : null}
                         <div className="phase-inline-weapon-list">
                           {battlefieldCombatWeaponOptions.map((weapon) => {
                             const checked = battlefieldCombatWeaponNames.includes(weapon.name)
@@ -12104,7 +12664,6 @@ function App() {
                                         weapon,
                                         event.target.checked,
                                         battlefieldCombatWeaponOptions,
-                                        battlefieldWeaponSelectionLimited,
                                       )
                                     ))
                                   }}
@@ -12114,6 +12673,26 @@ function App() {
                             )
                           })}
                         </div>
+                        {battlefieldCombatTriggerAbilityOptions.length ? (
+                          <div className="phase-inline-weapon-list">
+                            {battlefieldCombatTriggerAbilityOptions.map((ability) => (
+                              <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
+                                <input
+                                  type="checkbox"
+                                  checked={battlefieldActiveAbilityNames.includes(ability.name)}
+                                  onChange={(event) => {
+                                    setBattlefieldActiveAbilityNames((currentNames) => (
+                                      event.target.checked
+                                        ? Array.from(new Set([...currentNames, ability.name]))
+                                        : currentNames.filter((name) => name !== ability.name)
+                                    ))
+                                  }}
+                                />
+                                <span>{ability.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        ) : null}
                         <button
                           type="button"
                           className="secondary-button"
@@ -13256,9 +13835,6 @@ function App() {
                     <span>Battlefield Weapons</span>
                     <span>{battlefieldCombatWeaponNames.length} selected</span>
                   </div>
-                  {battlefieldWeaponSelectionLimited ? (
-                    <p className="empty-state compact">Non-MONSTER/VEHICLE units can select one ranged weapon profile.</p>
-                  ) : null}
                   <div className="weapon-selection-grid">
                     {battlefieldCombatWeaponOptions.map((weapon) => {
                       const checked = battlefieldCombatWeaponNames.includes(weapon.name)
@@ -13274,7 +13850,6 @@ function App() {
                                   weapon,
                                   event.target.checked,
                                   battlefieldCombatWeaponOptions,
-                                  battlefieldWeaponSelectionLimited,
                                 )
                               ))
                             }}
@@ -13285,6 +13860,33 @@ function App() {
                     })}
                   </div>
                 </div>
+
+                {battlefieldCombatTriggerAbilityOptions.length ? (
+                  <div className="weapon-selection-panel battlefield-combat-span">
+                    <div className="weapon-selection-header">
+                      <span>Combat Triggers</span>
+                      <span>{battlefieldActiveAbilityNames.length} active</span>
+                    </div>
+                    <div className="weapon-selection-grid">
+                      {battlefieldCombatTriggerAbilityOptions.map((ability) => (
+                        <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
+                          <input
+                            type="checkbox"
+                            checked={battlefieldActiveAbilityNames.includes(ability.name)}
+                            onChange={(event) => {
+                              setBattlefieldActiveAbilityNames((currentNames) => (
+                                event.target.checked
+                                  ? Array.from(new Set([...currentNames, ability.name]))
+                                  : currentNames.filter((name) => name !== ability.name)
+                              ))
+                            }}
+                          />
+                          <span>{ability.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
 
                 <button
                   type="button"

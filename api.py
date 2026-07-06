@@ -59,6 +59,7 @@ class SimulationOptions(BaseModel):
     attacker_boast_achieved: bool = False
     attacker_hordeslayer_outnumbered: bool = False
     attacker_heroes_all_reroll_type: str | None = None
+    attacker_active_ability_names: list[str] = Field(default_factory=list)
     attacker_unbridled_ferocity_active: bool = False
     attacker_waaagh_active: bool = False
     defender_waaagh_active: bool = False

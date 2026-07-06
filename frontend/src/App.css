@@ -2633,8 +2633,35 @@ textarea:focus {
 
 .datasheet-stats {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   margin-top: 12px;
+}
+
+.selected-weapon-profile-list {
+  display: grid;
+  gap: 8px;
+}
+
+.selected-weapon-profile-card {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-card-alt) 86%, transparent);
+}
+
+.selected-weapon-profile-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.selected-weapon-profile-header h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.98rem;
 }
 
 .model-profile-list {
@@ -2729,6 +2756,11 @@ textarea:focus {
   gap: 10px;
 }
 
+.stat-row.compact {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 7px;
+}
+
 .stat-chip {
   display: grid;
   gap: 4px;
@@ -2739,6 +2771,13 @@ textarea:focus {
   background: var(--surface-card);
   text-align: center;
   align-content: center;
+}
+
+.stat-row.compact .stat-chip {
+  min-height: 48px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  gap: 2px;
 }
 
 .stat-chip-save {
@@ -2772,10 +2811,22 @@ textarea:focus {
   color: var(--ink-soft);
 }
 
+.stat-row.compact .stat-label {
+  font-size: 0.62rem;
+  font-weight: 900;
+  color: var(--accent-deep);
+}
+
 .stat-value {
   font-family: 'Bitter', Georgia, serif;
   font-size: 1.2rem;
   color: var(--ink);
+}
+
+.stat-row.compact .stat-value {
+  font-size: 1rem;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .stat-label-save,
@@ -2799,6 +2850,27 @@ textarea:focus {
   right: 18px;
   bottom: 16px;
   font-size: 1.2rem;
+}
+
+.stat-row.compact .stat-chip-save {
+  min-height: 48px;
+  padding: 7px 8px;
+}
+
+.stat-row.compact .stat-label-save {
+  top: 7px;
+  left: 8px;
+}
+
+.stat-row.compact .stat-value-save {
+  left: 13px;
+  bottom: 8px;
+}
+
+.stat-row.compact .stat-value-invuln {
+  right: 13px;
+  bottom: 8px;
+  font-size: 1rem;
 }
 
 .result-card.accent {
