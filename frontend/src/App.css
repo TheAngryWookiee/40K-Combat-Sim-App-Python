@@ -1,19 +1,115 @@
 .app-shell {
+  position: relative;
   width: min(1380px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 28px 0 40px;
+  padding: 10px 0 40px;
+}
+
+.settings-shell {
+  position: relative;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.settings-button {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--settings-surface);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(29, 23, 18, 0.08);
+}
+
+.settings-button-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.settings-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 12;
+  width: min(320px, calc(100vw - 32px));
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--settings-surface-strong);
+  box-shadow: var(--shadow);
+}
+
+.settings-group {
+  display: grid;
+  gap: 10px;
+}
+
+.settings-label {
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.theme-option-list {
+  display: grid;
+  gap: 10px;
+}
+
+.theme-option {
+  width: 100%;
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-control) 72%, transparent);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.theme-option strong {
+  font-size: 0.95rem;
+}
+
+.theme-option span {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+
+.theme-option.active {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-control) 88%, white 12%), color-mix(in srgb, var(--surface-card-soft) 82%, transparent));
+  box-shadow: 0 10px 20px rgba(29, 23, 18, 0.08);
 }
 
 .hero-band {
   position: relative;
   overflow: hidden;
-  padding: 28px;
+  padding: 20px 24px;
   border: 1px solid var(--line);
-  background:
-    radial-gradient(circle at top right, rgba(211, 151, 58, 0.28), transparent 28%),
-    linear-gradient(135deg, rgba(15, 34, 47, 0.96), rgba(46, 26, 26, 0.92));
+  background: var(--hero-background);
   border-radius: 28px;
   box-shadow: var(--shadow);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+  align-items: center;
+  gap: 24px;
 }
 
 .hero-band::after {
@@ -23,7 +119,7 @@
   width: 280px;
   height: 280px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(246, 197, 93, 0.22), transparent 70%);
+  background: var(--hero-glow);
 }
 
 .eyebrow,
@@ -35,30 +131,94 @@
   color: var(--ink-soft);
 }
 
+.battlefield-preboard-section {
+  margin: 0 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-float);
+  overflow: hidden;
+}
+
+.battlefield-preboard-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.battlefield-preboard-toggle strong {
+  display: block;
+  font-size: 1rem;
+}
+
+.battlefield-preboard-summary {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+}
+
+.battlefield-preboard-toggle-label {
+  flex-shrink: 0;
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.battlefield-preboard-content {
+  padding: 0 16px 16px;
+}
+
+.battlefield-preboard-persistent-controls {
+  margin-top: 12px;
+}
+
 .hero-copy {
-  position: relative;
-  z-index: 1;
   max-width: 780px;
 }
 
 .hero-copy h1 {
-  margin: 12px 0 16px;
+  margin: 8px 0 12px;
   max-width: 12ch;
-  color: #fff3df;
+  color: var(--hero-ink);
+  font-size: clamp(2rem, 4.1vw, 3.6rem);
 }
 
 .hero-copy p {
   max-width: 58ch;
-  color: #f9edd9;
+  color: var(--hero-ink-soft);
 }
 
 .hero-band .eyebrow {
-  color: rgba(255, 239, 209, 0.82);
+  color: var(--hero-eyebrow);
+}
+
+.hero-mark {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.hero-logo {
+  width: min(100%, 284px);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.34));
 }
 
 .page-nav {
   display: flex;
   gap: 12px;
+  align-items: center;
   margin-top: 18px;
 }
 
@@ -67,7 +227,7 @@
   border-radius: 999px;
   min-height: 46px;
   padding: 0 18px;
-  background: rgba(255, 252, 247, 0.92);
+  background: var(--surface-control);
   color: var(--ink);
   font: inherit;
   font-weight: 700;
@@ -80,9 +240,9 @@
 }
 
 .page-nav-button.active {
-  background: linear-gradient(135deg, #a14f27, #e3a23e);
+  background: linear-gradient(135deg, var(--nav-active-start), var(--nav-active-end));
   color: #fffaf4;
-  box-shadow: 0 12px 24px rgba(146, 77, 33, 0.22);
+  box-shadow: 0 12px 24px var(--nav-active-shadow);
 }
 
 .workspace-grid {
@@ -95,7 +255,7 @@
 .panel {
   border: 1px solid var(--line);
   border-radius: 24px;
-  background: linear-gradient(180deg, rgba(251, 248, 241, 0.96), rgba(244, 238, 226, 0.98));
+  background: var(--surface-panel);
   box-shadow: var(--shadow);
 }
 
@@ -145,7 +305,7 @@
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: rgba(255, 251, 244, 0.5);
+  background: color-mix(in srgb, var(--surface-card-soft) 72%, transparent);
 }
 
 .combat-side-panel .cluster.two-up {
@@ -175,7 +335,7 @@ textarea {
   box-sizing: border-box;
   border-radius: 14px;
   border: 1px solid var(--line-strong);
-  background: rgba(255, 252, 247, 0.96);
+  background: var(--surface-control);
   color: var(--ink);
   padding: 0 14px;
   font: inherit;
@@ -206,8 +366,8 @@ textarea {
   min-height: 48px;
   border: 1px solid var(--line-strong);
   border-radius: 14px;
-  background: rgba(66, 82, 45, 0.92);
-  color: #f6f9ea;
+  background: var(--button-utility-bg);
+  color: var(--button-utility-text);
   font: inherit;
   font-weight: 800;
   cursor: pointer;
@@ -216,7 +376,7 @@ textarea {
 
 .roll-button:hover {
   transform: translateY(-1px);
-  background: #a14f27;
+  background: var(--button-utility-hover);
 }
 
 .roll-button:disabled {
@@ -250,7 +410,7 @@ textarea {
   min-height: 48px;
   border-radius: 14px;
   border: 1px solid var(--line-strong);
-  background: rgba(255, 252, 247, 0.96);
+  background: var(--surface-control);
   color: var(--ink);
   font: inherit;
   font-size: 1.1rem;
@@ -278,7 +438,7 @@ textarea:focus {
   padding: 0 14px;
   border: 1px solid var(--line-strong);
   border-radius: 14px;
-  background: rgba(255, 252, 247, 0.96);
+  background: var(--surface-control);
 }
 
 .checkbox-row input {
@@ -293,7 +453,7 @@ textarea:focus {
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
 }
 
 .weapon-selection-header {
@@ -338,13 +498,13 @@ textarea:focus {
 }
 
 .primary-button {
-  background: linear-gradient(135deg, #a14f27, #e3a23e);
-  color: #fffaf4;
-  box-shadow: 0 14px 28px rgba(146, 77, 33, 0.28);
+  background: linear-gradient(135deg, var(--button-primary-start), var(--button-primary-end));
+  color: var(--button-primary-text);
+  box-shadow: 0 14px 28px var(--button-primary-shadow);
 }
 
 .secondary-button {
-  background: rgba(74, 55, 40, 0.08);
+  background: var(--surface-subtle);
   color: var(--ink);
   border: 1px solid var(--line-strong);
 }
@@ -368,7 +528,7 @@ textarea:focus {
 .placeholder-panel {
   border-radius: 20px;
   border: 1px solid var(--line);
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
   padding: 16px;
 }
 
@@ -391,7 +551,7 @@ textarea:focus {
   padding: 8px 12px;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
   color: var(--ink-soft);
   font-size: 0.88rem;
   font-weight: 700;
@@ -409,7 +569,7 @@ textarea:focus {
   padding: 18px;
   border-radius: 20px;
   border: 1px solid var(--line);
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
 }
 
 .army-list-builder-panel {
@@ -421,7 +581,7 @@ textarea:focus {
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: rgba(255, 251, 244, 0.72);
+  background: var(--surface-card-soft);
 }
 
 .army-list-card-header {
@@ -450,6 +610,25 @@ textarea:focus {
   min-width: 0;
 }
 
+.army-list-inline-stats-stack {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.army-list-inline-profile {
+  display: grid;
+  gap: 6px;
+}
+
+.army-list-inline-profile-label {
+  color: var(--accent-deep);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .army-list-inline-stat {
   display: grid;
   justify-items: center;
@@ -458,7 +637,7 @@ textarea:focus {
   padding: 7px 8px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: rgba(255, 251, 244, 0.78);
+  background: color-mix(in srgb, var(--surface-card) 86%, transparent);
 }
 
 .army-list-inline-stat span {
@@ -499,8 +678,8 @@ textarea:focus {
   min-width: 44px;
   padding: 8px 10px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #a14f27, #e3a23e);
-  color: #fffaf4;
+  background: linear-gradient(135deg, var(--button-primary-start), var(--button-primary-end));
+  color: var(--button-primary-text);
   text-align: center;
   font-weight: 700;
 }
@@ -527,7 +706,7 @@ textarea:focus {
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: rgba(255, 251, 244, 0.72);
+  background: var(--surface-card-soft);
 }
 
 .army-list-customization-panel h4 {
@@ -566,7 +745,7 @@ textarea:focus {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: rgba(248, 250, 241, 0.66);
+  background: color-mix(in srgb, var(--surface-card-alt) 82%, transparent);
 }
 
 .army-list-detail-card p {
@@ -610,7 +789,7 @@ textarea:focus {
   padding: 6px 9px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 251, 244, 0.86);
+  background: color-mix(in srgb, var(--surface-card) 92%, transparent);
   color: var(--ink-soft);
   font-size: 0.78rem;
   font-weight: 800;
@@ -668,7 +847,7 @@ textarea:focus {
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: rgba(255, 251, 244, 0.72);
+  background: var(--surface-card-soft);
 }
 
 .army-list-saved-summary {
@@ -706,7 +885,7 @@ textarea:focus {
   min-height: 82px;
   border: 1px solid var(--line-strong);
   border-radius: 8px;
-  background: rgba(248, 250, 241, 0.9);
+  background: var(--surface-card-alt);
   color: var(--ink);
   font: inherit;
   text-align: left;
@@ -719,27 +898,27 @@ textarea:focus {
 }
 
 .turn-step.active {
-  border-color: rgba(161, 79, 39, 0.58);
-  background: linear-gradient(90deg, rgba(247, 236, 211, 0.96), rgba(228, 235, 216, 0.96));
+  border-color: var(--state-accent-border);
+  background: var(--state-active-bg);
 }
 
 .turn-step.complete {
-  background: rgba(232, 238, 220, 0.9);
+  background: var(--state-complete-bg);
 }
 
 .turn-step-number {
   display: grid;
   place-items: center;
   align-self: stretch;
-  background: rgba(66, 82, 45, 0.92);
-  color: #f6f9ea;
+  background: var(--button-utility-bg);
+  color: var(--button-utility-text);
   font-family: 'Bitter', Georgia, serif;
   font-size: 2.4rem;
   font-weight: 800;
 }
 
 .turn-step.active .turn-step-number {
-  background: linear-gradient(180deg, #a14f27, #6f432d);
+  background: linear-gradient(180deg, var(--button-primary-start), var(--accent-deep));
 }
 
 .turn-step-body {
@@ -764,9 +943,9 @@ textarea:focus {
   width: 46px;
   height: 46px;
   justify-self: center;
-  border: 1px solid rgba(66, 82, 45, 0.4);
+  border: 1px solid var(--state-marker-border);
   border-radius: 50%;
-  color: #42522d;
+  color: var(--state-marker-text);
   font-weight: 800;
 }
 
@@ -774,7 +953,7 @@ textarea:focus {
   padding: 8px 12px;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
   color: var(--ink-soft);
   font-weight: 700;
 }
@@ -813,7 +992,7 @@ textarea:focus {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 251, 244, 0.86);
+  background: color-mix(in srgb, var(--surface-card) 94%, transparent);
 }
 
 .turn-substep-card > span {
@@ -822,8 +1001,8 @@ textarea:focus {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(66, 82, 45, 0.92);
-  color: #f6f9ea;
+  background: var(--button-utility-bg);
+  color: var(--button-utility-text);
   font-weight: 800;
 }
 
@@ -859,7 +1038,7 @@ textarea:focus {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 251, 244, 0.86);
+  background: color-mix(in srgb, var(--surface-card) 94%, transparent);
 }
 
 .turn-move-type-card h3 {
@@ -927,7 +1106,7 @@ textarea:focus {
   padding: 8px 10px;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: rgba(255, 251, 244, 0.92);
+  background: var(--surface-card);
   color: var(--ink-soft);
   font-size: 0.88rem;
   font-weight: 700;
@@ -949,7 +1128,7 @@ textarea:focus {
   padding: 7px 10px;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: rgba(255, 251, 244, 0.92);
+  background: var(--surface-card);
   color: var(--ink-soft);
   font: inherit;
   font-size: 0.86rem;
@@ -958,14 +1137,14 @@ textarea:focus {
 }
 
 .turn-action-grid.module-picker button:hover {
-  border-color: rgba(66, 82, 45, 0.55);
+  border-color: color-mix(in srgb, var(--button-utility-bg) 65%, transparent);
   color: var(--ink);
 }
 
 .turn-action-grid.module-picker button.active {
-  border-color: rgba(66, 82, 45, 0.88);
-  background: rgba(66, 82, 45, 0.92);
-  color: #f8faed;
+  border-color: color-mix(in srgb, var(--button-utility-bg) 92%, transparent);
+  background: var(--button-utility-bg);
+  color: var(--button-utility-text);
 }
 
 .module-detail-card {
@@ -975,7 +1154,7 @@ textarea:focus {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 251, 244, 0.86);
+  background: color-mix(in srgb, var(--surface-card) 94%, transparent);
 }
 
 .module-detail-card.compact {
@@ -1027,7 +1206,7 @@ textarea:focus {
   padding: 8px 12px;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
   font-size: 0.88rem;
   color: var(--ink-soft);
 }
@@ -1035,11 +1214,11 @@ textarea:focus {
 .sim-game-panel {
   display: grid;
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: 0;
   padding: 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(248, 250, 241, 0.9);
+  background: var(--surface-card-alt);
 }
 
 .sim-game-status,
@@ -1073,7 +1252,7 @@ textarea:focus {
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
 }
 
 .sim-game-progress strong {
@@ -1093,6 +1272,10 @@ textarea:focus {
   gap: 8px;
 }
 
+.sim-game-track.compact {
+  gap: 6px;
+}
+
 .sim-game-step {
   display: grid;
   gap: 8px;
@@ -1101,7 +1284,7 @@ textarea:focus {
   padding: 10px 8px;
   border: 1px solid var(--line-strong);
   border-radius: 8px;
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
   color: var(--ink);
   font: inherit;
   font-weight: 800;
@@ -1119,14 +1302,31 @@ textarea:focus {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(66, 82, 45, 0.9);
-  color: #f6f9ea;
+  background: var(--button-utility-bg);
+  color: var(--button-utility-text);
 }
 
 .sim-game-step strong {
   font-size: 0.78rem;
   text-align: center;
   text-transform: uppercase;
+}
+
+.sim-game-track.compact .sim-game-step {
+  gap: 4px;
+  min-height: 48px;
+  padding: 6px 4px;
+}
+
+.sim-game-track.compact .sim-game-step span {
+  width: 18px;
+  height: 18px;
+  font-size: 0.58rem;
+}
+
+.sim-game-track.compact .sim-game-step strong {
+  font-size: 0.58rem;
+  line-height: 1.05;
 }
 
 .sim-game-step.active {
@@ -1150,7 +1350,7 @@ textarea:focus {
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
 }
 
 .sim-game-current {
@@ -1217,7 +1417,7 @@ textarea:focus {
   padding: 8px 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(248, 250, 241, 0.9);
+  background: var(--surface-card-alt);
   font-size: 0.88rem;
 }
 
@@ -1227,7 +1427,7 @@ textarea:focus {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(248, 250, 241, 0.9);
+  background: var(--surface-card-alt);
 }
 
 .battlefield-board-layout {
@@ -1269,7 +1469,7 @@ textarea:focus {
   padding: 7px 9px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 251, 244, 0.92);
+  background: var(--surface-card);
   color: var(--ink-soft);
   font: inherit;
   font-size: 0.84rem;
@@ -1278,14 +1478,14 @@ textarea:focus {
 }
 
 .battlefield-tool-picker button:hover {
-  border-color: rgba(66, 82, 45, 0.55);
+  border-color: color-mix(in srgb, var(--button-utility-bg) 65%, transparent);
   color: var(--ink);
 }
 
 .battlefield-tool-picker button.active {
-  border-color: rgba(66, 82, 45, 0.88);
-  background: rgba(66, 82, 45, 0.92);
-  color: #f8faed;
+  border-color: color-mix(in srgb, var(--button-utility-bg) 92%, transparent);
+  background: var(--button-utility-bg);
+  color: var(--button-utility-text);
 }
 
 .battlefield-action-panel,
@@ -1297,7 +1497,7 @@ textarea:focus {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(248, 250, 241, 0.9);
+  background: var(--surface-card-alt);
 }
 
 .phase-resolver-panel .battlefield-stratagem-panel,
@@ -1351,7 +1551,7 @@ textarea:focus {
   padding: 8px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 251, 244, 0.72);
+  background: var(--surface-card-soft);
 }
 
 .battlefield-cp-grid {
@@ -1367,7 +1567,7 @@ textarea:focus {
   padding: 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
 }
 
 .battlefield-stratagem-summary p,
@@ -1548,14 +1748,20 @@ textarea:focus {
 
 .battlefield-army-list-controls {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(140px, 0.45fr) minmax(220px, 1fr) minmax(140px, 0.45fr);
-  align-items: end;
   gap: 10px;
-  margin: -6px 0 18px;
+  margin: 0;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(255, 251, 244, 0.66);
+}
+
+.battlefield-saved-list-controls,
+.battlefield-deployment-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(140px, 0.45fr) minmax(220px, 1fr) minmax(140px, 0.45fr);
+  align-items: end;
+  gap: 10px;
 }
 
 .battlefield-army-list-controls label {
@@ -1571,13 +1777,57 @@ textarea:focus {
   text-transform: uppercase;
 }
 
+.battlefield-army-list-summary {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+}
+
+.battlefield-deployment-step {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-card);
+}
+
+.battlefield-deployment-step h3,
+.battlefield-deployment-step p {
+  margin: 0;
+}
+
+.battlefield-deployment-step h3 {
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.battlefield-deployment-step p:not(.kicker) {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
 .battlefield-board-shell {
   margin-top: 10px;
   display: flex;
   justify-content: center;
+  width: 100%;
+}
+
+.battlefield-board-frame {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) 32px;
+  align-items: start;
+  gap: 8px 12px;
+  width: min(100%, calc(((74vh * 60) / 44) + 68px));
+  box-sizing: border-box;
 }
 
 .battlefield-board {
+  grid-column: 2;
+  grid-row: 1;
   position: relative;
   width: min(100%, calc((74vh * 60) / 44));
   max-height: 74vh;
@@ -1590,8 +1840,67 @@ textarea:focus {
     linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
     radial-gradient(circle at 30% 30%, rgba(208, 183, 117, 0.18), transparent 30%),
     linear-gradient(180deg, #546448, #394536);
-  background-size: 8.333% 11.363%, 8.333% 11.363%, auto, auto;
+  background-size: 10% 13.636%, 10% 13.636%, auto, auto;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.battlefield-axis {
+  position: relative;
+  overflow: visible;
+  height: 100%;
+}
+
+.battlefield-axis-y {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.battlefield-axis-x {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.battlefield-axis-label {
+  position: absolute;
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.battlefield-axis-y .battlefield-axis-label {
+  right: 8px;
+  width: calc(100% - 8px);
+  text-align: right;
+}
+
+.battlefield-axis-y .battlefield-axis-label.start {
+  transform: translateY(0);
+}
+
+.battlefield-axis-y .battlefield-axis-label.middle {
+  transform: translateY(-50%);
+}
+
+.battlefield-axis-y .battlefield-axis-label.end {
+  transform: translateY(-100%);
+}
+
+.battlefield-axis-x .battlefield-axis-label {
+  top: 4px;
+}
+
+.battlefield-axis-x .battlefield-axis-label.start {
+  transform: translateX(0);
+}
+
+.battlefield-axis-x .battlefield-axis-label.middle {
+  transform: translateX(-50%);
+}
+
+.battlefield-axis-x .battlefield-axis-label.end {
+  transform: translateX(-100%);
 }
 
 .battlefield-center-line {
@@ -1652,11 +1961,13 @@ textarea:focus {
 
 .battlefield-unit {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translate3d(-50%, -50%, 0);
   aspect-ratio: 1;
   cursor: grab;
   touch-action: none;
   user-select: none;
+  will-change: left, top, transform;
+  backface-visibility: hidden;
 }
 
 .battlefield-unit.dragging {
@@ -1711,13 +2022,22 @@ textarea:focus {
     0 6px 14px rgba(13, 14, 10, 0.22);
 }
 
+.battlefield-unit.invalid-placement .battlefield-unit-dot {
+  box-shadow:
+    0 0 0 3px rgba(181, 45, 34, 0.96),
+    0 0 0 6px rgba(255, 214, 170, 0.28),
+    0 6px 14px rgba(13, 14, 10, 0.22);
+}
+
 .battlefield-unit-label-anchor {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translate3d(-50%, -50%, 0);
   cursor: grab;
   touch-action: none;
   user-select: none;
   z-index: 3;
+  will-change: left, top, transform;
+  backface-visibility: hidden;
 }
 
 .battlefield-unit-label-anchor.selected .battlefield-unit-label {
@@ -1758,6 +2078,27 @@ textarea:focus {
   line-height: 1;
   pointer-events: none;
   box-shadow: 0 3px 8px rgba(8, 10, 7, 0.36);
+  z-index: 3;
+}
+
+.battlefield-model-profile-badge {
+  position: absolute;
+  left: -5px;
+  bottom: -6px;
+  display: grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border: 1px solid rgba(255, 249, 236, 0.95);
+  border-radius: 999px;
+  background: rgba(255, 245, 220, 0.96);
+  color: #362411;
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+  box-shadow: 0 3px 8px rgba(8, 10, 7, 0.28);
   z-index: 3;
 }
 
@@ -1822,6 +2163,12 @@ textarea:focus {
   box-shadow: 0 6px 16px rgba(8, 10, 7, 0.32);
 }
 
+.battlefield-unit-label.expanded {
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 18px;
+}
+
 .battlefield-unit-label strong {
   overflow: visible;
   text-overflow: clip;
@@ -1835,6 +2182,54 @@ textarea:focus {
   color: rgba(255, 239, 209, 0.82);
 }
 
+.battlefield-unit-profile-summary {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  min-width: max-content;
+  margin-top: 1px;
+}
+
+.battlefield-unit-profile-summary-title {
+  color: rgba(255, 239, 209, 0.72);
+  font-size: 0.52rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.battlefield-unit-profile-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 245, 220, 0.14);
+  color: rgba(255, 239, 209, 0.96);
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.battlefield-unit-profile-chip-badge {
+  display: grid;
+  place-items: center;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(255, 245, 220, 0.96);
+  color: #362411;
+  font-size: 0.54rem;
+  font-weight: 900;
+}
+
+.battlefield-unit-profile-index {
+  color: rgba(255, 239, 209, 0.96);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
 .battlefield-ring-legend {
   position: absolute;
   left: 12px;
@@ -1846,12 +2241,49 @@ textarea:focus {
   border-radius: 10px;
   background: rgba(16, 22, 18, 0.76);
   color: #fff5df;
-  pointer-events: none;
+  pointer-events: auto;
   backdrop-filter: blur(6px);
   z-index: 4;
 }
 
-.battlefield-ring-legend div {
+.battlefield-ring-legend.collapsed {
+  gap: 0;
+  padding: 6px 8px;
+}
+
+.battlefield-ring-legend-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff5df;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.battlefield-ring-legend-toggle:hover {
+  color: #fffaf0;
+}
+
+.battlefield-ring-legend-toggle:focus-visible {
+  outline: 2px solid rgba(255, 242, 161, 0.7);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.battlefield-ring-legend-items {
+  display: grid;
+  gap: 6px;
+}
+
+.battlefield-ring-legend-item {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -1909,6 +2341,11 @@ textarea:focus {
   background: #34566b;
 }
 
+.role-swatch.profile {
+  background: rgba(255, 245, 220, 0.96);
+  color: #362411;
+}
+
 .battlefield-legend {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1923,7 +2360,7 @@ textarea:focus {
   padding: 16px;
   border-radius: 18px;
   border: 1px solid var(--line);
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
 }
 
 .battlefield-move-panel,
@@ -1936,7 +2373,7 @@ textarea:focus {
   padding: 16px;
   border-radius: 18px;
   border: 1px solid var(--line);
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
 }
 
 .battlefield-move-summary {
@@ -2079,7 +2516,7 @@ textarea:focus {
   padding: 16px;
   border-radius: 18px;
   border: 1px solid var(--line);
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
 }
 
 .battlefield-combat-grid {
@@ -2120,8 +2557,28 @@ textarea:focus {
 .battlefield-legend-card {
   border-radius: 18px;
   border: 1px solid var(--line);
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-card);
   padding: 16px;
+}
+
+.battlefield-legend-profile-list {
+  display: grid;
+  gap: 6px;
+}
+
+.battlefield-unit-profile-row-legend {
+  width: fit-content;
+  background: var(--surface-subtle);
+  color: var(--ink);
+}
+
+.battlefield-unit-profile-row-legend .battlefield-unit-profile-chip-badge {
+  background: var(--button-utility-bg);
+  color: var(--button-utility-text);
+}
+
+.battlefield-unit-profile-row-legend .battlefield-unit-profile-index {
+  color: var(--ink-soft);
 }
 
 .weapon-card {
@@ -2157,6 +2614,44 @@ textarea:focus {
   display: grid;
   gap: 10px;
   margin-top: 12px;
+}
+
+.model-profile-list {
+  display: grid;
+  gap: 10px;
+}
+
+.model-profile-card {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 251, 244, 0.78);
+}
+
+.model-profile-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.model-profile-header h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.92rem;
+}
+
+.model-profile-header span {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.model-profile-stats {
+  display: grid;
+  gap: 8px;
 }
 
 .active-rules {
@@ -2220,7 +2715,7 @@ textarea:focus {
   min-height: 82px;
   border-radius: 16px;
   border: 1px solid var(--line);
-  background: rgba(255, 250, 242, 0.95);
+  background: var(--surface-card);
   text-align: center;
   align-content: center;
 }
@@ -2398,6 +2893,8 @@ textarea:focus {
   .army-list-save-panel,
   .army-list-detail-grid,
   .battlefield-army-list-controls,
+  .battlefield-saved-list-controls,
+  .battlefield-deployment-controls,
   .battlefield-board-layout {
     grid-template-columns: 1fr;
   }
@@ -2447,6 +2944,28 @@ textarea:focus {
     padding-top: 12px;
   }
 
+  .settings-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .settings-popover {
+    width: min(100vw - 20px, 320px);
+  }
+
+  .hero-content {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .hero-mark {
+    justify-content: flex-start;
+  }
+
+  .hero-logo {
+    width: min(100%, 280px);
+  }
+
   .hero-band,
   .control-panel,
   .data-panel,
@@ -2468,6 +2987,10 @@ textarea:focus {
 
   .page-nav {
     flex-wrap: wrap;
+  }
+
+  .page-nav .settings-shell {
+    margin-left: 0;
   }
 
   .turn-step {

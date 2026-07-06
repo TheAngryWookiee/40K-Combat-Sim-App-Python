@@ -109,6 +109,50 @@ const OATH_OF_MOMENT_CODEX_RIDER_TEXT = 'If you are using a Codex: Space Marines
 const BATTLEFIELD_WIDTH_INCHES = 60
 const BATTLEFIELD_HEIGHT_INCHES = 44
 const SAVED_ARMY_LISTS_STORAGE_KEY = 'tactica-forge:saved-army-lists'
+const APP_THEME_STORAGE_KEY = 'strategium-forge:theme'
+const BATTLEFIELD_GRID_STEP_INCHES = 6
+const APP_THEMES = {
+  classic: {
+    id: 'classic',
+    name: 'Classic',
+    description: 'Warm parchment tones with the current tabletop presentation.',
+  },
+  forge: {
+    id: 'forge',
+    name: 'Forge',
+    description: 'Steel, blue, and red pulled from the Strategium Forge logo.',
+  },
+}
+const BATTLEFIELD_X_AXIS_LABELS = Array.from(
+  { length: Math.floor(BATTLEFIELD_WIDTH_INCHES / BATTLEFIELD_GRID_STEP_INCHES) + 1 },
+  (_, index) => index * BATTLEFIELD_GRID_STEP_INCHES,
+)
+const BATTLEFIELD_Y_AXIS_LABELS = [
+  ...Array.from(
+    { length: Math.floor(BATTLEFIELD_HEIGHT_INCHES / BATTLEFIELD_GRID_STEP_INCHES) + 1 },
+    (_, index) => index * BATTLEFIELD_GRID_STEP_INCHES,
+  ),
+  ...(BATTLEFIELD_HEIGHT_INCHES % BATTLEFIELD_GRID_STEP_INCHES === 0 ? [] : [BATTLEFIELD_HEIGHT_INCHES]),
+]
+
+function readSavedArmyListsFromStorage() {
+  try {
+    const storedLists = JSON.parse(localStorage.getItem(SAVED_ARMY_LISTS_STORAGE_KEY) || '[]')
+    return Array.isArray(storedLists) ? storedLists : []
+  } catch {
+    return []
+  }
+}
+
+function readThemePreference() {
+  try {
+    const storedTheme = localStorage.getItem(APP_THEME_STORAGE_KEY)
+    return APP_THEMES[storedTheme] ? storedTheme : 'classic'
+  } catch {
+    return 'classic'
+  }
+}
+
 const DEFAULT_TURN_STRUCTURE = [
   {
     id: 'start_of_turn',
@@ -1562,6 +1606,29 @@ function modelBasesOverlap(model, otherModel) {
   return getRawModelHorizontalGapInches(model, otherModel) < -0.001
 }
 
+function getOverlappingModelIndexes(models) {
+  const overlappingIndexes = new Set()
+  for (let index = 0; index < models.length; index += 1) {
+    for (let otherIndex = index + 1; otherIndex < models.length; otherIndex += 1) {
+      if (modelBasesOverlap(models[index], models[otherIndex])) {
+        overlappingIndexes.add(index)
+        overlappingIndexes.add(otherIndex)
+      }
+    }
+  }
+  return [...overlappingIndexes]
+}
+
+function getModelOverlapPenalty(models) {
+  let overlapPenalty = 0
+  for (let index = 0; index < models.length; index += 1) {
+    for (let otherIndex = index + 1; otherIndex < models.length; otherIndex += 1) {
+      overlapPenalty += Math.max(0, -getRawModelHorizontalGapInches(models[index], models[otherIndex]))
+    }
+  }
+  return overlapPenalty
+}
+
 function getPointOnBase(model, angleRadians, insetInches = 0) {
   const radius = Math.max(0, (getModelBaseDiameterInches(model) / 2) - insetInches)
   return {
@@ -1682,6 +1749,7 @@ function validateBattlefieldUnitEngagement(models, enemyModels) {
 function validateBattlefieldUnitSetup(models, enemyModels, friendlyModels = [], options = {}) {
   const coherency = validateBattlefieldUnitCoherency(models)
   const engagement = validateBattlefieldUnitEngagement(models, enemyModels)
+  const unitOverlapModelIndexes = getOverlappingModelIndexes(models)
   const friendlyOverlapModelIndexes = models
     .map((model, index) => (
       friendlyModels.some((friendlyModel) => modelBasesOverlap(model, friendlyModel))
@@ -1707,6 +1775,9 @@ function validateBattlefieldUnitSetup(models, enemyModels, friendlyModels = [], 
   if (!engagement.unengaged) {
     violations.push('unit_engaged')
   }
+  if (unitOverlapModelIndexes.length) {
+    violations.push('unit_model_overlap')
+  }
   if (!canOverlapFriendlyModels && friendlyOverlapModelIndexes.length) {
     violations.push('friendly_model_overlap')
   }
@@ -1717,6 +1788,7 @@ function validateBattlefieldUnitSetup(models, enemyModels, friendlyModels = [], 
     violations,
     coherency,
     engagement,
+    unitOverlapModelIndexes,
     friendlyOverlapModelIndexes,
     offBattlefieldModelIndexes,
     returnToOriginalPosition: violations.length > 0,
@@ -1750,7 +1822,107 @@ function getUnitDeclaredModelCount(unitDetails) {
   return Number(unitDetails?.model_count ?? unitDetails?.unit_composition?.min_models ?? 1) || 1
 }
 
-function getBattlefieldUnitModelIdentity(unit, modelIndex) {
+function getResolvedUnitModelCount(unitDetails) {
+  const explicitModelCounts = Object.values(unitDetails?.model_counts_by_name || {})
+    .map((value) => Number(value) || 0)
+    .filter((value) => value > 0)
+  if (explicitModelCounts.length) {
+    return explicitModelCounts.reduce((total, value) => total + value, 0)
+  }
+  return Number(
+    unitDetails?.model_count
+    ?? unitDetails?.selected_model_count
+    ?? unitDetails?.unit_composition?.min_models
+    ?? 1,
+  ) || 1
+}
+
+function getBattlefieldBodyguardProfileData(unit) {
+  const unitDetails = unit?.unitDetails || unit
+  if (!unitDetails) {
+    return { assignments: {}, summary: [] }
+  }
+
+  const leaderDetails = unitDetails.attached_leader || null
+  const supportDetails = unitDetails.attached_support || null
+  const leaderCount = leaderDetails ? getUnitDeclaredModelCount(leaderDetails) : 0
+  const supportCount = supportDetails ? getUnitDeclaredModelCount(supportDetails) : 0
+  const startingModelCount = getUnitDeclaredModelCount({
+    ...unitDetails,
+    model_count: unit?.startingModelCount ?? unitDetails.model_count,
+  })
+  const bodyguardCount = Math.max(0, startingModelCount - leaderCount - supportCount)
+  const modelEntries = unitDetails.models || unitDetails.models_data || []
+
+  if (bodyguardCount <= 0 || modelEntries.length <= 1) {
+    return { assignments: {}, summary: [] }
+  }
+
+  const resolvedCounts = getResolvedModelCountSelections(unitDetails, {})
+  const summary = []
+  let assignedCount = 0
+
+  for (const modelEntry of modelEntries) {
+    if (assignedCount >= bodyguardCount) {
+      break
+    }
+
+    const rawName = String(modelEntry?.name || '').trim()
+    const displayName = getDisplayModelName(rawName) || `Model ${summary.length + 1}`
+    const declaredCount = Number(
+      resolvedCounts[rawName]
+      ?? resolvedCounts[displayName]
+      ?? modelEntry?.count?.min
+      ?? modelEntry?.count?.max
+      ?? 0
+    ) || 0
+
+    if (declaredCount <= 0) {
+      continue
+    }
+
+    const count = Math.min(bodyguardCount - assignedCount, declaredCount)
+    if (count <= 0) {
+      continue
+    }
+
+    summary.push({
+      badge: String(summary.length + 1),
+      label: displayName,
+      count,
+    })
+    assignedCount += count
+  }
+
+  if (assignedCount < bodyguardCount) {
+    summary.push({
+      badge: String(summary.length + 1),
+      label: unitDetails.bodyguard_name || unitDetails.name || unit?.name || 'Bodyguard',
+      count: bodyguardCount - assignedCount,
+    })
+  }
+
+  const distinctLabels = new Set(summary.map((entry) => entry.label))
+  if (distinctLabels.size <= 1) {
+    return { assignments: {}, summary: [] }
+  }
+
+  const assignments = {}
+  let modelSlot = 0
+  summary.forEach((entry) => {
+    for (let count = 0; count < entry.count; count += 1) {
+      assignments[modelSlot] = {
+        badge: entry.badge,
+        label: entry.label,
+      }
+      modelSlot += 1
+    }
+  })
+
+  return { assignments, summary }
+}
+
+function getBattlefieldUnitModelIdentity(unit, modelIndex, bodyguardProfileData = null) {
   const leaderDetails = unit?.unitDetails?.attached_leader || null
   const supportDetails = unit?.unitDetails?.attached_support || null
   const leaderCount = leaderDetails ? getUnitDeclaredModelCount(leaderDetails) : 0
@@ -1771,10 +1943,13 @@ function getBattlefieldUnitModelIdentity(unit, modelIndex) {
       label: 'S',
     }
   }
+  const profileData = bodyguardProfileData || getBattlefieldBodyguardProfileData(unit)
+  const bodyguardProfile = profileData.assignments?.[modelIndex] || null
   return {
     role: 'bodyguard',
-    name: unit?.unitDetails?.bodyguard_name || unit?.datasheetName || unit?.name || 'Model',
+    name: bodyguardProfile?.label || unit?.unitDetails?.bodyguard_name || unit?.datasheetName || unit?.name || 'Model',
     label: '',
+    profileBadge: bodyguardProfile?.badge || '',
   }
 }
 
@@ -1799,11 +1974,12 @@ function getBattlefieldUnitModels(unit, positionPercent, customOffsets = {}) {
   const center = battlefieldPercentToInches(positionPercent)
   const modelOffsets = getBattlefieldUnitModelOffsets(unit, customOffsets)
   const removedModelIds = new Set(unit.removedModelIds || [])
+  const bodyguardProfileData = unit?.modelProfileData || getBattlefieldBodyguardProfileData(unit)
   return Object.entries(modelOffsets)
     .filter(([modelId]) => !removedModelIds.has(modelId))
     .map(([modelId, offset]) => {
       const modelIndex = Number(String(modelId).split('::')[1] || 1) - 1
-      const modelIdentity = getBattlefieldUnitModelIdentity(unit, modelIndex)
+      const modelIdentity = getBattlefieldUnitModelIdentity(unit, modelIndex, bodyguardProfileData)
       return {
         id: modelId,
         unitId: unit.id,
@@ -1811,6 +1987,7 @@ function getBattlefieldUnitModels(unit, positionPercent, customOffsets = {}) {
         modelRole: modelIdentity.role,
         modelName: modelIdentity.name,
         modelLabel: modelIdentity.label,
+        modelProfileBadge: modelIdentity.profileBadge,
         x: center.x + offset.x,
         y: center.y + offset.y,
         z: 0,
@@ -1879,63 +2056,213 @@ function clampModelInsideBattlefield(modelPosition, baseInches) {
   }
 }
 
-function repairBattlefieldUnitCoherency({
+function constrainBattlefieldModelToCoherency({
   unit,
   centerPercent,
   startCenterPercent,
   currentOffsets,
   startOffsets,
   anchorModelId,
+  desiredAbsolute,
   movementLimit,
 }) {
-  if (!unit || !centerPercent || !anchorModelId) {
-    return currentOffsets
-  }
-  const currentModels = getBattlefieldUnitModels(unit, centerPercent, currentOffsets)
-  if (validateBattlefieldUnitCoherency(currentModels).valid) {
+  if (!unit || !centerPercent || !anchorModelId || !desiredAbsolute) {
     return currentOffsets
   }
 
   const center = battlefieldPercentToInches(centerPercent)
   const startCenter = battlefieldPercentToInches(startCenterPercent || centerPercent)
-  const formationOffsets = getBattlefieldUnitModelOffsets(unit)
   const normalizedCurrentOffsets = getBattlefieldUnitModelOffsets(unit, currentOffsets)
   const normalizedStartOffsets = getBattlefieldUnitModelOffsets(unit, startOffsets)
-  const anchorFormationOffset = formationOffsets[anchorModelId]
-  const anchorCurrentOffset = normalizedCurrentOffsets[anchorModelId]
-  if (!anchorFormationOffset || !anchorCurrentOffset) {
+  if (!normalizedCurrentOffsets[anchorModelId]) {
     return currentOffsets
   }
 
-  const repairTranslation = {
-    x: anchorCurrentOffset.x - anchorFormationOffset.x,
-    y: anchorCurrentOffset.y - anchorFormationOffset.y,
-  }
-  const repairedOffsets = { ...normalizedCurrentOffsets }
-  Object.entries(formationOffsets).forEach(([modelId, formationOffset]) => {
-    if (modelId === anchorModelId) {
-      return
-    }
-    const desiredAbsolute = clampModelInsideBattlefield({
-      x: center.x + formationOffset.x + repairTranslation.x,
-      y: center.y + formationOffset.y + repairTranslation.y,
-    }, unit.baseInches)
-    const startOffset = normalizedStartOffsets[modelId] || normalizedCurrentOffsets[modelId] || formationOffset
-    const startAbsolute = {
-      x: startCenter.x + startOffset.x,
-      y: startCenter.y + startOffset.y,
-    }
-    const clampedAbsolute = clampModelInsideBattlefield(
-      clampMoveToMaximumDistance(startAbsolute, desiredAbsolute, movementLimit),
-      unit.baseInches,
-    )
-    repairedOffsets[modelId] = {
-      x: clampedAbsolute.x - center.x,
-      y: clampedAbsolute.y - center.y,
-    }
+  const buildOffsets = (absolutePosition) => ({
+    ...normalizedCurrentOffsets,
+    [anchorModelId]: {
+      x: absolutePosition.x - center.x,
+      y: absolutePosition.y - center.y,
+    },
   })
 
-  return repairedOffsets
+  const desiredOffsets = buildOffsets(desiredAbsolute)
+  const desiredModels = getBattlefieldUnitModels(unit, centerPercent, desiredOffsets)
+  if (
+    validateBattlefieldUnitCoherency(desiredModels).valid
+    && !getOverlappingModelIndexes(desiredModels).length
+  ) {
+    return desiredOffsets
+  }
+
+  const effectiveMovementLimit = Number.isFinite(movementLimit) ? movementLimit : 24
+  const searchStep = 0.25
+  const angleStep = Math.PI / 12
+  const getRangeExcess = (model, otherModel, horizontalRange, verticalRange) => Math.max(
+    0,
+    getModelHorizontalGapInches(model, otherModel) - horizontalRange,
+    getVerticalDistanceInches(model, otherModel) - verticalRange,
+  )
+  const scoreModels = (models) => {
+    const coherency = validateBattlefieldUnitCoherency(models)
+    const overlapIndexes = getOverlappingModelIndexes(models)
+    const anchorModel = models.find((model) => model.id === anchorModelId)
+    let totalPenalty = 0
+    let anchorPenalty = 0
+
+    models.forEach((model) => {
+      const otherModels = models.filter((otherModel) => otherModel.id !== model.id)
+      if (!otherModels.length) {
+        return
+      }
+      const isolationPenalty = Math.min(
+        ...otherModels.map((otherModel) => getRangeExcess(model, otherModel, 2, 5)),
+      )
+      const spreadPenalty = Math.max(
+        ...otherModels.map((otherModel) => getRangeExcess(model, otherModel, 9, 5)),
+      )
+      const modelPenalty = isolationPenalty + spreadPenalty
+      totalPenalty += modelPenalty
+      if (anchorModel && model.id === anchorModel.id) {
+        anchorPenalty = modelPenalty
+      }
+    })
+
+    return {
+      coherency,
+      overlapCount: overlapIndexes.length,
+      overlapPenalty: getModelOverlapPenalty(models),
+      violationCount: coherency.violatingModelIndexes.length,
+      totalPenalty,
+      anchorPenalty,
+    }
+  }
+  const isScoreBetter = (candidateScore, currentScore, candidateDistance, currentDistance) => {
+    if (candidateScore.overlapCount !== currentScore.overlapCount) {
+      return candidateScore.overlapCount < currentScore.overlapCount
+    }
+    if (candidateScore.overlapPenalty < currentScore.overlapPenalty - 0.001) {
+      return true
+    }
+    if (candidateScore.overlapPenalty > currentScore.overlapPenalty + 0.001) {
+      return false
+    }
+    if (candidateScore.violationCount !== currentScore.violationCount) {
+      return candidateScore.violationCount < currentScore.violationCount
+    }
+    if (candidateScore.anchorPenalty < currentScore.anchorPenalty - 0.001) {
+      return true
+    }
+    if (candidateScore.anchorPenalty > currentScore.anchorPenalty + 0.001) {
+      return false
+    }
+    if (candidateScore.totalPenalty < currentScore.totalPenalty - 0.001) {
+      return true
+    }
+    if (candidateScore.totalPenalty > currentScore.totalPenalty + 0.001) {
+      return false
+    }
+    return candidateDistance < currentDistance - 0.001
+  }
+
+  let workingOffsets = desiredOffsets
+  let workingModels = desiredModels
+  let workingScore = scoreModels(workingModels)
+
+  for (let pass = 0; pass < 6 && (!workingScore.coherency.valid || workingScore.overlapCount > 0); pass += 1) {
+    let improvedThisPass = false
+    const violatingIds = new Set(
+      workingScore.coherency.modelResults
+        .filter((result) => !result.within2And5OfAnother || !result.within9And5OfAllOthers)
+        .map((result) => result.id),
+    )
+    const anchorModel = workingModels.find((model) => model.id === anchorModelId)
+    const candidateModels = [...workingModels]
+      .filter((model) => model.id !== anchorModelId)
+      .sort((leftModel, rightModel) => {
+        const leftPriority = violatingIds.has(leftModel.id) ? 0 : 1
+        const rightPriority = violatingIds.has(rightModel.id) ? 0 : 1
+        if (leftPriority !== rightPriority) {
+          return leftPriority - rightPriority
+        }
+        if (!anchorModel) {
+          return 0
+        }
+        return getDistanceInches(leftModel, anchorModel) - getDistanceInches(rightModel, anchorModel)
+      })
+
+    for (const model of candidateModels) {
+      const currentAbsolute = { x: model.x, y: model.y }
+      const startOffset = normalizedStartOffsets[model.id] || normalizedCurrentOffsets[model.id]
+      if (!startOffset) {
+        continue
+      }
+      const startAbsolute = {
+        x: startCenter.x + startOffset.x,
+        y: startCenter.y + startOffset.y,
+      }
+
+      let bestOffsets = workingOffsets
+      let bestScore = workingScore
+      let bestDistance = 0
+      const maxSearchDistance = Math.min(effectiveMovementLimit, 24)
+
+      for (let radius = 0; radius <= maxSearchDistance + 0.001; radius += searchStep) {
+        let foundBetterAtRadius = false
+
+        for (let angle = 0; angle < (Math.PI * 2) - 0.001; angle += angleStep) {
+          const rawCandidateAbsolute = radius <= 0.001
+            ? currentAbsolute
+            : {
+              x: currentAbsolute.x + (Math.cos(angle) * radius),
+              y: currentAbsolute.y + (Math.sin(angle) * radius),
+            }
+          const limitedAbsolute = clampModelInsideBattlefield(
+            Number.isFinite(movementLimit)
+              ? clampMoveToMaximumDistance(startAbsolute, rawCandidateAbsolute, effectiveMovementLimit)
+              : rawCandidateAbsolute,
+            unit.baseInches,
+          )
+          const candidateOffsets = {
+            ...workingOffsets,
+            [model.id]: {
+              x: limitedAbsolute.x - center.x,
+              y: limitedAbsolute.y - center.y,
+            },
+          }
+          const candidateModels = getBattlefieldUnitModels(unit, centerPercent, candidateOffsets)
+          const candidateScore = scoreModels(candidateModels)
+          const candidateDistance = getDistanceInches(currentAbsolute, limitedAbsolute)
+
+          const improved = isScoreBetter(candidateScore, bestScore, candidateDistance, bestDistance)
+
+          if (improved) {
+            bestOffsets = candidateOffsets
+            bestScore = candidateScore
+            bestDistance = candidateDistance
+            foundBetterAtRadius = true
+          }
+        }
+
+        if (foundBetterAtRadius && bestScore.coherency.valid && bestScore.overlapCount === 0) {
+          break
+        }
+      }
+
+      if (isScoreBetter(bestScore, workingScore, bestDistance, 0)) {
+        workingOffsets = bestOffsets
+        workingModels = getBattlefieldUnitModels(unit, centerPercent, workingOffsets)
+        workingScore = bestScore
+        improvedThisPass = true
+      }
+    }
+
+    if (!improvedThisPass) {
+      break
+    }
+  }
+
+  return workingOffsets
 }
 
 function getSegmentPointDistanceInches(segmentStart, segmentEnd, point) {
@@ -3259,6 +3586,110 @@ function renderStatsGrid(stats, battleShocked = false) {
   ))
 }
 
+function getDisplayModelName(name) {
+  return String(name || '').replace(/\s*-\s*Epic Hero\s*$/i, '').trim()
+}
+
+function buildUnitModelStatProfiles(unitDetails) {
+  const baseStats = unitDetails?.stats || {}
+  const modelEntries = unitDetails?.models || unitDetails?.models_data || []
+  if (modelEntries.length <= 1) {
+    return []
+  }
+
+  const countsByName = unitDetails?.model_counts_by_name || {}
+  const targetProfilesByName = Object.fromEntries((unitDetails?.target_profiles || []).map((profile) => [
+    getDisplayModelName(profile.name),
+    profile,
+  ]))
+  const groupedProfiles = new Map()
+
+  modelEntries.forEach((model, index) => {
+    const rawModelName = String(model?.name || '').trim()
+    const modelName = getDisplayModelName(rawModelName)
+    const profile = targetProfilesByName[modelName]
+    const modelCount = Number(
+      countsByName[rawModelName]
+      ?? countsByName[modelName]
+      ?? profile?.models
+      ?? model?.count?.min
+      ?? 0,
+    ) || 0
+
+    const resolvedStats = {
+      ...baseStats,
+      ...(model?.stats_override || {}),
+    }
+
+    if (profile) {
+      resolvedStats.toughness = profile.toughness
+      resolvedStats.wounds = profile.wounds
+      resolvedStats.save = profile.armor_save ? `${profile.armor_save}+` : resolvedStats.save
+      resolvedStats.invulnerable_save = profile.invulnerable_save ? `${profile.invulnerable_save}+` : null
+      resolvedStats.leadership = profile.leadership
+      resolvedStats.objective_control = profile.objective_control
+    }
+
+    const statKey = JSON.stringify([
+      resolvedStats.movement ?? '',
+      resolvedStats.toughness ?? '',
+      resolvedStats.save ?? '',
+      resolvedStats.invulnerable_save ?? '',
+      resolvedStats.wounds ?? '',
+      resolvedStats.leadership ?? '',
+      resolvedStats.objective_control ?? '',
+    ])
+
+    const existingProfile = groupedProfiles.get(statKey)
+    if (existingProfile) {
+      existingProfile.names.push(modelName || `Model ${index + 1}`)
+      existingProfile.modelCount += modelCount
+      return
+    }
+
+    groupedProfiles.set(statKey, {
+      id: `${modelName || 'model'}-${index}`,
+      names: [modelName || `Model ${index + 1}`],
+      modelCount,
+      stats: resolvedStats,
+    })
+  })
+
+  const profiles = Array.from(groupedProfiles.values()).map((profile) => ({
+    ...profile,
+    label: profile.names.join(' / '),
+  }))
+
+  return profiles.length > 1 ? profiles : []
+}
+
+function renderUnitModelStatProfiles(unitDetails, battleShocked = false) {
+  const profiles = buildUnitModelStatProfiles(unitDetails)
+  if (!profiles.length) {
+    return null
+  }
+
+  return (
+    <div className="model-profile-list">
+      {profiles.map((profile) => (
+        <article key={profile.id} className="model-profile-card">
+          <div className="model-profile-header">
+            <h4>{profile.label}</h4>
+            <span>
+              {profile.modelCount > 0
+                ? `${profile.modelCount} model${profile.modelCount === 1 ? '' : 's'}`
+                : '0 selected'}
+            </span>
+          </div>
+          <div className="model-profile-stats">
+            {renderStatsGrid(profile.stats, battleShocked)}
+          </div>
+        </article>
+      ))}
+    </div>
+  )
+}
+
 function renderWeaponStatsGrid(weapon) {
   if (!weapon) {
     return null
@@ -3304,10 +3735,16 @@ function App() {
   const [simulating, setSimulating] = useState(false)
   const [error, setError] = useState('')
   const [activePage, setActivePage] = useState('combat')
+  const [appTheme, setAppTheme] = useState(readThemePreference)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [armyListEntries, setArmyListEntries] = useState([])
-  const [savedArmyLists, setSavedArmyLists] = useState([])
+  const [savedArmyLists, setSavedArmyLists] = useState(readSavedArmyListsFromStorage)
   const [armyListName, setArmyListName] = useState('')
-  const [selectedSavedArmyListId, setSelectedSavedArmyListId] = useState('')
+  const [selectedSavedArmyListId, setSelectedSavedArmyListId] = useState(() => (
+    readSavedArmyListsFromStorage()[0]?.id || ''
+  ))
+  const [battlefieldAttackerSavedArmyListId, setBattlefieldAttackerSavedArmyListId] = useState('')
+  const [battlefieldDefenderSavedArmyListId, setBattlefieldDefenderSavedArmyListId] = useState('')
   const [armyListFaction, setArmyListFaction] = useState('')
   const [armyListUnits, setArmyListUnits] = useState([])
   const [armyListUnitName, setArmyListUnitName] = useState('')
@@ -3325,6 +3762,7 @@ function App() {
   const [completedGameStepKeys, setCompletedGameStepKeys] = useState({})
   const [gameLogEntries, setGameLogEntries] = useState([])
   const [gameNotes, setGameNotes] = useState('')
+  const [battlefieldDeploymentComplete, setBattlefieldDeploymentComplete] = useState(false)
   const [battlefieldCommandPoints, setBattlefieldCommandPoints] = useState({
     attacker: 0,
     defender: 0,
@@ -3366,6 +3804,13 @@ function App() {
   const [selectedBattlefieldUnitId, setSelectedBattlefieldUnitId] = useState('')
   const [battlefieldCombatAttackerId, setBattlefieldCombatAttackerId] = useState('')
   const [battlefieldCombatWeaponNames, setBattlefieldCombatWeaponNames] = useState([])
+  const [battlefieldLegendCollapsed, setBattlefieldLegendCollapsed] = useState(false)
+  const [battlefieldSectionVisibility, setBattlefieldSectionVisibility] = useState({
+    deploymentControls: true,
+    savedLists: true,
+    deploymentStatus: true,
+    turnSequence: true,
+  })
   const [battlefieldMoveTypes, setBattlefieldMoveTypes] = useState({
     attacker: 'normal',
     defender: 'normal',
@@ -3426,6 +3871,10 @@ function App() {
     defender: 'right',
   })
   const battlefieldBoardRef = useRef(null)
+  const settingsPanelRef = useRef(null)
+  const battlefieldDragStateRef = useRef({})
+  const battlefieldPointerFrameRef = useRef(0)
+  const battlefieldPendingPointerRef = useRef(null)
 
   const [attackerFaction, setAttackerFaction] = useState('')
   const [attackerUnit, setAttackerUnit] = useState('')
@@ -3535,20 +3984,51 @@ function App() {
   }, [])
 
   useEffect(() => {
-    try {
-      const storedLists = JSON.parse(localStorage.getItem(SAVED_ARMY_LISTS_STORAGE_KEY) || '[]')
-      if (Array.isArray(storedLists)) {
-        setSavedArmyLists(storedLists)
-        setSelectedSavedArmyListId(storedLists[0]?.id || '')
-      }
-    } catch {
-      setSavedArmyLists([])
-      setSelectedSavedArmyListId('')
-    }
-  }, [])
+    localStorage.setItem(SAVED_ARMY_LISTS_STORAGE_KEY, JSON.stringify(savedArmyLists))
+  }, [savedArmyLists])
 
   useEffect(() => {
-    localStorage.setItem(SAVED_ARMY_LISTS_STORAGE_KEY, JSON.stringify(savedArmyLists))
+    document.documentElement.setAttribute('data-theme', appTheme)
+    localStorage.setItem(APP_THEME_STORAGE_KEY, appTheme)
+  }, [appTheme])
+
+  useEffect(() => {
+    if (!settingsOpen) {
+      return undefined
+    }
+
+    function handlePointerDown(event) {
+      if (!settingsPanelRef.current?.contains(event.target)) {
+        setSettingsOpen(false)
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setSettingsOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [settingsOpen])
+
+  useEffect(() => {
+    setBattlefieldAttackerSavedArmyListId((currentListId) => (
+      savedArmyLists.some((list) => list.id === currentListId)
+        ? currentListId
+        : savedArmyLists[0]?.id || ''
+    ))
+    setBattlefieldDefenderSavedArmyListId((currentListId) => (
+      savedArmyLists.some((list) => list.id === currentListId)
+        ? currentListId
+        : savedArmyLists[1]?.id || savedArmyLists[0]?.id || ''
+    ))
   }, [savedArmyLists])
 
   useEffect(() => {
@@ -3661,10 +4141,18 @@ function App() {
   }, [armyListFaction])
 
   const attackerArmyListDeploymentEntries = useMemo(() => {
+    const sideEntries = armyListEntries.filter((entry) => entry.battlefieldRosterSide === 'attacker')
+    if (sideEntries.length) {
+      return sideEntries
+    }
     const matchingEntries = armyListEntries.filter((entry) => !attackerFaction || entry.faction === attackerFaction)
     return matchingEntries.length ? matchingEntries : armyListEntries
   }, [armyListEntries, attackerFaction])
   const defenderArmyListDeploymentEntries = useMemo(() => {
+    const sideEntries = armyListEntries.filter((entry) => entry.battlefieldRosterSide === 'defender')
+    if (sideEntries.length) {
+      return sideEntries
+    }
     const matchingEntries = armyListEntries.filter((entry) => !defenderFaction || entry.faction === defenderFaction)
     return matchingEntries.length ? matchingEntries : armyListEntries
   }, [armyListEntries, defenderFaction])
@@ -4901,9 +5389,10 @@ function App() {
     : activeGameModuleIds[0] || ''
   const gameCanGoBack = activeGamePhaseIndex > 0
   const gameCurrentStepComplete = Boolean(completedGameStepKeys[activeGameStepKey])
+  const canDeployOnBattlefield = activePage === 'battlefield' && !battlefieldDeploymentComplete
   const canMoveOnBattlefield = activePage === 'battlefield' && activeGamePhase?.id === 'movement'
   const canChargeOnBattlefield = activePage === 'battlefield' && activeGamePhase?.id === 'charge'
-  const canRepositionBattlefieldUnits = canMoveOnBattlefield || canChargeOnBattlefield
+  const canRepositionBattlefieldUnits = canDeployOnBattlefield || canMoveOnBattlefield || canChargeOnBattlefield
   const battlefieldUnits = useMemo(() => {
     const buildUnit = ({ id, sourceSide, role, x, y, instanceNumber = 1, unitDetails: instanceUnitDetails = null, unitName = '', faction: instanceFaction = '' }) => {
       const unitDetails = instanceUnitDetails || (sourceSide === 'attacker' ? attackerUnitDetails : defenderUnitDetails)
@@ -4911,12 +5400,16 @@ function App() {
         return null
       }
       const baseMm = getBaseDiameterMm(unitDetails)
-      const startingModelCount = Number(unitDetails.model_count ?? 1) || 1
+      const startingModelCount = getResolvedUnitModelCount(unitDetails)
       const removedModelIds = battlefieldRemovedModelIds[id] || []
       const currentModelCount = Math.max(0, startingModelCount - removedModelIds.length)
       if (currentModelCount <= 0) {
         return null
       }
+      const modelProfileData = getBattlefieldBodyguardProfileData({
+        unitDetails,
+        startingModelCount,
+      })
       const faction = instanceFaction || (sourceSide === 'attacker' ? attackerFaction : defenderFaction)
       return {
         id,
@@ -4932,6 +5425,7 @@ function App() {
         movementInches: parseMovementInches(unitDetails.stats?.movement),
         modelCount: currentModelCount,
         startingModelCount,
+        modelProfileData,
         removedModelIds,
         keywords: unitDetails.keywords || [],
         faction_keywords: unitDetails.faction_keywords || [],
@@ -4986,7 +5480,9 @@ function App() {
     }
     return getBattlefieldSourceSide(unitOrId) === 'attacker' ? attackerModelCount : defenderModelCount
   }, [attackerModelCount, battlefieldUnitMap, defenderModelCount, getBattlefieldSourceSide])
-  const selectedBattlefieldUnit = battlefieldUnitMap[selectedBattlefieldUnitId] || battlefieldUnits[0] || null
+  const selectedBattlefieldUnit = selectedBattlefieldUnitId
+    ? battlefieldUnitMap[selectedBattlefieldUnitId] || null
+    : null
   const selectedBattlefieldUnitEmbarked = Boolean(selectedBattlefieldUnit && battlefieldEmbarkedUnits[selectedBattlefieldUnit.id])
   const selectedBattlefieldUnitMovedThisPhase = Boolean(selectedBattlefieldUnit && battlefieldMovedUnits[selectedBattlefieldUnit.id])
   const selectedBattlefieldUnitCanMoveThisPhase = canMoveOnBattlefield && !selectedBattlefieldUnitMovedThisPhase
@@ -5228,12 +5724,42 @@ function App() {
       canOverlapFriendlyModels: unitCanOverlapFriendlyModels(selectedBattlefieldUnitDetails),
     })
   ), [enemyBattlefieldModels, friendlyBattlefieldModels, selectedBattlefieldModels, selectedBattlefieldUnitDetails])
+  const selectedBattlefieldHasBaseOverlap = selectedBattlefieldSetupStatus.violations.includes('unit_model_overlap')
+    || selectedBattlefieldSetupStatus.violations.includes('friendly_model_overlap')
+  const selectedBattlefieldInvalidModelIds = useMemo(() => {
+    if (!selectedBattlefieldModels.length) {
+      return new Set()
+    }
+
+    const invalidIds = new Set()
+    const addModelsByIndexes = (indexes = []) => {
+      indexes.forEach((index) => {
+        const model = selectedBattlefieldModels[index]
+        if (model?.id) {
+          invalidIds.add(model.id)
+        }
+      })
+    }
+
+    addModelsByIndexes(selectedBattlefieldSetupStatus.coherency?.violatingModelIndexes || [])
+    addModelsByIndexes(selectedBattlefieldSetupStatus.unitOverlapModelIndexes || [])
+    addModelsByIndexes(selectedBattlefieldSetupStatus.friendlyOverlapModelIndexes || [])
+    addModelsByIndexes(selectedBattlefieldSetupStatus.offBattlefieldModelIndexes || [])
+
+    return invalidIds
+  }, [selectedBattlefieldHasBaseOverlap, selectedBattlefieldModels, selectedBattlefieldSetupStatus])
   const selectedBattlefieldVisibility = useMemo(() => {
     if (!selectedBattlefieldModels.length || !enemyBattlefieldModels.length) {
       return null
     }
     return lineOfSightExists(selectedBattlefieldModels[0], enemyBattlefieldModels[0])
   }, [enemyBattlefieldModels, selectedBattlefieldModels])
+  const toggleBattlefieldSection = useCallback((sectionId) => {
+    setBattlefieldSectionVisibility((current) => ({
+      ...current,
+      [sectionId]: !current[sectionId],
+    }))
+  }, [])
   const battlefieldInEngagementRange = selectedBattlefieldSetupStatus.engagement.engaged
   const battlefieldClosestModelGapInches = useMemo(
     () => getMinimumModelGapInches(selectedBattlefieldModels, enemyBattlefieldModels),
@@ -6101,10 +6627,11 @@ function App() {
   }, [attackerUnitDetails, defenderUnitDetails])
 
   useEffect(() => {
-    if (!battlefieldUnitMap[selectedBattlefieldUnitId]) {
-      setSelectedBattlefieldUnitId(battlefieldUnits[0]?.id || '')
+    if (selectedBattlefieldUnitId && !battlefieldUnitMap[selectedBattlefieldUnitId]) {
+      setSelectedBattlefieldUnitId('')
+      setSelectedBattlefieldModelId('')
     }
-  }, [battlefieldUnitMap, battlefieldUnits, selectedBattlefieldUnitId])
+  }, [battlefieldUnitMap, selectedBattlefieldUnitId])
 
   useEffect(() => {
     if (!selectedBattlefieldModels.length) {
@@ -6197,6 +6724,42 @@ function App() {
   }, [battlefieldCombatWeaponNames, battlefieldCombatWeaponOptions, battlefieldWeaponSelectionLimited])
 
   useEffect(() => {
+    battlefieldDragStateRef.current = {
+      battlefieldAdvanceRolls,
+      battlefieldBattleShockedUnits,
+      battlefieldChargeRolls,
+      battlefieldFallBackModes,
+      battlefieldModelMoveStarts,
+      battlefieldModelOffsets,
+      battlefieldMoveStarts,
+      battlefieldMoveTypes,
+      battlefieldPositions,
+      battlefieldSurgeDistances,
+      battlefieldTakeToSkies,
+      battlefieldUnitMap,
+      battlefieldUnits,
+      canChargeOnBattlefield,
+      canDeployOnBattlefield,
+    }
+  }, [
+    battlefieldAdvanceRolls,
+    battlefieldBattleShockedUnits,
+    battlefieldChargeRolls,
+    battlefieldFallBackModes,
+    battlefieldModelMoveStarts,
+    battlefieldModelOffsets,
+    battlefieldMoveStarts,
+    battlefieldMoveTypes,
+    battlefieldPositions,
+    battlefieldSurgeDistances,
+    battlefieldTakeToSkies,
+    battlefieldUnitMap,
+    battlefieldUnits,
+    canChargeOnBattlefield,
+    canDeployOnBattlefield,
+  ])
+
+  useEffect(() => {
     if ((!draggingUnitId && !draggingModelId) || !canRepositionBattlefieldUnits) {
       if ((draggingUnitId || draggingModelId) && !canRepositionBattlefieldUnits) {
         setDraggingUnitId('')
@@ -6206,16 +6769,17 @@ function App() {
     }
 
     function getDragContext(unitId) {
-      const unit = battlefieldUnitMap[unitId]
+      const dragState = battlefieldDragStateRef.current
+      const unit = dragState.battlefieldUnitMap?.[unitId]
       const board = battlefieldBoardRef.current
       if (!unit || !board) {
         return null
       }
-      const moveType = battlefieldMoveTypes[unitId] || 'normal'
-      const advanceRoll = battlefieldAdvanceRolls[unitId] || 1
-      const surgeDistance = battlefieldSurgeDistances[unitId] || 3
-      const chargeRoll = battlefieldChargeRolls[unitId] ?? 2
-      const takeToSkies = Boolean(battlefieldTakeToSkies[unitId])
+      const moveType = dragState.battlefieldMoveTypes?.[unitId] || 'normal'
+      const advanceRoll = dragState.battlefieldAdvanceRolls?.[unitId] || 1
+      const surgeDistance = dragState.battlefieldSurgeDistances?.[unitId] || 3
+      const chargeRoll = dragState.battlefieldChargeRolls?.[unitId] ?? 2
+      const takeToSkies = Boolean(dragState.battlefieldTakeToSkies?.[unitId])
       return {
         unit,
         board,
@@ -6223,18 +6787,20 @@ function App() {
         advanceRoll,
         surgeDistance,
         chargeRoll,
-        fallBackMode: battlefieldFallBackModes[unitId] || 'ordered_retreat',
-        unitBattleShocked: Boolean(battlefieldBattleShockedUnits[unitId]),
+        fallBackMode: dragState.battlefieldFallBackModes?.[unitId] || 'ordered_retreat',
+        unitBattleShocked: Boolean(dragState.battlefieldBattleShockedUnits?.[unitId]),
         takeToSkies,
-        movementLimit: getBattlefieldMoveDistanceLimit({
-          unit,
-          moveType,
-          advanceRoll,
-          surgeDistance,
-          chargeRoll,
-          takeToSkies,
-          charging: canChargeOnBattlefield,
-        }),
+        movementLimit: dragState.canDeployOnBattlefield
+          ? Number.MAX_SAFE_INTEGER
+          : getBattlefieldMoveDistanceLimit({
+            unit,
+            moveType,
+            advanceRoll,
+            surgeDistance,
+            chargeRoll,
+            takeToSkies,
+            charging: dragState.canChargeOnBattlefield,
+          }),
       }
     }
 
@@ -6250,18 +6816,18 @@ function App() {
       if (!draggingModelId) {
         return
       }
+      const dragState = battlefieldDragStateRef.current
       const unitId = draggingModelId.split('::')[0]
       const context = getDragContext(unitId)
       if (!context) {
         return
       }
       const { unit, board, movementLimit } = context
-      const centerPercent = battlefieldPositions[unitId] || unit
+      const centerPercent = dragState.battlefieldPositions?.[unitId] || unit
       const center = battlefieldPercentToInches(centerPercent)
-      const startCenterPercent = battlefieldMoveStarts[unitId] || unit
+      const startCenterPercent = dragState.battlefieldMoveStarts?.[unitId] || unit
       const startCenter = battlefieldPercentToInches(startCenterPercent)
-      const currentOffsets = getBattlefieldUnitModelOffsets(unit, battlefieldModelOffsets[unitId])
-      const startOffsets = getBattlefieldUnitModelOffsets(unit, battlefieldModelMoveStarts[unitId])
+      const startOffsets = getBattlefieldUnitModelOffsets(unit, dragState.battlefieldModelMoveStarts?.[unitId])
       const startOffset = startOffsets[draggingModelId]
       if (!startOffset) {
         return
@@ -6272,32 +6838,34 @@ function App() {
       }
       const desiredAbsolute = clampModelInsideBattlefield(getPointerInches(board, clientX, clientY), unit.baseInches)
       const nextAbsolute = clampModelInsideBattlefield(
-        clampMoveToMaximumDistance(startAbsolute, desiredAbsolute, movementLimit),
+        dragState.canDeployOnBattlefield
+          ? desiredAbsolute
+          : clampMoveToMaximumDistance(startAbsolute, desiredAbsolute, movementLimit),
         unit.baseInches,
       )
-      const nextOffsets = {
-        ...currentOffsets,
-        [draggingModelId]: {
-          x: nextAbsolute.x - center.x,
-          y: nextAbsolute.y - center.y,
-        },
-      }
-      const repairedOffsets = repairBattlefieldUnitCoherency({
-        unit,
-        centerPercent,
-        startCenterPercent,
-        currentOffsets: nextOffsets,
-        startOffsets,
-        anchorModelId: draggingModelId,
-        movementLimit,
-      })
       setBattlefieldModelOffsets((current) => ({
         ...current,
-        [unitId]: repairedOffsets,
+        [unitId]: constrainBattlefieldModelToCoherency({
+          unit,
+          centerPercent,
+          startCenterPercent,
+          currentOffsets: {
+            ...getBattlefieldUnitModelOffsets(unit, current[unitId]),
+            [draggingModelId]: {
+              x: nextAbsolute.x - center.x,
+              y: nextAbsolute.y - center.y,
+            },
+          },
+          startOffsets,
+          anchorModelId: draggingModelId,
+          desiredAbsolute: nextAbsolute,
+          movementLimit: dragState.canDeployOnBattlefield ? undefined : movementLimit,
+        }),
       }))
     }
 
     function updateDraggedUnitPosition(clientX, clientY) {
+      const dragState = battlefieldDragStateRef.current
       setBattlefieldPositions((current) => {
         const context = getDragContext(draggingUnitId)
         if (!context) {
@@ -6317,7 +6885,7 @@ function App() {
         } = context
 
         const rect = board.getBoundingClientRect()
-        const currentOffsets = getBattlefieldUnitModelOffsets(unit, battlefieldModelOffsets[draggingUnitId])
+        const currentOffsets = getBattlefieldUnitModelOffsets(unit, dragState.battlefieldModelOffsets?.[draggingUnitId])
         const baseRadius = unit.baseInches / 2
         const minOffsetX = Math.min(...Object.values(currentOffsets).map((offset) => offset.x))
         const maxOffsetX = Math.max(...Object.values(currentOffsets).map((offset) => offset.x))
@@ -6329,19 +6897,21 @@ function App() {
         const maxCenterYPercent = ((BATTLEFIELD_HEIGHT_INCHES - baseRadius - maxOffsetY) / BATTLEFIELD_HEIGHT_INCHES) * 100
         const xPercent = ((clientX - rect.left) / rect.width) * 100
         const yPercent = ((clientY - rect.top) / rect.height) * 100
-        const startPercent = battlefieldMoveStarts[draggingUnitId] || current[draggingUnitId] || unit
+        const startPercent = dragState.battlefieldMoveStarts?.[draggingUnitId] || current[draggingUnitId] || unit
         const startInches = battlefieldPercentToInches(startPercent)
         const edgeClampedPercent = {
           x: clamp(xPercent, minCenterXPercent, maxCenterXPercent),
           y: clamp(yPercent, minCenterYPercent, maxCenterYPercent),
         }
-        const distanceClampedInches = clampMoveToMaximumDistance(
-          startInches,
-          battlefieldPercentToInches(edgeClampedPercent),
-          movementLimit,
-        )
+        const distanceClampedInches = canDeployOnBattlefield
+          ? battlefieldPercentToInches(edgeClampedPercent)
+          : clampMoveToMaximumDistance(
+            startInches,
+            battlefieldPercentToInches(edgeClampedPercent),
+            movementLimit,
+          )
         const nextPercent = battlefieldInchesToPercent(distanceClampedInches)
-        const enemyUnit = battlefieldUnits.find((candidate) => candidate.id !== draggingUnitId)
+        const enemyUnit = dragState.battlefieldUnits?.find((candidate) => candidate.id !== draggingUnitId)
         const enemyPosition = enemyUnit ? battlefieldPercentToInches(current[enemyUnit.id] || enemyUnit) : null
         const unitEngagedBefore = enemyUnit && enemyPosition
           ? Math.max(
@@ -6353,7 +6923,9 @@ function App() {
           ...enemyUnit,
           position: current[enemyUnit.id] || enemyUnit,
         } : null
-        const validation = canChargeOnBattlefield
+        const validation = dragState.canDeployOnBattlefield
+          ? { valid: true }
+          : dragState.canChargeOnBattlefield
           ? validateBattlefieldChargeMove({
             start: startInches,
             end: distanceClampedInches,
@@ -6395,41 +6967,53 @@ function App() {
       })
     }
 
-    function handlePointerMove(event) {
-      if (draggingModelId) {
-        updateDraggedModelPosition(event.clientX, event.clientY)
+    function flushPendingPointerMove() {
+      battlefieldPointerFrameRef.current = 0
+      const pendingPointer = battlefieldPendingPointerRef.current
+      if (!pendingPointer) {
         return
       }
-      updateDraggedUnitPosition(event.clientX, event.clientY)
+      if (draggingModelId) {
+        updateDraggedModelPosition(pendingPointer.clientX, pendingPointer.clientY)
+        return
+      }
+      updateDraggedUnitPosition(pendingPointer.clientX, pendingPointer.clientY)
+    }
+
+    function handlePointerMove(event) {
+      battlefieldPendingPointerRef.current = {
+        clientX: event.clientX,
+        clientY: event.clientY,
+      }
+      if (battlefieldPointerFrameRef.current) {
+        return
+      }
+      battlefieldPointerFrameRef.current = window.requestAnimationFrame(flushPendingPointerMove)
     }
 
     function handlePointerUp() {
+      if (battlefieldPointerFrameRef.current) {
+        window.cancelAnimationFrame(battlefieldPointerFrameRef.current)
+        battlefieldPointerFrameRef.current = 0
+      }
+      battlefieldPendingPointerRef.current = null
       setDraggingUnitId('')
       setDraggingModelId('')
     }
 
-    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointermove', handlePointerMove, { passive: true })
     window.addEventListener('pointerup', handlePointerUp)
 
     return () => {
+      if (battlefieldPointerFrameRef.current) {
+        window.cancelAnimationFrame(battlefieldPointerFrameRef.current)
+        battlefieldPointerFrameRef.current = 0
+      }
+      battlefieldPendingPointerRef.current = null
       window.removeEventListener('pointermove', handlePointerMove)
       window.removeEventListener('pointerup', handlePointerUp)
     }
   }, [
-    battlefieldAdvanceRolls,
-    battlefieldBattleShockedUnits,
-    battlefieldChargeRolls,
-    battlefieldFallBackModes,
-    battlefieldModelMoveStarts,
-    battlefieldModelOffsets,
-    battlefieldMoveStarts,
-    battlefieldMoveTypes,
-    battlefieldPositions,
-    battlefieldSurgeDistances,
-    battlefieldTakeToSkies,
-    battlefieldUnitMap,
-    battlefieldUnits,
-    canChargeOnBattlefield,
     canRepositionBattlefieldUnits,
     draggingModelId,
     draggingUnitId,
@@ -6938,6 +7522,7 @@ function App() {
   function handleBattlefieldUnitPointerDown(unitId) {
     return (event) => {
       event.preventDefault()
+      event.stopPropagation()
       if (battlefieldPendingCasualties?.unitId === unitId) {
         return
       }
@@ -6979,6 +7564,20 @@ function App() {
       }
       setDraggingModelId(modelId)
     }
+  }
+
+  function handleBattlefieldBoardPointerDown(event) {
+    if (
+      event.target.closest('.battlefield-unit')
+      || event.target.closest('.battlefield-unit-label-anchor')
+      || event.target.closest('.battlefield-ring-legend')
+    ) {
+      return
+    }
+    setSelectedBattlefieldUnitId('')
+    setSelectedBattlefieldModelId('')
+    setDraggingUnitId('')
+    setDraggingModelId('')
   }
 
   function returnBattlefieldUnitToMoveStart(unit = selectedBattlefieldUnit) {
@@ -7190,7 +7789,7 @@ function App() {
     const supportDetails = getAttachedArmyListUnitDetails(entry, 'support')
     const attachedDetails = [leaderDetails, supportDetails].filter(Boolean)
     const modelCount = [bodyguardDetails, ...attachedDetails].reduce(
-      (total, unitDetails) => total + (Number(unitDetails?.model_count ?? unitDetails?.unit_composition?.min_models ?? 1) || 1),
+      (total, unitDetails) => total + getResolvedUnitModelCount(unitDetails),
       0,
     )
     const packageName = [
@@ -7308,14 +7907,81 @@ function App() {
     }
   }
 
-  async function loadSavedArmyList() {
-    const selectedList = savedArmyLists.find((list) => list.id === selectedSavedArmyListId)
+  async function hydrateSavedArmyListEntries(entries, options = {}) {
+    const { idPrefix = '', battlefieldRosterSide = '' } = options
+    const normalizedEntries = (entries || []).map(normalizeSavedArmyListEntry)
+    const entryIdMap = Object.fromEntries(normalizedEntries.map((entry, index) => [
+      entry.id,
+      idPrefix ? `${idPrefix}-${index}` : entry.id,
+    ]))
+
+    return Promise.all(normalizedEntries.map((entry, index) => hydrateSavedArmyListEntry({
+      ...entry,
+      id: entryIdMap[entry.id] || entry.id,
+      attachedLeaderEntryId: entry.attachedLeaderEntryId ? (entryIdMap[entry.attachedLeaderEntryId] || '') : '',
+      attachedSupportEntryId: entry.attachedSupportEntryId ? (entryIdMap[entry.attachedSupportEntryId] || '') : '',
+      battlefieldRosterSide: battlefieldRosterSide || entry.battlefieldRosterSide || '',
+    }, index)))
+  }
+
+  async function loadSavedArmyListEntries(listId, options = {}) {
+    const {
+      replaceMode = 'replace',
+      battlefieldRosterSide = '',
+      setFactionForSide = false,
+    } = options
+    const selectedList = savedArmyLists.find((list) => list.id === listId)
     if (!selectedList) {
+      return []
+    }
+
+    const idPrefix = battlefieldRosterSide
+      ? `${battlefieldRosterSide}-${selectedList.id}-${Date.now()}`
+      : ''
+    const hydratedEntries = await hydrateSavedArmyListEntries(selectedList.entries || [], {
+      idPrefix,
+      battlefieldRosterSide,
+    })
+
+    if (replaceMode === 'replace-side' && battlefieldRosterSide) {
+      setArmyListEntries((currentEntries) => [
+        ...currentEntries.filter((entry) => entry.battlefieldRosterSide !== battlefieldRosterSide),
+        ...hydratedEntries,
+      ])
+    } else {
+      setArmyListEntries(hydratedEntries)
+      setArmyListName(selectedList.name || '')
+    }
+
+    if (setFactionForSide && battlefieldRosterSide) {
+      const listFaction = hydratedEntries.find((entry) => entry.faction)?.faction || ''
+      if (battlefieldRosterSide === 'attacker' && listFaction) {
+        setAttackerFaction(listFaction)
+      }
+      if (battlefieldRosterSide === 'defender' && listFaction) {
+        setDefenderFaction(listFaction)
+      }
+    }
+
+    return hydratedEntries
+  }
+
+  async function loadSavedArmyList() {
+    await loadSavedArmyListEntries(selectedSavedArmyListId)
+  }
+
+  async function loadBattlefieldSavedArmyList(sourceSide) {
+    const listId = sourceSide === 'attacker'
+      ? battlefieldAttackerSavedArmyListId
+      : battlefieldDefenderSavedArmyListId
+    if (!listId) {
       return
     }
-    const hydratedEntries = await Promise.all((selectedList.entries || []).map(hydrateSavedArmyListEntry))
-    setArmyListEntries(hydratedEntries)
-    setArmyListName(selectedList.name || '')
+    await loadSavedArmyListEntries(listId, {
+      replaceMode: 'replace-side',
+      battlefieldRosterSide: sourceSide,
+      setFactionForSide: true,
+    })
   }
 
   function deleteSavedArmyList() {
@@ -7379,7 +8045,7 @@ function App() {
     )
   }
 
-  function renderArmyListInlineStats(stats) {
+  function renderArmyListInlineStatRow(stats, keyPrefix = 'unit') {
     if (!stats) {
       return null
     }
@@ -7400,7 +8066,7 @@ function App() {
           }
           const displayValue = formatValue ? formatValue(value) : String(value)
           return (
-            <div key={key} className="army-list-inline-stat">
+            <div key={`${keyPrefix}-${key}`} className="army-list-inline-stat">
               <span>{label}</span>
               <strong>
                 {displayValue}
@@ -7411,6 +8077,27 @@ function App() {
         })}
       </div>
     )
+  }
+
+  function renderArmyListInlineStats(unitData) {
+    const unitDetails = unitData?.unitDetails || unitData
+    const stats = unitDetails?.stats
+    const modelProfiles = buildUnitModelStatProfiles(unitDetails)
+
+    if (modelProfiles.length) {
+      return (
+        <div className="army-list-inline-stats-stack">
+          {modelProfiles.map((profile) => (
+            <div key={profile.id} className="army-list-inline-profile">
+              <span className="army-list-inline-profile-label">{profile.label}</span>
+              {renderArmyListInlineStatRow(profile.stats, profile.id)}
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    return renderArmyListInlineStatRow(stats)
   }
 
   function renderArmyListEntryCustomization(entry) {
@@ -7764,6 +8451,7 @@ function App() {
     setBattlefieldTransportCapacities({})
     setSelectedBattlefieldUnitId('')
     setSelectedBattlefieldModelId('')
+    setBattlefieldDeploymentComplete(false)
   }
 
   function updateArmyListEntryCount(entryId, nextCount) {
@@ -7819,14 +8507,15 @@ function App() {
 
   function getBattlefieldModelsForPositionCandidate(sourceSide, unitDetails, position, id = '__candidate__') {
     const baseMm = getBaseDiameterMm(unitDetails)
+    const modelCount = getResolvedUnitModelCount(unitDetails)
     const candidateUnit = {
       id,
       sourceSide,
       side: sourceSide,
       baseMm,
       baseInches: mmToInches(baseMm),
-      startingModelCount: Number(unitDetails?.model_count ?? 1) || 1,
-      modelCount: Number(unitDetails?.model_count ?? 1) || 1,
+      startingModelCount: modelCount,
+      modelCount,
       removedModelIds: [],
     }
     return getBattlefieldUnitModels(candidateUnit, position, {})
@@ -7993,12 +8682,22 @@ function App() {
     commitBattlefieldPositionsAsMoveStarts(battlefieldPositions, { markSelectedMoved: true })
   }
 
+  function completeBattlefieldDeployment() {
+    if (!battlefieldUnits.length) {
+      return
+    }
+    pushBattlefieldUndo('Complete deployment')
+    commitBattlefieldPositionsAsMoveStarts(battlefieldPositions, { markSelectedMoved: false })
+    setBattlefieldDeploymentComplete(true)
+    appendGameLog('Completed deployment setup.')
+  }
+
   function commitSelectedBattlefieldCharge() {
     if (
       !selectedBattlefieldUnit
       || !enemyBattlefieldUnit
       || !selectedBattlefieldChargeStatus?.chargeCanReach
-      || selectedBattlefieldSetupStatus.violations.includes('friendly_model_overlap')
+      || selectedBattlefieldHasBaseOverlap
       || selectedBattlefieldUnitPerformingAction
       || selectedBattlefieldUnitEmbarked
       || selectedBattlefieldUnitOffBattlefield
@@ -8105,6 +8804,10 @@ function App() {
   }
 
   function completeCurrentGameStep() {
+    if (!battlefieldDeploymentComplete) {
+      completeBattlefieldDeployment()
+      return
+    }
     if (!activeGamePhase) {
       return
     }
@@ -8152,6 +8855,7 @@ function App() {
   }
 
   function resetGuidedGame() {
+    setBattlefieldDeploymentComplete(false)
     setGameBattleRound(1)
     setGameActivePlayer('Player 1')
     setActiveGamePhaseId(turnSequence[0]?.id || DEFAULT_TURN_STRUCTURE[0].id)
@@ -8219,26 +8923,35 @@ function App() {
   return (
     <div className="app-shell">
       <header className="hero-band">
-        <p className="eyebrow">Tactica Forge: Warhammer 40,000 Combat Simulator</p>
-        <div className="hero-copy">
-          <h1>
-            {activePage === 'combat'
-              ? 'Check Unit Effectiveness'
-              : activePage === 'battlefield'
-                ? 'Plot Units on the Battlefield'
-                : activePage === 'turn'
-                  ? 'Run the Turn Sequence'
-                  : 'Build Army Lists'}
-          </h1>
-          <p>
-            {activePage === 'combat'
-              ? 'Pick an attacker, a weapon profile, a defender, and the combat context. Applies the rules engine and returns a full combat log.'
-              : activePage === 'battlefield'
-                ? 'The selected units from Combat are shown as scaled bases on a 44 x 60 inch top-down board.'
-                : activePage === 'turn'
-                  ? 'Track the 11th Edition turn order and inspect which rule modules are available in each phase.'
-                  : 'Build named rosters from selected combat units and save them locally for later sessions.'}
-          </p>
+        <div className="hero-content">
+          <div className="hero-copy">
+            <p className="eyebrow">Strategium Forge | Warhammer 40,000 Simulator</p>
+            <h1>
+              {activePage === 'combat'
+                ? 'Check Unit Effectiveness'
+                : activePage === 'battlefield'
+                  ? 'Plot Units on the Battlefield'
+                  : activePage === 'turn'
+                    ? 'Run the Turn Sequence'
+                    : 'Build Army Lists'}
+            </h1>
+            <p>
+              {activePage === 'combat'
+                ? 'Pick an attacker, a weapon profile, a defender, and the combat context. Applies the rules engine and returns a full combat log.'
+                : activePage === 'battlefield'
+                  ? 'The selected units from Combat are shown as scaled bases on a 44 x 60 inch top-down board.'
+                  : activePage === 'turn'
+                    ? 'Track the 11th Edition turn order and inspect which rule modules are available in each phase.'
+                    : 'Build named rosters from selected combat units and save them locally for later sessions.'}
+            </p>
+          </div>
+          <div className="hero-mark">
+            <img
+              src="/branding/strategium_forge_logo_modern_no_background.PNG"
+              alt="Strategium Forge"
+              className="hero-logo"
+            />
+          </div>
         </div>
       </header>
 
@@ -8271,6 +8984,54 @@ function App() {
         >
           Battlefield
         </button>
+        <div ref={settingsPanelRef} className="settings-shell">
+          <button
+            type="button"
+            className="settings-button"
+            aria-label="Open user settings"
+            aria-expanded={settingsOpen}
+            title="Settings"
+            onClick={() => setSettingsOpen((current) => !current)}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="settings-button-icon">
+              <circle cx="12" cy="12" r="3.1" />
+              <path d="M12 2.8v2.3" />
+              <path d="M12 18.9v2.3" />
+              <path d="M21.2 12h-2.3" />
+              <path d="M5.1 12H2.8" />
+              <path d="M18.5 5.5l-1.6 1.6" />
+              <path d="M7.1 16.9l-1.6 1.6" />
+              <path d="M18.5 18.5l-1.6-1.6" />
+              <path d="M7.1 7.1L5.5 5.5" />
+            </svg>
+          </button>
+          {settingsOpen ? (
+            <div className="settings-popover">
+              <p className="kicker">User Settings</p>
+              <div className="settings-group">
+                <span className="settings-label">Theme</span>
+                <div className="theme-option-list" role="radiogroup" aria-label="Theme">
+                  {Object.values(APP_THEMES).map((theme) => (
+                    <button
+                      key={theme.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={appTheme === theme.id}
+                      className={`theme-option ${appTheme === theme.id ? 'active' : ''}`}
+                      onClick={() => {
+                        setAppTheme(theme.id)
+                        setSettingsOpen(false)
+                      }}
+                    >
+                      <strong>{theme.name}</strong>
+                      <span>{theme.description}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </nav>
 
       {activePage === 'combat' ? (
@@ -9303,6 +10064,7 @@ function App() {
               </button>
               <div className="datasheet-stats">
                 {renderStatsGrid(attackerUnitDetails?.stats, attackerBattleshocked)}
+                {renderUnitModelStatProfiles(attackerUnitDetails, attackerBattleshocked)}
               </div>
               <div className="active-rules">
                 <p className="kicker">Active Rules</p>
@@ -9338,6 +10100,7 @@ function App() {
               </button>
               <div className="datasheet-stats">
                 {renderStatsGrid(defenderUnitDetails?.stats, defenderBattleshocked)}
+                {renderUnitModelStatProfiles(defenderUnitDetails, defenderBattleshocked)}
               </div>
               <div className="active-rules">
                 <p className="kicker">Active Rules</p>
@@ -9949,410 +10712,691 @@ function App() {
             </div>
             <div className="battlefield-meta">
               <span>60&quot; x 44&quot;</span>
+              <span>Grid 6&quot;</span>
               <span>Top-Down View</span>
             </div>
           </div>
 
-          <div className="battlefield-squad-controls cluster two-up">
-            {renderModelCountSelector(
-              'Attacker',
-              attackerUnitDetails,
-              attackerModelCount,
-              setAttackerModelCount,
-              attackerModelCounts,
-              setAttackerModelCounts,
-            )}
-            {renderModelCountSelector(
-              'Defender',
-              defenderUnitDetails,
-              defenderModelCount,
-              setDefenderModelCount,
-              defenderModelCounts,
-              setDefenderModelCounts,
-            )}
-          </div>
-          <div className="battlefield-instance-controls">
+          <section className="battlefield-preboard-section">
             <button
               type="button"
-              className="secondary-button"
-              onClick={() => deployBaseBattlefieldUnit('attacker')}
-              disabled={!attackerUnitDetails || battlefieldBaseUnitDeployment.attacker}
+              className="battlefield-preboard-toggle"
+              onClick={() => toggleBattlefieldSection('deploymentControls')}
+              aria-expanded={battlefieldSectionVisibility.deploymentControls}
             >
-              Deploy Base Attacker
+              <div>
+                <p className="kicker">Setup Controls</p>
+                <strong>Deployment Controls</strong>
+                <span className="battlefield-preboard-summary">
+                  {battlefieldUnits.length
+                    ? `${battlefieldUnits.length} unit${battlefieldUnits.length === 1 ? '' : 's'} on the board`
+                    : 'No units deployed yet'}
+                  {selectedBattlefieldUnit ? ` • Selected: ${selectedBattlefieldUnit.name}` : ''}
+                </span>
+              </div>
+              <span className="battlefield-preboard-toggle-label">
+                {battlefieldSectionVisibility.deploymentControls ? 'Collapse' : 'Expand'}
+              </span>
             </button>
+            {battlefieldSectionVisibility.deploymentControls ? (
+              <div className="battlefield-preboard-content">
+                <div className="battlefield-squad-controls cluster two-up">
+                  {renderModelCountSelector(
+                    'Attacker',
+                    attackerUnitDetails,
+                    attackerModelCount,
+                    setAttackerModelCount,
+                    attackerModelCounts,
+                    setAttackerModelCounts,
+                  )}
+                  {renderModelCountSelector(
+                    'Defender',
+                    defenderUnitDetails,
+                    defenderModelCount,
+                    setDefenderModelCount,
+                    defenderModelCounts,
+                    setDefenderModelCounts,
+                  )}
+                </div>
+                <div className="battlefield-instance-controls">
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => deployBaseBattlefieldUnit('attacker')}
+                    disabled={!attackerUnitDetails || battlefieldBaseUnitDeployment.attacker}
+                  >
+                    Deploy Base Attacker
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => deployBaseBattlefieldUnit('defender')}
+                    disabled={!defenderUnitDetails || battlefieldBaseUnitDeployment.defender}
+                  >
+                    Deploy Base Defender
+                  </button>
+                  <label>
+                    <span>Add Attacker Unit</span>
+                    <select
+                      value={battlefieldAddAttackerUnitName}
+                      onChange={(event) => setBattlefieldAddAttackerUnitName(event.target.value)}
+                      disabled={!attackerUnits.length}
+                    >
+                      {attackerUnits.map((unit) => (
+                        <option key={unit.name} value={unit.name}>
+                          {unit.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => addBattlefieldUnitInstance('attacker')}
+                    disabled={!attackerFaction || !battlefieldAddAttackerUnitName}
+                  >
+                    Add Attacker
+                  </button>
+                  <label>
+                    <span>Add Defender Unit</span>
+                    <select
+                      value={battlefieldAddDefenderUnitName}
+                      onChange={(event) => setBattlefieldAddDefenderUnitName(event.target.value)}
+                      disabled={!defenderUnits.length}
+                    >
+                      {defenderUnits.map((unit) => (
+                        <option key={unit.name} value={unit.name}>
+                          {unit.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => addBattlefieldUnitInstance('defender')}
+                    disabled={!defenderFaction || !battlefieldAddDefenderUnitName}
+                  >
+                    Add Defender
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={removeSelectedBattlefieldUnitInstance}
+                    disabled={!selectedBattlefieldUnit}
+                  >
+                    Remove Selected Unit
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={clearBattlefieldDeployment}
+                    disabled={!battlefieldUnits.length}
+                  >
+                    Clear Battlefield
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </section>
+          <section className="battlefield-preboard-section">
             <button
               type="button"
-              className="secondary-button"
-              onClick={() => deployBaseBattlefieldUnit('defender')}
-              disabled={!defenderUnitDetails || battlefieldBaseUnitDeployment.defender}
+              className="battlefield-preboard-toggle"
+              onClick={() => toggleBattlefieldSection('savedLists')}
+              aria-expanded={battlefieldSectionVisibility.savedLists}
             >
-              Deploy Base Defender
+              <div>
+                <p className="kicker">Army Lists</p>
+                <strong>Saved List Deployment</strong>
+                <span className="battlefield-preboard-summary">
+                  {savedArmyLists.length
+                    ? `${savedArmyLists.length} saved list${savedArmyLists.length === 1 ? '' : 's'} available`
+                    : 'No saved lists available'}
+                  {battlefieldAttackerSavedArmyListId || battlefieldDefenderSavedArmyListId ? ' • Ready to load into the battlefield' : ''}
+                </span>
+              </div>
+              <span className="battlefield-preboard-toggle-label">
+                {battlefieldSectionVisibility.savedLists ? 'Collapse' : 'Expand'}
+              </span>
             </button>
-            <label>
-              <span>Add Attacker Unit</span>
-              <select
-                value={battlefieldAddAttackerUnitName}
-                onChange={(event) => setBattlefieldAddAttackerUnitName(event.target.value)}
-                disabled={!attackerUnits.length}
-              >
-                {attackerUnits.map((unit) => (
-                  <option key={unit.name} value={unit.name}>
-                    {unit.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => addBattlefieldUnitInstance('attacker')}
-              disabled={!attackerFaction || !battlefieldAddAttackerUnitName}
-            >
-              Add Attacker
-            </button>
-            <label>
-              <span>Add Defender Unit</span>
-              <select
-                value={battlefieldAddDefenderUnitName}
-                onChange={(event) => setBattlefieldAddDefenderUnitName(event.target.value)}
-                disabled={!defenderUnits.length}
-              >
-                {defenderUnits.map((unit) => (
-                  <option key={unit.name} value={unit.name}>
-                    {unit.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => addBattlefieldUnitInstance('defender')}
-              disabled={!defenderFaction || !battlefieldAddDefenderUnitName}
-            >
-              Add Defender
-            </button>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={removeSelectedBattlefieldUnitInstance}
-              disabled={!selectedBattlefieldUnit}
-            >
-              Remove Selected Unit
-            </button>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={clearBattlefieldDeployment}
-              disabled={!battlefieldUnits.length}
-            >
-              Clear Battlefield
-            </button>
-          </div>
-          <div className="battlefield-army-list-controls">
-            <label>
-              <span>Deploy Attacker From Army List</span>
-              <select
-                value={battlefieldAddAttackerArmyListEntryId}
-                onChange={(event) => setBattlefieldAddAttackerArmyListEntryId(event.target.value)}
-                disabled={!attackerArmyListDeploymentEntries.length}
-              >
-                {attackerArmyListDeploymentEntries.length ? attackerArmyListDeploymentEntries.map((entry) => (
-                  <option key={entry.id} value={entry.id}>
-                    {entry.name}
-                    {getAttachedArmyListUnitDetails(entry, 'leader') ? ` + ${getAttachedArmyListUnitDetails(entry, 'leader')?.name || 'Leader'}` : ''}
-                    {getAttachedArmyListUnitDetails(entry, 'support') ? ` + ${getAttachedArmyListUnitDetails(entry, 'support')?.name || 'Support'}` : ''}
-                  </option>
-                )) : (
-                  <option value="">No attacker army list units</option>
-                )}
-              </select>
-            </label>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => addBattlefieldArmyListEntryInstance('attacker')}
-              disabled={!battlefieldAddAttackerArmyListEntryId}
-            >
-              Deploy Attacker
-            </button>
-            <label>
-              <span>Deploy Defender From Army List</span>
-              <select
-                value={battlefieldAddDefenderArmyListEntryId}
-                onChange={(event) => setBattlefieldAddDefenderArmyListEntryId(event.target.value)}
-                disabled={!defenderArmyListDeploymentEntries.length}
-              >
-                {defenderArmyListDeploymentEntries.length ? defenderArmyListDeploymentEntries.map((entry) => (
-                  <option key={entry.id} value={entry.id}>
-                    {entry.name}
-                    {getAttachedArmyListUnitDetails(entry, 'leader') ? ` + ${getAttachedArmyListUnitDetails(entry, 'leader')?.name || 'Leader'}` : ''}
-                    {getAttachedArmyListUnitDetails(entry, 'support') ? ` + ${getAttachedArmyListUnitDetails(entry, 'support')?.name || 'Support'}` : ''}
-                  </option>
-                )) : (
-                  <option value="">No defender army list units</option>
-                )}
-              </select>
-            </label>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => addBattlefieldArmyListEntryInstance('defender')}
-              disabled={!battlefieldAddDefenderArmyListEntryId}
-            >
-              Deploy Defender
-            </button>
-          </div>
+            {battlefieldSectionVisibility.savedLists ? (
+              <div className="battlefield-preboard-content">
+                <div className="battlefield-army-list-controls">
+                  <div className="battlefield-saved-list-controls">
+                    <label>
+                      <span>Load Attacker Saved List</span>
+                      <select
+                        value={battlefieldAttackerSavedArmyListId}
+                        onChange={(event) => setBattlefieldAttackerSavedArmyListId(event.target.value)}
+                        disabled={!savedArmyLists.length}
+                      >
+                        {savedArmyLists.length ? savedArmyLists.map((list) => (
+                          <option key={`attacker-${list.id}`} value={list.id}>
+                            {list.name}
+                          </option>
+                        )) : (
+                          <option value="">No saved lists</option>
+                        )}
+                      </select>
+                    </label>
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => loadBattlefieldSavedArmyList('attacker')}
+                      disabled={!battlefieldAttackerSavedArmyListId}
+                    >
+                      Load Attacker List
+                    </button>
+                    <label>
+                      <span>Load Defender Saved List</span>
+                      <select
+                        value={battlefieldDefenderSavedArmyListId}
+                        onChange={(event) => setBattlefieldDefenderSavedArmyListId(event.target.value)}
+                        disabled={!savedArmyLists.length}
+                      >
+                        {savedArmyLists.length ? savedArmyLists.map((list) => (
+                          <option key={`defender-${list.id}`} value={list.id}>
+                            {list.name}
+                          </option>
+                        )) : (
+                          <option value="">No saved lists</option>
+                        )}
+                      </select>
+                    </label>
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => loadBattlefieldSavedArmyList('defender')}
+                      disabled={!battlefieldDefenderSavedArmyListId}
+                    >
+                      Load Defender List
+                    </button>
+                  </div>
+                  <p className="battlefield-army-list-summary">
+                    Saved lists loaded here feed the deploy pickers below without leaving the battlefield view.
+                  </p>
+                  <div className="battlefield-deployment-controls">
+                    <label>
+                      <span>Deploy Attacker From Army List</span>
+                      <select
+                        value={battlefieldAddAttackerArmyListEntryId}
+                        onChange={(event) => setBattlefieldAddAttackerArmyListEntryId(event.target.value)}
+                        disabled={!attackerArmyListDeploymentEntries.length}
+                      >
+                        {attackerArmyListDeploymentEntries.length ? attackerArmyListDeploymentEntries.map((entry) => (
+                          <option key={entry.id} value={entry.id}>
+                            {entry.name}
+                            {getAttachedArmyListUnitDetails(entry, 'leader') ? ` + ${getAttachedArmyListUnitDetails(entry, 'leader')?.name || 'Leader'}` : ''}
+                            {getAttachedArmyListUnitDetails(entry, 'support') ? ` + ${getAttachedArmyListUnitDetails(entry, 'support')?.name || 'Support'}` : ''}
+                          </option>
+                        )) : (
+                          <option value="">No attacker army list units</option>
+                        )}
+                      </select>
+                    </label>
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => addBattlefieldArmyListEntryInstance('attacker')}
+                      disabled={!battlefieldAddAttackerArmyListEntryId}
+                    >
+                      Deploy Attacker
+                    </button>
+                    <label>
+                      <span>Deploy Defender From Army List</span>
+                      <select
+                        value={battlefieldAddDefenderArmyListEntryId}
+                        onChange={(event) => setBattlefieldAddDefenderArmyListEntryId(event.target.value)}
+                        disabled={!defenderArmyListDeploymentEntries.length}
+                      >
+                        {defenderArmyListDeploymentEntries.length ? defenderArmyListDeploymentEntries.map((entry) => (
+                          <option key={entry.id} value={entry.id}>
+                            {entry.name}
+                            {getAttachedArmyListUnitDetails(entry, 'leader') ? ` + ${getAttachedArmyListUnitDetails(entry, 'leader')?.name || 'Leader'}` : ''}
+                            {getAttachedArmyListUnitDetails(entry, 'support') ? ` + ${getAttachedArmyListUnitDetails(entry, 'support')?.name || 'Support'}` : ''}
+                          </option>
+                        )) : (
+                          <option value="">No defender army list units</option>
+                        )}
+                      </select>
+                    </label>
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => addBattlefieldArmyListEntryInstance('defender')}
+                      disabled={!battlefieldAddDefenderArmyListEntryId}
+                    >
+                      Deploy Defender
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </section>
 
-          <div className="sim-game-panel">
-            <div className="sim-game-status">
+          {!battlefieldDeploymentComplete ? (
+            <section className="battlefield-preboard-section">
+              <button
+                type="button"
+                className="battlefield-preboard-toggle"
+                onClick={() => toggleBattlefieldSection('deploymentStatus')}
+                aria-expanded={battlefieldSectionVisibility.deploymentStatus}
+              >
+                <div>
+                  <p className="kicker">Pre-Game</p>
+                  <strong>Deployment Status</strong>
+                  <span className="battlefield-preboard-summary">
+                    {battlefieldUnits.length ? `${battlefieldUnits.length} unit${battlefieldUnits.length === 1 ? '' : 's'} placed` : 'No units placed'}
+                    {selectedBattlefieldUnit ? ` • Selected: ${selectedBattlefieldUnit.name}` : ''}
+                  </span>
+                </div>
+                <span className="battlefield-preboard-toggle-label">
+                  {battlefieldSectionVisibility.deploymentStatus ? 'Collapse' : 'Expand'}
+                </span>
+              </button>
+              {battlefieldSectionVisibility.deploymentStatus ? (
+                <div className="battlefield-preboard-content">
+                  <div className="battlefield-deployment-step">
+                    <div>
+                      <p className="kicker">Pre-Game</p>
+                      <h3>Deployment Step</h3>
+                      <p>
+                        Drag units and individual models freely to set the table before turn one.
+                        {' '}Each grid line represents 6&quot;.
+                      </p>
+                      <p>
+                        {selectedBattlefieldUnit
+                          ? `Selected unit: ${selectedBattlefieldUnit.name}.`
+                          : 'Select a unit on the battlefield to fine-tune its placement.'}
+                      </p>
+                    </div>
+                    <div className="rule-chip-row">
+                      <span className={battlefieldUnits.length ? 'valid' : 'invalid'}>
+                        {battlefieldUnits.length ? `${battlefieldUnits.length} unit${battlefieldUnits.length === 1 ? '' : 's'} placed` : 'No units placed'}
+                      </span>
+                      {selectedBattlefieldUnit ? (
+                        <>
+                          <span className={selectedBattlefieldSetupStatus.canSetUp ? 'valid' : 'invalid'}>
+                            Legal placement
+                          </span>
+                          <span className={selectedBattlefieldSetupStatus.coherency.valid ? 'valid' : 'invalid'}>
+                            Coherency
+                          </span>
+                          <span className={selectedBattlefieldSetupStatus.engagement.unengaged ? 'valid' : 'invalid'}>
+                            Unengaged
+                          </span>
+                          <span className={!selectedBattlefieldHasBaseOverlap ? 'valid' : 'invalid'}>
+                            No base overlap
+                          </span>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
+
+          <section className="battlefield-preboard-section">
+            <button
+              type="button"
+              className="battlefield-preboard-toggle"
+              onClick={() => toggleBattlefieldSection('turnSequence')}
+              aria-expanded={battlefieldSectionVisibility.turnSequence}
+            >
               <div>
                 <p className="kicker">Sim Game</p>
-                <h3>Battle Round {gameBattleRound}</h3>
-                <p>
-                  {gameActivePlayer} is resolving {activeGamePhase?.name || 'the current step'}.
-                </p>
+                <strong>Turn Sequence</strong>
+                <span className="battlefield-preboard-summary">
+                  {battlefieldDeploymentComplete
+                    ? `${gameActivePlayer} | ${activeGamePhase?.name || 'Current step'} | ${completedGameStepCount}/${turnSequence.length} steps`
+                    : 'Deployment is still active'}
+                </span>
               </div>
-              <div className="sim-game-progress">
-                <strong>{gameTurnProgressPercent}%</strong>
-                <span>{completedGameStepCount}/{turnSequence.length} steps complete this player turn</span>
+              <span className="battlefield-preboard-toggle-label">
+                {battlefieldSectionVisibility.turnSequence ? 'Collapse' : 'Expand'}
+              </span>
+            </button>
+            <div className="battlefield-preboard-content">
+              <div
+                className={`sim-game-track ${battlefieldSectionVisibility.turnSequence ? '' : 'compact'}`}
+                aria-label="Sim game round sequence"
+              >
+                {turnSequence.map((phase, index) => {
+                  const active = phase.id === activeGamePhase?.id
+                  const complete = completedGamePhases.has(phase.id)
+                  const available = complete || active || index <= activeGamePhaseIndex
+                  return (
+                    <button
+                      key={phase.id}
+                      type="button"
+                      className={`sim-game-step ${active ? 'active' : ''} ${complete ? 'complete' : ''}`}
+                      onClick={() => setActiveGamePhaseId(phase.id)}
+                      disabled={!battlefieldDeploymentComplete || !available}
+                    >
+                      <span>{phase.sequence}</span>
+                      <strong>{phase.name}</strong>
+                    </button>
+                  )
+                })}
               </div>
-            </div>
+              <div className="sim-game-controls battlefield-preboard-persistent-controls">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={goToPreviousGameStep}
+                  disabled={!battlefieldDeploymentComplete || !gameCanGoBack}
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={undoLastBattlefieldStep}
+                  disabled={!battlefieldUndoStack.length}
+                  title={battlefieldUndoStack[0]?.label ? `Undo ${battlefieldUndoStack[0].label}` : 'Undo last battlefield action'}
+                >
+                  Undo
+                </button>
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={completeCurrentGameStep}
+                  disabled={!battlefieldDeploymentComplete && !battlefieldUnits.length}
+                >
+                  {!battlefieldDeploymentComplete
+                    ? 'Complete Deployment'
+                    : activeGamePhaseIndex < turnSequence.length - 1
+                      ? 'Complete Step'
+                      : 'Complete Turn'}
+                </button>
+                <button type="button" className="secondary-button" onClick={jumpToFreeFormCombat}>
+                  Open Combat Sim
+                </button>
+                <button type="button" className="secondary-button" onClick={resetGuidedGame}>
+                  Reset Game
+                </button>
+              </div>
+              {battlefieldSectionVisibility.turnSequence ? (
+                <div className="sim-game-panel">
+                  <div className="sim-game-status">
+                    <div>
+                      <p className="kicker">Sim Game</p>
+                      <h3>Battle Round {gameBattleRound}</h3>
+                      <p>
+                        {battlefieldDeploymentComplete
+                          ? `${gameActivePlayer} is resolving ${activeGamePhase?.name || 'the current step'}.`
+                          : 'Deployment is active. Finish placing units before starting the turn sequence.'}
+                      </p>
+                    </div>
+                    <div className="sim-game-progress">
+                      <strong>{battlefieldDeploymentComplete ? `${gameTurnProgressPercent}%` : 'Setup'}</strong>
+                      <span>
+                        {battlefieldDeploymentComplete
+                          ? `${completedGameStepCount}/${turnSequence.length} steps complete this player turn`
+                          : 'Free placement is enabled until deployment is completed.'}
+                      </span>
+                    </div>
+                  </div>
 
-            <div className="sim-game-track" aria-label="Sim game round sequence">
-              {turnSequence.map((phase, index) => {
-                const active = phase.id === activeGamePhase?.id
-                const complete = completedGamePhases.has(phase.id)
-                const available = complete || active || index <= activeGamePhaseIndex
-                return (
-                  <button
-                    key={phase.id}
-                    type="button"
-                    className={`sim-game-step ${active ? 'active' : ''} ${complete ? 'complete' : ''}`}
-                    onClick={() => setActiveGamePhaseId(phase.id)}
-                    disabled={!available}
-                  >
-                    <span>{phase.sequence}</span>
-                    <strong>{phase.name}</strong>
-                  </button>
-                )
-              })}
-            </div>
+                  <div className="sim-game-detail-grid">
+                    <section className={`sim-game-current ${gameStepDetailsExpanded ? 'expanded' : 'collapsed'}`}>
+                      <div>
+                        <p className="kicker">Current Step</p>
+                        <h3>{activeGamePhase?.name}</h3>
+                        <p>{activeGamePhase?.summary}</p>
+                      </div>
+                      {gamePhaseRequirements.length ? (
+                        <>
+                          <ol>
+                            {visibleGamePhaseRequirements.map((ruleText) => (
+                              <li key={ruleText}>{ruleText}</li>
+                            ))}
+                          </ol>
+                          {hiddenGamePhaseRequirementCount > 0 || gameStepDetailsExpanded ? (
+                            <button
+                              type="button"
+                              className="sim-game-detail-toggle"
+                              onClick={() => setGameStepDetailsExpanded((current) => !current)}
+                            >
+                              {gameStepDetailsExpanded
+                                ? 'Hide details'
+                                : `Show all rules (${hiddenGamePhaseRequirementCount} more)`}
+                            </button>
+                          ) : null}
+                        </>
+                      ) : (
+                        <p className="empty-state">No required rule modules are attached to this step yet.</p>
+                      )}
+                    </section>
 
-            <div className="sim-game-detail-grid">
-              <section className={`sim-game-current ${gameStepDetailsExpanded ? 'expanded' : 'collapsed'}`}>
-                <div>
-                  <p className="kicker">Current Step</p>
-                  <h3>{activeGamePhase?.name}</h3>
-                  <p>{activeGamePhase?.summary}</p>
+                  </div>
                 </div>
-                {gamePhaseRequirements.length ? (
-                  <>
-                    <ol>
-                      {visibleGamePhaseRequirements.map((ruleText) => (
-                        <li key={ruleText}>{ruleText}</li>
-                      ))}
-                    </ol>
-                    {hiddenGamePhaseRequirementCount > 0 || gameStepDetailsExpanded ? (
-                      <button
-                        type="button"
-                        className="sim-game-detail-toggle"
-                        onClick={() => setGameStepDetailsExpanded((current) => !current)}
-                      >
-                        {gameStepDetailsExpanded
-                          ? 'Hide details'
-                          : `Show all rules (${hiddenGamePhaseRequirementCount} more)`}
-                      </button>
-                    ) : null}
-                  </>
-                ) : (
-                  <p className="empty-state">No required rule modules are attached to this step yet.</p>
-                )}
-              </section>
-
+              ) : null}
             </div>
-
-            <div className="sim-game-controls">
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={goToPreviousGameStep}
-                disabled={!gameCanGoBack}
-              >
-                Back
-              </button>
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={undoLastBattlefieldStep}
-                disabled={!battlefieldUndoStack.length}
-                title={battlefieldUndoStack[0]?.label ? `Undo ${battlefieldUndoStack[0].label}` : 'Undo last battlefield action'}
-              >
-                Undo
-              </button>
-              <button type="button" className="primary-button" onClick={completeCurrentGameStep}>
-                {activeGamePhaseIndex < turnSequence.length - 1 ? 'Complete Step' : 'Complete Turn'}
-              </button>
-              <button type="button" className="secondary-button" onClick={jumpToFreeFormCombat}>
-                Open Combat Sim
-              </button>
-              <button type="button" className="secondary-button" onClick={resetGuidedGame}>
-                Reset Game
-              </button>
-            </div>
-          </div>
+          </section>
 
           <div className="battlefield-board-layout">
             <div className="battlefield-board-shell">
-            <div ref={battlefieldBoardRef} className="battlefield-board">
-              <div className="battlefield-center-line" />
-              {selectedBattlefieldUnit && selectedBattlefieldModelStartPercent && (canChargeOnBattlefield || selectedBattlefieldUnitCanMoveThisPhase) ? (
-                <div
-                  className="battlefield-range-ring battlefield-move-range-ring"
-                  style={{
-                    left: `${selectedBattlefieldModelStartPercent.x}%`,
-                    top: `${selectedBattlefieldModelStartPercent.y}%`,
-                    width: `${(selectedBattlefieldModelMoveDiameter / BATTLEFIELD_WIDTH_INCHES) * 100}%`,
-                    height: `${(selectedBattlefieldModelMoveDiameter / BATTLEFIELD_HEIGHT_INCHES) * 100}%`,
-                  }}
-                />
-              ) : null}
-              {selectedBattlefieldUnit && selectedBattlefieldModelPercent && selectedBattlefieldUnit.modelCount > 1 ? (
-                <>
-                  <div
-                    className="battlefield-range-ring battlefield-all-models-coherency-range-ring"
-                    style={{
-                      left: `${selectedBattlefieldModelPercent.x}%`,
-                      top: `${selectedBattlefieldModelPercent.y}%`,
-                      width: `${(selectedBattlefieldModelAllModelsCoherencyDiameter / BATTLEFIELD_WIDTH_INCHES) * 100}%`,
-                      height: `${(selectedBattlefieldModelAllModelsCoherencyDiameter / BATTLEFIELD_HEIGHT_INCHES) * 100}%`,
-                    }}
-                  />
-                  <div
-                    className="battlefield-range-ring battlefield-coherency-range-ring"
-                    style={{
-                      left: `${selectedBattlefieldModelPercent.x}%`,
-                      top: `${selectedBattlefieldModelPercent.y}%`,
-                      width: `${(selectedBattlefieldModelCoherencyDiameter / BATTLEFIELD_WIDTH_INCHES) * 100}%`,
-                      height: `${(selectedBattlefieldModelCoherencyDiameter / BATTLEFIELD_HEIGHT_INCHES) * 100}%`,
-                    }}
-                  />
-                </>
-              ) : null}
-              {selectedBattlefieldUnit && !battlefieldInEngagementRange ? selectedBattlefieldWeaponRanges.map((weapon, index) => (
-                <div
-                  key={`${selectedBattlefieldUnit.id}-${weapon.name}`}
-                  className={`battlefield-range-ring ${inRangeWeaponNames.includes(formatWeaponName(weapon)) ? 'in-range' : ''}`}
-                  style={{
-                    left: `${selectedBattlefieldModelPercent?.x ?? battlefieldPositions[selectedBattlefieldUnit.id]?.x ?? selectedBattlefieldUnit.x}%`,
-                    top: `${selectedBattlefieldModelPercent?.y ?? battlefieldPositions[selectedBattlefieldUnit.id]?.y ?? selectedBattlefieldUnit.y}%`,
-                    width: `${(weapon.totalDiameterInches / BATTLEFIELD_WIDTH_INCHES) * 100}%`,
-                    height: `${(weapon.totalDiameterInches / BATTLEFIELD_HEIGHT_INCHES) * 100}%`,
-                    zIndex: selectedBattlefieldWeaponRanges.length - index,
-                  }}
-                />
-              )) : null}
-              {showBattlefieldRangeLine ? (
-                <svg className="battlefield-range-line-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <line
-                    className="battlefield-range-line"
-                    x1={selectedBattlefieldModelPercent?.x ?? battlefieldPositions[selectedBattlefieldUnit.id]?.x ?? selectedBattlefieldUnit.x}
-                    y1={selectedBattlefieldModelPercent?.y ?? battlefieldPositions[selectedBattlefieldUnit.id]?.y ?? selectedBattlefieldUnit.y}
-                    x2={battlefieldPositions[enemyBattlefieldUnit.id]?.x ?? enemyBattlefieldUnit.x}
-                    y2={battlefieldPositions[enemyBattlefieldUnit.id]?.y ?? enemyBattlefieldUnit.y}
-                  />
-                </svg>
-              ) : null}
-              {battlefieldUnits.filter((unit) => (
-                !battlefieldEmbarkedUnits[unit.id]
-                && (battlefieldReserveStatuses[unit.id] || 'deployed') === 'deployed'
-              )).map((unit) => {
-                const unitModels = battlefieldModelGroups[unit.id] || []
-                const lowestModel = unitModels.reduce((lowest, model) => (
-                  !lowest || model.y > lowest.y ? model : lowest
-                ), null)
-                const labelAnchorPercent = lowestModel
-                  ? battlefieldInchesToPercent({
-                    x: lowestModel.x,
-                    y: lowestModel.y + (unit.baseInches / 2) + 0.55,
-                  })
-                  : battlefieldPositions[unit.id] || unit
-                return (
-                  <Fragment key={unit.id}>
+              <div className="battlefield-board-frame">
+                <div className="battlefield-axis battlefield-axis-y" aria-hidden="true">
+                  {BATTLEFIELD_Y_AXIS_LABELS.map((value, index) => (
+                    <span
+                      key={`battlefield-y-${value}`}
+                      className={`battlefield-axis-label ${index === 0 ? 'start' : index === BATTLEFIELD_Y_AXIS_LABELS.length - 1 ? 'end' : 'middle'}`}
+                      style={{ top: `${(value / BATTLEFIELD_HEIGHT_INCHES) * 100}%` }}
+                    >
+                      {value}&quot;
+                    </span>
+                  ))}
+                </div>
+                <div ref={battlefieldBoardRef} className="battlefield-board" onPointerDown={handleBattlefieldBoardPointerDown}>
+                  <div className="battlefield-center-line" />
+                  {selectedBattlefieldUnit && selectedBattlefieldModelStartPercent && (canChargeOnBattlefield || selectedBattlefieldUnitCanMoveThisPhase) ? (
+                    <div
+                      className="battlefield-range-ring battlefield-move-range-ring"
+                      style={{
+                        left: `${selectedBattlefieldModelStartPercent.x}%`,
+                        top: `${selectedBattlefieldModelStartPercent.y}%`,
+                        width: `${(selectedBattlefieldModelMoveDiameter / BATTLEFIELD_WIDTH_INCHES) * 100}%`,
+                        height: `${(selectedBattlefieldModelMoveDiameter / BATTLEFIELD_HEIGHT_INCHES) * 100}%`,
+                      }}
+                    />
+                  ) : null}
+                  {selectedBattlefieldUnit && selectedBattlefieldModelPercent && selectedBattlefieldUnit.modelCount > 1 ? (
+                    <>
+                      <div
+                        className="battlefield-range-ring battlefield-all-models-coherency-range-ring"
+                        style={{
+                          left: `${selectedBattlefieldModelPercent.x}%`,
+                          top: `${selectedBattlefieldModelPercent.y}%`,
+                          width: `${(selectedBattlefieldModelAllModelsCoherencyDiameter / BATTLEFIELD_WIDTH_INCHES) * 100}%`,
+                          height: `${(selectedBattlefieldModelAllModelsCoherencyDiameter / BATTLEFIELD_HEIGHT_INCHES) * 100}%`,
+                        }}
+                      />
+                      <div
+                        className="battlefield-range-ring battlefield-coherency-range-ring"
+                        style={{
+                          left: `${selectedBattlefieldModelPercent.x}%`,
+                          top: `${selectedBattlefieldModelPercent.y}%`,
+                          width: `${(selectedBattlefieldModelCoherencyDiameter / BATTLEFIELD_WIDTH_INCHES) * 100}%`,
+                          height: `${(selectedBattlefieldModelCoherencyDiameter / BATTLEFIELD_HEIGHT_INCHES) * 100}%`,
+                        }}
+                      />
+                    </>
+                  ) : null}
+                  {selectedBattlefieldUnit && !battlefieldInEngagementRange ? selectedBattlefieldWeaponRanges.map((weapon, index) => (
+                    <div
+                      key={`${selectedBattlefieldUnit.id}-${weapon.name}`}
+                      className={`battlefield-range-ring ${inRangeWeaponNames.includes(formatWeaponName(weapon)) ? 'in-range' : ''}`}
+                      style={{
+                        left: `${selectedBattlefieldModelPercent?.x ?? battlefieldPositions[selectedBattlefieldUnit.id]?.x ?? selectedBattlefieldUnit.x}%`,
+                        top: `${selectedBattlefieldModelPercent?.y ?? battlefieldPositions[selectedBattlefieldUnit.id]?.y ?? selectedBattlefieldUnit.y}%`,
+                        width: `${(weapon.totalDiameterInches / BATTLEFIELD_WIDTH_INCHES) * 100}%`,
+                        height: `${(weapon.totalDiameterInches / BATTLEFIELD_HEIGHT_INCHES) * 100}%`,
+                        zIndex: selectedBattlefieldWeaponRanges.length - index,
+                      }}
+                    />
+                  )) : null}
+                  {showBattlefieldRangeLine ? (
+                    <svg className="battlefield-range-line-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <line
+                        className="battlefield-range-line"
+                        x1={selectedBattlefieldModelPercent?.x ?? battlefieldPositions[selectedBattlefieldUnit.id]?.x ?? selectedBattlefieldUnit.x}
+                        y1={selectedBattlefieldModelPercent?.y ?? battlefieldPositions[selectedBattlefieldUnit.id]?.y ?? selectedBattlefieldUnit.y}
+                        x2={battlefieldPositions[enemyBattlefieldUnit.id]?.x ?? enemyBattlefieldUnit.x}
+                        y2={battlefieldPositions[enemyBattlefieldUnit.id]?.y ?? enemyBattlefieldUnit.y}
+                      />
+                    </svg>
+                  ) : null}
+                  {battlefieldUnits.filter((unit) => (
+                    !battlefieldEmbarkedUnits[unit.id]
+                    && (battlefieldReserveStatuses[unit.id] || 'deployed') === 'deployed'
+                  )).map((unit) => {
+                    const unitModels = battlefieldModelGroups[unit.id] || []
+                    const showUnitProfileSummary = Boolean(
+                      unit.modelProfileData?.summary?.length
+                      && selectedBattlefieldUnitId === unit.id
+                      && !draggingModelId
+                      && !draggingUnitId
+                    )
+                    const lowestModel = unitModels.reduce((lowest, model) => (
+                      !lowest || model.y > lowest.y ? model : lowest
+                    ), null)
+                    const labelAnchorPercent = lowestModel
+                      ? battlefieldInchesToPercent({
+                        x: lowestModel.x,
+                        y: lowestModel.y + (unit.baseInches / 2) + 0.55,
+                      })
+                      : battlefieldPositions[unit.id] || unit
+                    return (
+                      <Fragment key={unit.id}>
                     {unitModels.map((model) => {
                       const modelPercent = battlefieldInchesToPercent(model)
                       const canRemoveAsCasualty = battlefieldPendingCasualties?.unitId === unit.id
+                      const hasInvalidPlacement = selectedBattlefieldUnitId === unit.id && selectedBattlefieldInvalidModelIds.has(model.id)
                       return (
                         <div
                           key={model.id}
-                          className={`battlefield-unit battlefield-model-base battlefield-unit-${unit.id} ${model.modelRole !== 'bodyguard' ? `battlefield-model-${model.modelRole}` : ''} ${draggingModelId === model.id ? 'dragging' : ''} ${selectedBattlefieldModel?.id === model.id ? 'selected-model' : ''} ${selectedBattlefieldUnitId === unit.id ? 'selected' : ''} ${canRepositionBattlefieldUnits && !(activeGamePhase?.id === 'movement' && battlefieldMovedUnits[unit.id]) ? '' : 'movement-locked'} ${canRemoveAsCasualty ? 'casualty-selectable' : ''}`}
+                          className={`battlefield-unit battlefield-model-base battlefield-unit-${unit.id} ${model.modelRole !== 'bodyguard' ? `battlefield-model-${model.modelRole}` : ''} ${draggingModelId === model.id ? 'dragging' : ''} ${selectedBattlefieldModel?.id === model.id ? 'selected-model' : ''} ${selectedBattlefieldUnitId === unit.id ? 'selected' : ''} ${canRepositionBattlefieldUnits && !(activeGamePhase?.id === 'movement' && battlefieldMovedUnits[unit.id]) ? '' : 'movement-locked'} ${canRemoveAsCasualty ? 'casualty-selectable' : ''} ${hasInvalidPlacement ? 'invalid-placement' : ''}`}
                           style={{
                             left: `${modelPercent.x}%`,
                             top: `${modelPercent.y}%`,
-                            width: `${(unit.baseInches / BATTLEFIELD_WIDTH_INCHES) * 100}%`,
-                            height: `${(unit.baseInches / BATTLEFIELD_HEIGHT_INCHES) * 100}%`,
-                          }}
-                          onPointerDown={handleBattlefieldModelPointerDown(unit.id, model.id)}
-                          title={canRemoveAsCasualty ? `Remove ${model.modelName} (${model.modelRole})` : `${model.modelName}${model.modelRole !== 'bodyguard' ? ` (${model.modelRole})` : ''}`}
-                        >
-                          <div className="battlefield-unit-dot" />
-                          {model.modelLabel ? (
-                            <div className="battlefield-model-role-badge" aria-label={`${model.modelName} ${model.modelRole}`}>
-                              {model.modelLabel}
+                                width: `${(unit.baseInches / BATTLEFIELD_WIDTH_INCHES) * 100}%`,
+                                height: `${(unit.baseInches / BATTLEFIELD_HEIGHT_INCHES) * 100}%`,
+                              }}
+                              onPointerDown={handleBattlefieldModelPointerDown(unit.id, model.id)}
+                              title={canRemoveAsCasualty ? `Remove ${model.modelName} (${model.modelRole})` : `${model.modelName}${model.modelRole !== 'bodyguard' ? ` (${model.modelRole})` : ''}`}
+                            >
+                              <div className="battlefield-unit-dot" />
+                              {model.modelLabel ? (
+                                <div className="battlefield-model-role-badge" aria-label={`${model.modelName} ${model.modelRole}`}>
+                                  {model.modelLabel}
+                                </div>
+                              ) : null}
+                              {model.modelProfileBadge ? (
+                                <div className="battlefield-model-profile-badge" aria-label={`${model.modelName} profile ${model.modelProfileBadge}`}>
+                                  {model.modelProfileBadge}
+                                </div>
+                              ) : null}
+                              <div
+                                className="battlefield-unit-facing"
+                                style={{
+                                  transform: `translate(-50%, -100%) rotate(${battlefieldRotations[unit.id] || 0}deg)`,
+                                }}
+                              />
                             </div>
-                          ) : null}
-                          <div
-                            className="battlefield-unit-facing"
-                            style={{
-                              transform: `translate(-50%, -100%) rotate(${battlefieldRotations[unit.id] || 0}deg)`,
-                            }}
-                          />
+                          )
+                        })}
+                        <div
+                          className={`battlefield-unit-label-anchor battlefield-unit-${unit.id} ${selectedBattlefieldUnitId === unit.id ? 'selected' : ''} ${draggingModelId || draggingUnitId ? 'compact' : ''}`}
+                          style={{
+                            left: `${clamp(labelAnchorPercent.x, 2, 98)}%`,
+                            top: `${clamp(labelAnchorPercent.y, 2, 96)}%`,
+                          }}
+                          onPointerDown={handleBattlefieldUnitPointerDown(unit.id)}
+                        >
+                          <div className={`battlefield-unit-label ${showUnitProfileSummary ? 'expanded' : ''}`}>
+                            <strong>{unit.name}</strong>
+                            {showUnitProfileSummary ? (
+                              <div className="battlefield-unit-profile-summary">
+                                <span className="battlefield-unit-profile-summary-title">Profiles</span>
+                                {unit.modelProfileData.summary.map((profile) => (
+                                  <span key={`${unit.id}-${profile.badge}`} className="battlefield-unit-profile-row">
+                                    <span className="battlefield-unit-profile-chip-badge">{profile.badge}</span>
+                                    <span className="battlefield-unit-profile-index">{profile.badge}:</span>
+                                    <span>{profile.label}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
                         </div>
-                      )
-                    })}
-                    <div
-                      className={`battlefield-unit-label-anchor battlefield-unit-${unit.id} ${selectedBattlefieldUnitId === unit.id ? 'selected' : ''} ${draggingModelId || draggingUnitId ? 'compact' : ''}`}
-                      style={{
-                        left: `${clamp(labelAnchorPercent.x, 2, 98)}%`,
-                        top: `${clamp(labelAnchorPercent.y, 2, 96)}%`,
-                      }}
-                      onPointerDown={handleBattlefieldUnitPointerDown(unit.id)}
+                      </Fragment>
+                    )
+                  })}
+                  <div
+                    className={`battlefield-ring-legend ${battlefieldLegendCollapsed ? 'collapsed' : ''}`}
+                    aria-label="Battlefield ring legend"
+                  >
+                    <button
+                      type="button"
+                      className="battlefield-ring-legend-toggle"
+                      onClick={() => setBattlefieldLegendCollapsed((current) => !current)}
+                      aria-expanded={!battlefieldLegendCollapsed}
+                      aria-controls="battlefield-ring-legend-items"
                     >
-                      <div className="battlefield-unit-label">
-                        <strong>{unit.name}</strong>
+                      <span>Legend</span>
+                      <span aria-hidden="true">{battlefieldLegendCollapsed ? '+' : '-'}</span>
+                    </button>
+                    {!battlefieldLegendCollapsed ? (
+                      <div className="battlefield-ring-legend-items" id="battlefield-ring-legend-items">
+                        <div className="battlefield-ring-legend-item">
+                          <span className="ring-swatch move" />
+                          <p>Move range</p>
+                        </div>
+                        <div className="battlefield-ring-legend-item">
+                          <span className="ring-swatch coherency-close" />
+                          <p>2&quot; coherency</p>
+                        </div>
+                        <div className="battlefield-ring-legend-item">
+                          <span className="ring-swatch coherency-all" />
+                          <p>9&quot; all-model coherency</p>
+                        </div>
+                        <div className="battlefield-ring-legend-item">
+                          <span className="ring-swatch weapon" />
+                          <p>Weapon range</p>
+                        </div>
+                        <div className="battlefield-ring-legend-item">
+                          <span className="role-swatch leader">L</span>
+                          <p>Leader model</p>
+                        </div>
+                        <div className="battlefield-ring-legend-item">
+                          <span className="role-swatch support">S</span>
+                          <p>Support model</p>
+                        </div>
+                        <div className="battlefield-ring-legend-item">
+                          <span className="role-swatch profile">1</span>
+                          <p>Model profile</p>
+                        </div>
                       </div>
-                    </div>
-                  </Fragment>
-                )
-              })}
-              <div className="battlefield-ring-legend" aria-label="Battlefield ring legend">
-                <div>
-                  <span className="ring-swatch move" />
-                  <p>Move range</p>
+                    ) : null}
+                  </div>
                 </div>
-                <div>
-                  <span className="ring-swatch coherency-close" />
-                  <p>2&quot; coherency</p>
+                <div className="battlefield-axis battlefield-axis-x" aria-hidden="true">
+                  {BATTLEFIELD_X_AXIS_LABELS.map((value, index) => (
+                    <span
+                      key={`battlefield-x-${value}`}
+                      className={`battlefield-axis-label ${index === 0 ? 'start' : index === BATTLEFIELD_X_AXIS_LABELS.length - 1 ? 'end' : 'middle'}`}
+                      style={{ left: `${(value / BATTLEFIELD_WIDTH_INCHES) * 100}%` }}
+                    >
+                      {value}&quot;
+                    </span>
+                  ))}
                 </div>
-                <div>
-                  <span className="ring-swatch coherency-all" />
-                  <p>9&quot; all-model coherency</p>
-                </div>
-                <div>
-                  <span className="ring-swatch weapon" />
-                  <p>Weapon range</p>
-                </div>
-                <div>
-                  <span className="role-swatch leader">L</span>
-                  <p>Leader model</p>
-                </div>
-                <div>
-                  <span className="role-swatch support">S</span>
-                  <p>Support model</p>
                 </div>
               </div>
-            </div>
-          </div>
 
             {simulationRuns.length ? (
               <div className="battlefield-combat-results">
@@ -10639,7 +11683,7 @@ function App() {
                       type="button"
                       className="secondary-button"
                       onClick={commitSelectedBattlefieldCharge}
-                      disabled={!canChargeOnBattlefield || !selectedBattlefieldChargeStatus?.chargeCanReach || selectedBattlefieldSetupStatus.violations.includes('friendly_model_overlap') || selectedBattlefieldUnitPerformingAction || selectedBattlefieldUnitEmbarked || selectedBattlefieldUnitOffBattlefield}
+                      disabled={!canChargeOnBattlefield || !selectedBattlefieldChargeStatus?.chargeCanReach || selectedBattlefieldHasBaseOverlap || selectedBattlefieldUnitPerformingAction || selectedBattlefieldUnitEmbarked || selectedBattlefieldUnitOffBattlefield}
                     >
                       Commit Charge
                     </button>
@@ -11270,7 +12314,7 @@ function App() {
                   type="button"
                   className="secondary-button"
                   onClick={commitSelectedBattlefieldCharge}
-                  disabled={!canChargeOnBattlefield || !selectedBattlefieldChargeStatus?.chargeCanReach || selectedBattlefieldSetupStatus.violations.includes('friendly_model_overlap') || selectedBattlefieldUnitPerformingAction || selectedBattlefieldUnitEmbarked || selectedBattlefieldUnitOffBattlefield}
+                  disabled={!canChargeOnBattlefield || !selectedBattlefieldChargeStatus?.chargeCanReach || selectedBattlefieldHasBaseOverlap || selectedBattlefieldUnitPerformingAction || selectedBattlefieldUnitEmbarked || selectedBattlefieldUnitOffBattlefield}
                 >
                   Commit Charge
                 </button>
@@ -11303,8 +12347,8 @@ function App() {
                 <span className={selectedBattlefieldChargeStatus?.chargeCanReach ? 'valid' : 'invalid'}>
                   Can reach engagement
                 </span>
-                <span className={!selectedBattlefieldSetupStatus.violations.includes('friendly_model_overlap') ? 'valid' : 'invalid'}>
-                  No friendly overlap
+                <span className={!selectedBattlefieldHasBaseOverlap ? 'valid' : 'invalid'}>
+                  No base overlap
                 </span>
                 <span className={selectedBattlefieldChargeStatus?.violations.includes('must_end_closer_to_charge_target') ? 'invalid' : 'valid'}>
                   Ends closer
@@ -11548,8 +12592,8 @@ function App() {
                   </span>
                 ) : null}
                 <span className="valid">Friendly models passable</span>
-                <span className={!selectedBattlefieldSetupStatus.violations.includes('friendly_model_overlap') ? 'valid' : 'invalid'}>
-                  No friendly overlap
+                <span className={!selectedBattlefieldHasBaseOverlap ? 'valid' : 'invalid'}>
+                  No base overlap
                 </span>
                 <span className={selectedBattlefieldMoveStatus?.canMoveThroughEnemyModels ? 'valid' : 'invalid'}>
                   Enemy models passable
@@ -11898,6 +12942,17 @@ function App() {
                 <h3>{unit.name}</h3>
                 <p>{unit.faction || 'Faction not set'}</p>
                 <p>Base: {unit.baseMm}mm</p>
+                {unit.modelProfileData?.summary?.length ? (
+                  <div className="battlefield-legend-profile-list">
+                    {unit.modelProfileData.summary.map((profile) => (
+                      <span key={`${unit.id}-legend-profile-${profile.badge}`} className="battlefield-unit-profile-row battlefield-unit-profile-row-legend">
+                        <span className="battlefield-unit-profile-chip-badge">{profile.badge}</span>
+                        <span className="battlefield-unit-profile-index">{profile.badge}:</span>
+                        <span>{profile.label}</span>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </article>
             ))}
           </div>
@@ -12015,7 +13070,7 @@ function App() {
                         <p className="kicker">{entry.faction}</p>
                         <h3>{entry.name}</h3>
                       </div>
-                      {renderArmyListInlineStats((entry.unitDetails || entry).stats)}
+                      {renderArmyListInlineStats(entry.unitDetails || entry)}
                       <div className="army-list-header-actions">
                         <div className="army-list-quantity">
                           <button

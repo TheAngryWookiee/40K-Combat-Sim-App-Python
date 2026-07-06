@@ -22,9 +22,8 @@ Press `Ctrl+C` in that terminal to stop both.
 Install dependencies:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+python -m venv .dev-venv
+.\.dev-venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 Run only the API:
@@ -32,6 +31,8 @@ Run only the API:
 ```powershell
 npm run dev:backend
 ```
+
+The backend launcher prefers `.dev-venv`, then `.venv`, then your system `python`.
 
 API endpoints:
 

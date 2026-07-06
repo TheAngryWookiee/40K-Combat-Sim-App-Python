@@ -3,17 +3,15 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $frontendPort = "5173"
 $backendPort = "8000"
-$venvPython = Join-Path $root ".venv\Scripts\python.exe"
-$python = if (Test-Path $venvPython) { $venvPython } else { "python" }
 
 Write-Host "Starting backend at http://127.0.0.1:$backendPort"
 Write-Host "Starting frontend at http://127.0.0.1:$frontendPort"
 Write-Host "Press Ctrl+C to stop both."
 
-$backendJob = Start-Job -Name "40k-api" -ArgumentList $root, $python, $backendPort -ScriptBlock {
-  param($rootPath, $pythonExe, $port)
+$backendJob = Start-Job -Name "40k-api" -ArgumentList $root, $backendPort -ScriptBlock {
+  param($rootPath, $port)
   Set-Location $rootPath
-  & $pythonExe -m uvicorn api:app --reload --host 127.0.0.1 --port $port 2>&1 | ForEach-Object {
+  & powershell -ExecutionPolicy Bypass -File (Join-Path $rootPath "scripts/run-backend.ps1") -Reload -Port $port 2>&1 | ForEach-Object {
     "[api] $_"
   }
 }

@@ -15,8 +15,12 @@
         "keyword": "Battleline",
         "rules_text": "GRETCHIN units from your army gain the BATTLELINE keyword.",
         "applies_if": {
-          "faction_keywords_any": ["Orks"],
-          "unit_keywords_any": ["Gretchin"]
+          "faction_keywords_any": [
+            "Orks"
+          ],
+          "unit_keywords_any": [
+            "Gretchin"
+          ]
         },
         "implemented": false
       }
@@ -143,14 +147,14 @@
         "name": "Da Big Hunt",
         "rule": {
           "name": "Da Hunt Is On",
-          "rules_text": "At the start of your Command phase, select one MONSTER, VEHICLE or WARLORD unit from your opponent’s army. If your opponent does not have any of these on the battlefield (or embarked within a TRANSPORT that is on the battlefield), you can select one CHARACTER unit from your opponent’s army instead. Until the start of your next Command phase, that enemy unit is your Prey:\n\nEach time a BEAST SNAGGA unit from your army declares a charge that includes your Prey as one of the targets, you can re-roll the Charge roll.\nEach time a BEAST SNAGGA model from your army makes an attack that targets your Prey, improve the Armour Penetration characteristic of that attack by 1.",
+          "rules_text": "At the start of your Command phase, select one MONSTER, VEHICLE or WARLORD unit from your opponent\u2019s army. If your opponent does not have any of these on the battlefield (or embarked within a TRANSPORT that is on the battlefield), you can select one CHARACTER unit from your opponent\u2019s army instead. Until the start of your next Command phase, that enemy unit is your Prey:\n\nEach time a BEAST SNAGGA unit from your army declares a charge that includes your Prey as one of the targets, you can re-roll the Charge roll.\nEach time a BEAST SNAGGA model from your army makes an attack that targets your Prey, improve the Armour Penetration characteristic of that attack by 1.",
           "implemented": true
         },
         "restrictions": [],
         "enhancements": [
           {
             "name": "Glory Hog",
-            "rules_text": "BEASTBOSS ON SQUIGOSAUR model only. Models in the bearer’s unit have the Scouts 9\" ability.",
+            "rules_text": "BEASTBOSS ON SQUIGOSAUR model only. Models in the bearer\u2019s unit have the Scouts 9\" ability.",
             "restrictions": [
               "BEASTBOSS ON SQUIGOSAUR model only."
             ],
@@ -224,7 +228,7 @@
             "cp_cost": 1,
             "turn_timing": "opponent_turn",
             "timing_color": "red",
-            "timing": "Your opponent’s Movement phase, just after an enemy unit ends a Fall Back move.",
+            "timing": "Your opponent\u2019s Movement phase, just after an enemy unit ends a Fall Back move.",
             "target": "One BEAST SNAGGA INFANTRY or BEAST SNAGGA MOUNTED unit from your army that was within Engagement Range of that enemy unit at the start of the phase.",
             "effect": "If your unit is not within Engagement Range of one or more enemy units, it can make a Normal move of up to 6\".",
             "restrictions": [],
@@ -236,8 +240,8 @@
             "cp_cost": 1,
             "turn_timing": "opponent_turn",
             "timing_color": "red",
-            "timing": "Your opponent’s Shooting phase, just after an enemy unit has selected its targets.",
-            "target": "One BEAST SNAGGA INFANTRY or BEAST SNAGGA MOUNTED unit from your army that was selected as the target of one or more of the attacking unit’s attacks.",
+            "timing": "Your opponent\u2019s Shooting phase, just after an enemy unit has selected its targets.",
+            "target": "One BEAST SNAGGA INFANTRY or BEAST SNAGGA MOUNTED unit from your army that was selected as the target of one or more of the attacking unit\u2019s attacks.",
             "effect": "Until the end of the phase, each time a ranged attack targets your unit, models in your unit have the Benefit of Cover against that attack. In addition, if your unit has the INFANTRY keyword, until the end of the phase, models in your unit have the Stealth ability.",
             "restrictions": [],
             "implemented": true
@@ -248,7 +252,7 @@
             "cp_cost": 1,
             "turn_timing": "opponent_turn",
             "timing_color": "red",
-            "timing": "End of your opponent’s Fight phase.",
+            "timing": "End of your opponent\u2019s Fight phase.",
             "target": "One BEAST SNAGGA unit from your army that is not within Engagement Range of one or more enemy units.",
             "effect": "Remove your unit from the battlefield and place it into Strategic Reserves.",
             "restrictions": [],
@@ -267,7 +271,7 @@
         "enhancements": [
           {
             "name": "Wazblasta",
-            "rules_text": "DEFFKILLA WARTRIKE model only. In your Shooting phase, after the bearer’s unit has shot, if it is not within Engagement Range of one or more enemy units, it can make a Normal move of up to 6\". If it does, until the end of the turn, it is not eligible to declare a charge.",
+            "rules_text": "DEFFKILLA WARTRIKE model only. In your Shooting phase, after the bearer\u2019s unit has shot, if it is not within Engagement Range of one or more enemy units, it can make a Normal move of up to 6\". If it does, until the end of the turn, it is not eligible to declare a charge.",
             "restrictions": [
               "DEFFKILLA WARTRIKE model only."
             ],
@@ -275,7 +279,7 @@
           },
           {
             "name": "Fasta Than Yooz",
-            "rules_text": "ORKS INFANTRY model only. Each time the bearer’s unit disembarks from a TRANSPORT after that Transport has made a Normal move, the bearer’s unit is still eligible to declare a charge this turn.",
+            "rules_text": "ORKS INFANTRY model only. Each time the bearer\u2019s unit disembarks from a TRANSPORT after that Transport has made a Normal move, the bearer\u2019s unit is still eligible to declare a charge this turn.",
             "restrictions": [
               "ORKS INFANTRY model only."
             ],
@@ -283,7 +287,7 @@
           },
           {
             "name": "Squig-Hide Tyres",
-            "rules_text": "DEFFKILLA WARTRIKE model only. Each time a model in the bearer’s unit makes a Consolidation move, it can move up to 6\" instead of up to 3\".",
+            "rules_text": "DEFFKILLA WARTRIKE model only. Each time a model in the bearer\u2019s unit makes a Consolidation move, it can move up to 6\" instead of up to 3\".",
             "restrictions": [
               "DEFFKILLA WARTRIKE model only."
             ],
@@ -305,8 +309,8 @@
             "cp_cost": 1,
             "turn_timing": "opponent_turn",
             "timing_color": "red",
-            "timing": "Your opponent’s Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
-            "target": "One SPEED FREEKS or TRUKK unit from your army that was selected as the target of one or more of the attacking unit’s attacks.",
+            "timing": "Your opponent\u2019s Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One SPEED FREEKS or TRUKK unit from your army that was selected as the target of one or more of the attacking unit\u2019s attacks.",
             "effect": "Until the end of the phase, models in your unit have a 5+ invulnerable save. If your unit is a VEHICLE unit with an unmodified Toughness characteristic of 8 or less, models in your unit have a 4+ invulnerable save instead.",
             "restrictions": [],
             "implemented": true
@@ -369,7 +373,7 @@
             "cp_cost": 1,
             "turn_timing": "opponent_turn",
             "timing_color": "red",
-            "timing": "Your opponent’s Movement phase, just after an enemy unit ends a Normal, Advance or Fall Back move.",
+            "timing": "Your opponent\u2019s Movement phase, just after an enemy unit ends a Normal, Advance or Fall Back move.",
             "target": "One SPEED FREEKS unit from your army that is within 9\" of that enemy unit and is not within Engagement Range of one or more enemy units.",
             "effect": "Your unit can make a Normal move of up to 6\".",
             "restrictions": [],
@@ -388,7 +392,7 @@
         "enhancements": [
           {
             "name": "Smoky Gubbinz",
-            "rules_text": "MEK model only. Models in the bearer’s unit have the Stealth ability.",
+            "rules_text": "MEK model only. Models in the bearer\u2019s unit have the Stealth ability.",
             "restrictions": [
               "MEK model only."
             ],
@@ -404,7 +408,7 @@
           },
           {
             "name": "Press It Fasta!",
-            "rules_text": "MEK model only. Each time the bearer’s unit is selected to shoot, when rolling to determine which ability that unit’s weapons gain from the Try Dat Button! Detachment rule, roll one additional D6. Until the end of the phase, ranged weapons equipped by models in that unit gain both Button Effects generated by those rolls. If a duplicate Button Effect is rolled, it has no additional effect.",
+            "rules_text": "MEK model only. Each time the bearer\u2019s unit is selected to shoot, when rolling to determine which ability that unit\u2019s weapons gain from the Try Dat Button! Detachment rule, roll one additional D6. Until the end of the phase, ranged weapons equipped by models in that unit gain both Button Effects generated by those rolls. If a duplicate Button Effect is rolled, it has no additional effect.",
             "restrictions": [
               "MEK model only."
             ],
@@ -412,7 +416,7 @@
           },
           {
             "name": "Gitfinder Gogglez",
-            "rules_text": "MEK model only. Ranged weapons equipped by models in the bearer’s unit have the [IGNORES COVER] ability.",
+            "rules_text": "MEK model only. Ranged weapons equipped by models in the bearer\u2019s unit have the [IGNORES COVER] ability.",
             "restrictions": [
               "MEK model only."
             ],
@@ -462,7 +466,7 @@
             "cp_cost": 1,
             "turn_timing": "opponent_turn",
             "timing_color": "red",
-            "timing": "Your opponent’s Movement phase, just after an enemy unit ends a Normal, Advance or Fall Back move.",
+            "timing": "Your opponent\u2019s Movement phase, just after an enemy unit ends a Normal, Advance or Fall Back move.",
             "target": "One GRETCHIN unit from your army that is within 9\" of that enemy unit and not within Engagement Range of any enemy units.",
             "effect": "Roll one D6: on a 4+, that enemy unit suffers D3+1 mortal wounds. Your unit can then make a Normal move.",
             "restrictions": [],
@@ -486,8 +490,8 @@
             "cp_cost": 1,
             "turn_timing": "opponent_turn",
             "timing_color": "red",
-            "timing": "Your opponent’s Shooting phase, just after an enemy unit has selected its targets.",
-            "target": "One ORKS WALKER or GROTS VEHICLE unit from your army (excluding TITANIC units) that was selected as the target of one or more of the attacking unit’s attacks.",
+            "timing": "Your opponent\u2019s Shooting phase, just after an enemy unit has selected its targets.",
+            "target": "One ORKS WALKER or GROTS VEHICLE unit from your army (excluding TITANIC units) that was selected as the target of one or more of the attacking unit\u2019s attacks.",
             "effect": "Until the end of the phase, each time an attack is allocated to a model in your unit, subtract 1 from the Damage characteristic of that attack.",
             "restrictions": [],
             "implemented": true
@@ -505,7 +509,7 @@
         "enhancements": [
           {
             "name": "Ferocious Show Off",
-            "rules_text": "ORKS INFANTRY model only. Each time the bearer fights, while resolving those attacks, add 1 to the Strength characteristic of the bearer’s melee weapons.\nIf the bearer’s unit contains 10 or more models, while resolving those attacks, add 3 to the Strength characteristic instead.",
+            "rules_text": "ORKS INFANTRY model only. Each time the bearer fights, while resolving those attacks, add 1 to the Strength characteristic of the bearer\u2019s melee weapons.\nIf the bearer\u2019s unit contains 10 or more models, while resolving those attacks, add 3 to the Strength characteristic instead.",
             "restrictions": [
               "ORKS INFANTRY model only."
             ],
@@ -513,7 +517,7 @@
           },
           {
             "name": "Brutal but Kunnin'",
-            "rules_text": "ORKS INFANTRY model only. In your Command phase, if the bearer is on the battlefield (or is embarked within a TRANSPORT that is on the battlefield), roll one D6, adding 2 to the result if the bearer’s unit contains 10 or more models: on a 5+, you gain 1CP.",
+            "rules_text": "ORKS INFANTRY model only. In your Command phase, if the bearer is on the battlefield (or is embarked within a TRANSPORT that is on the battlefield), roll one D6, adding 2 to the result if the bearer\u2019s unit contains 10 or more models: on a 5+, you gain 1CP.",
             "restrictions": [
               "ORKS INFANTRY model only."
             ],
@@ -603,9 +607,9 @@
             "cp_cost": 1,
             "turn_timing": "opponent_turn",
             "timing_color": "red",
-            "timing": "Your opponent’s Shooting phase, just after an enemy unit has selected its targets.",
-            "target": "One BOYZ unit from your army that was selected as the target of one or more of the attacking unit’s attacks.",
-            "effect": "After the attacking unit has shot, your unit can make a Go Get ’Em! move. To do so, roll one D6: each model in your unit can move a distance in inches up to the result, but your unit must end that move as close as possible to the closest enemy unit. When doing so, those models can be moved within Engagement Range of that enemy unit.\nIf your unit contains 10 or more models, it can move up to 6\" when making that move instead.",
+            "timing": "Your opponent\u2019s Shooting phase, just after an enemy unit has selected its targets.",
+            "target": "One BOYZ unit from your army that was selected as the target of one or more of the attacking unit\u2019s attacks.",
+            "effect": "After the attacking unit has shot, your unit can make a Go Get \u2019Em! move. To do so, roll one D6: each model in your unit can move a distance in inches up to the result, but your unit must end that move as close as possible to the closest enemy unit. When doing so, those models can be moved within Engagement Range of that enemy unit.\nIf your unit contains 10 or more models, it can move up to 6\" when making that move instead.",
             "restrictions": [],
             "implemented": false
           }
@@ -622,7 +626,7 @@
         "enhancements": [
           {
             "name": "Tellyporta",
-            "rules_text": "WARBOSS IN MEGA ARMOUR model only. Models in the bearer’s unit have the Deep Strike ability.",
+            "rules_text": "WARBOSS IN MEGA ARMOUR model only. Models in the bearer\u2019s unit have the Deep Strike ability.",
             "restrictions": [
               "WARBOSS IN MEGA ARMOUR model only."
             ],
@@ -638,7 +642,7 @@
           },
           {
             "name": "Da Biggest Boss",
-            "rules_text": "INFANTRY WARBOSS model only. Add 2 to the bearer’s Wounds characteristic.",
+            "rules_text": "INFANTRY WARBOSS model only. Add 2 to the bearer\u2019s Wounds characteristic.",
             "restrictions": [
               "INFANTRY WARBOSS model only."
             ],
@@ -684,8 +688,8 @@
             "cp_cost": 1,
             "turn_timing": "opponent_turn",
             "timing_color": "red",
-            "timing": "Your opponent’s Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
-            "target": "One NOBZ or MEGANOBZ unit from your army that was selected as the target of one or more of the attacking unit’s attacks.",
+            "timing": "Your opponent\u2019s Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One NOBZ or MEGANOBZ unit from your army that was selected as the target of one or more of the attacking unit\u2019s attacks.",
             "effect": "Until the end of the phase, each time a model in your unit is destroyed, if that model has not shot or fought this phase, roll one D6, adding 2 to the result if a Waaagh! is active for your unit. On a 5+, do not remove the destroyed model from play; it can shoot or fight after the attacking unit has finished making its attacks, and is then removed from play.",
             "restrictions": [],
             "implemented": false
@@ -696,7 +700,7 @@
             "cp_cost": 1,
             "turn_timing": "opponent_turn",
             "timing_color": "red",
-            "timing": "Your opponent’s Movement phase, just after an enemy unit is selected to Fall Back.",
+            "timing": "Your opponent\u2019s Movement phase, just after an enemy unit is selected to Fall Back.",
             "target": "One NOBZ or MEGANOBZ unit from your army within Engagement Range of that enemy unit.",
             "effect": "When that enemy unit Falls Back, all models in that enemy unit must take a Desperate Escape test. When doing so, if a Waaagh! is active for your unit, subtract 1 from each of those tests.",
             "restrictions": [],
@@ -720,8 +724,8 @@
             "cp_cost": 1,
             "turn_timing": "opponent_turn",
             "timing_color": "red",
-            "timing": "Your opponent’s Shooting phase, just after an enemy unit has selected its targets.",
-            "target": "One NOBZ or MEGANOBZ unit from your army that was selected as the target of one or more of the attacking unit’s attacks.",
+            "timing": "Your opponent\u2019s Shooting phase, just after an enemy unit has selected its targets.",
+            "target": "One NOBZ or MEGANOBZ unit from your army that was selected as the target of one or more of the attacking unit\u2019s attacks.",
             "effect": "Until the end of the phase, each time an attack targets your unit, worsen the Armour Penetration characteristic of that attack by 1.",
             "restrictions": [],
             "implemented": true
@@ -769,7 +773,9 @@
           }
         }
       ],
-      "faction_keywords": ["Orks"],
+      "faction_keywords": [
+        "Orks"
+      ],
       "keywords": [
         "Infantry",
         "Character",
@@ -806,7 +812,9 @@
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": {
-        "can_lead": ["Meganobz"],
+        "can_lead": [
+          "Meganobz"
+        ],
         "rules_text": "This unit can be attached to the following unit: Meganobz. If this unit's Bodyguard unit is destroyed, Ghazghkull Thraka and Makari become a single unit with their original Starting Strength."
       },
       "wargear_options": [],
@@ -822,7 +830,9 @@
       "weapons": [
         {
           "name": "Mork's Roar",
-          "keywords": ["Rapid Fire 4"],
+          "keywords": [
+            "Rapid Fire 4"
+          ],
           "range": "36 inches",
           "attacks": "12",
           "skill": {
@@ -861,7 +871,9 @@
         },
         {
           "name": "Makari's stabba",
-          "keywords": ["Devastating Wounds"],
+          "keywords": [
+            "Devastating Wounds"
+          ],
           "range": "Melee",
           "attacks": "1",
           "skill": {
@@ -888,17 +900,18 @@
             "max": 1
           },
           "default_wargear": [
-            "Kombi-weapon",
-            "Twin sluggas",
-            "Big choppa"
+            "Kustom shoota",
+            "Kustom choppa"
           ]
         }
       ],
-      "faction_keywords": ["Orks"],
+      "faction_keywords": [
+        "Orks"
+      ],
       "keywords": [
         "Infantry",
         "Character",
-        "Grenades",
+        "Explosives",
         "Warboss"
       ],
       "abilities": [
@@ -911,66 +924,27 @@
           "rules_text": "Waaagh!"
         },
         {
-          "name": "Might is Right",
-          "rules_text": "While this model is leading a unit, each time a model in that unit makes a melee attack, add 1 to the Hit roll."
+          "name": "Might Is Right",
+          "rules_text": "This unit's melee weapons have +1 to the Hit roll."
         },
         {
           "name": "Da Biggest and da Best",
-          "rules_text": "When you call a Waaagh!, until the start of the next battle round, add 4 to the Attacks characteristic of this model's melee weapons."
+          "rules_text": "While the Waaagh! is active for this unit, this unit's melee weapons have +4 Attacks."
         }
       ],
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": {
-        "can_lead": ["Boyz", "Nobz"],
-        "rules_text": "This model can be attached to the following units: Boyz, Nobz."
+        "can_lead": [
+          "Boyz",
+          "Breaka Boyz",
+          "Nobz"
+        ],
+        "rules_text": "This model can be attached to the following units: Boyz, Breaka Boyz, Nobz."
       },
-      "wargear_options": [
-        "This model's big choppa can be replaced with 1 power klaw.",
-        "This model can be equipped with 1 attack squig."
-      ],
-      "loadout_options": [
-        {
-          "id": "boss_melee_weapon",
-          "label": "Melee Weapon",
-          "target_model": "Warboss",
-          "default_option_id": "big_choppa",
-          "options": [
-            {
-              "id": "big_choppa",
-              "label": "Big choppa",
-              "description": "Default loadout.",
-              "enabled_weapons": ["Big choppa"]
-            },
-            {
-              "id": "power_klaw",
-              "label": "Power klaw",
-              "enabled_weapons": ["Power klaw"],
-              "remove_wargear": ["Big choppa"],
-              "add_wargear": ["Power klaw"]
-            }
-          ]
-        },
-        {
-          "id": "boss_attack_squig",
-          "label": "Attack Squig",
-          "target_model": "Warboss",
-          "default_option_id": "none",
-          "options": [
-            {
-              "id": "none",
-              "label": "No attack squig",
-              "description": "Default loadout."
-            },
-            {
-              "id": "attack_squig",
-              "label": "Attack squig",
-              "enabled_weapons": ["Attack squig"],
-              "add_wargear": ["Attack squig"]
-            }
-          ]
-        }
-      ],
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
       "stats": {
         "movement": 6,
         "toughness": 5,
@@ -982,10 +956,12 @@
       },
       "weapons": [
         {
-          "name": "Kombi-weapon",
-          "keywords": [],
-          "range": "24 inches",
-          "attacks": "1",
+          "name": "Kustom shoota",
+          "keywords": [
+            "Rapid Fire 2"
+          ],
+          "range": "18 inches",
+          "attacks": "4",
           "skill": {
             "type": "BS",
             "value": "5+"
@@ -995,54 +971,17 @@
           "damage": "1"
         },
         {
-          "name": "Twin sluggas",
-          "keywords": ["Pistol", "Twin-linked"],
-          "range": "12 inches",
-          "attacks": "2",
-          "skill": {
-            "type": "BS",
-            "value": "5+"
-          },
-          "strength": "4",
-          "armor_piercing": "0",
-          "damage": "1"
-        },
-        {
-          "name": "Attack squig",
-          "keywords": ["Extra Attacks"],
+          "name": "Kustom choppa",
+          "keywords": [
+            "Cleave 1"
+          ],
           "range": "Melee",
-          "attacks": "2",
-          "skill": {
-            "type": "WS",
-            "value": "4+"
-          },
-          "strength": "4",
-          "armor_piercing": "0",
-          "damage": "1"
-        },
-        {
-          "name": "Big choppa",
-          "keywords": [],
-          "range": "Melee",
-          "attacks": "5",
+          "attacks": "6",
           "skill": {
             "type": "WS",
             "value": "2+"
           },
           "strength": "8",
-          "armor_piercing": "-1",
-          "damage": "2"
-        },
-        {
-          "name": "Power klaw",
-          "keywords": [],
-          "range": "Melee",
-          "attacks": "4",
-          "skill": {
-            "type": "WS",
-            "value": "3+"
-          },
-          "strength": "10",
           "armor_piercing": "-2",
           "damage": "2"
         }
@@ -1067,7 +1006,9 @@
           ]
         }
       ],
-      "faction_keywords": ["Orks"],
+      "faction_keywords": [
+        "Orks"
+      ],
       "keywords": [
         "Infantry",
         "Character",
@@ -1096,7 +1037,9 @@
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": {
-        "can_lead": ["Meganobz"],
+        "can_lead": [
+          "Meganobz"
+        ],
         "rules_text": "This model can be attached to the following unit: Meganobz."
       },
       "wargear_options": [],
@@ -1112,7 +1055,9 @@
       "weapons": [
         {
           "name": "Big shoota",
-          "keywords": ["Rapid Fire 2"],
+          "keywords": [
+            "Rapid Fire 2"
+          ],
           "range": "36 inches",
           "attacks": "3",
           "skill": {
@@ -1135,6 +1080,896 @@
           "strength": "12",
           "armor_piercing": "-2",
           "damage": "2"
+        }
+      ]
+    },
+    {
+      "name": "Bannernob",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Bannernob",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Shoota",
+            "Choppa"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Orks"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Bannernob"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Support"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Waaagh!"
+        },
+        {
+          "name": "Waaagh! Banner",
+          "rules_text": "This unit has a 5+ invulnerable save. While the Waaagh! is active for this unit, this unit has +1 Toughness."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": {
+        "can_support": [
+          "Boyz",
+          "Breaka Boyz",
+          "Burna Boyz",
+          "Flash Gitz",
+          "Lootas",
+          "Nobz",
+          "Tankbustas"
+        ],
+        "rules_text": "This model can be attached to the following units: Boyz, Breaka Boyz, Burna Boyz, Flash Gitz, Lootas, Nobz, Tankbustas."
+      },
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 5,
+        "save": "4+",
+        "invulnerable_save": "5+",
+        "wounds": 4,
+        "leadership": "7+",
+        "objective_control": 6
+      },
+      "weapons": [
+        {
+          "name": "Shoota",
+          "keywords": [
+            "Rapid Fire 1"
+          ],
+          "range": "18 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "5+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Choppa",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Big Mek Dakkarig",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Big Mek Dakkarig",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Blitzkannon",
+            "Rokkit launcha",
+            "Stompy feet"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Orks"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Walker",
+        "Big Mek",
+        "Dakkarig"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Waaagh!"
+        },
+        {
+          "name": "Dakkabiliz",
+          "rules_text": "In your Shooting phase, while making attacks with this unit, if its blitzkannon targeted a non-Monster, non-Vehicle unit, that weapon has +6 Attacks."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 8,
+        "toughness": 8,
+        "save": "3+",
+        "invulnerable_save": "5+",
+        "wounds": 11,
+        "leadership": "7+",
+        "objective_control": 3
+      },
+      "weapons": [
+        {
+          "name": "Blitzkannon",
+          "keywords": [
+            "Heavy",
+            "Sustained Hits 1"
+          ],
+          "range": "24 inches",
+          "attacks": "8",
+          "skill": {
+            "type": "BS",
+            "value": "5+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Rokkit launcha",
+          "keywords": [
+            "Heavy"
+          ],
+          "range": "24 inches",
+          "attacks": "6",
+          "skill": {
+            "type": "BS",
+            "value": "5+"
+          },
+          "strength": "10",
+          "armor_piercing": "-2",
+          "damage": "3"
+        },
+        {
+          "name": "Stompy feet",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Bigboss",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Bigboss",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Slugga",
+            "Two-handed big choppa"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Orks"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Bigboss"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Waaagh!"
+        },
+        {
+          "name": "Breakin' Heads",
+          "rules_text": "This unit's melee weapons have [Sustained Hits 1]."
+        },
+        {
+          "name": "Somethin' to Prove",
+          "rules_text": "This unit has +1 to Charge rolls."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Boyz",
+          "Breaka Boyz",
+          "Nobz"
+        ],
+        "rules_text": "This model can be attached to the following units: Boyz, Breaka Boyz, Nobz."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 5,
+        "save": "4+",
+        "invulnerable_save": null,
+        "wounds": 5,
+        "leadership": "7+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Slugga",
+          "keywords": [
+            "Close-Quarters"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "5+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Two-handed big choppa",
+          "keywords": [
+            "Cleave 1"
+          ],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-1",
+          "damage": "2"
+        }
+      ]
+    },
+    {
+      "name": "Boyz",
+      "unit_composition": {
+        "min_models": 10,
+        "max_models": 10
+      },
+      "models": [
+        {
+          "name": "Boss Nob",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Slugga",
+            "Kustom shoota",
+            "Big choppa"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 5,
+            "save": "5+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "7+",
+            "objective_control": 2
+          }
+        },
+        {
+          "name": "Boyz",
+          "count": {
+            "min": 9,
+            "max": 9
+          },
+          "default_wargear": [
+            "Slugga",
+            "Shoota",
+            "Choppa"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 5,
+            "save": "5+",
+            "invulnerable_save": null,
+            "wounds": 1,
+            "leadership": "7+",
+            "objective_control": 2
+          }
+        }
+      ],
+      "faction_keywords": [
+        "Orks"
+      ],
+      "keywords": [
+        "Infantry",
+        "Battleline",
+        "Mob",
+        "Explosives",
+        "Boyz"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Waaagh!"
+        },
+        {
+          "name": "Get da Good Bitz",
+          "rules_text": "At the end of your Command phase, if your unit controls an objective, that objective is secured by your army."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "The Boss Nob can have its 1 kustom shoota replaced with 1 kombi-shoota and 1 kombi-rokkit."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 5,
+        "save": "5+",
+        "invulnerable_save": null,
+        "wounds": 1,
+        "leadership": "7+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Kustom shoota",
+          "keywords": [
+            "Rapid Fire 2"
+          ],
+          "range": "18 inches",
+          "attacks": "4",
+          "skill": {
+            "type": "BS",
+            "value": "5+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Kombi-rokkit",
+          "keywords": [],
+          "range": "24 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "5+"
+          },
+          "strength": "10",
+          "armor_piercing": "-2",
+          "damage": "3"
+        },
+        {
+          "name": "Kombi-shoota",
+          "keywords": [],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "5+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Shoota",
+          "keywords": [
+            "Rapid Fire 1"
+          ],
+          "range": "18 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "5+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Slugga",
+          "keywords": [
+            "Close-Quarters"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "5+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Big choppa",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-1",
+          "damage": "2"
+        },
+        {
+          "name": "Choppa",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Gretchin",
+      "unit_composition": {
+        "min_models": 10,
+        "max_models": 10
+      },
+      "models": [
+        {
+          "name": "Gretchin",
+          "count": {
+            "min": 10,
+            "max": 10
+          },
+          "default_wargear": [
+            "Blasta",
+            "Close-combat weapon"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Orks"
+      ],
+      "keywords": [
+        "Infantry",
+        "Grots",
+        "Gretchin"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Waaagh!"
+        },
+        {
+          "name": "Thievin' Scavengers",
+          "rules_text": "At the start of your Movement phase, for each objective marker you control that has one or more friendly non-Battle-shocked units with this ability within range of it, roll one D6. For one or more of those rolls of 4+, you gain 1CP."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 2,
+        "save": "7+",
+        "invulnerable_save": null,
+        "wounds": 1,
+        "leadership": "8+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Blasta",
+          "keywords": [
+            "Close-Quarters"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": "3",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Close-combat weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "1",
+          "skill": {
+            "type": "WS",
+            "value": "5+"
+          },
+          "strength": "2",
+          "armor_piercing": "0",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Painboy",
+      "unit_composition": {
+        "min_models": 2,
+        "max_models": 2
+      },
+      "models": [
+        {
+          "name": "Painboy",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Dok's toolz",
+            "'Urty syringe"
+          ]
+        },
+        {
+          "name": "Grot Orderly",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": []
+        }
+      ],
+      "faction_keywords": [
+        "Orks"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Painboy"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Support"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Waaagh!"
+        },
+        {
+          "name": "Dok's Toolz",
+          "rules_text": "This unit has Feel No Pain 5+."
+        },
+        {
+          "name": "Dok's Sawy Arrgh",
+          "rules_text": "When this model scores a Critical Wound with its 'Urty syringe against a non-Vehicle unit, it also inflicts D6 mortal wounds to that unit."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [
+        {
+          "name": "Grot Orderly",
+          "rules_text": "Once per battle, in your Command phase, if this unit is below its Starting Strength, you can return up to D3 destroyed Bodyguard models to this unit."
+        }
+      ],
+      "leader": null,
+      "support": {
+        "can_support": [
+          "Boyz",
+          "Breaka Boyz",
+          "Burna Boyz",
+          "Lootas",
+          "Nobz"
+        ],
+        "rules_text": "This model can be attached to the following units: Boyz, Breaka Boyz, Burna Boyz, Lootas, Nobz."
+      },
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 5,
+        "save": "5+",
+        "invulnerable_save": null,
+        "wounds": 3,
+        "leadership": "7+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Dok's toolz",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "9",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "'Urty syringe",
+          "keywords": [
+            "Anti-Infantry 4+",
+            "Extra Attacks",
+            "Precision"
+          ],
+          "range": "Melee",
+          "attacks": "1",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "2",
+          "armor_piercing": "0",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Wartrakk",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Wartrakk",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Kustom shoota",
+            "Rokkit launcha",
+            "Choppas"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Orks"
+      ],
+      "keywords": [
+        "Mounted",
+        "Speed Freeks",
+        "Wartrakk"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Support"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Waaagh!"
+        },
+        {
+          "name": "Indiscriminate Detonations",
+          "rules_text": "In your Shooting phase, when this unit has resolved its attacks, select one enemy unit hit by one or more of those attacks. That enemy unit is suppressed until the start of your next Command phase. While a unit is suppressed, it has -1 to Hit rolls."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": {
+        "can_support": [
+          "Warbikers"
+        ],
+        "rules_text": "This model can be attached to the following units: Warbikers."
+      },
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 12,
+        "toughness": 6,
+        "save": "4+",
+        "invulnerable_save": "6+",
+        "wounds": 7,
+        "leadership": "7+",
+        "objective_control": 3
+      },
+      "weapons": [
+        {
+          "name": "Kustom shoota",
+          "keywords": [
+            "Rapid Fire 2"
+          ],
+          "range": "18 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "5+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Rokkit launcha",
+          "keywords": [],
+          "range": "24 inches",
+          "attacks": "D3+3",
+          "skill": {
+            "type": "BS",
+            "value": "5+"
+          },
+          "strength": "10",
+          "armor_piercing": "-2",
+          "damage": "3"
+        },
+        {
+          "name": "Choppas",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Weirdboy",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Weirdboy",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "'Eadbanger",
+            "Waaagh! staff"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Orks"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Psyker",
+        "Weirdboy"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise D3, Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Waaagh!"
+        },
+        {
+          "name": "Waaagh! Energy",
+          "rules_text": "For every 5 models in this unit, add 1 to the Strength and Damage characteristics of this model's 'Eadbanger weapon. While this unit contains 10 or more models, that weapon has the [Blast] ability."
+        },
+        {
+          "name": "Da Jump",
+          "rules_text": "Psychic, once per turn, per army: In your Movement phase, roll one D6 and on a result of 1, this unit suffers D6 mortal wounds. Otherwise, remove this unit from the battlefield and set it up anywhere more than 9 inches horizontally away from all enemy models. Until the end of the phase, this unit can make an Ingress move, including during the first battle round."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Boyz"
+        ],
+        "rules_text": "This model can be attached to the following units: Boyz."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 5,
+        "save": "5+",
+        "invulnerable_save": null,
+        "wounds": 4,
+        "leadership": "7+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "'Eadbanger",
+          "keywords": [
+            "Precision",
+            "Psychic"
+          ],
+          "range": "24 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": "6",
+          "armor_piercing": "-3",
+          "damage": "1"
+        },
+        {
+          "name": "Waaagh! staff",
+          "keywords": [
+            "Psychic"
+          ],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-1",
+          "damage": "D3"
         }
       ]
     }

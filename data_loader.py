@@ -724,6 +724,7 @@ def normalize_unit(unit_data: dict[str, Any], faction_name: str) -> dict[str, An
         "selectable_abilities": unit_data.get("selectable_abilities", []),
         "wargear_abilities": unit_data.get("wargear_abilities", []),
         "leader": unit_data.get("leader", {}),
+        "support": unit_data.get("support", {}),
         "wargear_options": unit_data.get("wargear_options", []),
         "loadout_options": unit_data.get("loadout_options", []),
         "stats": stats,
@@ -770,14 +771,59 @@ def load_faction_file(data_file: Path) -> dict[str, Any] | None:
 
 def load_factions(data_dir: Path = DATA_DIR, parent_faction: str | None = None) -> dict[str, dict[str, Any]]:
     factions: dict[str, dict[str, Any]] = {}
-
     for data_file in sorted(data_dir.glob("*.json")):
         faction_entry = load_faction_file(data_file)
         if faction_entry is None:
             continue
-        if parent_faction and faction_entry["parent_faction"] != parent_faction:
-            continue
         factions[faction_entry["name"]] = faction_entry
+
+    if not factions:
+        raise ValueError("No faction files were found.")
+
+    for faction_entry in factions.values():
+        faction_entry["own_units"] = dict(faction_entry["units"])
+
+    resolved_unit_maps: dict[str, dict[str, Any]] = {}
+
+    def resolve_faction_units(faction_name: str, stack: tuple[str, ...] = ()) -> dict[str, Any]:
+        if faction_name in resolved_unit_maps:
+            return resolved_unit_maps[faction_name]
+
+        if faction_name in stack:
+            raise ValueError(
+                "Circular parent faction reference detected: "
+                + " -> ".join([*stack, faction_name])
+            )
+
+        faction_entry = factions.get(faction_name)
+        if faction_entry is None:
+            raise ValueError(f"Unknown parent faction: {faction_name}")
+
+        parent_name = faction_entry.get("parent_faction", "")
+        inherited_units: dict[str, Any] = {}
+        if parent_name and parent_name != faction_name:
+            if parent_name not in factions:
+                raise ValueError(
+                    f"Faction '{faction_name}' references unknown parent faction '{parent_name}'"
+                )
+            inherited_units = resolve_faction_units(parent_name, (*stack, faction_name))
+
+        resolved_units = {
+            **inherited_units,
+            **faction_entry["own_units"],
+        }
+        resolved_unit_maps[faction_name] = resolved_units
+        return resolved_units
+
+    for faction_name, faction_entry in factions.items():
+        faction_entry["units"] = resolve_faction_units(faction_name)
+
+    if parent_faction:
+        factions = {
+            faction_name: faction_entry
+            for faction_name, faction_entry in factions.items()
+            if faction_entry["parent_faction"] == parent_faction
+        }
 
     if not factions:
         if parent_faction:

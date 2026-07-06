@@ -1,0 +1,1134 @@
+{
+  "faction": {
+    "name": "Adeptus Astartes",
+    "parent_faction": "",
+    "army_rules": [
+      {
+        "name": "Oath of Moment",
+        "rules_text": "",
+        "implemented": true
+      }
+    ],
+    "chapter_rules": [],
+    "derived_keywords": [],
+    "detachments": []
+  },
+  "units": [
+    {
+      "name": "Captain with Relic Shield",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Captain with Relic Shield",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Heavy bolt pistol",
+            "Master-crafted power weapon",
+            "Relic Shield"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Grenades",
+        "Imperium",
+        "Tacticus",
+        "Captain",
+        "Captain with Relic Shield"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Rites of Battle",
+          "rules_text": "Once per battle round, per army: When a Stratagem targets this unit, you can reduce its cost by 1CP for that usage."
+        },
+        {
+          "name": "Finest Hour",
+          "rules_text": "Once per battle: In the Fight phase, when this unit is selected to fight, this model's melee weapons have the [DEVASTATING WOUNDS] ability until the end of the phase."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [
+        {
+          "name": "Relic Shield",
+          "rules_text": "This model has +1W (included in profile)."
+        }
+      ],
+      "leader": {
+        "can_lead": [
+          "Assault Intercessor Squad",
+          "Bladeguard Veteran Squad",
+          "Company Heroes",
+          "Hellblaster Squad",
+          "Infernus Squad",
+          "Intercessor Squad",
+          "Sternguard Veteran Squad",
+          "Tactical Squad"
+        ],
+        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad; Bladeguard Veteran Squad; Company Heroes; Hellblaster Squad; Infernus Squad; Intercessor Squad; Sternguard Veteran Squad; Tactical Squad."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": "4+",
+        "wounds": 6,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Heavy bolt pistol",
+          "keywords": [
+            "Pistol",
+            "Close-Quarters"
+          ],
+          "range": "18 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Master-crafted power weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "2"
+        }
+      ]
+    },
+    {
+      "name": "Ancient",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Ancient",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Bolt rifle",
+            "Close-combat weapon"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Explosives",
+        "Imperium",
+        "Tacticus",
+        "Ancient"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Support"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Relic Banner",
+          "rules_text": "This unit has +1 OC."
+        },
+        {
+          "name": "Astartes Banner",
+          "rules_text": "While this model is within range of an objective marker and within 6 inches of the centre of the battlefield, it has Feel No Pain 4+."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": {
+        "can_support": [
+          "Assault Intercessor Squad",
+          "Desolation Squad",
+          "Devastator Squad",
+          "Hellblaster Squad",
+          "Infernus Squad",
+          "Intercessor Squad",
+          "Sternguard Veteran Squad",
+          "Tactical Squad"
+        ],
+        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad; Desolation Squad; Devastator Squad; Hellblaster Squad; Infernus Squad; Intercessor Squad; Sternguard Veteran Squad; Tactical Squad."
+      },
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 4,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "keywords": [
+            "Close-Quarters"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Bolt rifle",
+          "keywords": [
+            "Assault",
+            "Heavy"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Close-combat weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Chaplain with Jump Pack",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Chaplain with Jump Pack",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Absolvor bolt pistol",
+            "Crozius arcanum"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Jump Pack",
+        "Fly",
+        "Imperium",
+        "Chaplain with Jump Pack"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike, Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Litany of Hate",
+          "rules_text": "This unit's melee weapons have +1 to Wound rolls."
+        },
+        {
+          "name": "Exhortation of Rage",
+          "rules_text": "In the Fight phase, when this unit is selected to fight, select one enemy unit it is engaged with and roll one D6. On a 4-5, that enemy unit suffers D3 mortal wounds. On a 6, that enemy unit suffers 3 mortal wounds."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Assault Intercessors with Jump Packs",
+          "Vanguard Veteran Squad with Jump Packs"
+        ],
+        "rules_text": "This model can be attached to the following units: Assault Intercessors with Jump Packs; Vanguard Veteran Squad with Jump Packs."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 12,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": "4+",
+        "wounds": 4,
+        "leadership": "5+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Absolvor bolt pistol",
+          "keywords": [
+            "Close-Quarters"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Crozius arcanum",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "2"
+        }
+      ]
+    },
+    {
+      "name": "Eradicator Squad with Heavy Bolters",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 3
+      },
+      "models": [
+        {
+          "name": "Eradicator Sergeant",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Heavy bolter",
+            "Close-combat weapon"
+          ]
+        },
+        {
+          "name": "Eradicator",
+          "count": {
+            "min": 2,
+            "max": 2
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Heavy bolter",
+            "Close-combat weapon"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Imperium",
+        "Gravis",
+        "Eradicator Squad"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Overlapping Detonations",
+          "rules_text": "In your Shooting phase, when this unit is selected to shoot, select one non-Monster or non-Vehicle enemy unit visible to it. While making attacks, this unit's Heavy Bolters that target that selected unit have [BLAST]."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 5,
+        "toughness": 6,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 3,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "keywords": [
+            "Close-Quarters"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Heavy bolter",
+          "keywords": [
+            "Heavy",
+            "Sustained Hits 1"
+          ],
+          "range": "36 inches",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "2"
+        },
+        {
+          "name": "Close-combat weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Intercessor Squad",
+      "unit_composition": {
+        "min_models": 10,
+        "max_models": 10
+      },
+      "models": [
+        {
+          "name": "Intercessor Sergeant",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Bolt rifle",
+            "Chainsword",
+            "Grenade launcher",
+            "Close-combat weapon"
+          ]
+        },
+        {
+          "name": "Intercessor",
+          "count": {
+            "min": 9,
+            "max": 9
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Bolt rifle",
+            "Close-combat weapon"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Battleline",
+        "Explosives",
+        "Imperium",
+        "Tacticus",
+        "Intercessor Squad"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Objective Secured",
+          "rules_text": "At the end of your Command phase, if this unit controls an objective marker, that objective is secured by your army."
+        },
+        {
+          "name": "Hail of Bullets",
+          "rules_text": "In your Shooting phase, when this unit is selected to shoot, select one enemy unit visible to this unit. While making attacks, this unit's bolt rifles that target that selected unit have +2 A."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [
+        {
+          "id": "grenade_launcher_profile",
+          "label": "Grenade launcher profile",
+          "target_model": "Intercessor Sergeant",
+          "default_option_id": "frag_grenade",
+          "options": [
+            {
+              "id": "frag_grenade",
+              "label": "Grenade launcher - frag",
+              "enabled_weapons": [
+                "Grenade launcher - frag"
+              ]
+            },
+            {
+              "id": "krak_grenade",
+              "label": "Grenade launcher - krak",
+              "enabled_weapons": [
+                "Grenade launcher - krak"
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 2,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "keywords": [
+            "Close-Quarters"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Bolt rifle",
+          "keywords": [
+            "Assault",
+            "Heavy"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Grenade launcher - frag",
+          "keywords": [
+            "Blast"
+          ],
+          "range": "24 inches",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Grenade launcher - krak",
+          "keywords": [],
+          "range": "24 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "9",
+          "armor_piercing": "-2",
+          "damage": "D3"
+        },
+        {
+          "name": "Chainsword",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Close-combat weapon",
+          "keywords": [
+            "Precision"
+          ],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Land Speeder",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Land Speeder",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Multi-melta",
+            "Onslaught gatling cannon",
+            "Stormfury missile launcher",
+            "Close-combat weapon"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Fly",
+        "Imperium",
+        "Land Speeder"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Purgation Run",
+          "rules_text": "In your Shooting phase, after this unit has shot, it can make a Normal move of up to 10 inches. If it does, until the end of the turn, this unit is not eligible to declare a charge."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "This model can have its 1 onslaught gatling cannon replaced with 1 heavy flamer."
+      ],
+      "loadout_options": [
+        {
+          "id": "secondary_weapon",
+          "label": "Secondary weapon",
+          "target_model": "Land Speeder",
+          "default_option_id": "onslaught_gatling_cannon",
+          "options": [
+            {
+              "id": "onslaught_gatling_cannon",
+              "label": "Onslaught gatling cannon",
+              "description": "Default loadout."
+            },
+            {
+              "id": "heavy_flamer",
+              "label": "Heavy flamer",
+              "enabled_weapons": [
+                "Heavy flamer"
+              ],
+              "remove_wargear": [
+                "Onslaught gatling cannon"
+              ],
+              "add_wargear": [
+                "Heavy flamer"
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 14,
+        "toughness": 8,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 9,
+        "leadership": "6+",
+        "objective_control": 3
+      },
+      "weapons": [
+        {
+          "name": "Heavy flamer",
+          "keywords": [
+            "Torrent"
+          ],
+          "range": "12 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Multi-melta",
+          "keywords": [
+            "Melta 2"
+          ],
+          "range": "18 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "9",
+          "armor_piercing": "-4",
+          "damage": "D6"
+        },
+        {
+          "name": "Onslaught gatling cannon",
+          "keywords": [
+            "Devastating Wounds"
+          ],
+          "range": "24 inches",
+          "attacks": "8",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Stormfury missile launcher",
+          "keywords": [],
+          "range": "48 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "12",
+          "armor_piercing": "-3",
+          "damage": "D6+1"
+        },
+        {
+          "name": "Close-combat weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Librarian",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Librarian",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Smite",
+            "Force weapon"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Explosives",
+        "Psyker",
+        "Imperium",
+        "Tacticus",
+        "Librarian"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Psychic Hood",
+          "rules_text": "This unit has the Feel No Pain 4+ ability against Psychic Attacks and abilities."
+        },
+        {
+          "name": "Mental Fortress",
+          "rules_text": "This unit has a 4+ invulnerable save."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Assault Intercessor Squad",
+          "Desolation Squad",
+          "Devastator Squad",
+          "Hellblaster Squad",
+          "Infernus Squad",
+          "Intercessor Squad",
+          "Sternguard Veteran Squad",
+          "Tactical Squad"
+        ],
+        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad; Desolation Squad; Devastator Squad; Hellblaster Squad; Infernus Squad; Intercessor Squad; Sternguard Veteran Squad; Tactical Squad."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [
+        {
+          "id": "smite_profile",
+          "label": "Smite profile",
+          "target_model": "Librarian",
+          "default_option_id": "smite_witchfire",
+          "options": [
+            {
+              "id": "smite_witchfire",
+              "label": "Smite - witchfire",
+              "enabled_weapons": [
+                "Smite - witchfire"
+              ]
+            },
+            {
+              "id": "smite_focused_witchfire",
+              "label": "Smite - focused witchfire",
+              "enabled_weapons": [
+                "Smite - focused witchfire"
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": "4+",
+        "wounds": 4,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "keywords": [
+            "Close-Quarters"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Smite - witchfire",
+          "keywords": [
+            "Psychic"
+          ],
+          "range": "24 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Smite - focused witchfire",
+          "keywords": [
+            "Devastating Wounds",
+            "Hazardous",
+            "Psychic"
+          ],
+          "range": "24 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "D3"
+        },
+        {
+          "name": "Force weapon",
+          "keywords": [
+            "Psychic"
+          ],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "D3"
+        }
+      ]
+    },
+    {
+      "name": "Vanguard Veteran Squad with Jump Packs",
+      "unit_composition": {
+        "min_models": 5,
+        "max_models": 5
+      },
+      "models": [
+        {
+          "name": "Vanguard Veteran Sergeant",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Heavy bolt pistol",
+            "Plasma pistol",
+            "Master-crafted power weapon"
+          ]
+        },
+        {
+          "name": "Vanguard Veteran",
+          "count": {
+            "min": 4,
+            "max": 4
+          },
+          "default_wargear": [
+            "Heavy bolt pistol",
+            "Master-crafted power weapon"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Explosives",
+        "Jump Pack",
+        "Fly",
+        "Imperium",
+        "Vanguard Veteran Squad with Jump Packs"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Vanguard Assault",
+          "rules_text": "In a turn in which this unit made a Charge move, this unit's melee weapons have [LETHAL HITS]."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [
+        {
+          "id": "plasma_pistol_profile",
+          "label": "Plasma pistol profile",
+          "target_model": "Vanguard Veteran Sergeant",
+          "default_option_id": "plasma_pistol_standard",
+          "options": [
+            {
+              "id": "plasma_pistol_standard",
+              "label": "Plasma pistol - standard",
+              "enabled_weapons": [
+                "Plasma pistol - standard"
+              ]
+            },
+            {
+              "id": "plasma_pistol_supercharge",
+              "label": "Plasma pistol - supercharge",
+              "enabled_weapons": [
+                "Plasma pistol - supercharge"
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 12,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 2,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Heavy bolt pistol",
+          "keywords": [
+            "Close-Quarters"
+          ],
+          "range": "18 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma pistol - standard",
+          "keywords": [
+            "Close-Quarters"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma pistol - supercharge",
+          "keywords": [
+            "Close-Quarters",
+            "Hazardous"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "2"
+        },
+        {
+          "name": "Master-crafted power weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "2"
+        }
+      ]
+    }
+  ]
+}
