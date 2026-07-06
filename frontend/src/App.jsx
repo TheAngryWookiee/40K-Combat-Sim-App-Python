@@ -6069,12 +6069,6 @@ function App() {
 
     return invalidIds
   }, [selectedBattlefieldHasBaseOverlap, selectedBattlefieldModels, selectedBattlefieldSetupStatus])
-  const selectedBattlefieldVisibility = useMemo(() => {
-    if (!selectedBattlefieldModels.length || !enemyBattlefieldModels.length) {
-      return null
-    }
-    return lineOfSightExists(selectedBattlefieldModels[0], enemyBattlefieldModels[0])
-  }, [enemyBattlefieldModels, selectedBattlefieldModels])
   const toggleBattlefieldSection = useCallback((sectionId) => {
     setBattlefieldSectionVisibility((current) => ({
       ...current,
@@ -6082,10 +6076,6 @@ function App() {
     }))
   }, [])
   const battlefieldInEngagementRange = selectedBattlefieldSetupStatus.engagement.engaged
-  const battlefieldClosestModelGapInches = useMemo(
-    () => getMinimumModelGapInches(selectedBattlefieldModels, enemyBattlefieldModels),
-    [enemyBattlefieldModels, selectedBattlefieldModels],
-  )
   const selectedBattlefieldWeaponRanges = useMemo(() => (
     (selectedBattlefieldUnitDetails?.weapons || [])
       .map((weapon) => {
@@ -6124,23 +6114,6 @@ function App() {
   const enemyBattlefieldUnitDetails = enemyBattlefieldUnit ? getBattlefieldUnitDetails(enemyBattlefieldUnit) : null
   const enemyBattlefieldIsMonsterVehicle = unitIsMonsterOrVehicle(enemyBattlefieldUnitDetails)
   const battlefieldTargetEngagedMonsterVehicle = battlefieldInEngagementRange && enemyBattlefieldIsMonsterVehicle
-  const inRangeWeaponNames = useMemo(() => {
-    if (battlefieldClosestModelGapInches === null || battlefieldInEngagementRange) {
-      return []
-    }
-    return selectedBattlefieldWeaponRanges
-      .filter((weapon) => battlefieldClosestModelGapInches <= weapon.rangeInches)
-      .map((weapon) => formatWeaponName(weapon))
-  }, [battlefieldClosestModelGapInches, battlefieldInEngagementRange, selectedBattlefieldWeaponRanges])
-  const halfRangeWeaponNames = useMemo(() => {
-    if (battlefieldClosestModelGapInches === null || battlefieldInEngagementRange) {
-      return []
-    }
-    return selectedBattlefieldWeaponRanges
-      .filter((weapon) => weapon.hasHalfRangeRule && battlefieldClosestModelGapInches <= weapon.halfRangeInches)
-      .map((weapon) => formatWeaponName(weapon))
-  }, [battlefieldClosestModelGapInches, battlefieldInEngagementRange, selectedBattlefieldWeaponRanges])
-  const showBattlefieldRangeLine = !battlefieldInEngagementRange && inRangeWeaponNames.length > 0 && selectedBattlefieldUnit && enemyBattlefieldUnit
   const battlefieldCombatOptions = useMemo(() => (
     battlefieldUnits.flatMap((unit) => battlefieldUnits
       .filter((candidate) => candidate.side !== unit.side)
@@ -6265,6 +6238,44 @@ function App() {
       ? battlefieldModelGroups[selectedBattlefieldCombatTargetId] || []
       : []
   ), [battlefieldModelGroups, selectedBattlefieldCombatTargetId])
+  const selectedBattlefieldDisplayTargetId = ['shooting', 'fight'].includes(activeGamePhase?.id)
+    ? selectedBattlefieldCombatTargetId
+    : enemyBattlefieldUnit?.id || ''
+  const selectedBattlefieldDisplayTarget = selectedBattlefieldDisplayTargetId
+    ? battlefieldUnitMap[selectedBattlefieldDisplayTargetId] || null
+    : null
+  const selectedBattlefieldDisplayTargetModels = useMemo(() => (
+    selectedBattlefieldDisplayTargetId
+      ? battlefieldModelGroups[selectedBattlefieldDisplayTargetId] || []
+      : []
+  ), [battlefieldModelGroups, selectedBattlefieldDisplayTargetId])
+  const selectedBattlefieldVisibility = useMemo(() => {
+    if (!selectedBattlefieldModels.length || !selectedBattlefieldDisplayTargetModels.length) {
+      return null
+    }
+    return lineOfSightExists(selectedBattlefieldModels[0], selectedBattlefieldDisplayTargetModels[0])
+  }, [selectedBattlefieldDisplayTargetModels, selectedBattlefieldModels])
+  const battlefieldClosestModelGapInches = useMemo(
+    () => getMinimumModelGapInches(selectedBattlefieldModels, selectedBattlefieldDisplayTargetModels),
+    [selectedBattlefieldDisplayTargetModels, selectedBattlefieldModels],
+  )
+  const inRangeWeaponNames = useMemo(() => {
+    if (battlefieldClosestModelGapInches === null || battlefieldInEngagementRange) {
+      return []
+    }
+    return selectedBattlefieldWeaponRanges
+      .filter((weapon) => battlefieldClosestModelGapInches <= weapon.rangeInches)
+      .map((weapon) => formatWeaponName(weapon))
+  }, [battlefieldClosestModelGapInches, battlefieldInEngagementRange, selectedBattlefieldWeaponRanges])
+  const halfRangeWeaponNames = useMemo(() => {
+    if (battlefieldClosestModelGapInches === null || battlefieldInEngagementRange) {
+      return []
+    }
+    return selectedBattlefieldWeaponRanges
+      .filter((weapon) => weapon.hasHalfRangeRule && battlefieldClosestModelGapInches <= weapon.halfRangeInches)
+      .map((weapon) => formatWeaponName(weapon))
+  }, [battlefieldClosestModelGapInches, battlefieldInEngagementRange, selectedBattlefieldWeaponRanges])
+  const showBattlefieldRangeLine = !battlefieldInEngagementRange && inRangeWeaponNames.length > 0 && selectedBattlefieldUnit && selectedBattlefieldDisplayTarget
   const battlefieldCombatWeaponModelCounts = useMemo(() => (
     Object.fromEntries(battlefieldCombatWeaponOptions.map((weapon) => [
       weapon.name,
@@ -9253,7 +9264,7 @@ function App() {
               {activePage === 'combat'
                 ? 'Check Unit Effectiveness'
                 : activePage === 'battlefield'
-                  ? 'Plot Units on the Battlefield'
+                  ? 'Deploy Units'
                   : activePage === 'turn'
                     ? 'Run the Turn Sequence'
                     : 'Build Army Lists'}
@@ -11602,8 +11613,8 @@ function App() {
                         className="battlefield-range-line"
                         x1={selectedBattlefieldModelPercent?.x ?? battlefieldPositions[selectedBattlefieldUnit.id]?.x ?? selectedBattlefieldUnit.x}
                         y1={selectedBattlefieldModelPercent?.y ?? battlefieldPositions[selectedBattlefieldUnit.id]?.y ?? selectedBattlefieldUnit.y}
-                        x2={battlefieldPositions[enemyBattlefieldUnit.id]?.x ?? enemyBattlefieldUnit.x}
-                        y2={battlefieldPositions[enemyBattlefieldUnit.id]?.y ?? enemyBattlefieldUnit.y}
+                        x2={battlefieldPositions[selectedBattlefieldDisplayTarget.id]?.x ?? selectedBattlefieldDisplayTarget.x}
+                        y2={battlefieldPositions[selectedBattlefieldDisplayTarget.id]?.y ?? selectedBattlefieldDisplayTarget.y}
                       />
                     </svg>
                   ) : null}
@@ -12013,7 +12024,7 @@ function App() {
                     <p className="kicker">Charge Controls</p>
                     <h3>{selectedBattlefieldUnit.name}</h3>
                     <p>
-                      Target: {enemyBattlefieldUnit?.name || 'No target'}.
+                      Target: {selectedBattlefieldDisplayTarget?.name || 'No target'}.
                       {' '}Gap: {selectedBattlefieldChargeStatus?.startGap !== null && selectedBattlefieldChargeStatus?.startGap !== undefined
                         ? `${formatNumber(selectedBattlefieldChargeStatus.startGap)}"`
                         : 'n/a'}.
@@ -12627,7 +12638,7 @@ function App() {
                 <p className="kicker">Charge</p>
                 <h3>{selectedBattlefieldUnit.name}</h3>
                 <p>
-                  Target: {enemyBattlefieldUnit?.name || 'No target'}.
+                  Target: {selectedBattlefieldDisplayTarget?.name || 'No target'}.
                   {' '}Gap: {selectedBattlefieldChargeStatus?.startGap !== null && selectedBattlefieldChargeStatus?.startGap !== undefined
                     ? `${formatNumber(selectedBattlefieldChargeStatus.startGap)}"`
                     : 'n/a'}.
@@ -12663,7 +12674,7 @@ function App() {
                 </label>
                 <label>
                   <span>Charge Target</span>
-                  <input value={enemyBattlefieldUnit?.name || 'No enemy unit'} disabled readOnly />
+                  <input value={selectedBattlefieldDisplayTarget?.name || 'No enemy unit'} disabled readOnly />
                 </label>
               </div>
               <div className="battlefield-move-actions">
