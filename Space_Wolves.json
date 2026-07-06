@@ -760,6 +760,7 @@
         {
           "id": "primary_gun",
           "label": "Primary Gun",
+          "target_model": "Bjorn the Fell-Handed - Epic Hero",
           "default_option_id": "assault_cannon",
           "options": [
             {
@@ -771,12 +772,16 @@
             {
               "id": "helfrost_cannon",
               "label": "Helfrost cannon",
-              "enabled_weapons": ["Helfrost cannon - dispersed", "Helfrost cannon - focused"]
+              "enabled_weapons": ["Helfrost cannon - dispersed", "Helfrost cannon - focused"],
+              "remove_wargear": ["Assault cannon"],
+              "add_wargear": ["Helfrost cannon"]
             },
             {
               "id": "multi_melta",
               "label": "Multi-melta",
-              "enabled_weapons": ["Multi-melta"]
+              "enabled_weapons": ["Multi-melta"],
+              "remove_wargear": ["Assault cannon"],
+              "add_wargear": ["Multi-melta"]
             }
           ]
         }
@@ -3031,6 +3036,7 @@
         {
           "id": "armament",
           "label": "Armament",
+          "target_model": "Venerable Dreadnought",
           "default_option_id": "assault_stormbolter_fist",
           "options": [
             {
@@ -3050,7 +3056,9 @@
                 "Assault cannon",
                 "Heavy flamer",
                 "Dreadnought combat weapon"
-              ]
+              ],
+              "remove_wargear": ["Storm bolter"],
+              "add_wargear": ["Heavy flamer"]
             },
             {
               "id": "helfrost_stormbolter_fist",
@@ -3060,7 +3068,9 @@
                 "Helfrost cannon - focused",
                 "Storm bolter",
                 "Dreadnought combat weapon"
-              ]
+              ],
+              "remove_wargear": ["Assault cannon"],
+              "add_wargear": ["Helfrost cannon"]
             },
             {
               "id": "helfrost_flamer_fist",
@@ -3070,7 +3080,9 @@
                 "Helfrost cannon - focused",
                 "Heavy flamer",
                 "Dreadnought combat weapon"
-              ]
+              ],
+              "remove_wargear": ["Assault cannon", "Storm bolter"],
+              "add_wargear": ["Helfrost cannon", "Heavy flamer"]
             },
             {
               "id": "melta_stormbolter_fist",
@@ -3079,7 +3091,9 @@
                 "Multi-melta",
                 "Storm bolter",
                 "Dreadnought combat weapon"
-              ]
+              ],
+              "remove_wargear": ["Assault cannon"],
+              "add_wargear": ["Multi-melta"]
             },
             {
               "id": "melta_flamer_fist",
@@ -3088,7 +3102,9 @@
                 "Multi-melta",
                 "Heavy flamer",
                 "Dreadnought combat weapon"
-              ]
+              ],
+              "remove_wargear": ["Assault cannon", "Storm bolter"],
+              "add_wargear": ["Multi-melta", "Heavy flamer"]
             },
             {
               "id": "axe_shield_stormbolter",
@@ -3099,6 +3115,8 @@
                 "Storm bolter"
               ],
               "enabled_wargear_abilities": ["Blizzard Shield"],
+              "remove_wargear": ["Assault cannon", "Dreadnought combat weapon"],
+              "add_wargear": ["Fenrisian greataxe", "Blizzard shield"],
               "stat_overrides": {
                 "invulnerable_save": "4+"
               }
@@ -3112,6 +3130,8 @@
                 "Heavy flamer"
               ],
               "enabled_wargear_abilities": ["Blizzard Shield"],
+              "remove_wargear": ["Assault cannon", "Storm bolter", "Dreadnought combat weapon"],
+              "add_wargear": ["Fenrisian greataxe", "Blizzard shield", "Heavy flamer"],
               "stat_overrides": {
                 "invulnerable_save": "4+"
               }

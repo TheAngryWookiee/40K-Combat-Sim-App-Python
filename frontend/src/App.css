@@ -1,6 +1,6 @@
 .app-shell {
   position: relative;
-  width: min(1380px, calc(100% - 32px));
+  width: min(var(--layout-max-width), calc(100% - var(--layout-edge-gap)));
   margin: 0 auto;
   padding: 10px 0 40px;
 }
@@ -479,10 +479,31 @@ textarea:focus {
 .weapon-checkbox {
   min-height: 56px;
   align-items: center;
+  justify-content: space-between;
+}
+
+.weapon-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
 .weapon-checkbox span {
   line-height: 1.35;
+}
+
+.weapon-checkbox.with-counter {
+  padding-right: 8px;
+}
+
+.weapon-model-count-input {
+  width: 64px !important;
+  min-height: 36px !important;
+  padding: 6px 8px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 800;
 }
 
 .primary-button,
@@ -1188,10 +1209,10 @@ textarea:focus {
 }
 
 .battlefield-panel {
-  width: min(calc(100vw - 24px), 1760px);
+  width: min(calc(100vw - var(--layout-edge-gap)), var(--layout-max-width));
   margin-top: 18px;
-  margin-left: calc(50% - min(calc(100vw - 24px), 1760px) / 2);
-  margin-right: calc(50% - min(calc(100vw - 24px), 1760px) / 2);
+  margin-left: calc(50% - min(calc(100vw - var(--layout-edge-gap)), var(--layout-max-width)) / 2);
+  margin-right: calc(50% - min(calc(100vw - var(--layout-edge-gap)), var(--layout-max-width)) / 2);
   padding: 18px;
   box-sizing: border-box;
 }
@@ -1330,8 +1351,8 @@ textarea:focus {
 }
 
 .sim-game-step.active {
-  border-color: rgba(161, 79, 39, 0.65);
-  background: linear-gradient(180deg, rgba(247, 236, 211, 0.96), rgba(255, 251, 244, 0.96));
+  border-color: var(--state-accent-border);
+  background: var(--state-active-panel);
 }
 
 .sim-game-step.complete {
@@ -1641,7 +1662,7 @@ textarea:focus {
   padding: 9px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-lightwash);
 }
 
 .battlefield-action-entry p {
@@ -1708,7 +1729,7 @@ textarea:focus {
   padding: 11px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 251, 244, 0.9);
+  background: var(--surface-lightwash);
 }
 
 .attached-unit-rule-card p {
@@ -1753,7 +1774,7 @@ textarea:focus {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: rgba(255, 251, 244, 0.66);
+  background: var(--surface-lightwash-soft);
 }
 
 .battlefield-saved-list-controls,
@@ -1908,15 +1929,15 @@ textarea:focus {
   inset: 0 auto 0 50%;
   width: 1px;
   transform: translateX(-50%);
-  background: rgba(255, 245, 220, 0.28);
+  background: var(--battlefield-warm-overlay);
 }
 
 .battlefield-range-ring {
   position: absolute;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  border: 1px dashed rgba(255, 246, 222, 0.34);
-  background: rgba(255, 244, 209, 0.03);
+  border: 1px dashed var(--range-ring-neutral-border);
+  background: var(--range-ring-neutral-bg);
   pointer-events: none;
 }
 
@@ -1926,9 +1947,9 @@ textarea:focus {
 }
 
 .battlefield-move-range-ring {
-  border-color: rgba(255, 242, 161, 0.82);
-  background: rgba(255, 210, 96, 0.07);
-  box-shadow: inset 0 0 0 1px rgba(255, 242, 161, 0.24);
+  border-color: var(--move-ring-color);
+  background: var(--move-ring-bg);
+  box-shadow: inset 0 0 0 1px var(--move-ring-shadow);
 }
 
 .battlefield-coherency-range-ring {
@@ -1983,7 +2004,7 @@ textarea:focus {
 .battlefield-unit.casualty-selectable .battlefield-unit-dot {
   box-shadow:
     0 0 0 3px rgba(155, 52, 43, 0.95),
-    0 0 0 7px rgba(255, 232, 126, 0.45),
+    0 0 0 7px var(--selection-ring-soft),
     0 8px 18px rgba(13, 14, 10, 0.28);
 }
 
@@ -2011,13 +2032,13 @@ textarea:focus {
 
 .battlefield-unit.selected .battlefield-unit-dot {
   box-shadow:
-    0 0 0 2px rgba(255, 245, 220, 0.6),
+    0 0 0 2px color-mix(in srgb, var(--battlefield-light-line) 62%, transparent),
     0 6px 14px rgba(13, 14, 10, 0.18);
 }
 
 .battlefield-unit.selected-model .battlefield-unit-dot {
   box-shadow:
-    0 0 0 3px rgba(255, 232, 126, 0.95),
+    0 0 0 3px var(--selection-ring),
     0 0 0 6px rgba(80, 93, 55, 0.38),
     0 6px 14px rgba(13, 14, 10, 0.22);
 }
@@ -2041,7 +2062,7 @@ textarea:focus {
 }
 
 .battlefield-unit-label-anchor.selected .battlefield-unit-label {
-  border-color: rgba(255, 245, 220, 0.48);
+  border-color: color-mix(in srgb, var(--battlefield-light-line) 48%, transparent);
 }
 
 .battlefield-unit-label-anchor.compact {
@@ -2072,7 +2093,7 @@ textarea:focus {
   border: 1px solid rgba(255, 249, 236, 0.95);
   border-radius: 999px;
   background: rgba(12, 16, 13, 0.94);
-  color: #fff5df;
+  color: var(--battlefield-light-text);
   font-size: 0.58rem;
   font-weight: 900;
   line-height: 1;
@@ -2092,8 +2113,8 @@ textarea:focus {
   padding: 0 4px;
   border: 1px solid rgba(255, 249, 236, 0.95);
   border-radius: 999px;
-  background: rgba(255, 245, 220, 0.96);
-  color: #362411;
+  background: var(--legend-profile-bg);
+  color: var(--legend-profile-text);
   font-size: 0.58rem;
   font-weight: 900;
   line-height: 1;
@@ -2104,7 +2125,7 @@ textarea:focus {
 
 .battlefield-model-leader .battlefield-unit-dot {
   box-shadow:
-    0 0 0 2px rgba(255, 232, 126, 0.95),
+    0 0 0 2px var(--selection-ring),
     0 6px 14px rgba(13, 14, 10, 0.18);
 }
 
@@ -2154,10 +2175,10 @@ textarea:focus {
   width: max-content;
   padding: 5px 9px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 245, 220, 0.42);
+  border: 1px solid color-mix(in srgb, var(--battlefield-light-line) 42%, transparent);
   background: rgba(12, 16, 13, 0.92);
   text-align: center;
-  color: #fff5df;
+  color: var(--battlefield-light-text);
   backdrop-filter: blur(6px);
   pointer-events: none;
   box-shadow: 0 6px 16px rgba(8, 10, 7, 0.32);
@@ -2179,7 +2200,7 @@ textarea:focus {
 
 .battlefield-unit-label span {
   font-size: 0.76rem;
-  color: rgba(255, 239, 209, 0.82);
+  color: color-mix(in srgb, var(--battlefield-light-text) 82%, transparent);
 }
 
 .battlefield-unit-profile-summary {
@@ -2191,7 +2212,7 @@ textarea:focus {
 }
 
 .battlefield-unit-profile-summary-title {
-  color: rgba(255, 239, 209, 0.72);
+  color: color-mix(in srgb, var(--battlefield-light-text) 72%, transparent);
   font-size: 0.52rem;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -2204,8 +2225,8 @@ textarea:focus {
   gap: 6px;
   padding: 4px 8px;
   border-radius: 999px;
-  background: rgba(255, 245, 220, 0.14);
-  color: rgba(255, 239, 209, 0.96);
+  background: color-mix(in srgb, var(--battlefield-light-line) 14%, transparent);
+  color: color-mix(in srgb, var(--battlefield-light-text) 96%, transparent);
   font-size: 0.62rem;
   font-weight: 800;
   line-height: 1;
@@ -2218,14 +2239,14 @@ textarea:focus {
   min-width: 14px;
   height: 14px;
   border-radius: 999px;
-  background: rgba(255, 245, 220, 0.96);
-  color: #362411;
+  background: var(--legend-profile-bg);
+  color: var(--legend-profile-text);
   font-size: 0.54rem;
   font-weight: 900;
 }
 
 .battlefield-unit-profile-index {
-  color: rgba(255, 239, 209, 0.96);
+  color: color-mix(in srgb, var(--battlefield-light-text) 96%, transparent);
   font-weight: 900;
   letter-spacing: 0.02em;
 }
@@ -2237,10 +2258,10 @@ textarea:focus {
   display: grid;
   gap: 6px;
   padding: 8px 10px;
-  border: 1px solid rgba(255, 245, 220, 0.18);
+  border: 1px solid color-mix(in srgb, var(--battlefield-light-line) 18%, transparent);
   border-radius: 10px;
   background: rgba(16, 22, 18, 0.76);
-  color: #fff5df;
+  color: var(--battlefield-light-text);
   pointer-events: auto;
   backdrop-filter: blur(6px);
   z-index: 4;
@@ -2260,7 +2281,7 @@ textarea:focus {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #fff5df;
+  color: var(--battlefield-light-text);
   font: inherit;
   font-size: 0.72rem;
   font-weight: 700;
@@ -2269,11 +2290,11 @@ textarea:focus {
 }
 
 .battlefield-ring-legend-toggle:hover {
-  color: #fffaf0;
+  color: color-mix(in srgb, var(--battlefield-light-text) 90%, white 10%);
 }
 
 .battlefield-ring-legend-toggle:focus-visible {
-  outline: 2px solid rgba(255, 242, 161, 0.7);
+  outline: 2px solid color-mix(in srgb, var(--move-ring-color) 70%, transparent);
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -2292,7 +2313,7 @@ textarea:focus {
 .battlefield-ring-legend p {
   margin: 0;
   font-size: 0.7rem;
-  color: rgba(255, 239, 209, 0.86);
+  color: var(--legend-text-soft);
 }
 
 .ring-swatch {
@@ -2304,7 +2325,7 @@ textarea:focus {
 }
 
 .ring-swatch.move {
-  color: rgba(255, 242, 161, 0.9);
+  color: var(--move-ring-color);
 }
 
 .ring-swatch.coherency-close {
@@ -2328,7 +2349,7 @@ textarea:focus {
   height: 17px;
   border: 1px solid rgba(255, 249, 236, 0.95);
   border-radius: 999px;
-  color: #fff5df;
+  color: var(--battlefield-light-text);
   font-size: 0.58rem;
   font-weight: 900;
 }
@@ -2342,8 +2363,8 @@ textarea:focus {
 }
 
 .role-swatch.profile {
-  background: rgba(255, 245, 220, 0.96);
-  color: #362411;
+  background: var(--legend-profile-bg);
+  color: var(--legend-profile-text);
 }
 
 .battlefield-legend {
@@ -2627,7 +2648,7 @@ textarea:focus {
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: rgba(255, 251, 244, 0.78);
+  background: var(--surface-lightwash-soft);
 }
 
 .model-profile-header {
@@ -2657,7 +2678,7 @@ textarea:focus {
 .active-rules {
   margin-top: 16px;
   padding-top: 14px;
-  border-top: 1px solid rgba(67, 49, 34, 0.12);
+  border-top: 1px solid var(--line);
 }
 
 .active-rule-list {
@@ -2670,7 +2691,7 @@ textarea:focus {
   padding: 12px 14px;
   border-radius: 14px;
   border: 1px solid var(--line);
-  background: rgba(255, 248, 237, 0.82);
+  background: var(--surface-card-alt);
 }
 
 .active-rule-header {
@@ -2781,7 +2802,7 @@ textarea:focus {
 }
 
 .result-card.accent {
-  background: linear-gradient(180deg, rgba(248, 230, 197, 0.9), rgba(243, 214, 165, 0.92));
+  background: var(--result-accent-bg);
 }
 
 .result-card.warning {
@@ -2798,7 +2819,7 @@ textarea:focus {
 .run-tab,
 .summary-index-card {
   border: 1px solid var(--line-strong);
-  background: rgba(255, 251, 244, 0.92);
+  background: var(--surface-lightwash);
   color: var(--ink);
   font: inherit;
 }
@@ -2811,8 +2832,8 @@ textarea:focus {
 }
 
 .run-tab.active {
-  background: linear-gradient(135deg, rgba(161, 79, 39, 0.16), rgba(227, 162, 62, 0.2));
-  border-color: rgba(161, 79, 39, 0.45);
+  background: var(--run-tab-active-bg);
+  border-color: var(--run-tab-active-border);
 }
 
 .summary-index {

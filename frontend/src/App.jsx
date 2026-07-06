@@ -114,7 +114,7 @@ const BATTLEFIELD_GRID_STEP_INCHES = 6
 const APP_THEMES = {
   classic: {
     id: 'classic',
-    name: 'Classic',
+    name: 'Desert',
     description: 'Warm parchment tones with the current tabletop presentation.',
   },
   forge: {
@@ -147,9 +147,9 @@ function readSavedArmyListsFromStorage() {
 function readThemePreference() {
   try {
     const storedTheme = localStorage.getItem(APP_THEME_STORAGE_KEY)
-    return APP_THEMES[storedTheme] ? storedTheme : 'classic'
+    return APP_THEMES[storedTheme] ? storedTheme : 'forge'
   } catch {
-    return 'classic'
+    return 'forge'
   }
 }
 
@@ -1241,6 +1241,7 @@ function buildSimulationPayload(state) {
     attacker_attached_character_model_count: state.attackerAttachedLeaderModelCount !== '' ? Number(state.attackerAttachedLeaderModelCount) : undefined,
     attacker_attached_character_model_counts: state.attackerAttachedLeaderModelCounts || {},
     weapon_names: state.weaponNames || [],
+    weapon_model_counts: state.weaponModelCounts || {},
     defender_faction: state.defenderFaction,
     defender_unit: state.defenderUnit,
     defender_detachment_name: state.defenderDetachmentName || undefined,
@@ -1282,6 +1283,223 @@ function formatWeaponName(weapon) {
 
   const formattedName = formatWeaponBaseName(weapon.name)
   return keywordText ? `${formattedName} ${keywordText}` : formattedName
+}
+
+function normalizeWargearName(value) {
+  return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+function getModelEntryCount(unitDetails, model) {
+  const modelName = String(model?.name || '').trim()
+  const explicitCount = Number(unitDetails?.model_counts_by_name?.[modelName] ?? 0)
+  if (explicitCount > 0) {
+    return explicitCount
+  }
+  const countData = model?.count
+  if (typeof countData === 'number') {
+    return countData
+  }
+  if (countData && typeof countData === 'object') {
+    return Number(countData.min ?? countData.max ?? 0) || 0
+  }
+  return 0
+}
+
+function inferWeaponBearerCountFromModels(unitDetails, normalizedWeaponName, baseWeaponName) {
+  const modelEntries = unitDetails?.models || unitDetails?.models_data || []
+  let bearerCount = 0
+  for (const model of modelEntries) {
+    const modelCount = getModelEntryCount(unitDetails, model)
+    if (modelCount <= 0) {
+      continue
+    }
+    const modelWargear = model.default_wargear || []
+    const modelHasWeapon = modelWargear.some((wargearItem) => {
+      const normalizedWargearName = normalizeWargearName(wargearItem)
+      return normalizedWargearName === normalizedWeaponName || normalizedWargearName === baseWeaponName
+    })
+    if (modelHasWeapon) {
+      bearerCount += modelCount
+    }
+  }
+  return bearerCount
+}
+
+function getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, weapon) {
+  const sourceUnit = String(weapon?.name || '').startsWith(ATTACHED_LEADER_WEAPON_PREFIX)
+    ? attachedLeaderUnitDetails
+    : unitDetails
+  const sourceWeaponName = String(weapon?.name || '').startsWith(ATTACHED_LEADER_WEAPON_PREFIX)
+    ? String(weapon.name).slice(ATTACHED_LEADER_WEAPON_PREFIX.length)
+    : weapon?.name
+  const bearerCounts = sourceUnit?.weapon_bearer_counts || {}
+  const normalizedName = normalizeWargearName(sourceWeaponName)
+  const baseName = normalizedName.split(' - ', 1)[0]
+  const normalizedBearerCounts = Object.entries(bearerCounts).reduce((counts, [name, count]) => ({
+    ...counts,
+    [normalizeWargearName(name)]: Number(count) || 0,
+  }), {})
+  const configuredCount = Math.max(
+    Number(normalizedBearerCounts[normalizedName] || 0),
+    Number(normalizedBearerCounts[baseName] || 0),
+  )
+  if (configuredCount > 0) {
+    return configuredCount
+  }
+  const inferredModelCount = inferWeaponBearerCountFromModels(sourceUnit, normalizedName, baseName)
+  if (inferredModelCount > 0) {
+    return inferredModelCount
+  }
+  return Math.max(1, Number(sourceUnit?.model_count ?? 1) || 1)
+}
+
+function getWeaponSelectionOwnerKey(weapon) {
+  return String(weapon?.name || '').startsWith(ATTACHED_LEADER_WEAPON_PREFIX) ? 'leader' : 'unit'
+}
+
+function normalizeWeaponModelCountsForSelection({
+  currentCounts,
+  weaponNames,
+  weaponOptions,
+  unitDetails,
+  attachedLeaderUnitDetails,
+}) {
+  const selectedWeapons = weaponOptions.filter((weapon) => weaponNames.includes(weapon.name))
+  const nextCounts = {}
+  const selectedByOwner = selectedWeapons.reduce((groups, weapon) => {
+    const ownerKey = getWeaponSelectionOwnerKey(weapon)
+    return {
+      ...groups,
+      [ownerKey]: [...(groups[ownerKey] || []), weapon],
+    }
+  }, {})
+
+  for (const [ownerKey, weapons] of Object.entries(selectedByOwner)) {
+    const sourceUnit = ownerKey === 'leader' ? attachedLeaderUnitDetails : unitDetails
+    const ownerModelCount = Math.max(1, Number(sourceUnit?.model_count ?? 1) || 1)
+    const meleeWeapons = weapons.filter((weapon) => weapon.range === 'Melee')
+    const nonMeleeWeapons = weapons.filter((weapon) => weapon.range !== 'Melee')
+
+    for (const weapon of nonMeleeWeapons) {
+      const maxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, weapon)
+      nextCounts[weapon.name] = Math.min(maxCount, Number(currentCounts[weapon.name] || maxCount) || maxCount)
+    }
+
+    if (meleeWeapons.length === 1) {
+      const weapon = meleeWeapons[0]
+      const maxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, weapon)
+      nextCounts[weapon.name] = Math.min(maxCount, Number(currentCounts[weapon.name] || maxCount) || maxCount)
+      continue
+    }
+
+    if (meleeWeapons.length > 1) {
+      const seededCounts = meleeWeapons.map((weapon) => {
+        const maxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, weapon)
+        return {
+          weapon,
+          maxCount,
+          count: clamp(Number(currentCounts[weapon.name] || maxCount) || maxCount, 1, maxCount),
+        }
+      })
+      let remaining = ownerModelCount
+      seededCounts.forEach((item, index) => {
+        const laterMinimum = seededCounts.length - index - 1
+        const count = clamp(item.count, 1, Math.max(1, Math.min(item.maxCount, remaining - laterMinimum)))
+        nextCounts[item.weapon.name] = count
+        remaining -= count
+      })
+    }
+  }
+
+  return nextCounts
+}
+
+function updateWeaponModelCountForSelection({
+  currentCounts,
+  weaponNames,
+  weaponOptions,
+  unitDetails,
+  attachedLeaderUnitDetails,
+  weapon,
+  requestedCount,
+}) {
+  const ownerKey = getWeaponSelectionOwnerKey(weapon)
+  const selectedWeaponsForOwner = weaponOptions.filter((option) => (
+    weaponNames.includes(option.name)
+    && option.range === 'Melee'
+    && getWeaponSelectionOwnerKey(option) === ownerKey
+  ))
+  const maxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, weapon)
+  if (selectedWeaponsForOwner.length <= 1 || weapon.range !== 'Melee') {
+    return {
+      ...currentCounts,
+      [weapon.name]: clamp(requestedCount, 1, maxCount),
+    }
+  }
+
+  const sourceUnit = ownerKey === 'leader' ? attachedLeaderUnitDetails : unitDetails
+  const ownerModelCount = Math.max(1, Number(sourceUnit?.model_count ?? 1) || 1)
+  const otherWeapons = selectedWeaponsForOwner.filter((option) => option.name !== weapon.name)
+  const changedCount = clamp(requestedCount, 1, Math.max(1, Math.min(maxCount, ownerModelCount - otherWeapons.length)))
+  const nextCounts = {
+    ...currentCounts,
+    [weapon.name]: changedCount,
+  }
+  let remaining = ownerModelCount - changedCount
+
+  otherWeapons.forEach((otherWeapon, index) => {
+    const otherMaxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, otherWeapon)
+    const laterMinimum = otherWeapons.length - index - 1
+    const currentCount = Number(currentCounts[otherWeapon.name] || 1) || 1
+    const count = clamp(
+      currentCount,
+      1,
+      Math.max(1, Math.min(otherMaxCount, remaining - laterMinimum)),
+    )
+    nextCounts[otherWeapon.name] = count
+    remaining -= count
+  })
+
+  return nextCounts
+}
+
+function resolveCombatWeaponSelection({
+  currentWeaponNames,
+  weapon,
+  checked,
+  weaponOptions,
+  unitDetails,
+  attachedLeaderUnitDetails,
+}) {
+  if (!checked) {
+    return currentWeaponNames.filter((name) => name !== weapon.name)
+  }
+
+  const selectedGroupName = getWeaponProfileGroupName(weapon)
+  const weaponByName = new Map(weaponOptions.map((option) => [option.name, option]))
+  const withoutSameProfileGroup = currentWeaponNames.filter((name) => {
+    const selectedWeapon = weaponByName.get(name)
+    return selectedWeapon && getWeaponProfileGroupName(selectedWeapon) !== selectedGroupName
+  })
+  const ownerKey = getWeaponSelectionOwnerKey(weapon)
+  const selectedForSameOwner = withoutSameProfileGroup
+    .map((name) => weaponByName.get(name))
+    .filter((selectedWeapon) => selectedWeapon && getWeaponSelectionOwnerKey(selectedWeapon) === ownerKey)
+  const sourceUnit = ownerKey === 'leader' ? attachedLeaderUnitDetails : unitDetails
+  const sourceModelCount = Math.max(1, Number(sourceUnit?.model_count ?? 1) || 1)
+  const canSplitMeleeProfiles = (
+    weapon.range === 'Melee'
+    && sourceModelCount > 1
+    && selectedForSameOwner.every((selectedWeapon) => selectedWeapon.range === 'Melee')
+  )
+
+  if (!canSplitMeleeProfiles) {
+    return [
+      ...withoutSameProfileGroup.filter((name) => getWeaponSelectionOwnerKey(weaponByName.get(name)) !== ownerKey),
+      weapon.name,
+    ]
+  }
+  return [...withoutSameProfileGroup, weapon.name]
 }
 
 function weaponHasExtraAttacks(weapon) {
@@ -2806,9 +3024,54 @@ function getLoadoutCountSelectionValue(unitDetails, loadoutSelections, group, op
   return value === undefined || value === null ? '0' : String(value)
 }
 
-function getCombatWeaponOptions(unitDetails, attachedLeaderUnitDetails = null) {
-  const unitWeapons = (unitDetails?.weapons || []).filter((weapon) => !weaponHasExtraAttacks(weapon))
-  const leaderWeapons = (attachedLeaderUnitDetails?.weapons || []).filter((weapon) => !weaponHasExtraAttacks(weapon))
+function getSelectedLoadoutEnabledWeaponNames(unitDetails, loadoutSelections = null) {
+  const selectedLoadout = loadoutSelections || unitDetails?.selected_loadout || {}
+  const enabledWeaponNames = new Set()
+  for (const group of unitDetails?.loadout_options || []) {
+    const groupId = group.id
+    const selection = selectedLoadout[groupId]
+    if (group.selection_type === 'count') {
+      const selectedCounts = selection && typeof selection === 'object' ? selection : {}
+      for (const option of group.options || []) {
+        const selectedCount = Number(selectedCounts[option.id] || 0)
+        if (selectedCount <= 0) {
+          continue
+        }
+        for (const weaponName of option.enabled_weapons || []) {
+          enabledWeaponNames.add(weaponName)
+        }
+      }
+      continue
+    }
+    const selectedOptionId = selection || group.default_option_id || group.options?.[0]?.id || ''
+    const selectedOption = (group.options || []).find((option) => option.id === selectedOptionId)
+    for (const weaponName of selectedOption?.enabled_weapons || []) {
+      enabledWeaponNames.add(weaponName)
+    }
+  }
+  return enabledWeaponNames
+}
+
+function mergeSelectedLoadoutWeaponProfiles(unitDetails, loadoutSelections = null) {
+  const weaponByName = new Map((unitDetails?.weapons || []).map((weapon) => [weapon.name, weapon]))
+  const allWeaponByName = new Map((unitDetails?.all_weapons || []).map((weapon) => [weapon.name, weapon]))
+  const selectedLoadoutWeaponNames = getSelectedLoadoutEnabledWeaponNames(unitDetails, loadoutSelections)
+  for (const weaponName of selectedLoadoutWeaponNames) {
+    if (!weaponByName.has(weaponName) && allWeaponByName.has(weaponName)) {
+      weaponByName.set(weaponName, allWeaponByName.get(weaponName))
+    }
+  }
+  return Array.from(weaponByName.values())
+}
+
+function getCombatWeaponOptions(
+  unitDetails,
+  attachedLeaderUnitDetails = null,
+  loadoutSelections = null,
+  attachedLeaderLoadoutSelections = null,
+) {
+  const unitWeapons = mergeSelectedLoadoutWeaponProfiles(unitDetails, loadoutSelections).filter((weapon) => !weaponHasExtraAttacks(weapon))
+  const leaderWeapons = mergeSelectedLoadoutWeaponProfiles(attachedLeaderUnitDetails, attachedLeaderLoadoutSelections).filter((weapon) => !weaponHasExtraAttacks(weapon))
   return [
     ...unitWeapons,
     ...leaderWeapons.map((weapon) => ({
@@ -2819,10 +3082,16 @@ function getCombatWeaponOptions(unitDetails, attachedLeaderUnitDetails = null) {
   ]
 }
 
-function getSelectedAttackEntries(unitDetails, attachedLeaderUnitDetails, weaponNames) {
+function getSelectedAttackEntries(
+  unitDetails,
+  attachedLeaderUnitDetails,
+  weaponNames,
+  loadoutSelections = null,
+  attachedLeaderLoadoutSelections = null,
+) {
   const entries = []
-  const unitWeapons = unitDetails?.weapons || []
-  const leaderWeapons = attachedLeaderUnitDetails?.weapons || []
+  const unitWeapons = mergeSelectedLoadoutWeaponProfiles(unitDetails, loadoutSelections)
+  const leaderWeapons = mergeSelectedLoadoutWeaponProfiles(attachedLeaderUnitDetails, attachedLeaderLoadoutSelections)
   const requestedWeaponNames = Array.isArray(weaponNames) ? weaponNames : []
   const seenEntryKeys = new Set()
 
@@ -3882,6 +4151,7 @@ function App() {
   const [attackerModelCount, setAttackerModelCount] = useState('')
   const [attackerModelCounts, setAttackerModelCounts] = useState({})
   const [weaponNames, setWeaponNames] = useState([])
+  const [weaponModelCounts, setWeaponModelCounts] = useState({})
   const [attackerAttachedLeaderName, setAttackerAttachedLeaderName] = useState('')
   const [attackerAttachedLeaderLoadoutSelections, setAttackerAttachedLeaderLoadoutSelections] = useState({})
   const [attackerAttachedLeaderModelCount, setAttackerAttachedLeaderModelCount] = useState('')
@@ -4069,6 +4339,7 @@ function App() {
     let active = true
     setAttackerUnitDetails(null)
     setWeaponNames([])
+    setWeaponModelCounts({})
 
     async function loadAttackerUnits() {
       try {
@@ -4503,16 +4774,38 @@ function App() {
   }, [defenderFaction, defenderLoadoutSelections, defenderModelCount, defenderModelCounts, defenderUnit, defenderUnits])
 
   const combatWeaponOptions = useMemo(
-    () => getCombatWeaponOptions(attackerUnitDetails, attackerAttachedLeaderUnitDetails),
-    [attackerAttachedLeaderUnitDetails, attackerUnitDetails],
+    () => getCombatWeaponOptions(
+      attackerUnitDetails,
+      attackerAttachedLeaderUnitDetails,
+      getResolvedLoadoutSelections(attackerUnitDetails, attackerLoadoutSelections),
+      getResolvedLoadoutSelections(attackerAttachedLeaderUnitDetails, attackerAttachedLeaderLoadoutSelections),
+    ),
+    [
+      attackerAttachedLeaderLoadoutSelections,
+      attackerAttachedLeaderUnitDetails,
+      attackerLoadoutSelections,
+      attackerUnitDetails,
+    ],
   )
   const selectedCombatWeaponOptions = useMemo(
     () => combatWeaponOptions.filter((weapon) => weaponNames.includes(weapon.name)),
     [combatWeaponOptions, weaponNames],
   )
   const selectedAttackEntries = useMemo(
-    () => getSelectedAttackEntries(attackerUnitDetails, attackerAttachedLeaderUnitDetails, weaponNames),
-    [attackerAttachedLeaderUnitDetails, attackerUnitDetails, weaponNames],
+    () => getSelectedAttackEntries(
+      attackerUnitDetails,
+      attackerAttachedLeaderUnitDetails,
+      weaponNames,
+      getResolvedLoadoutSelections(attackerUnitDetails, attackerLoadoutSelections),
+      getResolvedLoadoutSelections(attackerAttachedLeaderUnitDetails, attackerAttachedLeaderLoadoutSelections),
+    ),
+    [
+      attackerAttachedLeaderLoadoutSelections,
+      attackerAttachedLeaderUnitDetails,
+      attackerLoadoutSelections,
+      attackerUnitDetails,
+      weaponNames,
+    ],
   )
   const selectedAttackWeapons = useMemo(
     () => selectedAttackEntries.map((entry) => entry.weapon),
@@ -4561,6 +4854,9 @@ function App() {
       if (weaponNames.length) {
         setWeaponNames([])
       }
+      if (Object.keys(weaponModelCounts).length) {
+        setWeaponModelCounts({})
+      }
       return
     }
     const validWeaponNames = weaponNames.filter((weaponName) => combatWeaponOptions.some((weapon) => weapon.name === weaponName))
@@ -4572,7 +4868,32 @@ function App() {
       return
     }
     setWeaponNames([combatWeaponOptions[0].name])
-  }, [combatWeaponOptions, weaponNames])
+  }, [combatWeaponOptions, weaponModelCounts, weaponNames])
+
+  useEffect(() => {
+    const nextCounts = normalizeWeaponModelCountsForSelection({
+      currentCounts: weaponModelCounts,
+      weaponNames,
+      weaponOptions: combatWeaponOptions,
+      unitDetails: attackerUnitDetails,
+      attachedLeaderUnitDetails: attackerAttachedLeaderUnitDetails,
+    })
+    const currentKeys = Object.keys(weaponModelCounts).sort()
+    const nextKeys = Object.keys(nextCounts).sort()
+    if (
+      currentKeys.length === nextKeys.length
+      && currentKeys.every((key, index) => key === nextKeys[index] && weaponModelCounts[key] === nextCounts[key])
+    ) {
+      return
+    }
+    setWeaponModelCounts(nextCounts)
+  }, [
+    attackerAttachedLeaderUnitDetails,
+    attackerUnitDetails,
+    combatWeaponOptions,
+    weaponModelCounts,
+    weaponNames,
+  ])
 
   const attachedCharacterOptions = useMemo(() => {
     if (!defenderUnit || !defenderFactionDetails?.units?.length) {
@@ -6566,6 +6887,7 @@ function App() {
     attackerAttachedLeaderModelCount,
     resolvedAttackerAttachedLeaderModelCounts,
     weaponNames,
+    weaponModelCounts,
     defenderFaction,
     defenderUnit,
     resolvedDefenderLoadoutSelections,
@@ -7213,6 +7535,7 @@ function App() {
       attackerAttachedLeaderModelCount,
       attackerAttachedLeaderModelCounts: resolvedAttackerAttachedLeaderModelCounts,
       weaponNames,
+      weaponModelCounts,
       defenderFaction,
       defenderUnit,
       defenderLoadoutSelections: resolvedDefenderLoadoutSelections,
@@ -9223,21 +9546,55 @@ function App() {
               <div className="weapon-selection-grid">
                 {combatWeaponOptions.map((weapon) => {
                   const checked = weaponNames.includes(weapon.name)
+                  const bearerCount = getWeaponBearerCountForSelection(attackerUnitDetails, attackerAttachedLeaderUnitDetails, weapon)
+                  const showModelCounter = checked && weapon.range === 'Melee' && bearerCount > 1
                   return (
-                    <label key={weapon.name} className="checkbox-row weapon-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={(event) => {
-                          setWeaponNames((currentWeaponNames) => (
-                            event.target.checked
-                              ? [...currentWeaponNames, weapon.name]
-                              : currentWeaponNames.filter((name) => name !== weapon.name)
-                          ))
-                        }}
-                      />
-                      <span>{formatWeaponName(weapon)}</span>
-                    </label>
+                    <div key={weapon.name} className={`checkbox-row weapon-checkbox ${showModelCounter ? 'with-counter' : ''}`}>
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(event) => {
+                            setWeaponNames((currentWeaponNames) => (
+                              resolveCombatWeaponSelection({
+                                currentWeaponNames,
+                                weapon,
+                                checked: event.target.checked,
+                                weaponOptions: combatWeaponOptions,
+                                unitDetails: attackerUnitDetails,
+                                attachedLeaderUnitDetails: attackerAttachedLeaderUnitDetails,
+                              })
+                            ))
+                          }}
+                        />
+                        <span>{formatWeaponName(weapon)}</span>
+                      </label>
+                      {showModelCounter ? (
+                        <input
+                          type="number"
+                          className="weapon-model-count-input"
+                          min="1"
+                          max={bearerCount}
+                          value={weaponModelCounts[weapon.name] ?? bearerCount}
+                          aria-label={`${formatWeaponName(weapon)} model count`}
+                          title={`${formatWeaponName(weapon)} model count`}
+                          onChange={(event) => {
+                            const nextValue = clamp(Number(event.target.value) || 1, 1, bearerCount)
+                            setWeaponModelCounts((currentCounts) => (
+                              updateWeaponModelCountForSelection({
+                                currentCounts,
+                                weaponNames,
+                                weaponOptions: combatWeaponOptions,
+                                unitDetails: attackerUnitDetails,
+                                attachedLeaderUnitDetails: attackerAttachedLeaderUnitDetails,
+                                weapon,
+                                requestedCount: nextValue,
+                              })
+                            ))
+                          }}
+                        />
+                      ) : null}
+                    </div>
                   )
                 })}
               </div>

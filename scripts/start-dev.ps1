@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot
 $frontendPort = "5173"
-$backendPort = "8000"
+$backendPort = "8010"
 
 Write-Host "Starting backend at http://127.0.0.1:$backendPort"
 Write-Host "Starting frontend at http://127.0.0.1:$frontendPort"

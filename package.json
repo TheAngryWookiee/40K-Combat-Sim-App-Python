@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "dev": "powershell -ExecutionPolicy Bypass -File ./scripts/start-dev.ps1",
-    "dev:backend": "powershell -ExecutionPolicy Bypass -File ./scripts/run-backend.ps1 -Reload -Port 8000",
+    "dev:backend": "powershell -ExecutionPolicy Bypass -File ./scripts/run-backend.ps1 -Reload -Port 8010",
     "dev:frontend": "npm --workspace frontend run dev",
     "build": "npm --workspace frontend run build"
   }

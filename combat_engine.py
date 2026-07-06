@@ -3136,6 +3136,9 @@ class CombatSimulator:
     ) -> None:
         unit_name = attacker_unit["name"]
         weapon_bearer_count = self.get_weapon_bearer_count(attacker_unit, weapon)
+        selected_model_count = weapon.get("selected_model_count")
+        if selected_model_count is not None:
+            weapon_bearer_count = min(weapon_bearer_count, max(0, int(selected_model_count)))
         eligible_model_count = attack_context.get("attacker_eligible_model_count")
         if eligible_model_count is not None:
             weapon_bearer_count = min(weapon_bearer_count, max(0, int(eligible_model_count)))

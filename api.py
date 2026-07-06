@@ -109,6 +109,7 @@ class SimulationRequest(BaseModel):
     attacker_attached_character_model_counts: dict[str, int] = Field(default_factory=dict)
     weapon_name: str | None = None
     weapon_names: list[str] = Field(default_factory=list)
+    weapon_model_counts: dict[str, int] = Field(default_factory=dict)
     defender_faction: str
     defender_unit: str
     defender_detachment_name: str | None = None
@@ -564,11 +565,13 @@ def resolve_requested_attack_entries(
     attacker_unit: dict[str, Any],
     weapon_names: list[str],
     attacker_attached_character_unit: dict[str, Any] | None = None,
+    weapon_model_counts: dict[str, int] | None = None,
 ) -> list[dict[str, Any]]:
     attack_entries_by_unit: dict[str, dict[str, Any]] = {}
     unit_order: list[str] = []
+    selected_model_counts = weapon_model_counts or {}
 
-    def add_weapons_for_unit(source_unit: dict[str, Any], weapons: list[dict[str, Any]]) -> None:
+    def add_weapons_for_unit(source_unit: dict[str, Any], weapons: list[dict[str, Any]], selection_key: str | None = None) -> None:
         if not weapons:
             return
         unit_name = str(source_unit["name"])
@@ -580,7 +583,12 @@ def resolve_requested_attack_entries(
         for weapon in weapons:
             if weapon["name"] in existing_weapon_names:
                 continue
-            entry["weapons"].append(weapon)
+            selected_weapon = deepcopy(weapon)
+            if selection_key and selection_key in selected_model_counts:
+                selected_weapon["selected_model_count"] = max(0, int(selected_model_counts[selection_key]))
+            elif weapon["name"] in selected_model_counts:
+                selected_weapon["selected_model_count"] = max(0, int(selected_model_counts[weapon["name"]]))
+            entry["weapons"].append(selected_weapon)
             existing_weapon_names.add(weapon["name"])
 
     for weapon_name in weapon_names:
@@ -588,11 +596,13 @@ def resolve_requested_attack_entries(
             add_weapons_for_unit(
                 attacker_unit,
                 resolve_requested_weapons(attacker_unit, ALL_RANGED_WEAPONS),
+                weapon_name,
             )
             if attacker_attached_character_unit is not None:
                 add_weapons_for_unit(
                     attacker_attached_character_unit,
                     resolve_requested_weapons(attacker_attached_character_unit, ALL_RANGED_WEAPONS),
+                    weapon_name,
                 )
             continue
 
@@ -600,11 +610,13 @@ def resolve_requested_attack_entries(
             add_weapons_for_unit(
                 attacker_unit,
                 resolve_requested_weapons(attacker_unit, ALL_MELEE_WEAPONS),
+                weapon_name,
             )
             if attacker_attached_character_unit is not None:
                 add_weapons_for_unit(
                     attacker_attached_character_unit,
                     resolve_requested_weapons(attacker_attached_character_unit, ALL_MELEE_WEAPONS),
+                    weapon_name,
                 )
             continue
 
@@ -615,13 +627,13 @@ def resolve_requested_attack_entries(
             leader_weapons = resolve_requested_weapons(attacker_attached_character_unit, leader_weapon_name)
             if not leader_weapons:
                 return []
-            add_weapons_for_unit(attacker_attached_character_unit, leader_weapons)
+            add_weapons_for_unit(attacker_attached_character_unit, leader_weapons, weapon_name)
             continue
 
         attacker_weapons = resolve_requested_weapons(attacker_unit, weapon_name)
         if not attacker_weapons:
             return []
-        add_weapons_for_unit(attacker_unit, attacker_weapons)
+        add_weapons_for_unit(attacker_unit, attacker_weapons, weapon_name)
 
     return [
         attack_entries_by_unit[unit_name]
@@ -1097,6 +1109,7 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
         attacker_unit,
         requested_weapon_names,
         attacker_attached_character_unit,
+        request.weapon_model_counts,
     )
     if not attack_entries:
         raise HTTPException(

@@ -543,6 +543,7 @@ def apply_unit_loadout(
     conditional_wargear_ability_names: set[str] = set()
     selected_weapon_names: set[str] = set()
     selected_wargear_ability_names: set[str] = set()
+    selected_weapon_bearer_minimums: dict[str, int] = {}
 
     for group in loadout_groups:
         for option in group.get("options", []):
@@ -577,6 +578,13 @@ def apply_unit_loadout(
                     str(weapon_name)
                     for weapon_name in option.get("enabled_weapons", [])
                 )
+                if not option.get("weapon_bearer_changes"):
+                    for weapon_name in option.get("enabled_weapons", []):
+                        normalized_weapon_name = normalize_wargear_name(weapon_name)
+                        selected_weapon_bearer_minimums[normalized_weapon_name] = max(
+                            selected_weapon_bearer_minimums.get(normalized_weapon_name, 0),
+                            selected_count,
+                        )
                 selected_wargear_ability_names.update(
                     str(ability_name)
                     for ability_name in option.get("enabled_wargear_abilities", [])
@@ -599,6 +607,18 @@ def apply_unit_loadout(
             str(weapon_name)
             for weapon_name in selected_option.get("enabled_weapons", [])
         )
+        target_model_name = str(group.get("target_model", "")).strip()
+        selected_bearer_count = (
+            int(model_counts_by_name.get(target_model_name, 0))
+            if target_model_name
+            else selected_model_count
+        )
+        for weapon_name in selected_option.get("enabled_weapons", []):
+            normalized_weapon_name = normalize_wargear_name(weapon_name)
+            selected_weapon_bearer_minimums[normalized_weapon_name] = max(
+                selected_weapon_bearer_minimums.get(normalized_weapon_name, 0),
+                selected_bearer_count,
+            )
         selected_wargear_ability_names.update(
             str(ability_name)
             for ability_name in selected_option.get("enabled_wargear_abilities", [])
@@ -607,7 +627,6 @@ def apply_unit_loadout(
         for stat_name, stat_value in selected_option.get("stat_overrides", {}).items():
             resolved_unit["stats"][stat_name] = stat_value
 
-        target_model_name = str(group.get("target_model", "")).strip()
         if target_model_name:
             model = models_by_name.get(target_model_name)
             if model is not None:
@@ -636,6 +655,14 @@ def apply_unit_loadout(
         resolved_unit,
         model_counts_by_name,
     )
+    for weapon_name, minimum_count in selected_weapon_bearer_minimums.items():
+        base_weapon_name = weapon_name.split(" - ", 1)[0]
+        current_count = max(
+            weapon_bearer_counts.get(weapon_name, 0),
+            weapon_bearer_counts.get(base_weapon_name, 0),
+        )
+        if current_count <= 0 and minimum_count > 0:
+            weapon_bearer_counts[base_weapon_name] = minimum_count
     for group in loadout_groups:
         if str(group.get("selection_type", "")).strip().lower() != "count":
             continue
@@ -659,6 +686,7 @@ def apply_unit_loadout(
         resolved_unit,
         model_counts_by_name,
     )
+    resolved_unit["all_weapons"] = deepcopy(resolved_unit.get("weapons", {}))
 
     resolved_unit["weapons"] = {
         weapon_name: weapon
@@ -907,8 +935,10 @@ def serialize_unit(unit: dict[str, Any]) -> dict[str, Any]:
         "selected_loadout": unit.get("selected_loadout", {}),
         "model_count": unit.get("models", 1),
         "model_counts_by_name": unit.get("model_counts_by_name", {}),
+        "weapon_bearer_counts": unit.get("weapon_bearer_counts", {}),
         "target_profiles": unit.get("target_profiles", []),
         "stats": unit["stats"],
         "weapons": list(unit["weapons"].values()),
+        "all_weapons": list(unit.get("all_weapons", unit["weapons"]).values()),
         "effects": unit["effects"],
     }
