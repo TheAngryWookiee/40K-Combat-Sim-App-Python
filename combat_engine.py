@@ -3020,6 +3020,36 @@ class CombatSimulator:
 
         self.allocate_normal_damage(target_state, damage)
 
+    def resolve_pre_attack_active_abilities(
+        self,
+        attacker_unit: dict[str, Any],
+        reference_weapon: dict[str, Any],
+        target_state: dict[str, Any],
+        attack_context: dict[str, Any],
+    ) -> None:
+        active_ability_names = set(attack_context.get("attacker_active_ability_names", set()))
+
+        if (
+            "exhortation of rage" in active_ability_names
+            and reference_weapon["range"].lower() == "melee"
+            and target_state["models"] > 0
+        ):
+            self.log(f"\n{attacker_unit['name']} activates Exhortation of Rage")
+            roll = self.die_roll()
+            self.log(f"Exhortation of Rage roll: {roll}")
+            if roll >= 6:
+                mortal_wounds = 3
+            elif roll >= 4:
+                mortal_wounds = self.roll_value("D3")
+            else:
+                mortal_wounds = 0
+
+            if mortal_wounds > 0:
+                self.log(f"Exhortation of Rage inflicts {mortal_wounds} mortal wounds")
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log("Exhortation of Rage inflicts no mortal wounds")
+
     def configure_hazardous_bearer_state(
         self,
         attacking_unit: dict[str, Any],
@@ -3422,6 +3452,10 @@ class CombatSimulator:
         defender_package_model_count = int(options.get("defender_package_model_count", target_state.get("models", 0)))
         attacker_counts_as_ten_plus = bool(options.get("attacker_counts_as_ten_plus_models", False)) or attacker_package_model_count >= 10
         defender_counts_as_ten_plus = bool(options.get("defender_counts_as_ten_plus_models", False)) or defender_package_model_count >= 10
+        attacker_active_ability_names = {
+            str(name).lower()
+            for name in options.get("attacker_active_ability_names", [])
+        }
 
         temporary_weapon_keywords: set[str] = set()
         temporary_melee_weapon_keywords: set[str] = set()
@@ -3446,6 +3480,20 @@ class CombatSimulator:
             )
         if bool(options.get("attacker_unforgiven_fury_active", False)):
             temporary_weapon_keywords.add("LH")
+        if "finest hour" in attacker_active_ability_names:
+            temporary_melee_weapon_keywords.add("DW")
+        if (
+            "overlapping detonations" in attacker_active_ability_names
+            and not self.unit_has_keyword(target_state, "monster")
+            and not self.unit_has_keyword(target_state, "vehicle")
+        ):
+            add_keywords_to_matching_weapons(
+                {"Blast"},
+                lambda candidate_weapon: (
+                    candidate_weapon["range"].lower() != "melee"
+                    and self.normalize_wargear_name(candidate_weapon["name"]).split(" - ", 1)[0] == "heavy bolter"
+                ),
+            )
         if (
             attacker_detachment_name == "Saga of the Beastslayer"
             and (
@@ -3616,10 +3664,6 @@ class CombatSimulator:
         melee_damage_bonus = 0
         ranged_damage_bonus = 0
         ranged_attack_bonus = 0
-        attacker_active_ability_names = {
-            str(name).lower()
-            for name in options.get("attacker_active_ability_names", [])
-        }
         weapon_base_name = self.normalize_wargear_name(weapon["name"]).split(" - ", 1)[-1]
         if (
             "hail of bullets" in attacker_active_ability_names
@@ -3635,6 +3679,12 @@ class CombatSimulator:
         if bool(options.get("attacker_waaagh_active", False)) and self.unit_has_waaagh(attacker_unit):
             melee_attack_bonus += 1
             melee_strength_bonus += 1
+        if (
+            "da biggest and da best" in attacker_active_ability_names
+            and bool(options.get("attacker_waaagh_active", False))
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_attack_bonus += 4
         if (
             attacker_enhancement_name == "Feral Rage"
             and weapon["range"].lower() == "melee"
@@ -3865,6 +3915,7 @@ class CombatSimulator:
             "target_damage_modifier": target_damage_modifier,
             "critical_wound_ap_modifier": critical_wound_ap_modifier,
             "hazardous_fail_threshold": hazardous_fail_threshold,
+            "attacker_active_ability_names": attacker_active_ability_names,
             "sequence_state": options.get("sequence_state", {}),
         }
         if attack_context["oath_of_moment_active"] and self.unit_gets_oath_wound_bonus(attacker_unit):
@@ -3938,6 +3989,7 @@ class CombatSimulator:
             attached_character_unit,
         )
 
+        self.resolve_pre_attack_active_abilities(attacker_unit, weapon, target_state, attack_context)
         self.resolve_unit_attack(attacker_unit, weapon, target_state, attack_context)
         hazardous_bearer_state = self.resolve_hazardous_checks(attacker_unit, weapon, attack_context)
 
@@ -4018,6 +4070,7 @@ class CombatSimulator:
             attached_character_unit,
         )
 
+        self.resolve_pre_attack_active_abilities(attacker_unit, reference_weapon, target_state, attack_context)
         self.resolve_weapon_set_attack(attacker_unit, weapons, target_state, attack_context)
 
         result = {
@@ -4142,6 +4195,7 @@ class CombatSimulator:
             if index > 0:
                 self.log(f"\n{attacker_unit['name']} joins the attack")
 
+            self.resolve_pre_attack_active_abilities(attacker_unit, reference_weapon, target_state, attack_context)
             if len(weapons) == 1:
                 self.resolve_unit_attack(attacker_unit, weapons[0], target_state, attack_context)
                 hazardous_bearer_state = self.resolve_hazardous_checks(

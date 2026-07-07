@@ -1853,6 +1853,13 @@ function modelBasesOverlap(model, otherModel) {
   return getRawModelHorizontalGapInches(model, otherModel) < -0.001
 }
 
+function modelOverlapsAny(model, models) {
+  if (!model) {
+    return false
+  }
+  return models.some((otherModel) => otherModel.id !== model.id && modelBasesOverlap(model, otherModel))
+}
+
 function getOverlappingModelIndexes(models) {
   const overlappingIndexes = new Set()
   for (let index = 0; index < models.length; index += 1) {
@@ -2303,6 +2310,65 @@ function clampModelInsideBattlefield(modelPosition, baseInches) {
   }
 }
 
+function resolveBattlefieldModelOverlap({
+  unit,
+  models,
+  anchorModelId,
+  desiredAbsolute,
+  startAbsolute,
+  movementLimit,
+}) {
+  if (!unit || !models?.length || !anchorModelId || !desiredAbsolute) {
+    return desiredAbsolute
+  }
+
+  const anchorModel = models.find((model) => model.id === anchorModelId)
+  if (!anchorModel) {
+    return desiredAbsolute
+  }
+
+  const desiredModel = {
+    ...anchorModel,
+    x: desiredAbsolute.x,
+    y: desiredAbsolute.y,
+  }
+  if (!modelOverlapsAny(desiredModel, models)) {
+    return desiredAbsolute
+  }
+
+  const effectiveMovementLimit = Number.isFinite(movementLimit) ? movementLimit : 24
+  const searchStep = 0.125
+  const angleStep = Math.PI / 16
+  const maxSearchDistance = Number.isFinite(movementLimit)
+    ? Math.min(effectiveMovementLimit, 24)
+    : 24
+
+  for (let radius = searchStep; radius <= maxSearchDistance + 0.001; radius += searchStep) {
+    for (let angle = 0; angle < (Math.PI * 2) - 0.001; angle += angleStep) {
+      const rawCandidateAbsolute = {
+        x: desiredAbsolute.x + (Math.cos(angle) * radius),
+        y: desiredAbsolute.y + (Math.sin(angle) * radius),
+      }
+      const limitedAbsolute = clampModelInsideBattlefield(
+        Number.isFinite(movementLimit)
+          ? clampMoveToMaximumDistance(startAbsolute, rawCandidateAbsolute, effectiveMovementLimit)
+          : rawCandidateAbsolute,
+        unit.baseInches,
+      )
+      const candidateModel = {
+        ...anchorModel,
+        x: limitedAbsolute.x,
+        y: limitedAbsolute.y,
+      }
+      if (!modelOverlapsAny(candidateModel, models)) {
+        return limitedAbsolute
+      }
+    }
+  }
+
+  return desiredAbsolute
+}
+
 function constrainBattlefieldModelToCoherency({
   unit,
   centerPercent,
@@ -2324,6 +2390,14 @@ function constrainBattlefieldModelToCoherency({
   if (!normalizedCurrentOffsets[anchorModelId]) {
     return currentOffsets
   }
+  const anchorStartOffset = normalizedStartOffsets[anchorModelId]
+  if (!anchorStartOffset) {
+    return currentOffsets
+  }
+  const anchorStartAbsolute = {
+    x: startCenter.x + anchorStartOffset.x,
+    y: startCenter.y + anchorStartOffset.y,
+  }
 
   const buildOffsets = (absolutePosition) => ({
     ...normalizedCurrentOffsets,
@@ -2333,11 +2407,21 @@ function constrainBattlefieldModelToCoherency({
     },
   })
 
-  const desiredOffsets = buildOffsets(desiredAbsolute)
+  const desiredModelsWithAnchor = getBattlefieldUnitModels(unit, centerPercent, buildOffsets(desiredAbsolute))
+  const resolvedDesiredAbsolute = resolveBattlefieldModelOverlap({
+    unit,
+    models: desiredModelsWithAnchor,
+    anchorModelId,
+    desiredAbsolute,
+    startAbsolute: anchorStartAbsolute,
+    movementLimit,
+  })
+  const desiredOffsets = buildOffsets(resolvedDesiredAbsolute)
   const desiredModels = getBattlefieldUnitModels(unit, centerPercent, desiredOffsets)
+  const desiredAnchorModel = desiredModels.find((model) => model.id === anchorModelId)
   if (
     validateBattlefieldUnitCoherency(desiredModels).valid
-    && !getOverlappingModelIndexes(desiredModels).length
+    && !modelOverlapsAny(desiredAnchorModel, desiredModels)
   ) {
     return desiredOffsets
   }
@@ -2352,7 +2436,6 @@ function constrainBattlefieldModelToCoherency({
   )
   const scoreModels = (models) => {
     const coherency = validateBattlefieldUnitCoherency(models)
-    const overlapIndexes = getOverlappingModelIndexes(models)
     const anchorModel = models.find((model) => model.id === anchorModelId)
     let totalPenalty = 0
     let anchorPenalty = 0
@@ -2377,23 +2460,12 @@ function constrainBattlefieldModelToCoherency({
 
     return {
       coherency,
-      overlapCount: overlapIndexes.length,
-      overlapPenalty: getModelOverlapPenalty(models),
       violationCount: coherency.violatingModelIndexes.length,
       totalPenalty,
       anchorPenalty,
     }
   }
   const isScoreBetter = (candidateScore, currentScore, candidateDistance, currentDistance) => {
-    if (candidateScore.overlapCount !== currentScore.overlapCount) {
-      return candidateScore.overlapCount < currentScore.overlapCount
-    }
-    if (candidateScore.overlapPenalty < currentScore.overlapPenalty - 0.001) {
-      return true
-    }
-    if (candidateScore.overlapPenalty > currentScore.overlapPenalty + 0.001) {
-      return false
-    }
     if (candidateScore.violationCount !== currentScore.violationCount) {
       return candidateScore.violationCount < currentScore.violationCount
     }
@@ -2416,7 +2488,7 @@ function constrainBattlefieldModelToCoherency({
   let workingModels = desiredModels
   let workingScore = scoreModels(workingModels)
 
-  for (let pass = 0; pass < 6 && (!workingScore.coherency.valid || workingScore.overlapCount > 0); pass += 1) {
+  for (let pass = 0; pass < 6 && !workingScore.coherency.valid; pass += 1) {
     let improvedThisPass = false
     const violatingIds = new Set(
       workingScore.coherency.modelResults
@@ -2478,6 +2550,10 @@ function constrainBattlefieldModelToCoherency({
             },
           }
           const candidateModels = getBattlefieldUnitModels(unit, centerPercent, candidateOffsets)
+          const movedCandidateModel = candidateModels.find((candidateModel) => candidateModel.id === model.id)
+          if (modelOverlapsAny(movedCandidateModel, candidateModels)) {
+            continue
+          }
           const candidateScore = scoreModels(candidateModels)
           const candidateDistance = getDistanceInches(currentAbsolute, limitedAbsolute)
 
@@ -2491,7 +2567,7 @@ function constrainBattlefieldModelToCoherency({
           }
         }
 
-        if (foundBetterAtRadius && bestScore.coherency.valid && bestScore.overlapCount === 0) {
+        if (foundBetterAtRadius && bestScore.coherency.valid) {
           break
         }
       }
@@ -3371,12 +3447,39 @@ function getRelevantUnitRules(unit, role, hasHazardousWeapon) {
     }))
 }
 
-function getCombatTriggerAbilities(unit, phaseId, selectedWeapons = []) {
+function selectedWeaponsIncludeProfileGroup(selectedWeapons, profileGroupName) {
+  return selectedWeapons.some((weapon) => getWeaponProfileGroupName(weapon) === profileGroupName)
+}
+
+const SUPPORTED_COMBAT_TRIGGER_ABILITIES = {
+  'hail of bullets': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeaponsIncludeProfileGroup(selectedWeapons, 'bolt rifle')
+  ),
+  'finest hour': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'exhortation of rage': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'overlapping detonations': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'shooting'
+    && selectedWeaponsIncludeProfileGroup(selectedWeapons, 'heavy bolter')
+    && !unitHasKeyword(targetUnit, 'monster')
+    && !unitHasKeyword(targetUnit, 'vehicle')
+  ),
+  'da biggest and da best': ({ phaseId, selectedWeapons, waaaghActive }) => (
+    phaseId === 'fight'
+    && waaaghActive
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+}
+
+function getCombatTriggerAbilities(unit, phaseId, selectedWeapons = [], context = {}) {
   if (!unit || !['shooting', 'fight'].includes(phaseId)) {
     return []
   }
 
-  const selectedWeaponNames = selectedWeapons.map((weapon) => String(weapon.name || '').toLowerCase())
+  const { targetUnit = null, waaaghActive = false } = context
   const collections = [
     ...(unit.abilities || []).map((ability) => ({ ability, fallback: 'Datasheet Ability' })),
     ...(unit.wargear_abilities || []).map((ability) => ({ ability, fallback: 'Wargear Ability' })),
@@ -3386,23 +3489,13 @@ function getCombatTriggerAbilities(unit, phaseId, selectedWeapons = []) {
   return collections
     .filter(({ ability }) => {
       const name = String(ability.name || '').toLowerCase()
-      const rulesText = String(ability.rules_text || '').toLowerCase()
-      const text = `${name} ${rulesText}`
-      if (phaseId === 'shooting') {
-        return (
-          text.includes('selected to shoot')
-          || text.includes('when this unit shoots')
-          || text.includes('in your shooting phase')
-          || text.includes('ranged weapons equipped')
-          || (name === 'hail of bullets' && selectedWeaponNames.some((weaponName) => weaponName.includes('bolt rifle')))
-        )
-      }
-      return (
-        text.includes('selected to fight')
-        || text.includes('when this unit fights')
-        || text.includes('in the fight phase')
-        || text.includes('melee weapons equipped')
-      )
+      const isSupported = SUPPORTED_COMBAT_TRIGGER_ABILITIES[name]
+      return Boolean(isSupported?.({
+        phaseId,
+        selectedWeapons,
+        targetUnit,
+        waaaghActive,
+      }))
     })
     .map(({ ability, fallback }) => ({
       name: ability.name,
@@ -3436,6 +3529,7 @@ function buildAttackerActiveRules({
   attackerPennantOfRemembranceActive,
   attackerBelowStartingStrength,
   attackerActiveAbilityNames,
+  attackerWaaaghActive,
   inHalfRange,
   remainedStationary,
   chargedThisTurn,
@@ -3453,6 +3547,10 @@ function buildAttackerActiveRules({
     attackerUnitDetails,
     selectedAttackWeapons.some((weapon) => weapon.range !== 'Melee') ? 'shooting' : 'fight',
     selectedAttackWeapons,
+    {
+      targetUnit: defenderUnitDetails,
+      waaaghActive: attackerWaaaghActive,
+    },
   ).forEach((ability) => {
     if (activeAbilityNameSet.has(String(ability.name || '').toLowerCase())) {
       rules.push(ability)
@@ -4135,6 +4233,10 @@ function App() {
   const [gameStepDetailsExpanded, setGameStepDetailsExpanded] = useState(false)
   const [completedGameStepKeys, setCompletedGameStepKeys] = useState({})
   const [gameLogEntries, setGameLogEntries] = useState([])
+  const [battlefieldWaaaghBattleRounds, setBattlefieldWaaaghBattleRounds] = useState({
+    attacker: null,
+    defender: null,
+  })
   const [gameNotes, setGameNotes] = useState('')
   const [battlefieldDeploymentComplete, setBattlefieldDeploymentComplete] = useState(false)
   const [battlefieldCommandPoints, setBattlefieldCommandPoints] = useState({
@@ -5229,8 +5331,11 @@ function App() {
   )
   const selectedCombatPhaseId = selectedAttackWeapons.some((weapon) => weapon.range !== 'Melee') ? 'shooting' : 'fight'
   const attackerCombatTriggerAbilityOptions = useMemo(
-    () => getCombatTriggerAbilities(attackerUnitDetails, selectedCombatPhaseId, selectedAttackWeapons),
-    [attackerUnitDetails, selectedAttackWeapons, selectedCombatPhaseId],
+    () => getCombatTriggerAbilities(attackerUnitDetails, selectedCombatPhaseId, selectedAttackWeapons, {
+      targetUnit: defenderUnitDetails,
+      waaaghActive: attackerWaaaghActive,
+    }),
+    [attackerUnitDetails, attackerWaaaghActive, defenderUnitDetails, selectedAttackWeapons, selectedCombatPhaseId],
   )
   useEffect(() => {
     const availableAbilityNames = new Set(attackerCombatTriggerAbilityOptions.map((ability) => ability.name))
@@ -5950,6 +6055,20 @@ function App() {
   const attackerHordeslayerOutnumberedTooltip = attackerEnhancementTooltip
   const attackerWaaaghTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Waaagh!')?.rules_text || ''
   const defenderWaaaghTooltip = defenderFactionDetails?.army_rules?.find((rule) => rule.name === 'Waaagh!')?.rules_text || ''
+  const attackerWaaaghControlledByGame = battlefieldDeploymentComplete && attackerArmyIsOrks
+  const defenderWaaaghControlledByGame = battlefieldDeploymentComplete && defenderArmyIsOrks
+  const attackerWaaaghControlTooltip = buildTooltip(
+    attackerWaaaghTooltip,
+    attackerWaaaghControlledByGame
+      ? 'Sim Game controls this state. Declare Waaagh! during the Start of Turn Step at the start of the battle round.'
+      : '',
+  )
+  const defenderWaaaghControlTooltip = buildTooltip(
+    defenderWaaaghTooltip,
+    defenderWaaaghControlledByGame
+      ? 'Sim Game controls this state. Declare Waaagh! during the Start of Turn Step at the start of the battle round.'
+      : '',
+  )
   const attackerPreyTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Da Hunt Is On')?.rules_text || ''
   const attackerTargetWithinNineTooltip = buildTooltip(
     blitzaFireTooltip,
@@ -6000,6 +6119,7 @@ function App() {
       attackerPennantOfRemembranceActive,
       attackerBelowStartingStrength,
       attackerActiveAbilityNames,
+      attackerWaaaghActive,
       inHalfRange,
       remainedStationary,
       chargedThisTurn,
@@ -6034,6 +6154,7 @@ function App() {
       attackerPennantOfRemembranceActive,
       attackerBelowStartingStrength,
       attackerActiveAbilityNames,
+      attackerWaaaghActive,
       inHalfRange,
       remainedStationary,
       chargedThisTurn,
@@ -6126,6 +6247,31 @@ function App() {
     : activeGameModuleIds[0] || ''
   const gameCanGoBack = activeGamePhaseIndex > 0
   const gameCurrentStepComplete = Boolean(completedGameStepKeys[activeGameStepKey])
+  const attackerArmyIsOrks = String(attackerFactionDetails?.name || '').toLowerCase() === 'orks'
+  const defenderArmyIsOrks = String(defenderFactionDetails?.name || '').toLowerCase() === 'orks'
+  const battlefieldWaaaghActiveBySide = {
+    attacker: battlefieldWaaaghBattleRounds.attacker === gameBattleRound,
+    defender: battlefieldWaaaghBattleRounds.defender === gameBattleRound,
+  }
+  const canDeclareBattleRoundWaaagh = battlefieldDeploymentComplete
+    && gameActivePlayer === 'Player 1'
+    && activeGamePhase?.id === 'start_of_turn'
+  const battlefieldWaaaghStatusBySide = {
+    attacker: {
+      armyIsOrks: attackerArmyIsOrks,
+      calledBattleRound: battlefieldWaaaghBattleRounds.attacker,
+      active: battlefieldWaaaghActiveBySide.attacker,
+      used: battlefieldWaaaghBattleRounds.attacker !== null,
+      canDeclare: canDeclareBattleRoundWaaagh && attackerArmyIsOrks && battlefieldWaaaghBattleRounds.attacker === null,
+    },
+    defender: {
+      armyIsOrks: defenderArmyIsOrks,
+      calledBattleRound: battlefieldWaaaghBattleRounds.defender,
+      active: battlefieldWaaaghActiveBySide.defender,
+      used: battlefieldWaaaghBattleRounds.defender !== null,
+      canDeclare: canDeclareBattleRoundWaaagh && defenderArmyIsOrks && battlefieldWaaaghBattleRounds.defender === null,
+    },
+  }
   const canDeployOnBattlefield = activePage === 'battlefield' && !battlefieldDeploymentComplete
   const canMoveOnBattlefield = activePage === 'battlefield' && activeGamePhase?.id === 'movement'
   const canChargeOnBattlefield = activePage === 'battlefield' && activeGamePhase?.id === 'charge'
@@ -6620,6 +6766,20 @@ function App() {
   const selectedBattlefieldCombatant = battlefieldCombatOptions.find(
     (option) => option.id === battlefieldCombatAttackerId,
   ) || battlefieldCombatOptions[0] || null
+  const battlefieldAttackerWaaaghActive = selectedBattlefieldCombatant
+    ? (
+      getBattlefieldSourceSide(selectedBattlefieldCombatant.attackerId) === 'attacker'
+        ? attackerWaaaghActive
+        : defenderWaaaghActive
+    )
+    : false
+  const battlefieldDefenderWaaaghActive = selectedBattlefieldCombatant
+    ? (
+      getBattlefieldSourceSide(selectedBattlefieldCombatant.defenderId) === 'attacker'
+        ? attackerWaaaghActive
+        : defenderWaaaghActive
+    )
+    : false
   const battlefieldCombatWeaponOptions = useMemo(
     () => selectedBattlefieldCombatant?.eligibleWeapons || [],
     [selectedBattlefieldCombatant],
@@ -6633,8 +6793,17 @@ function App() {
       selectedBattlefieldCombatant?.attackerDetails,
       activeGamePhase?.id,
       selectedBattlefieldCombatWeapons,
+      {
+        targetUnit: selectedBattlefieldCombatant?.defenderDetails,
+        waaaghActive: battlefieldAttackerWaaaghActive,
+      },
     ),
-    [activeGamePhase?.id, selectedBattlefieldCombatWeapons, selectedBattlefieldCombatant],
+    [
+      activeGamePhase?.id,
+      battlefieldAttackerWaaaghActive,
+      selectedBattlefieldCombatWeapons,
+      selectedBattlefieldCombatant,
+    ],
   )
   const selectedBattlefieldCombatWeaponLabels = useMemo(
     () => selectedBattlefieldCombatWeapons.map((weapon) => formatWeaponName(weapon)),
@@ -7164,10 +7333,10 @@ function App() {
   }, [canUseSagaCompleted, attackerSagaCompleted])
 
   useEffect(() => {
-    if (!canUseAttackerWaaagh && attackerWaaaghActive) {
+    if (!attackerWaaaghControlledByGame && !canUseAttackerWaaagh && attackerWaaaghActive) {
       setAttackerWaaaghActive(false)
     }
-    if (!canUseDefenderWaaagh && defenderWaaaghActive) {
+    if (!defenderWaaaghControlledByGame && !canUseDefenderWaaagh && defenderWaaaghActive) {
       setDefenderWaaaghActive(false)
     }
     if (!canUseAttackerPrey && attackerPreyActive) {
@@ -7280,6 +7449,7 @@ function App() {
     attackerTargetWithinNine,
     attackerTryDatButtonEffects,
     attackerTryDatButtonHazardous,
+    attackerWaaaghControlledByGame,
     attackerUnbridledCarnageActive,
     attackerWaaaghActive,
     canUseAttackerArmedToDaTeef,
@@ -7312,9 +7482,32 @@ function App() {
     defenderHulkingBrutesActive,
     defenderSpeediestFreeksActive,
     defenderStalkinTaktiksActive,
+    defenderWaaaghControlledByGame,
     defenderWaaaghActive,
     targetBelowHalfStrength,
     targetBelowStartingStrength,
+  ])
+
+  useEffect(() => {
+    if (!battlefieldDeploymentComplete) {
+      return
+    }
+
+    const nextAttackerWaaaghActive = battlefieldWaaaghActiveBySide.attacker
+    const nextDefenderWaaaghActive = battlefieldWaaaghActiveBySide.defender
+
+    if (attackerWaaaghActive !== nextAttackerWaaaghActive) {
+      setAttackerWaaaghActive(nextAttackerWaaaghActive)
+    }
+    if (defenderWaaaghActive !== nextDefenderWaaaghActive) {
+      setDefenderWaaaghActive(nextDefenderWaaaghActive)
+    }
+  }, [
+    attackerWaaaghActive,
+    battlefieldDeploymentComplete,
+    battlefieldWaaaghActiveBySide.attacker,
+    battlefieldWaaaghActiveBySide.defender,
+    defenderWaaaghActive,
   ])
 
   useEffect(() => {
@@ -8127,6 +8320,8 @@ function App() {
         in_half_range: battlefieldHalfRangeActive,
         attacker_eligible_model_count: selectedBattlefieldEligibleAttackerModelCount,
         attacker_active_ability_names: battlefieldActiveAbilityNames,
+        attacker_waaagh_active: battlefieldAttackerWaaaghActive,
+        defender_waaagh_active: battlefieldDefenderWaaaghActive,
         defender_current_model_count: selectedBattlefieldCombatTargetModels.length,
         plunging_fire_active: plungingFireActive,
       },
@@ -9323,6 +9518,40 @@ function App() {
     ].slice(0, 20))
   }
 
+  function formatBattlefieldSideLabel(side) {
+    return side === 'attacker' ? 'Attacker' : 'Defender'
+  }
+
+  function declareBattlefieldWaaagh(side) {
+    if (
+      !battlefieldDeploymentComplete
+      || gameActivePlayer !== 'Player 1'
+      || activeGamePhase?.id !== 'start_of_turn'
+    ) {
+      return
+    }
+
+    setBattlefieldWaaaghBattleRounds((currentRounds) => {
+      if (currentRounds[side] !== null) {
+        return currentRounds
+      }
+      return {
+        ...currentRounds,
+        [side]: gameBattleRound,
+      }
+    })
+
+    if (side === 'attacker') {
+      setAttackerWaaaghActive(true)
+    } else {
+      setDefenderWaaaghActive(true)
+    }
+
+    appendGameLog(
+      `${formatBattlefieldSideLabel(side)} declared Waaagh! at the start of battle round ${gameBattleRound}. It remains active until the start of battle round ${gameBattleRound + 1}.`,
+    )
+  }
+
   function getDefaultBattlefieldPosition(sourceSide) {
     return sourceSide === 'attacker' ? { x: 20, y: 50 } : { x: 80, y: 50 }
   }
@@ -9664,6 +9893,20 @@ function App() {
       return
     }
 
+    const expiringWaaaghSides = Object.entries(battlefieldWaaaghBattleRounds)
+      .filter(([, calledBattleRound]) => calledBattleRound === gameBattleRound)
+      .map(([side]) => side)
+    if (expiringWaaaghSides.length) {
+      appendGameLog(
+        `${expiringWaaaghSides.map((side) => formatBattlefieldSideLabel(side)).join(' and ')} Waaagh! ended as battle round ${gameBattleRound + 1} began.`,
+      )
+    }
+    if (expiringWaaaghSides.includes('attacker')) {
+      setAttackerWaaaghActive(false)
+    }
+    if (expiringWaaaghSides.includes('defender')) {
+      setDefenderWaaaghActive(false)
+    }
     setGameActivePlayer('Player 1')
     setGameBattleRound((currentRound) => currentRound + 1)
     setActiveGamePhaseId(turnSequence[0]?.id || DEFAULT_TURN_STRUCTURE[0].id)
@@ -9684,10 +9927,13 @@ function App() {
     setCompletedGameStepKeys({})
     setGameLogEntries([])
     setGameNotes('')
+    setBattlefieldWaaaghBattleRounds({ attacker: null, defender: null })
     setBattlefieldCommandPoints({ attacker: 0, defender: 0 })
     setBattlefieldUsedStratagems([])
     setBattlefieldActions([])
     setBattlefieldUndoStack([])
+    setAttackerWaaaghActive(false)
+    setDefenderWaaaghActive(false)
   }
 
   function jumpToFreeFormCombat() {
@@ -10326,10 +10572,11 @@ function App() {
               ) : null}
 
               {canUseAttackerWaaagh ? (
-                <label className="checkbox-row" title={attackerWaaaghTooltip}>
+                <label className="checkbox-row" title={attackerWaaaghControlTooltip}>
                   <input
                     type="checkbox"
                     checked={attackerWaaaghActive}
+                    disabled={attackerWaaaghControlledByGame}
                     onChange={(event) => setAttackerWaaaghActive(event.target.checked)}
                   />
                   <span>Waaagh! is active for the attacker</span>
@@ -10337,10 +10584,11 @@ function App() {
               ) : null}
 
               {canUseDefenderWaaagh ? (
-                <label className="checkbox-row" title={defenderWaaaghTooltip}>
+                <label className="checkbox-row" title={defenderWaaaghControlTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderWaaaghActive}
+                    disabled={defenderWaaaghControlledByGame}
                     onChange={(event) => setDefenderWaaaghActive(event.target.checked)}
                   />
                   <span>Waaagh! is active for the defender</span>
@@ -12484,6 +12732,50 @@ function App() {
                     <p><strong>On Complete Step:</strong> both players gain 1 CP.</p>
                     <p><strong>Battle-shock:</strong> the active player&apos;s unit rolls if it is already battle-shocked or at/below Half-strength.</p>
                     <p><strong>Active unit:</strong> {gameActivePlayer === 'Player 1' ? battlefieldUnitMap.attacker?.name : battlefieldUnitMap.defender?.name}.</p>
+                  </div>
+                ) : null}
+                {activeGamePhase?.id === 'start_of_turn' ? (
+                  <div className="phase-inline-controls">
+                    <p className="kicker">Battle Round Declarations</p>
+                    <h3>Waaagh!</h3>
+                    <p>Declare this at the start of the battle round. It remains active until the start of the next battle round.</p>
+                    <div className="battlefield-action-summary">
+                      {['attacker', 'defender'].map((side) => {
+                        const status = battlefieldWaaaghStatusBySide[side]
+                        if (!status.armyIsOrks) {
+                          return null
+                        }
+                        return (
+                          <div key={side} className="waaagh-declaration-row">
+                            <div className="waaagh-declaration-copy">
+                              <p className="battlefield-action-key"><strong>{formatBattlefieldSideLabel(side)} Waaagh!</strong></p>
+                              <p>
+                                {status.active
+                                  ? `Active for battle round ${gameBattleRound}.`
+                                  : status.used
+                                    ? `Already called in battle round ${status.calledBattleRound}.`
+                                    : canDeclareBattleRoundWaaagh
+                                      ? 'Available to declare now.'
+                                      : gameActivePlayer !== 'Player 1'
+                                        ? 'Declarations are only made at the start of the battle round before Player 1 begins.'
+                                        : 'This can only be declared during the Start of Turn Step.'}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              className="secondary-button compact-action-button"
+                              disabled={!status.canDeclare}
+                              onClick={() => declareBattlefieldWaaagh(side)}
+                            >
+                              Declare Waaagh!
+                            </button>
+                          </div>
+                        )
+                      })}
+                      {!attackerArmyIsOrks && !defenderArmyIsOrks ? (
+                        <p>No Orks army is present in this game, so no Waaagh! declaration is available.</p>
+                      ) : null}
+                    </div>
                   </div>
                 ) : null}
                 {activeGamePhase?.id === 'movement' && selectedBattlefieldUnit ? (

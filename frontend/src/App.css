@@ -1356,7 +1356,7 @@ textarea:focus {
 }
 
 .sim-game-step.complete {
-  background: rgba(232, 238, 220, 0.92);
+  background: var(--state-complete-bg);
 }
 
 .sim-game-detail-grid {
@@ -1596,6 +1596,25 @@ textarea:focus {
   margin: 0;
   color: var(--ink-soft);
   font-size: 0.86rem;
+}
+
+.waaagh-declaration-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.waaagh-declaration-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.compact-action-button {
+  min-width: 160px;
+  padding-inline: 14px;
+  white-space: nowrap;
 }
 
 .compact-rule-details {
