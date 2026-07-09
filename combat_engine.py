@@ -518,12 +518,14 @@ class CombatSimulator:
     def build_empty_stats() -> dict[str, int]:
         return {
             "attack_instances": 0,
+            "gathered_attack_dice": 0,
             "hit_rolls": 0,
             "auto_hit_attacks": 0,
             "successful_hit_attacks": 0,
             "failed_hit_attacks": 0,
             "critical_hit_attacks": 0,
             "extra_hits_generated": 0,
+            "hit_pool": 0,
             "hit_rerolls_used": 0,
             "hit_reroll_successes": 0,
             "wound_rolls": 0,
@@ -531,10 +533,12 @@ class CombatSimulator:
             "successful_wound_rolls": 0,
             "failed_wound_rolls": 0,
             "critical_wounds": 0,
+            "wound_pool": 0,
             "wound_rerolls_used": 0,
             "wound_reroll_successes": 0,
             "damage_rerolls_used": 0,
             "damage_reroll_improvements": 0,
+            "damage_pool": 0,
             "save_attempts": 0,
             "saves_passed": 0,
             "saves_failed": 0,
@@ -1977,6 +1981,15 @@ class CombatSimulator:
                 return True
         return False
 
+    @staticmethod
+    def unit_has_ability(unit: dict[str, Any], ability_name: str) -> bool:
+        normalized_ability_name = ability_name.lower()
+        for ability in unit.get("abilities", []):
+            name = str(ability.get("name", "")).lower()
+            if normalized_ability_name in name:
+                return True
+        return False
+
     def unit_gets_oath_wound_bonus(self, unit: dict[str, Any]) -> bool:
         unit_keywords = set(unit.get("keywords", []))
         return not any(keyword in unit_keywords for keyword in self.OATH_EXCLUDED_KEYWORDS)
@@ -2209,7 +2222,12 @@ class CombatSimulator:
         if declared_attacks is not None:
             attack_count = int(declared_attacks)
             return attack_count, attack_count
-        return cls.get_roll_bounds(weapon.get("attacks", 0))
+        minimum_attacks, maximum_attacks = cls.get_roll_bounds(weapon.get("attacks", 0))
+        selected_model_count = weapon.get("selected_model_count")
+        if selected_model_count is None:
+            return minimum_attacks, maximum_attacks
+        model_count = max(0, int(selected_model_count))
+        return minimum_attacks * model_count, maximum_attacks * model_count
 
     @classmethod
     def build_attack_resolution_plan(
@@ -3001,6 +3019,26 @@ class CombatSimulator:
         attack_context: dict[str, Any],
     ) -> None:
         damage, melta_bonus = self.roll_damage(weapon, attack_context)
+        self.apply_damage_amount(
+            unit_name,
+            weapon,
+            target_state,
+            damage_mode,
+            attack_context,
+            damage,
+            melta_bonus,
+        )
+
+    def apply_damage_amount(
+        self,
+        unit_name: str,
+        weapon: dict[str, Any],
+        target_state: dict[str, Any],
+        damage_mode: str,
+        attack_context: dict[str, Any],
+        damage: int,
+        melta_bonus: int = 0,
+    ) -> None:
         active_target = self.get_active_target_profile(target_state)
         target_name = active_target["name"] if active_target is not target_state else target_state["name"]
 
@@ -3165,13 +3203,7 @@ class CombatSimulator:
         attack_context: dict[str, Any],
     ) -> None:
         unit_name = attacker_unit["name"]
-        weapon_bearer_count = self.get_weapon_bearer_count(attacker_unit, weapon)
-        selected_model_count = weapon.get("selected_model_count")
-        if selected_model_count is not None:
-            weapon_bearer_count = min(weapon_bearer_count, max(0, int(selected_model_count)))
-        eligible_model_count = attack_context.get("attacker_eligible_model_count")
-        if eligible_model_count is not None:
-            weapon_bearer_count = min(weapon_bearer_count, max(0, int(eligible_model_count)))
+        weapon_bearer_count = self.get_effective_weapon_bearer_count(attacker_unit, weapon, attack_context)
         attacks_remaining = self.roll_value(weapon["attacks"]) * weapon_bearer_count
         if weapon["range"].lower() == "melee":
             attacks_remaining += attack_context.get("melee_attack_bonus", 0) * weapon_bearer_count
@@ -3218,6 +3250,7 @@ class CombatSimulator:
             self.log(f"Blast adds {blast_bonus} attacks based on target unit size")
         if cleave_bonus > 0:
             self.log(f"Cleave adds {cleave_bonus} attacks based on target unit size")
+        self.stats["gathered_attack_dice"] += attacks_remaining
         if attack_context.get("oath_of_moment_active", False):
             self.log("Oath of Moment is active against this target")
         if attack_context.get("oath_of_moment_wound_bonus", 0) > 0:
@@ -3234,60 +3267,100 @@ class CombatSimulator:
         if attack_context.get("target_damage_modifier", 0) < 0:
             self.log(f"Incoming damage is reduced by {-attack_context['target_damage_modifier']}")
 
+        normal_hit_pool = 0
+        auto_wound_pool = 0
         pending_mortal_wounds = 0
         for _ in range(attacks_remaining):
+            normal_hits, auto_wounds = self.resolve_hit(unit_name, weapon, target_state["name"], attack_context)
+            normal_hit_pool += normal_hits
+            auto_wound_pool += auto_wounds
+
+        if normal_hit_pool or auto_wound_pool:
+            self.stats["hit_pool"] += normal_hit_pool + auto_wound_pool
+            self.log(
+                f"{unit_name} batches {normal_hit_pool} hit"
+                f"{'' if normal_hit_pool == 1 else 's'}"
+                f"{f' and {auto_wound_pool} auto-wound' if auto_wound_pool else ''}"
+                f"{'' if auto_wound_pool == 1 else ('s' if auto_wound_pool else '')}"
+                " into the wound step"
+            )
+
+        wound_events: list[dict[str, Any]] = [
+            {
+                "critical_wound": False,
+                "devastating_wound": False,
+                "source": "auto_wound",
+            }
+            for _ in range(auto_wound_pool)
+        ]
+        for _ in range(normal_hit_pool):
+            current_target = self.get_active_target_profile(target_state)
+            current_base_to_wound = self.get_to_wound_threshold(effective_strength, current_target["toughness"])
+            current_wound_roll_modifier = self.get_wound_roll_modifier(attacker_unit, current_target, attack_context)
+            current_wound_roll_modifier += self.get_weapon_wound_bonus(weapon, attack_context)
+            current_to_wound = self.clamp_target_number(current_base_to_wound - current_wound_roll_modifier)
+            wound_succeeds, devastating_wound, critical_wound = self.resolve_wound(
+                unit_name,
+                weapon,
+                current_target,
+                current_to_wound,
+                attack_context,
+            )
+            if not wound_succeeds:
+                continue
+            wound_events.append({
+                "critical_wound": critical_wound,
+                "devastating_wound": devastating_wound,
+                "source": "wound_roll",
+            })
+        self.stats["wound_pool"] += len(wound_events)
+
+        normal_damage_events: list[dict[str, Any]] = []
+        for wound_event in wound_events:
+            allocation_target = self.get_precision_allocation_target(target_state, weapon, attack_context)
+            damage_target = self.get_active_target_profile(allocation_target)
+            if allocation_target is not target_state:
+                self.log(
+                    f"{weapon['name']} uses Precision to allocate the successful wound to {allocation_target['name']}"
+                )
+            if wound_event["devastating_wound"]:
+                mortal_damage, melta_bonus = self.roll_damage(weapon, attack_context)
+                self.stats["damage_pool"] += mortal_damage
+                if melta_bonus > 0:
+                    self.log(f"Melta adds {melta_bonus} damage at this range")
+                pending_mortal_wounds += mortal_damage
+                self.log(
+                    f"{weapon['name']} will inflict {mortal_damage} mortal wound"
+                    f"{'' if mortal_damage == 1 else 's'} after normal damage is resolved"
+                )
+                continue
+            if self.resolve_save(damage_target, weapon, False, attack_context, wound_event["critical_wound"]):
+                damage, melta_bonus = self.roll_damage(weapon, attack_context)
+                self.stats["damage_pool"] += damage
+                normal_damage_events.append({
+                    "allocation_target": allocation_target,
+                    "damage_mode": "normal",
+                    "damage": damage,
+                    "melta_bonus": melta_bonus,
+                })
+
+        if normal_damage_events:
+            self.log(
+                f"{unit_name} allocates {len(normal_damage_events)} unsaved wound"
+                f"{'' if len(normal_damage_events) == 1 else 's'} after batch rolling"
+            )
+        for damage_event in normal_damage_events:
             if target_state["models"] <= 0:
                 break
-
-            normal_hits, auto_wounds = self.resolve_hit(unit_name, weapon, target_state["name"], attack_context)
-
-            for _ in range(auto_wounds):
-                allocation_target = self.get_precision_allocation_target(target_state, weapon, attack_context)
-                if allocation_target["models"] <= 0:
-                    break
-                damage_target = self.get_active_target_profile(allocation_target)
-                if allocation_target is not target_state:
-                    self.log(
-                        f"{weapon['name']} uses Precision to allocate the successful wound to {allocation_target['name']}"
-                    )
-                if self.resolve_save(damage_target, weapon, False, attack_context, critical_wound=False):
-                    self.apply_damage(unit_name, weapon, allocation_target, "normal", attack_context)
-
-            for _ in range(normal_hits):
-                if target_state["models"] <= 0:
-                    break
-                current_target = self.get_active_target_profile(target_state)
-                current_base_to_wound = self.get_to_wound_threshold(effective_strength, current_target["toughness"])
-                current_wound_roll_modifier = self.get_wound_roll_modifier(attacker_unit, current_target, attack_context)
-                current_wound_roll_modifier += self.get_weapon_wound_bonus(weapon, attack_context)
-                current_to_wound = self.clamp_target_number(current_base_to_wound - current_wound_roll_modifier)
-                wound_succeeds, devastating_wound, critical_wound = self.resolve_wound(
-                    unit_name,
-                    weapon,
-                    current_target,
-                    current_to_wound,
-                    attack_context,
-                )
-                if not wound_succeeds:
-                    continue
-                allocation_target = self.get_precision_allocation_target(target_state, weapon, attack_context)
-                damage_target = self.get_active_target_profile(allocation_target)
-                if allocation_target is not target_state:
-                    self.log(
-                        f"{weapon['name']} uses Precision to allocate the successful wound to {allocation_target['name']}"
-                    )
-                if devastating_wound:
-                    mortal_damage, melta_bonus = self.roll_damage(weapon, attack_context)
-                    if melta_bonus > 0:
-                        self.log(f"Melta adds {melta_bonus} damage at this range")
-                    pending_mortal_wounds += mortal_damage
-                    self.log(
-                        f"{weapon['name']} will inflict {mortal_damage} mortal wound"
-                        f"{'' if mortal_damage == 1 else 's'} after normal damage is resolved"
-                    )
-                    continue
-                if self.resolve_save(damage_target, weapon, False, attack_context, critical_wound):
-                    self.apply_damage(unit_name, weapon, allocation_target, "normal", attack_context)
+            self.apply_damage_amount(
+                unit_name,
+                weapon,
+                damage_event["allocation_target"],
+                damage_event["damage_mode"],
+                attack_context,
+                damage_event["damage"],
+                damage_event["melta_bonus"],
+            )
 
         if pending_mortal_wounds > 0 and target_state["models"] > 0:
             self.log(
@@ -3295,6 +3368,36 @@ class CombatSimulator:
                 f"{'' if pending_mortal_wounds == 1 else 's'} after normal damage"
             )
             self.allocate_spillover_mortal_wounds(target_state, pending_mortal_wounds)
+
+    def get_effective_weapon_bearer_count(
+        self,
+        attacker_unit: dict[str, Any],
+        weapon: dict[str, Any],
+        attack_context: dict[str, Any],
+    ) -> int:
+        selected_model_count = weapon.get("selected_model_count")
+        if selected_model_count is not None:
+            weapon_bearer_count = max(0, int(selected_model_count))
+        else:
+            weapon_bearer_count = self.get_weapon_bearer_count(attacker_unit, weapon)
+        eligible_model_count = attack_context.get("attacker_eligible_model_count")
+        if eligible_model_count is not None:
+            weapon_bearer_count = min(weapon_bearer_count, max(0, int(eligible_model_count)))
+        return weapon_bearer_count
+
+    def get_planned_weapon(
+        self,
+        attacker_unit: dict[str, Any],
+        weapon: dict[str, Any],
+        attack_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        planned_weapon = dict(weapon)
+        planned_weapon["selected_model_count"] = self.get_effective_weapon_bearer_count(
+            attacker_unit,
+            weapon,
+            attack_context,
+        )
+        return planned_weapon
 
     def resolve_unit_attack(
         self,
@@ -3482,6 +3585,12 @@ class CombatSimulator:
             temporary_weapon_keywords.add("LH")
         if "finest hour" in attacker_active_ability_names:
             temporary_melee_weapon_keywords.add("DW")
+        if (
+            bool(options.get("charged_this_turn", False))
+            and weapon["range"].lower() == "melee"
+            and self.unit_has_ability(attacker_unit, "Vanguard Assault")
+        ):
+            temporary_melee_weapon_keywords.add("LH")
         if (
             "overlapping detonations" in attacker_active_ability_names
             and not self.unit_has_keyword(target_state, "monster")
@@ -3854,6 +3963,7 @@ class CombatSimulator:
             "attacker_in_engagement_range": bool(options.get("attacker_in_engagement_range", False)),
             "target_in_engagement_range_of_allies": bool(options.get("target_in_engagement_range_of_allies", False)),
             "target_engaged_monster_vehicle": bool(options.get("target_engaged_monster_vehicle", False)),
+            "attacker_eligible_model_count": options.get("attacker_eligible_model_count"),
             "oath_of_moment_active": bool(options.get("oath_of_moment_active", False))
             and self.unit_has_oath_of_moment(attacker_unit),
             "oath_of_moment_wound_bonus": 0,
@@ -3999,7 +4109,7 @@ class CombatSimulator:
             "target": self.summarize_state(target_state),
             "attack_resolution_plan": self.build_attack_resolution_plan([
                 {
-                    "weapon": weapon,
+                    "weapon": self.get_planned_weapon(attacker_unit, weapon, attack_context),
                     "attack_mode": "fighting" if weapon["range"].lower() == "melee" else "shooting",
                     "target_id": defender_unit["name"],
                     "target_name": defender_unit["name"],
@@ -4079,7 +4189,11 @@ class CombatSimulator:
             "target": self.summarize_state(target_state),
             "attack_resolution_plan": self.build_attack_resolution_plan([
                 {
-                    "weapon": weapon,
+                    "weapon": self.get_planned_weapon(
+                        attacker_unit,
+                        weapon,
+                        {"attacker_eligible_model_count": options.get("attacker_eligible_model_count")},
+                    ),
                     "attack_mode": "fighting" if weapon["range"].lower() == "melee" else "shooting",
                     "target_id": defender_unit["name"],
                     "target_name": defender_unit["name"],
@@ -4221,7 +4335,11 @@ class CombatSimulator:
             "target": self.summarize_state(target_state),
             "attack_resolution_plan": self.build_attack_resolution_plan([
                 {
-                    "weapon": weapon,
+                    "weapon": self.get_planned_weapon(
+                        entry["attacker_unit"],
+                        weapon,
+                        {"attacker_eligible_model_count": options.get("attacker_eligible_model_count")},
+                    ),
                     "attack_mode": "fighting" if weapon["range"].lower() == "melee" else "shooting",
                     "target_id": defender_unit["name"],
                     "target_name": defender_unit["name"],

@@ -1873,16 +1873,6 @@ function getOverlappingModelIndexes(models) {
   return [...overlappingIndexes]
 }
 
-function getModelOverlapPenalty(models) {
-  let overlapPenalty = 0
-  for (let index = 0; index < models.length; index += 1) {
-    for (let otherIndex = index + 1; otherIndex < models.length; otherIndex += 1) {
-      overlapPenalty += Math.max(0, -getRawModelHorizontalGapInches(models[index], models[otherIndex]))
-    }
-  }
-  return overlapPenalty
-}
-
 function getPointOnBase(model, angleRadians, insetInches = 0) {
   const radius = Math.max(0, (getModelBaseDiameterInches(model) / 2) - insetInches)
   return {
@@ -2276,6 +2266,18 @@ function modelCanAttackTargetWithWeapon(model, targetModels, weapon) {
 }
 
 function countModelsInRangeForWeapon(attackerModels, targetModels, weapon) {
+  if (weapon?.range === 'Melee') {
+    const directlyEngagedModels = attackerModels.filter((model) => (
+      targetModels.some((targetModel) => modelsAreWithinRange(model, targetModel, 2, 5))
+    ))
+    if (!directlyEngagedModels.length) {
+      return 0
+    }
+    return attackerModels.filter((model) => (
+      directlyEngagedModels.includes(model)
+      || directlyEngagedModels.some((engagedModel) => modelsAreWithinRange(model, engagedModel, 2, 5))
+    )).length
+  }
   return attackerModels.filter((model) => modelCanAttackTargetWithWeapon(model, targetModels, weapon)).length
 }
 
@@ -2814,6 +2816,8 @@ function validateBattlefieldChargeMove({
   unitEngagedBefore = false,
   advancedThisTurn = false,
   fellBackThisTurn = false,
+  startGapOverride = null,
+  endGapOverride = null,
 }) {
   const movementValidation = validateBattlefieldModelMove({
     start,
@@ -2825,10 +2829,14 @@ function validateBattlefieldChargeMove({
   })
   const violations = [...movementValidation.violations]
   const targetPosition = targetUnit ? battlefieldPercentToInches(targetUnit.position) : null
-  const startGap = targetPosition
+  const startGap = startGapOverride !== null && startGapOverride !== undefined
+    ? startGapOverride
+    : targetPosition
     ? Math.max(0, getDistanceInches(start, targetPosition) - (movingUnit.baseInches / 2) - (targetUnit.baseInches / 2))
     : null
-  const endGap = targetPosition
+  const endGap = endGapOverride !== null && endGapOverride !== undefined
+    ? endGapOverride
+    : targetPosition
     ? Math.max(0, getDistanceInches(end, targetPosition) - (movingUnit.baseInches / 2) - (targetUnit.baseInches / 2))
     : null
 
@@ -2975,6 +2983,24 @@ function getTransportCapacity(unit) {
 function parsePlusValue(value) {
   const match = String(value || '').match(/(\d+)/)
   return match ? Number(match[1]) : 0
+}
+
+function getAttackCharacteristicMaximum(value) {
+  const text = String(value || '').trim().toUpperCase()
+  const diceMatch = text.match(/^D(\d+)(?:\s*([+-])\s*(\d+))?$/)
+  if (diceMatch) {
+    const sides = Number(diceMatch[1]) || 0
+    const modifier = Number(diceMatch[3] || 0) || 0
+    return Math.max(0, sides + (diceMatch[2] === '-' ? -modifier : modifier))
+  }
+  const match = text.match(/(\d+)/)
+  return match ? Number(match[1]) : 0
+}
+
+function calculateExpectedAttackDice(selectedWeapons, weaponModelCounts) {
+  return selectedWeapons.reduce((total, weapon) => (
+    total + (getAttackCharacteristicMaximum(weapon.attacks) * Math.max(0, Number(weaponModelCounts[weapon.name] || 0)))
+  ), 0)
 }
 
 function parseObjectiveControlValue(value) {
@@ -3385,6 +3411,19 @@ function buildRunSummary(runs) {
   const totalRuns = runs.length
   const targets = runs.map((run) => run.result.target)
   const combatStats = runs.map((run) => run.result.stats || {})
+  const expectedAttackDice = sumBy(runs, (run) => run.request?.expected_attack_dice || 0)
+  const gatheredAttackDice = sumBy(combatStats, (stat) => stat.gathered_attack_dice || 0)
+  const plannedAttackDice = sumBy(runs, (run) => sumBy(
+    run.result.attack_resolution_plan?.steps || [],
+    (step) => step.gather_attack_dice?.attack_dice_maximum || 0,
+  ))
+  const successfulHitAttacks = sumBy(combatStats, (stat) => stat.successful_hit_attacks || 0)
+  const extraHitsGenerated = sumBy(combatStats, (stat) => stat.extra_hits_generated || 0)
+  const successfulWoundRolls = sumBy(combatStats, (stat) => stat.successful_wound_rolls || 0)
+  const autoWounds = sumBy(combatStats, (stat) => stat.auto_wounds || 0)
+  const explicitHitPool = sumBy(combatStats, (stat) => stat.hit_pool || 0)
+  const explicitWoundPool = sumBy(combatStats, (stat) => stat.wound_pool || 0)
+  const damagePool = sumBy(combatStats, (stat) => stat.damage_pool || 0)
   const attachedCharacters = runs
     .map((run) => run.result.attached_character)
     .filter(Boolean)
@@ -3404,18 +3443,23 @@ function buildRunSummary(runs) {
     hazardousBearerDestroyedCount: hazardousBearers.filter((item) => item.destroyed).length,
     averageHazardousBearerWounds: average(hazardousBearers.map((item) => item.current_model_wounds)),
     combat: {
+      expectedAttackDice,
+      gatheredAttackDice,
+      plannedAttackDice,
       attackInstances: sumBy(combatStats, (stat) => stat.attack_instances || 0),
       hitRolls: sumBy(combatStats, (stat) => stat.hit_rolls || 0),
       autoHitAttacks: sumBy(combatStats, (stat) => stat.auto_hit_attacks || 0),
-      successfulHitAttacks: sumBy(combatStats, (stat) => stat.successful_hit_attacks || 0),
+      successfulHitAttacks,
+      hitPool: explicitHitPool || successfulHitAttacks + extraHitsGenerated,
       failedHitAttacks: sumBy(combatStats, (stat) => stat.failed_hit_attacks || 0),
       criticalHitAttacks: sumBy(combatStats, (stat) => stat.critical_hit_attacks || 0),
-      extraHitsGenerated: sumBy(combatStats, (stat) => stat.extra_hits_generated || 0),
+      extraHitsGenerated,
       hitRerollsUsed: sumBy(combatStats, (stat) => stat.hit_rerolls_used || 0),
       hitRerollSuccesses: sumBy(combatStats, (stat) => stat.hit_reroll_successes || 0),
       woundRolls: sumBy(combatStats, (stat) => stat.wound_rolls || 0),
-      autoWounds: sumBy(combatStats, (stat) => stat.auto_wounds || 0),
-      successfulWoundRolls: sumBy(combatStats, (stat) => stat.successful_wound_rolls || 0),
+      autoWounds,
+      successfulWoundRolls,
+      woundPool: explicitWoundPool || successfulWoundRolls + autoWounds,
       failedWoundRolls: sumBy(combatStats, (stat) => stat.failed_wound_rolls || 0),
       criticalWounds: sumBy(combatStats, (stat) => stat.critical_wounds || 0),
       woundRerollsUsed: sumBy(combatStats, (stat) => stat.wound_rerolls_used || 0),
@@ -3424,6 +3468,7 @@ function buildRunSummary(runs) {
       savesPassed: sumBy(combatStats, (stat) => stat.saves_passed || 0),
       savesFailed: sumBy(combatStats, (stat) => stat.saves_failed || 0),
       unsavableWounds: sumBy(combatStats, (stat) => stat.unsavable_wounds || 0),
+      damagePool,
     },
   }
 }
@@ -3472,6 +3517,11 @@ const SUPPORTED_COMBAT_TRIGGER_ABILITIES = {
     && waaaghActive
     && selectedWeapons.some((weapon) => weapon.range === 'Melee')
   ),
+  'vanguard assault': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
+    phaseId === 'fight'
+    && chargedThisTurn
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
 }
 
 function getCombatTriggerAbilities(unit, phaseId, selectedWeapons = [], context = {}) {
@@ -3479,7 +3529,7 @@ function getCombatTriggerAbilities(unit, phaseId, selectedWeapons = [], context 
     return []
   }
 
-  const { targetUnit = null, waaaghActive = false } = context
+  const { targetUnit = null, waaaghActive = false, chargedThisTurn = false } = context
   const collections = [
     ...(unit.abilities || []).map((ability) => ({ ability, fallback: 'Datasheet Ability' })),
     ...(unit.wargear_abilities || []).map((ability) => ({ ability, fallback: 'Wargear Ability' })),
@@ -3495,6 +3545,7 @@ function getCombatTriggerAbilities(unit, phaseId, selectedWeapons = [], context 
         selectedWeapons,
         targetUnit,
         waaaghActive,
+        chargedThisTurn,
       }))
     })
     .map(({ ability, fallback }) => ({
@@ -3550,6 +3601,7 @@ function buildAttackerActiveRules({
     {
       targetUnit: defenderUnitDetails,
       waaaghActive: attackerWaaaghActive,
+      chargedThisTurn,
     },
   ).forEach((ability) => {
     if (activeAbilityNameSet.has(String(ability.name || '').toLowerCase())) {
@@ -4322,7 +4374,9 @@ function App() {
     attacker: 2,
     defender: 2,
   })
+  const [battlefieldChargeTargets, setBattlefieldChargeTargets] = useState({})
   const [battlefieldChargedUnits, setBattlefieldChargedUnits] = useState({})
+  const [battlefieldChargedTargetUnits, setBattlefieldChargedTargetUnits] = useState({})
   const [battlefieldWoundsRemaining, setBattlefieldWoundsRemaining] = useState({
     attacker: 0,
     defender: 0,
@@ -4331,6 +4385,7 @@ function App() {
     attacker: '0',
     defender: '0',
   })
+  const [lastBattlefieldDamageTarget, setLastBattlefieldDamageTarget] = useState(null)
   const [battlefieldUndoStack, setBattlefieldUndoStack] = useState([])
   const [battlefieldFallBackModes, setBattlefieldFallBackModes] = useState({
     attacker: 'ordered_retreat',
@@ -5334,8 +5389,9 @@ function App() {
     () => getCombatTriggerAbilities(attackerUnitDetails, selectedCombatPhaseId, selectedAttackWeapons, {
       targetUnit: defenderUnitDetails,
       waaaghActive: attackerWaaaghActive,
+      chargedThisTurn,
     }),
-    [attackerUnitDetails, attackerWaaaghActive, defenderUnitDetails, selectedAttackWeapons, selectedCombatPhaseId],
+    [attackerUnitDetails, attackerWaaaghActive, chargedThisTurn, defenderUnitDetails, selectedAttackWeapons, selectedCombatPhaseId],
   )
   useEffect(() => {
     const availableAbilityNames = new Set(attackerCombatTriggerAbilityOptions.map((ability) => ability.name))
@@ -6053,6 +6109,8 @@ function App() {
   const attackerEldersGuidanceTooltip = attackerEnhancementTooltip
   const attackerBoastAchievedTooltip = attackerEnhancementTooltip
   const attackerHordeslayerOutnumberedTooltip = attackerEnhancementTooltip
+  const attackerArmyIsOrks = String(battlefieldAddAttackerFaction || attackerFactionDetails?.name || '').toLowerCase() === 'orks'
+  const defenderArmyIsOrks = String(battlefieldAddDefenderFaction || defenderFactionDetails?.name || '').toLowerCase() === 'orks'
   const attackerWaaaghTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Waaagh!')?.rules_text || ''
   const defenderWaaaghTooltip = defenderFactionDetails?.army_rules?.find((rule) => rule.name === 'Waaagh!')?.rules_text || ''
   const attackerWaaaghControlledByGame = battlefieldDeploymentComplete && attackerArmyIsOrks
@@ -6247,8 +6305,6 @@ function App() {
     : activeGameModuleIds[0] || ''
   const gameCanGoBack = activeGamePhaseIndex > 0
   const gameCurrentStepComplete = Boolean(completedGameStepKeys[activeGameStepKey])
-  const attackerArmyIsOrks = String(attackerFactionDetails?.name || '').toLowerCase() === 'orks'
-  const defenderArmyIsOrks = String(defenderFactionDetails?.name || '').toLowerCase() === 'orks'
   const battlefieldWaaaghActiveBySide = {
     attacker: battlefieldWaaaghBattleRounds.attacker === gameBattleRound,
     defender: battlefieldWaaaghBattleRounds.defender === gameBattleRound,
@@ -6410,6 +6466,9 @@ function App() {
   const selectedBattlefieldChargeRoll = selectedBattlefieldUnit
     ? battlefieldChargeRolls[selectedBattlefieldUnit.id] ?? 2
     : 2
+  const selectedBattlefieldChargeTargetId = selectedBattlefieldUnit
+    ? battlefieldChargeTargets[selectedBattlefieldUnit.id] || ''
+    : ''
   const selectedBattlefieldFallBackMode = selectedBattlefieldUnit
     ? battlefieldFallBackModes[selectedBattlefieldUnit.id] || 'ordered_retreat'
     : 'ordered_retreat'
@@ -6417,22 +6476,31 @@ function App() {
     ? Boolean(battlefieldBattleShockedUnits[selectedBattlefieldUnit.id])
     : false
   const selectedBattlefieldWasEngagedAtStart = useMemo(() => {
-    if (!selectedBattlefieldUnit || !enemyBattlefieldUnit || !selectedBattlefieldMoveStart) {
+    if (!selectedBattlefieldUnit || !selectedBattlefieldMoveStart) {
       return false
     }
 
-    const selectedStart = battlefieldPercentToInches(selectedBattlefieldMoveStart)
-    const enemyPosition = battlefieldPercentToInches(battlefieldPositions[enemyBattlefieldUnit.id] || enemyBattlefieldUnit)
-    const baseGap = Math.max(
-      0,
-      getDistanceInches(selectedStart, enemyPosition)
-        - (selectedBattlefieldUnit.baseInches / 2)
-        - (enemyBattlefieldUnit.baseInches / 2),
+    const selectedStartModels = getBattlefieldUnitModels(
+      selectedBattlefieldUnit,
+      selectedBattlefieldMoveStart,
+      battlefieldModelMoveStarts[selectedBattlefieldUnit.id],
     )
-    return baseGap <= 2
+    return battlefieldUnits
+      .filter((unit) => unit.side !== selectedBattlefieldUnit.side)
+      .some((unit) => {
+        const enemyModels = getBattlefieldUnitModels(
+          unit,
+          battlefieldPositions[unit.id] || unit,
+          battlefieldModelOffsets[unit.id],
+        )
+        const baseGap = getMinimumModelGapInches(selectedStartModels, enemyModels)
+        return baseGap !== null && baseGap <= 2 + 0.001
+      })
   }, [
+    battlefieldModelMoveStarts,
+    battlefieldModelOffsets,
     battlefieldPositions,
-    enemyBattlefieldUnit,
+    battlefieldUnits,
     selectedBattlefieldMoveStart,
     selectedBattlefieldUnit,
   ])
@@ -6477,28 +6545,110 @@ function App() {
     selectedBattlefieldUnit,
     selectedBattlefieldWasEngagedAtStart,
   ])
+  const selectedBattlefieldChargeTargetOptions = useMemo(() => {
+    if (!selectedBattlefieldUnit || !selectedBattlefieldPosition || !selectedBattlefieldMoveStart) {
+      return []
+    }
+
+    const selectedStartModels = getBattlefieldUnitModels(
+      selectedBattlefieldUnit,
+      selectedBattlefieldMoveStart,
+      battlefieldModelMoveStarts[selectedBattlefieldUnit.id],
+    )
+    return battlefieldUnits
+      .filter((unit) => unit.side !== selectedBattlefieldUnit.side)
+      .map((unit) => {
+        const targetModels = getBattlefieldUnitModels(
+          unit,
+          battlefieldPositions[unit.id] || unit,
+          battlefieldModelOffsets[unit.id],
+        )
+        const startGap = getMinimumModelGapInches(selectedStartModels, targetModels)
+        const requiredDistanceToEngage = startGap === null ? Number.POSITIVE_INFINITY : Math.max(0, startGap - 1.9)
+        const targetWithin12 = startGap !== null && startGap <= 12 + 0.001
+        const aircraftTargetLegal = !unitHasKeyword(unit, 'aircraft') || unitHasKeyword(selectedBattlefieldUnit, 'fly')
+        const eligible = (
+          targetWithin12
+          && requiredDistanceToEngage <= (Number(selectedBattlefieldChargeRoll) || 0) + 0.001
+          && aircraftTargetLegal
+          && !unitHasKeyword(selectedBattlefieldUnit, 'aircraft')
+          && !selectedBattlefieldWasEngagedAtStart
+          && selectedBattlefieldMoveType !== 'advance'
+          && selectedBattlefieldMoveType !== 'fall_back'
+        )
+        return {
+          unit,
+          startGap: startGap ?? Number.POSITIVE_INFINITY,
+          requiredDistanceToEngage,
+          targetWithin12,
+          aircraftTargetLegal,
+          eligible,
+        }
+      })
+      .sort((left, right) => {
+        if (left.eligible !== right.eligible) {
+          return left.eligible ? -1 : 1
+        }
+        return left.startGap - right.startGap
+      })
+  }, [
+    battlefieldModelMoveStarts,
+    battlefieldModelOffsets,
+    battlefieldPositions,
+    battlefieldUnits,
+    selectedBattlefieldChargeRoll,
+    selectedBattlefieldMoveStart,
+    selectedBattlefieldMoveType,
+    selectedBattlefieldPosition,
+    selectedBattlefieldUnit,
+    selectedBattlefieldWasEngagedAtStart,
+  ])
+  const selectedBattlefieldChargeTargetOption = selectedBattlefieldChargeTargetOptions.find((option) => (
+    option.unit.id === selectedBattlefieldChargeTargetId && option.eligible
+  )) || selectedBattlefieldChargeTargetOptions.find((option) => option.eligible) || selectedBattlefieldChargeTargetOptions[0] || null
+  const selectedBattlefieldEligibleChargeTargetOptions = selectedBattlefieldChargeTargetOptions.filter((option) => option.eligible)
+  const selectedBattlefieldChargeTargetUnit = selectedBattlefieldChargeTargetOption?.unit || null
   const selectedBattlefieldChargeStatus = useMemo(() => {
-    if (!selectedBattlefieldUnit || !selectedBattlefieldPosition || !selectedBattlefieldMoveStart || !enemyBattlefieldUnit) {
+    if (!selectedBattlefieldUnit || !selectedBattlefieldPosition || !selectedBattlefieldMoveStart || !selectedBattlefieldChargeTargetUnit) {
       return null
     }
+    const startModels = getBattlefieldUnitModels(
+      selectedBattlefieldUnit,
+      selectedBattlefieldMoveStart,
+      battlefieldModelMoveStarts[selectedBattlefieldUnit.id],
+    )
+    const endModels = getBattlefieldUnitModels(
+      selectedBattlefieldUnit,
+      selectedBattlefieldPosition,
+      battlefieldModelOffsets[selectedBattlefieldUnit.id],
+    )
+    const targetModels = getBattlefieldUnitModels(
+      selectedBattlefieldChargeTargetUnit,
+      battlefieldPositions[selectedBattlefieldChargeTargetUnit.id] || selectedBattlefieldChargeTargetUnit,
+      battlefieldModelOffsets[selectedBattlefieldChargeTargetUnit.id],
+    )
 
     return validateBattlefieldChargeMove({
       start: battlefieldPercentToInches(selectedBattlefieldMoveStart),
       end: battlefieldPercentToInches(selectedBattlefieldPosition),
       movingUnit: selectedBattlefieldUnit,
       targetUnit: {
-        ...enemyBattlefieldUnit,
-        position: battlefieldPositions[enemyBattlefieldUnit.id] || enemyBattlefieldUnit,
+        ...selectedBattlefieldChargeTargetUnit,
+        position: battlefieldPositions[selectedBattlefieldChargeTargetUnit.id] || selectedBattlefieldChargeTargetUnit,
       },
       chargeRoll: selectedBattlefieldChargeRoll,
       unitEngagedBefore: selectedBattlefieldWasEngagedAtStart,
       advancedThisTurn: selectedBattlefieldMoveType === 'advance',
       fellBackThisTurn: selectedBattlefieldMoveType === 'fall_back',
+      startGapOverride: getMinimumModelGapInches(startModels, targetModels),
+      endGapOverride: getMinimumModelGapInches(endModels, targetModels),
     })
   }, [
+    battlefieldModelMoveStarts,
+    battlefieldModelOffsets,
     battlefieldPositions,
-    enemyBattlefieldUnit,
     selectedBattlefieldChargeRoll,
+    selectedBattlefieldChargeTargetUnit,
     selectedBattlefieldMoveStart,
     selectedBattlefieldMoveType,
     selectedBattlefieldPosition,
@@ -6630,7 +6780,7 @@ function App() {
     addModelsByIndexes(selectedBattlefieldSetupStatus.offBattlefieldModelIndexes || [])
 
     return invalidIds
-  }, [selectedBattlefieldHasBaseOverlap, selectedBattlefieldModels, selectedBattlefieldSetupStatus])
+  }, [selectedBattlefieldModels, selectedBattlefieldSetupStatus])
   const toggleBattlefieldSection = useCallback((sectionId) => {
     setBattlefieldSectionVisibility((current) => ({
       ...current,
@@ -6766,6 +6916,21 @@ function App() {
   const selectedBattlefieldCombatant = battlefieldCombatOptions.find(
     (option) => option.id === battlefieldCombatAttackerId,
   ) || battlefieldCombatOptions[0] || null
+  const battlefieldCombatAttackerMoved = selectedBattlefieldCombatant
+    ? Boolean(battlefieldMovedUnits[selectedBattlefieldCombatant.attackerId])
+    : false
+  const battlefieldCombatAttackerMoveType = selectedBattlefieldCombatant
+    ? battlefieldMoveTypes[selectedBattlefieldCombatant.attackerId] || 'normal'
+    : 'normal'
+  const battlefieldCombatAttackerRemainedStationary = selectedBattlefieldCombatant
+    ? !battlefieldCombatAttackerMoved || battlefieldCombatAttackerMoveType === 'remain_stationary'
+    : false
+  const battlefieldCombatAttackerCharged = selectedBattlefieldCombatant
+    ? Boolean(battlefieldChargedUnits[selectedBattlefieldCombatant.attackerId])
+    : false
+  const battlefieldCombatDefenderWasCharged = selectedBattlefieldCombatant
+    ? (battlefieldChargedTargetUnits[selectedBattlefieldCombatant.defenderId] || []).length > 0
+    : false
   const battlefieldAttackerWaaaghActive = selectedBattlefieldCombatant
     ? (
       getBattlefieldSourceSide(selectedBattlefieldCombatant.attackerId) === 'attacker'
@@ -6796,11 +6961,13 @@ function App() {
       {
         targetUnit: selectedBattlefieldCombatant?.defenderDetails,
         waaaghActive: battlefieldAttackerWaaaghActive,
+        chargedThisTurn: battlefieldCombatAttackerCharged,
       },
     ),
     [
       activeGamePhase?.id,
       battlefieldAttackerWaaaghActive,
+      battlefieldCombatAttackerCharged,
       selectedBattlefieldCombatWeapons,
       selectedBattlefieldCombatant,
     ],
@@ -6828,7 +6995,9 @@ function App() {
   ), [battlefieldModelGroups, selectedBattlefieldCombatTargetId])
   const selectedBattlefieldDisplayTargetId = ['shooting', 'fight'].includes(activeGamePhase?.id)
     ? selectedBattlefieldCombatTargetId
-    : enemyBattlefieldUnit?.id || ''
+    : activeGamePhase?.id === 'charge'
+      ? selectedBattlefieldChargeTargetUnit?.id || ''
+      : enemyBattlefieldUnit?.id || ''
   const selectedBattlefieldDisplayTarget = selectedBattlefieldDisplayTargetId
     ? battlefieldUnitMap[selectedBattlefieldDisplayTargetId] || null
     : null
@@ -6916,14 +7085,29 @@ function App() {
   const battlefieldCombatWeaponModelCounts = useMemo(() => (
     Object.fromEntries(battlefieldCombatWeaponOptions.map((weapon) => [
       weapon.name,
-      countModelsInRangeForWeapon(
-        selectedBattlefieldCombatAttackerModels,
-        selectedBattlefieldCombatTargetModels,
-        weapon,
+      Math.min(
+        getWeaponBearerCountForSelection(
+          selectedBattlefieldCombatant?.attackerDetails,
+          null,
+          weapon,
+        ),
+        weapon.range === 'Melee'
+          ? selectedBattlefieldCombatAttackerModels.filter((model) => (
+            selectedBattlefieldCombatTargetModels.some((targetModel) => (
+              getModelHorizontalGapInches(model, targetModel) <= 4 + 0.001
+              && getVerticalDistanceInches(model, targetModel) <= 5 + 0.001
+            ))
+          )).length
+          : countModelsInRangeForWeapon(
+            selectedBattlefieldCombatAttackerModels,
+            selectedBattlefieldCombatTargetModels,
+            weapon,
+          ),
       ),
     ]))
   ), [
     battlefieldCombatWeaponOptions,
+    selectedBattlefieldCombatant?.attackerDetails,
     selectedBattlefieldCombatAttackerModels,
     selectedBattlefieldCombatTargetModels,
   ])
@@ -6934,6 +7118,13 @@ function App() {
   const selectedBattlefieldEligibleAttackerModelCount = selectedBattlefieldCombatWeapons.length
     ? Math.min(...selectedBattlefieldCombatWeapons.map((weapon) => battlefieldCombatWeaponModelCounts[weapon.name] ?? 0))
     : 0
+  const selectedBattlefieldCombatWeaponModelCounts = useMemo(
+    () => Object.fromEntries(selectedBattlefieldCombatWeapons.map((weapon) => [
+      weapon.name,
+      battlefieldCombatWeaponModelCounts[weapon.name] ?? 0,
+    ])),
+    [battlefieldCombatWeaponModelCounts, selectedBattlefieldCombatWeapons],
+  )
   const battlefieldStartingWounds = useMemo(() => (
     Object.fromEntries(battlefieldUnits.map((unit) => [
       unit.id,
@@ -6942,18 +7133,23 @@ function App() {
   ), [battlefieldUnits, getBattlefieldUnitDetails])
   const selectedBattlefieldDamageTargetId = selectedBattlefieldCombatant
     ? selectedBattlefieldCombatant.defenderId
-    : enemyBattlefieldUnit?.id || battlefieldUnits.find((unit) => unit.id !== selectedBattlefieldUnit?.id)?.id || ''
-  const selectedBattlefieldDamageTarget = battlefieldUnitMap[selectedBattlefieldDamageTargetId] || null
+    : lastBattlefieldDamageTarget?.id || enemyBattlefieldUnit?.id || battlefieldUnits.find((unit) => unit.id !== selectedBattlefieldUnit?.id)?.id || ''
+  const selectedBattlefieldDamageTarget = battlefieldUnitMap[selectedBattlefieldDamageTargetId] || lastBattlefieldDamageTarget || null
   const selectedBattlefieldDamageInput = battlefieldDamageInputs[selectedBattlefieldDamageTargetId] ?? '0'
   const selectedBattlefieldWoundsRemaining = battlefieldWoundsRemaining[selectedBattlefieldDamageTargetId]
     ?? battlefieldStartingWounds[selectedBattlefieldDamageTargetId]
+    ?? lastBattlefieldDamageTarget?.woundsRemaining
     ?? 0
-  const selectedBattlefieldStartingWounds = battlefieldStartingWounds[selectedBattlefieldDamageTargetId] ?? 0
+  const selectedBattlefieldStartingWounds = battlefieldStartingWounds[selectedBattlefieldDamageTargetId] ?? lastBattlefieldDamageTarget?.startingWounds ?? 0
+  const selectedBattlefieldDamageInflicted = Math.max(
+    0,
+    Number(selectedBattlefieldDamageInput) || (selectedBattlefieldStartingWounds - selectedBattlefieldWoundsRemaining),
+  )
   const selectedBattlefieldStrengthStatus = getUnitStrengthStatus(
     selectedBattlefieldUnitDetails,
     selectedBattlefieldUnit ? battlefieldWoundsRemaining[selectedBattlefieldUnit.id] ?? battlefieldStartingWounds[selectedBattlefieldUnit.id] : null,
   )
-  const selectedBattlefieldDamageTargetDetails = getBattlefieldUnitDetails(selectedBattlefieldDamageTargetId)
+  const selectedBattlefieldDamageTargetDetails = getBattlefieldUnitDetails(selectedBattlefieldDamageTargetId) || lastBattlefieldDamageTarget?.details || null
   const selectedBattlefieldDamageTargetStrengthStatus = getUnitStrengthStatus(
     selectedBattlefieldDamageTargetDetails,
     selectedBattlefieldWoundsRemaining,
@@ -7227,15 +7423,14 @@ function App() {
 
   useEffect(() => {
     if (activeGamePhase?.id === 'charge') {
-      setBattlefieldChargeRolls({
-        attacker: 2,
-        defender: 2,
-      })
+      setBattlefieldChargeRolls(Object.fromEntries(battlefieldUnits.map((unit) => [unit.id, 2])))
+      setBattlefieldChargedUnits({})
+      setBattlefieldChargedTargetUnits({})
     }
     if (activeGamePhase?.id === 'movement') {
       setBattlefieldMovedUnits({})
     }
-  }, [activeGamePhase?.id, gameActivePlayer, gameBattleRound])
+  }, [activeGamePhase?.id, battlefieldUnits, gameActivePlayer, gameBattleRound])
 
   useEffect(() => {
     if (!canUseHalfRange && inHalfRange) {
@@ -7589,6 +7784,7 @@ function App() {
     setBattlefieldModelMoveStarts({})
     setBattlefieldRemovedModelIds({})
     setBattlefieldPendingCasualties(null)
+    setLastBattlefieldDamageTarget(null)
     setBattlefieldMovedUnits({})
     setBattlefieldUndoStack([])
     setBattlefieldRotations({
@@ -7599,7 +7795,9 @@ function App() {
       attacker: 2,
       defender: 2,
     })
+    setBattlefieldChargeTargets({})
     setBattlefieldChargedUnits({})
+    setBattlefieldChargedTargetUnits({})
     setBattlefieldWoundsRemaining({
       attacker: getUnitStartingWounds(attackerUnitDetails),
       defender: getUnitStartingWounds(defenderUnitDetails),
@@ -7673,6 +7871,33 @@ function App() {
   }, [battlefieldCombatAttackerId, battlefieldCombatOptions])
 
   useEffect(() => {
+    if (!selectedBattlefieldUnit) {
+      return
+    }
+    const currentTargetStillAvailable = selectedBattlefieldChargeTargetOptions.some((option) => (
+      option.unit.id === selectedBattlefieldChargeTargetId && option.eligible
+    ))
+    if (currentTargetStillAvailable) {
+      return
+    }
+    const nextTarget = selectedBattlefieldChargeTargetOptions.find((option) => option.eligible)
+      || selectedBattlefieldChargeTargetOptions[0]
+    const nextTargetId = nextTarget?.unit.id || ''
+    setBattlefieldChargeTargets((current) => (
+      current[selectedBattlefieldUnit.id] === nextTargetId
+        ? current
+        : {
+          ...current,
+          [selectedBattlefieldUnit.id]: nextTargetId,
+        }
+    ))
+  }, [
+    selectedBattlefieldChargeTargetId,
+    selectedBattlefieldChargeTargetOptions,
+    selectedBattlefieldUnit,
+  ])
+
+  useEffect(() => {
     if (!battlefieldStratagemOptions.some((stratagem) => stratagem.name === battlefieldStratagemName)) {
       setBattlefieldStratagemName(battlefieldStratagemOptions[0]?.name || '')
     }
@@ -7724,6 +7949,7 @@ function App() {
       battlefieldAdvanceRolls,
       battlefieldBattleShockedUnits,
       battlefieldChargeRolls,
+      battlefieldChargeTargets,
       battlefieldFallBackModes,
       battlefieldModelMoveStarts,
       battlefieldModelOffsets,
@@ -7741,6 +7967,7 @@ function App() {
     battlefieldAdvanceRolls,
     battlefieldBattleShockedUnits,
     battlefieldChargeRolls,
+    battlefieldChargeTargets,
     battlefieldFallBackModes,
     battlefieldModelMoveStarts,
     battlefieldModelOffsets,
@@ -7907,7 +8134,19 @@ function App() {
             movementLimit,
           )
         const nextPercent = battlefieldInchesToPercent(distanceClampedInches)
-        const enemyUnit = dragState.battlefieldUnits?.find((candidate) => candidate.id !== draggingUnitId)
+        const enemyUnits = (dragState.battlefieldUnits || []).filter((candidate) => candidate.side !== unit.side)
+        const selectedChargeTargetId = dragState.battlefieldChargeTargets?.[draggingUnitId] || ''
+        const enemyUnit = dragState.canChargeOnBattlefield
+          ? enemyUnits.find((candidate) => candidate.id === selectedChargeTargetId) || enemyUnits[0]
+          : enemyUnits
+            .map((candidate) => ({
+              unit: candidate,
+              distance: getDistanceInches(
+                startInches,
+                battlefieldPercentToInches(current[candidate.id] || candidate),
+              ),
+            }))
+            .sort((left, right) => left.distance - right.distance)[0]?.unit
         const enemyPosition = enemyUnit ? battlefieldPercentToInches(current[enemyUnit.id] || enemyUnit) : null
         const unitEngagedBefore = enemyUnit && enemyPosition
           ? Math.max(
@@ -8010,6 +8249,7 @@ function App() {
       window.removeEventListener('pointerup', handlePointerUp)
     }
   }, [
+    canDeployOnBattlefield,
     canRepositionBattlefieldUnits,
     draggingModelId,
     draggingUnitId,
@@ -8032,10 +8272,13 @@ function App() {
       battlefieldModelMoveStarts: cloneForUndo(battlefieldModelMoveStarts),
       battlefieldRemovedModelIds: cloneForUndo(battlefieldRemovedModelIds),
       battlefieldPendingCasualties: cloneForUndo(battlefieldPendingCasualties),
+      lastBattlefieldDamageTarget: cloneForUndo(lastBattlefieldDamageTarget),
       battlefieldRotations: cloneForUndo(battlefieldRotations),
       battlefieldMovedUnits: cloneForUndo(battlefieldMovedUnits),
       battlefieldChargeRolls: cloneForUndo(battlefieldChargeRolls),
+      battlefieldChargeTargets: cloneForUndo(battlefieldChargeTargets),
       battlefieldChargedUnits: cloneForUndo(battlefieldChargedUnits),
+      battlefieldChargedTargetUnits: cloneForUndo(battlefieldChargedTargetUnits),
       battlefieldWoundsRemaining: cloneForUndo(battlefieldWoundsRemaining),
       battlefieldDamageInputs: cloneForUndo(battlefieldDamageInputs),
       battlefieldActions: cloneForUndo(battlefieldActions),
@@ -8068,10 +8311,13 @@ function App() {
     setBattlefieldModelMoveStarts(snapshot.battlefieldModelMoveStarts)
     setBattlefieldRemovedModelIds(snapshot.battlefieldRemovedModelIds)
     setBattlefieldPendingCasualties(snapshot.battlefieldPendingCasualties)
+    setLastBattlefieldDamageTarget(snapshot.lastBattlefieldDamageTarget || null)
     setBattlefieldRotations(snapshot.battlefieldRotations)
     setBattlefieldMovedUnits(snapshot.battlefieldMovedUnits)
     setBattlefieldChargeRolls(snapshot.battlefieldChargeRolls)
+    setBattlefieldChargeTargets(snapshot.battlefieldChargeTargets || {})
     setBattlefieldChargedUnits(snapshot.battlefieldChargedUnits)
+    setBattlefieldChargedTargetUnits(snapshot.battlefieldChargedTargetUnits || {})
     setBattlefieldWoundsRemaining(snapshot.battlefieldWoundsRemaining)
     setBattlefieldDamageInputs(snapshot.battlefieldDamageInputs)
     setBattlefieldActions(snapshot.battlefieldActions)
@@ -8148,6 +8394,7 @@ function App() {
       )
       const runs = responses.map((data, index) => ({
         ...data,
+        request: payload,
         runIndex: index + 1,
       }))
       setSimulationRuns(runs)
@@ -8155,10 +8402,18 @@ function App() {
       if (simulationOptions.battlefieldDamageTargetId) {
         const targetId = simulationOptions.battlefieldDamageTargetId
         const targetDetails = getBattlefieldUnitDetails(targetId)
+        const targetUnit = battlefieldUnitMap[targetId] || null
         const targetSummary = runs[0]?.result?.target
         const remainingWounds = getSimulationTargetRemainingWounds(targetSummary, targetDetails)
         const startingWounds = battlefieldStartingWounds[targetId] ?? getUnitStartingWounds(targetDetails)
         const damageInflicted = Math.max(0, startingWounds - remainingWounds)
+        setLastBattlefieldDamageTarget({
+          id: targetId,
+          name: targetUnit?.name || targetSummary?.name || targetDetails?.name || 'Target',
+          details: targetDetails,
+          startingWounds,
+          woundsRemaining: remainingWounds,
+        })
         setBattlefieldWoundsRemaining((current) => ({
           ...current,
           [targetId]: remainingWounds,
@@ -8285,10 +8540,15 @@ function App() {
     const battlefieldDefenderModelCount = battlefieldDefenderModelInput !== '' ? Number(battlefieldDefenderModelInput) : undefined
 
     const battlefieldDamageTargetId = selectedBattlefieldCombatant.defenderId
+    const expectedAttackDice = calculateExpectedAttackDice(
+      selectedBattlefieldCombatWeapons,
+      selectedBattlefieldCombatWeaponModelCounts,
+    )
 
     await executeSimulation({
       attacker_faction: selectedBattlefieldCombatant.attackerFaction,
       attacker_unit: selectedBattlefieldCombatant.attackerName,
+      expected_attack_dice: expectedAttackDice,
       attacker_loadout: battlefieldAttackerLoadoutSelections,
       attacker_model_count: battlefieldAttackerModelCount,
       attacker_model_counts: battlefieldAttackerModelCounts,
@@ -8305,6 +8565,7 @@ function App() {
         ? resolvedAttackerAttachedLeaderModelCounts
         : {},
       weapon_names: selectedBattlefieldCombatWeaponNames,
+      weapon_model_counts: selectedBattlefieldCombatWeaponModelCounts,
       defender_faction: selectedBattlefieldCombatant.defenderFaction,
       defender_unit: selectedBattlefieldCombatant.defenderName,
       defender_loadout: battlefieldDefenderLoadoutSelections,
@@ -8318,6 +8579,9 @@ function App() {
         target_in_engagement_range_of_allies: battlefieldInEngagementRange,
         target_engaged_monster_vehicle: Boolean(selectedBattlefieldCombatant.targetEngagedMonsterVehicle),
         in_half_range: battlefieldHalfRangeActive,
+        charged_this_turn: battlefieldCombatAttackerCharged,
+        defender_charged_this_turn: battlefieldCombatDefenderWasCharged,
+        remained_stationary: battlefieldCombatAttackerRemainedStationary,
         attacker_eligible_model_count: selectedBattlefieldEligibleAttackerModelCount,
         attacker_active_ability_names: battlefieldActiveAbilityNames,
         attacker_waaagh_active: battlefieldAttackerWaaaghActive,
@@ -9626,6 +9890,7 @@ function App() {
     setBattlefieldSurgeDistances((current) => ({ ...current, [unitId]: 3 }))
     setBattlefieldTakeToSkies((current) => ({ ...current, [unitId]: false }))
     setBattlefieldChargeRolls((current) => ({ ...current, [unitId]: 2 }))
+    setBattlefieldChargeTargets((current) => ({ ...current, [unitId]: '' }))
     setBattlefieldFallBackModes((current) => ({ ...current, [unitId]: 'ordered_retreat' }))
     setBattlefieldBattleShockedUnits((current) => ({ ...current, [unitId]: false }))
     setBattlefieldWoundsRemaining((current) => ({ ...current, [unitId]: getUnitStartingWounds(unitDetails) }))
@@ -9658,7 +9923,16 @@ function App() {
     clearKey(setBattlefieldSurgeDistances)
     clearKey(setBattlefieldTakeToSkies)
     clearKey(setBattlefieldChargeRolls)
+    clearKey(setBattlefieldChargeTargets)
     clearKey(setBattlefieldChargedUnits)
+    setBattlefieldChargedTargetUnits((current) => (
+      Object.fromEntries(Object.entries(current)
+        .map(([targetId, chargerIds]) => [
+          targetId,
+          (chargerIds || []).filter((chargerId) => chargerId !== unitId),
+        ])
+        .filter(([targetId, chargerIds]) => targetId !== unitId && chargerIds.length))
+    ))
     clearKey(setBattlefieldFallBackModes)
     clearKey(setBattlefieldBattleShockedUnits)
     clearKey(setBattlefieldWoundsRemaining)
@@ -9746,7 +10020,7 @@ function App() {
   function commitSelectedBattlefieldCharge() {
     if (
       !selectedBattlefieldUnit
-      || !enemyBattlefieldUnit
+      || !selectedBattlefieldChargeTargetUnit
       || !selectedBattlefieldChargeStatus?.chargeCanReach
       || selectedBattlefieldHasBaseOverlap
       || selectedBattlefieldUnitPerformingAction
@@ -9756,34 +10030,19 @@ function App() {
       return
     }
     pushBattlefieldUndo('Commit charge')
-    const nextPositions = { ...battlefieldPositions }
-
-    if (!selectedBattlefieldChargeStatus.valid) {
-      const start = battlefieldPercentToInches(selectedBattlefieldMoveStart || selectedBattlefieldPosition || selectedBattlefieldUnit)
-      const target = battlefieldPercentToInches(battlefieldPositions[enemyBattlefieldUnit.id] || enemyBattlefieldUnit)
-      const dx = Number(start.x) - Number(target.x)
-      const dy = Number(start.y) - Number(target.y)
-      const distance = Math.hypot(dx, dy) || 1
-      const desiredCenterDistance = (selectedBattlefieldUnit.baseInches / 2) + (enemyBattlefieldUnit.baseInches / 2) + 1.9
-      const autoEnd = {
-        x: Number(target.x) + ((dx / distance) * desiredCenterDistance),
-        y: Number(target.y) + ((dy / distance) * desiredCenterDistance),
-      }
-      const radiusXPercent = ((selectedBattlefieldUnit.baseInches / 2) / BATTLEFIELD_WIDTH_INCHES) * 100
-      const radiusYPercent = ((selectedBattlefieldUnit.baseInches / 2) / BATTLEFIELD_HEIGHT_INCHES) * 100
-      const autoEndPercent = battlefieldInchesToPercent(autoEnd)
-      nextPositions[selectedBattlefieldUnit.id] = {
-        x: clamp(autoEndPercent.x, radiusXPercent, 100 - radiusXPercent),
-        y: clamp(autoEndPercent.y, radiusYPercent, 100 - radiusYPercent),
-      }
-      setBattlefieldPositions(nextPositions)
-    }
-
-    commitBattlefieldPositionsAsMoveStarts(nextPositions, { markSelectedMoved: false })
+    commitBattlefieldPositionsAsMoveStarts(battlefieldPositions, { markSelectedMoved: false })
     setBattlefieldChargedUnits((current) => ({
       ...current,
       [selectedBattlefieldUnit.id]: true,
     }))
+    setBattlefieldChargedTargetUnits((current) => ({
+      ...current,
+      [selectedBattlefieldChargeTargetUnit.id]: [
+        ...(current[selectedBattlefieldChargeTargetUnit.id] || []).filter((unitId) => unitId !== selectedBattlefieldUnit.id),
+        selectedBattlefieldUnit.id,
+      ],
+    }))
+    appendGameLog(`${selectedBattlefieldUnit.name} charged ${selectedBattlefieldChargeTargetUnit.name}.`)
     if (selectedBattlefieldUnit.sourceSide === 'attacker') {
       setChargedThisTurn(true)
     }
@@ -9931,6 +10190,10 @@ function App() {
     setBattlefieldCommandPoints({ attacker: 0, defender: 0 })
     setBattlefieldUsedStratagems([])
     setBattlefieldActions([])
+    setBattlefieldChargeTargets({})
+    setBattlefieldChargedUnits({})
+    setBattlefieldChargedTargetUnits({})
+    setLastBattlefieldDamageTarget(null)
     setBattlefieldUndoStack([])
     setAttackerWaaaghActive(false)
     setDefenderWaaaghActive(false)
@@ -11286,7 +11549,7 @@ function App() {
                     <p className="kicker">Hit Breakdown</p>
                     <h3>Accuracy</h3>
                     <p>Attack instances: {summaryStats.combat.attackInstances}</p>
-                    <p>Hits landed: {summaryStats.combat.successfulHitAttacks + summaryStats.combat.autoHitAttacks} ({formatPercent(summaryStats.combat.successfulHitAttacks + summaryStats.combat.autoHitAttacks, summaryStats.combat.attackInstances)})</p>
+                    <p>Hits landed: {summaryStats.combat.hitPool} ({formatPercent(summaryStats.combat.hitPool, summaryStats.combat.attackInstances)})</p>
                     <p>Auto-hits: {summaryStats.combat.autoHitAttacks}</p>
                     <p>Critical hits: {summaryStats.combat.criticalHitAttacks} ({formatPercent(summaryStats.combat.criticalHitAttacks, summaryStats.combat.attackInstances)})</p>
                     <p>Extra hits generated: {summaryStats.combat.extraHitsGenerated}</p>
@@ -11299,7 +11562,7 @@ function App() {
                     <p>Successful wound rolls: {summaryStats.combat.successfulWoundRolls} ({formatPercent(summaryStats.combat.successfulWoundRolls, summaryStats.combat.woundRolls)})</p>
                     <p>Auto-wounds: {summaryStats.combat.autoWounds}</p>
                     <p>Critical wounds: {summaryStats.combat.criticalWounds} ({formatPercent(summaryStats.combat.criticalWounds, summaryStats.combat.woundRolls + summaryStats.combat.autoWounds)})</p>
-                    <p>Total wounds created: {summaryStats.combat.successfulWoundRolls + summaryStats.combat.autoWounds}</p>
+                    <p>Total wounds created: {summaryStats.combat.woundPool}</p>
                   </article>
 
                   <article className="result-card">
@@ -11359,7 +11622,7 @@ function App() {
                       <h3>Attack Sequence</h3>
                       {activeRun.result.attack_resolution_plan.steps.slice(0, 3).map((step, index) => (
                         <p key={`${step.gather_attack_dice.selected_weapon_name}-${index}`}>
-                          {step.select_enemy_unit.target_name}: {formatAttackDiceRange(step)} dice with {step.gather_attack_dice.identical_weapon_count} profile{step.gather_attack_dice.identical_weapon_count === 1 ? '' : 's'}
+                          {step.select_enemy_unit.target_name}: {index === 0 && Math.max(summaryStats.combat.expectedAttackDice, summaryStats.combat.gatheredAttackDice) > step.gather_attack_dice.attack_dice_maximum ? Math.max(summaryStats.combat.expectedAttackDice, summaryStats.combat.gatheredAttackDice) : formatAttackDiceRange(step)} dice with {step.gather_attack_dice.identical_weapon_count} profile{step.gather_attack_dice.identical_weapon_count === 1 ? '' : 's'}
                         </p>
                       ))}
                     </article>
@@ -12592,25 +12855,33 @@ function App() {
                   </article>
                   <article className="result-card">
                     <h3>Selected Attack</h3>
-                    <p>{selectedBattlefieldCombatant?.attackerDisplayName || 'No combatant selected'}</p>
-                    <p>{selectedBattlefieldCombatWeaponLabels.join(', ') || 'No weapons selected'}</p>
-                    <p>{selectedBattlefieldCombatant?.defenderDisplayName || 'No target selected'}</p>
+                    <p>{simulationRuns[0].request?.attacker_unit || selectedBattlefieldCombatant?.attackerDisplayName || 'No combatant selected'}</p>
+                    <p>{simulationRuns[0].request?.weapon_names?.join(', ') || selectedBattlefieldCombatWeaponLabels.join(', ') || 'No weapons selected'}</p>
+                    <p>{simulationRuns[0].request?.defender_unit || selectedBattlefieldCombatant?.defenderDisplayName || 'No target selected'}</p>
                   </article>
                   {simulationRuns[0].result.attack_resolution_plan?.steps?.length ? (
                     <article className="result-card">
                       <h3>Resolve Attacks</h3>
                       {simulationRuns[0].result.attack_resolution_plan.steps.slice(0, 3).map((step, index) => (
                         <p key={`${step.gather_attack_dice.selected_weapon_name}-${index}`}>
-                          {step.select_enemy_unit.target_name}: {formatAttackDiceRange(step)} dice with {step.gather_attack_dice.identical_weapon_count} profile{step.gather_attack_dice.identical_weapon_count === 1 ? '' : 's'}
+                          {step.select_enemy_unit.target_name}: {index === 0 && Math.max(summaryStats.combat.expectedAttackDice, summaryStats.combat.gatheredAttackDice) > step.gather_attack_dice.attack_dice_maximum ? Math.max(summaryStats.combat.expectedAttackDice, summaryStats.combat.gatheredAttackDice) : formatAttackDiceRange(step)} dice with {step.gather_attack_dice.identical_weapon_count} profile{step.gather_attack_dice.identical_weapon_count === 1 ? '' : 's'}
                         </p>
                       ))}
                     </article>
                   ) : null}
                   <article className="result-card">
+                    <h3>Totals</h3>
+                    <p>Attacks: {Math.max(summaryStats.combat.expectedAttackDice, summaryStats.combat.gatheredAttackDice, summaryStats.combat.plannedAttackDice)}</p>
+                    <p>Hits: {summaryStats.combat.hitPool}</p>
+                    <p>Wounds: {summaryStats.combat.woundPool}</p>
+                    <p>Saves: {summaryStats.combat.savesFailed} failed</p>
+                    <p>Damage: {summaryStats.combat.damagePool || selectedBattlefieldDamageInflicted}</p>
+                  </article>
+                  <article className="result-card">
                     <h3>Hits</h3>
                     <p>
-                      Landed: {summaryStats.combat.successfulHitAttacks + summaryStats.combat.autoHitAttacks}
-                      {' '}({formatPercent(summaryStats.combat.successfulHitAttacks + summaryStats.combat.autoHitAttacks, summaryStats.combat.attackInstances)})
+                      Landed: {summaryStats.combat.hitPool}
+                      {' '}({formatPercent(summaryStats.combat.hitPool, summaryStats.combat.attackInstances)})
                     </p>
                     <p>Critical: {summaryStats.combat.criticalHitAttacks}</p>
                     <p>Extra hits: {summaryStats.combat.extraHitsGenerated}</p>
@@ -12618,11 +12889,13 @@ function App() {
                   <article className="result-card">
                     <h3>Wounds</h3>
                     <p>
-                      Successful: {summaryStats.combat.successfulWoundRolls + summaryStats.combat.autoWounds}
-                      {' '}({formatPercent(summaryStats.combat.successfulWoundRolls + summaryStats.combat.autoWounds, summaryStats.combat.woundRolls + summaryStats.combat.autoWounds)})
+                      Successful: {summaryStats.combat.woundPool}
+                      {' '}({formatPercent(summaryStats.combat.woundPool, summaryStats.combat.woundRolls + summaryStats.combat.autoWounds)})
                     </p>
                     <p>Critical: {summaryStats.combat.criticalWounds}</p>
                     <p>Auto-wounds: {summaryStats.combat.autoWounds}</p>
+                    <p>Saves: {summaryStats.combat.saveAttempts}</p>
+                    <p>Damage: {summaryStats.combat.damagePool || selectedBattlefieldDamageInflicted}</p>
                   </article>
                   <article className="result-card">
                     <h3>Saves</h3>
@@ -12902,19 +13175,41 @@ function App() {
                         }}
                       />
                     </label>
+                    <label>
+                      <span>Charge Target</span>
+                      <select
+                        value={selectedBattlefieldEligibleChargeTargetOptions.length ? selectedBattlefieldChargeTargetUnit?.id || '' : ''}
+                        disabled={!canChargeOnBattlefield || !selectedBattlefieldEligibleChargeTargetOptions.length}
+                        onChange={(event) => {
+                          setBattlefieldChargeTargets((current) => ({
+                            ...current,
+                            [selectedBattlefieldUnit.id]: event.target.value,
+                          }))
+                        }}
+                      >
+                        {selectedBattlefieldEligibleChargeTargetOptions.length ? selectedBattlefieldEligibleChargeTargetOptions.map((option) => (
+                          <option key={option.unit.id} value={option.unit.id}>
+                            {option.unit.name} - gap {formatNumber(option.startGap)}&quot;, needs {formatNumber(option.requiredDistanceToEngage)}&quot;
+                          </option>
+                        )) : (
+                          <option value="">No eligible charge targets</option>
+                        )}
+                      </select>
+                    </label>
                     <button
                       type="button"
                       className="secondary-button"
                       onClick={commitSelectedBattlefieldCharge}
-                      disabled={!canChargeOnBattlefield || !selectedBattlefieldChargeStatus?.chargeCanReach || selectedBattlefieldHasBaseOverlap || selectedBattlefieldUnitPerformingAction || selectedBattlefieldUnitEmbarked || selectedBattlefieldUnitOffBattlefield}
+                      disabled={!canChargeOnBattlefield || !selectedBattlefieldEligibleChargeTargetOptions.length || !selectedBattlefieldChargeStatus?.chargeCanReach || selectedBattlefieldHasBaseOverlap || selectedBattlefieldUnitPerformingAction || selectedBattlefieldUnitEmbarked || selectedBattlefieldUnitOffBattlefield}
                     >
                       Commit Charge
                     </button>
                     <div className="rule-chip-row">
                       <span className={canChargeOnBattlefield ? 'valid' : 'invalid'}>Charge phase</span>
+                      <span className={selectedBattlefieldEligibleChargeTargetOptions.length ? 'valid' : 'invalid'}>Eligible target</span>
                       <span className={selectedBattlefieldChargeStatus?.targetWithin12 ? 'valid' : 'invalid'}>Target within 12&quot;</span>
                       <span className={selectedBattlefieldChargeStatus?.chargeCanReach ? 'valid' : 'invalid'}>Within charge roll</span>
-                      <span className={selectedBattlefieldChargeStatus?.chargedThisTurn ? 'valid' : 'invalid'}>Charged this turn</span>
+                      <span className={battlefieldChargedUnits[selectedBattlefieldUnit.id] ? 'valid' : 'invalid'}>Charged this turn</span>
                     </div>
                   </div>
                 ) : null}
@@ -13516,10 +13811,10 @@ function App() {
                 </p>
                 <p>
                   {canChargeOnBattlefield
-                    ? selectedBattlefieldChargeStatus?.valid
-                      ? 'Charge move is valid. Commit it before moving to the Fight phase.'
+                    ? battlefieldChargedUnits[selectedBattlefieldUnit.id]
+                      ? 'Charge has been declared. Move the unit within its charge distance and end in Engagement Range.'
                       : selectedBattlefieldChargeStatus?.chargeCanReach
-                        ? 'Charge roll is sufficient. Commit Charge will move the unit into Engagement Range.'
+                        ? 'Charge roll is sufficient. Commit Charge to mark the charger and charged target, then move the unit.'
                         : 'Roll 2D6 high enough to reach the target, or move the charging unit into Engagement Range.'
                     : `Charge movement is locked until the Sim Game reaches the Charge phase. Current step: ${activeGamePhase?.name || 'Unknown'}.`}
                 </p>
@@ -13545,7 +13840,24 @@ function App() {
                 </label>
                 <label>
                   <span>Charge Target</span>
-                  <input value={selectedBattlefieldDisplayTarget?.name || 'No enemy unit'} disabled readOnly />
+                  <select
+                    value={selectedBattlefieldEligibleChargeTargetOptions.length ? selectedBattlefieldChargeTargetUnit?.id || '' : ''}
+                    disabled={!canChargeOnBattlefield || !selectedBattlefieldEligibleChargeTargetOptions.length}
+                    onChange={(event) => {
+                      setBattlefieldChargeTargets((current) => ({
+                        ...current,
+                        [selectedBattlefieldUnit.id]: event.target.value,
+                      }))
+                    }}
+                  >
+                    {selectedBattlefieldEligibleChargeTargetOptions.length ? selectedBattlefieldEligibleChargeTargetOptions.map((option) => (
+                      <option key={option.unit.id} value={option.unit.id}>
+                        {option.unit.name} - gap {formatNumber(option.startGap)}&quot;, needs {formatNumber(option.requiredDistanceToEngage)}&quot;
+                      </option>
+                    )) : (
+                      <option value="">No eligible charge targets</option>
+                    )}
+                  </select>
                 </label>
               </div>
               <div className="battlefield-move-actions">
@@ -13553,7 +13865,7 @@ function App() {
                   type="button"
                   className="secondary-button"
                   onClick={commitSelectedBattlefieldCharge}
-                  disabled={!canChargeOnBattlefield || !selectedBattlefieldChargeStatus?.chargeCanReach || selectedBattlefieldHasBaseOverlap || selectedBattlefieldUnitPerformingAction || selectedBattlefieldUnitEmbarked || selectedBattlefieldUnitOffBattlefield}
+                  disabled={!canChargeOnBattlefield || !selectedBattlefieldEligibleChargeTargetOptions.length || !selectedBattlefieldChargeStatus?.chargeCanReach || selectedBattlefieldHasBaseOverlap || selectedBattlefieldUnitPerformingAction || selectedBattlefieldUnitEmbarked || selectedBattlefieldUnitOffBattlefield}
                 >
                   Commit Charge
                 </button>
@@ -13561,6 +13873,9 @@ function App() {
               <div className="battlefield-move-checks">
                 <span className={canChargeOnBattlefield ? 'valid' : 'invalid'}>
                   Charge phase
+                </span>
+                <span className={selectedBattlefieldEligibleChargeTargetOptions.length ? 'valid' : 'invalid'}>
+                  Eligible target
                 </span>
                 <span className={selectedBattlefieldChargeStatus?.targetWithin12 ? 'valid' : 'invalid'}>
                   Target within 12&quot;
