@@ -33,6 +33,8 @@ class SimulationOptions(BaseModel):
     attacker_in_engagement_range: bool = False
     target_in_engagement_range_of_allies: bool = False
     target_engaged_monster_vehicle: bool = False
+    attacker_on_objective: bool = False
+    defender_on_objective: bool = False
     in_half_range: bool = False
     attacker_eligible_model_count: int | None = Field(default=None, ge=0)
     defender_current_model_count: int | None = Field(default=None, ge=0)

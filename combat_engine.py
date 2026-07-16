@@ -1805,7 +1805,8 @@ class CombatSimulator:
 
     @staticmethod
     def unit_has_keyword(unit: dict[str, Any], keyword: str) -> bool:
-        return keyword.lower() in set(unit.get("keywords", []))
+        normalized_keyword = keyword.lower()
+        return any(str(unit_keyword).lower() == normalized_keyword for unit_keyword in unit.get("keywords", []))
 
     @staticmethod
     def get_roll_bounds(value: int | str) -> tuple[int, int]:
@@ -3856,7 +3857,10 @@ class CombatSimulator:
         if self.ability_names_include(attacker_or_attached_ability_names, "tempered ferocity"):
             temporary_weapon_keywords.add("SH1")
         if self.ability_names_include(attacker_ability_names, "cunning hunters"):
-            reroll_wound_rolls_of_1 = True
+            if bool(options.get("defender_on_objective", False)):
+                reroll_all_wound_rolls = True
+            else:
+                reroll_wound_rolls_of_1 = True
         if bool(options.get("defender_overwhelming_onslaught_active", False)) and weapon["range"].lower() == "melee":
             attacker_hit_modifier -= 1
         if bool(options.get("defender_stalkin_taktiks_active", False)) and weapon["range"].lower() != "melee" and self.unit_has_keyword(target_state, "infantry"):
@@ -4077,6 +4081,14 @@ class CombatSimulator:
         if bool(options.get("defender_hulking_brutes_active", False)):
             target_ap_modifier -= 1
         target_feel_no_pain = 0
+        if (
+            bool(options.get("defender_on_objective", False))
+            and (
+                self.unit_has_keyword(target_state, "Ancient")
+                or self.target_state_has_ability(target_state, "Astartes Banner")
+            )
+        ):
+            target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 4)
         if bool(options.get("defender_pennant_of_remembrance_active", False)):
             target_feel_no_pain = 4 if bool(options.get("defender_battleshocked", False)) else 6
         if (

@@ -28,6 +28,8 @@ const initialOptions = {
   target_has_cover: false,
   attacker_in_engagement_range: false,
   target_in_engagement_range_of_allies: false,
+  attacker_on_objective: false,
+  defender_on_objective: false,
   in_half_range: false,
   oath_of_moment_active: false,
   charged_this_turn: false,
@@ -1210,6 +1212,8 @@ function buildSimulationPayload(state) {
     attacker_in_engagement_range: state.attackerInEngagementRange,
     target_in_engagement_range_of_allies: state.targetInEngagementRangeOfAllies,
     target_engaged_monster_vehicle: state.targetEngagedMonsterVehicle,
+    attacker_on_objective: state.attackerOnObjective,
+    defender_on_objective: state.defenderOnObjective,
     in_half_range: state.inHalfRange,
     oath_of_moment_active: state.oathOfMomentActive,
     charged_this_turn: state.chargedThisTurn,
@@ -3666,6 +3670,38 @@ function unitListHasAnyAbility(units, abilityNames) {
   }))
 }
 
+function getUnitAbilityTextEntries(units) {
+  const unitList = (Array.isArray(units) ? units : [units]).filter(Boolean)
+  return unitList.flatMap((unit) => [
+    ...(unit.abilities || []),
+    ...(unit.wargear_abilities || []),
+    ...(unit.selectable_abilities || []),
+  ]).map((ability) => `${ability.name || ''} ${ability.rules_text || ''}`.toLowerCase())
+}
+
+function unitListHasObjectiveSelfRule(units) {
+  return getUnitAbilityTextEntries(units).some((text) => (
+    text.includes('objective')
+    && (
+      text.includes('while this')
+      || text.includes('while the bearer')
+      || text.includes('while that unit')
+      || text.includes('if this unit')
+      || text.includes('if the bearer')
+      || text.includes('this model is within range of an objective')
+      || text.includes('bearer is within range of an objective')
+      || text.includes('unit controls an objective')
+    )
+  ))
+}
+
+function unitListHasTargetObjectiveRule(units) {
+  return getUnitAbilityTextEntries(units).some((text) => (
+    text.includes('target')
+    && text.includes('objective')
+  ))
+}
+
 function canUseChargedThisTurnOption({
   units,
   selectedWeapons = [],
@@ -3697,6 +3733,30 @@ function getPassiveCombatAbilityRules(units) {
       const normalizedName = String(ability.name || '').toLowerCase()
       return Array.from(SUPPORTED_PASSIVE_COMBAT_ABILITIES).some((supportedName) => normalizedName.includes(supportedName))
     })
+    .filter(({ ability }) => {
+      const normalizedName = String(ability.name || '').toLowerCase()
+      if (seenAbilityNames.has(normalizedName)) {
+        return false
+      }
+      seenAbilityNames.add(normalizedName)
+      return true
+    })
+    .map(({ ability, fallback, unitName }) => ({
+      name: ability.name,
+      source: unitName ? `${unitName} ${getAbilitySourceLabel(ability, fallback)}` : getAbilitySourceLabel(ability, fallback),
+      text: ability.rules_text,
+    }))
+}
+
+function getObjectiveActiveRules(units, predicate) {
+  const unitList = (Array.isArray(units) ? units : [units]).filter(Boolean)
+  const seenAbilityNames = new Set()
+  return unitList.flatMap((unit) => [
+    ...(unit.abilities || []).map((ability) => ({ ability, fallback: 'Datasheet Ability', unitName: unit.name })),
+    ...(unit.wargear_abilities || []).map((ability) => ({ ability, fallback: 'Wargear Ability', unitName: unit.name })),
+    ...(unit.selectable_abilities || []).map((ability) => ({ ability, fallback: 'Selectable Ability', unitName: unit.name })),
+  ])
+    .filter(({ ability }) => predicate(`${ability.name || ''} ${ability.rules_text || ''}`.toLowerCase()))
     .filter(({ ability }) => {
       const normalizedName = String(ability.name || '').toLowerCase()
       if (seenAbilityNames.has(normalizedName)) {
@@ -3794,6 +3854,7 @@ function buildAttackerActiveRules({
   plungingFireActive,
   attackerInEngagementRange,
   targetInEngagementRangeOfAllies,
+  defenderOnObjective,
   hasHazardous,
 }) {
   const rules = [
@@ -4159,6 +4220,18 @@ function buildAttackerActiveRules({
     })
   }
 
+  if (defenderOnObjective) {
+    rules.push(...getObjectiveActiveRules(
+      [
+        attackerUnitDetails,
+        attackerAttachedLeaderUnitDetails,
+        attackerUnitDetails?.attached_leader,
+        attackerUnitDetails?.attached_support,
+      ],
+      (text) => text.includes('target') && text.includes('objective'),
+    ))
+  }
+
   return rules
 }
 
@@ -4174,6 +4247,7 @@ function buildDefenderActiveRules({
   targetHasCover,
   indirectTargetVisible,
   attackerFireDisciplineActive,
+  defenderOnObjective,
 }) {
   const rules = [
     ...getRelevantUnitRules(defenderUnitDetails, 'defender', false),
@@ -4221,6 +4295,21 @@ function buildDefenderActiveRules({
         text: enhancement.rules_text,
       })
     }
+  }
+
+  if (defenderOnObjective) {
+    rules.push(...getObjectiveActiveRules(
+      defenderUnitDetails,
+      (text) => (
+        text.includes('objective')
+        && (
+          text.includes('while this')
+          || text.includes('while the bearer')
+          || text.includes('this model is within range of an objective')
+          || text.includes('while that unit')
+        )
+      ),
+    ))
   }
 
   if (defenderEnhancementName === 'Fenrisian Grit') {
@@ -4665,6 +4754,8 @@ function App() {
   const [targetHasCover, setTargetHasCover] = useState(initialOptions.target_has_cover)
   const [attackerInEngagementRange, setAttackerInEngagementRange] = useState(initialOptions.attacker_in_engagement_range)
   const [targetInEngagementRangeOfAllies, setTargetInEngagementRangeOfAllies] = useState(initialOptions.target_in_engagement_range_of_allies)
+  const [attackerOnObjective, setAttackerOnObjective] = useState(initialOptions.attacker_on_objective)
+  const [defenderOnObjective, setDefenderOnObjective] = useState(initialOptions.defender_on_objective)
   const [inHalfRange, setInHalfRange] = useState(initialOptions.in_half_range)
   const [attackerActiveAbilityNames, setAttackerActiveAbilityNames] = useState([])
   const [defenderActiveAbilityNames, setDefenderActiveAbilityNames] = useState([])
@@ -5954,6 +6045,23 @@ function App() {
   const canUseTargetBelowHalfStrength = attackerEnhancementName === "'Eadstompa"
   const canUseAttackerCountsAsTenPlus = selectedAttackerDetachment?.name === GREEN_TIDE && attackerPackageModelCount < 10
   const canUseDefenderCountsAsTenPlus = selectedDefenderDetachment?.name === GREEN_TIDE && defenderPackageModelCount < 10
+  const attackerObjectiveRuleUnits = [
+    attackerUnitDetails,
+    attackerAttachedLeaderUnitDetails,
+    attackerUnitDetails?.attached_leader,
+    attackerUnitDetails?.attached_support,
+  ]
+  const defenderObjectiveRuleUnits = [
+    defenderUnitDetails,
+    attachedCharacterUnitDetails,
+    defenderUnitDetails?.attached_leader,
+    defenderUnitDetails?.attached_support,
+  ]
+  const canUseAttackerOnObjective = unitListHasObjectiveSelfRule(attackerObjectiveRuleUnits)
+  const canUseDefenderOnObjective = (
+    unitListHasObjectiveSelfRule(defenderObjectiveRuleUnits)
+    || unitListHasTargetObjectiveRule(attackerObjectiveRuleUnits)
+  )
   const canUseTryDatButton = selectedAttackerDetachment?.name === DREAD_MOB && (
     unitHasKeyword(attackerUnitDetails, 'mek')
     || unitHasKeyword(attackerUnitDetails, 'walker')
@@ -6459,6 +6567,7 @@ function App() {
       plungingFireActive,
       attackerInEngagementRange,
       targetInEngagementRangeOfAllies,
+      defenderOnObjective,
       hasHazardous,
     }),
     [
@@ -6495,6 +6604,7 @@ function App() {
       plungingFireActive,
       attackerInEngagementRange,
       targetInEngagementRangeOfAllies,
+      defenderOnObjective,
       hasHazardous,
     ],
   )
@@ -6511,6 +6621,7 @@ function App() {
       targetHasCover,
       indirectTargetVisible,
       attackerFireDisciplineActive,
+      defenderOnObjective,
     }),
     [
       defenderUnitDetails,
@@ -6524,6 +6635,7 @@ function App() {
       targetHasCover,
       indirectTargetVisible,
       attackerFireDisciplineActive,
+      defenderOnObjective,
     ],
   )
   const summaryStats = useMemo(() => buildRunSummary(simulationRuns), [simulationRuns])
@@ -6623,6 +6735,7 @@ function App() {
       </>
     )
   }
+
   const turnSequence = turnStructure.turn_sequence?.length ? turnStructure.turn_sequence : DEFAULT_TURN_STRUCTURE
   const activeTurnPhaseIndex = Math.max(
     0,
@@ -7776,6 +7889,18 @@ function App() {
   }, [canUseCover, targetHasCover])
 
   useEffect(() => {
+    if (!canUseAttackerOnObjective && attackerOnObjective) {
+      setAttackerOnObjective(false)
+    }
+  }, [attackerOnObjective, canUseAttackerOnObjective])
+
+  useEffect(() => {
+    if (!canUseDefenderOnObjective && defenderOnObjective) {
+      setDefenderOnObjective(false)
+    }
+  }, [canUseDefenderOnObjective, defenderOnObjective])
+
+  useEffect(() => {
     const nextModule = activeTurnPhase?.available_actions?.[0] || ''
     setSelectedTurnModuleId((current) => (
       activeTurnPhase?.available_actions?.includes(current) ? current : nextModule
@@ -8911,6 +9036,8 @@ function App() {
       targetHasCover,
       attackerInEngagementRange,
       targetInEngagementRangeOfAllies,
+      attackerOnObjective,
+      defenderOnObjective,
       targetEngagedMonsterVehicle: targetInEngagementRangeOfAllies && unitIsMonsterOrVehicle(defenderUnitDetails),
       inHalfRange,
       oathOfMomentActive,
@@ -10912,6 +11039,8 @@ function App() {
     setTargetHasCover(initialOptions.target_has_cover)
     setAttackerInEngagementRange(initialOptions.attacker_in_engagement_range)
     setTargetInEngagementRangeOfAllies(initialOptions.target_in_engagement_range_of_allies)
+    setAttackerOnObjective(initialOptions.attacker_on_objective)
+    setDefenderOnObjective(initialOptions.defender_on_objective)
     setInHalfRange(initialOptions.in_half_range)
     setAttackerActiveAbilityNames([])
     setBattlefieldActiveAbilityNames([])
@@ -11660,6 +11789,28 @@ function App() {
                     onChange={(event) => setTargetBelowHalfStrength(event.target.checked)}
                   />
                   <span>Defender is Below Half-strength</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerOnObjective ? (
+                <label className="checkbox-row combat-option-attacker" title="Use when the attacking unit has a rule that changes while it is within range of an objective marker.">
+                  <input
+                    type="checkbox"
+                    checked={attackerOnObjective}
+                    onChange={(event) => setAttackerOnObjective(event.target.checked)}
+                  />
+                  <span>Attacker is on an objective marker</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderOnObjective ? (
+                <label className="checkbox-row combat-option-defender" title="Use when the defending unit has an objective rule, or the attacker has a rule that changes when targeting a unit on an objective marker.">
+                  <input
+                    type="checkbox"
+                    checked={defenderOnObjective}
+                    onChange={(event) => setDefenderOnObjective(event.target.checked)}
+                  />
+                  <span>Defender is on an objective marker</span>
                 </label>
               ) : null}
 
