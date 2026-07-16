@@ -60,6 +60,7 @@ class SimulationOptions(BaseModel):
     attacker_hordeslayer_outnumbered: bool = False
     attacker_heroes_all_reroll_type: str | None = None
     attacker_active_ability_names: list[str] = Field(default_factory=list)
+    defender_active_ability_names: list[str] = Field(default_factory=list)
     attacker_unbridled_ferocity_active: bool = False
     attacker_waaagh_active: bool = False
     defender_waaagh_active: bool = False
@@ -430,6 +431,18 @@ def unit_has_keyword(unit: dict[str, object], keyword: str) -> bool:
     return any(str(item).lower() == keyword_lower for item in unit.get("keywords", []))
 
 
+def collect_unit_ability_names(unit: dict[str, Any] | None) -> list[str]:
+    if unit is None:
+        return []
+    ability_names: list[str] = []
+    for ability_group in ("abilities", "wargear_abilities", "selectable_abilities"):
+        for ability in unit.get(ability_group, []) or []:
+            name = str(ability.get("name", "")).strip()
+            if name:
+                ability_names.append(name)
+    return ability_names
+
+
 def apply_attached_unit_keywords(bodyguard_unit: dict[str, Any], leader_unit: dict[str, Any] | None) -> None:
     if leader_unit is None:
         return
@@ -651,6 +664,7 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ],
+    allow_origin_regex=r"^http://(localhost|127\.0\.0\.1):51\d{2}$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1175,6 +1189,7 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
         ),
         "attacker_primary_unit_name": attacker_unit["name"],
         "attacker_has_attached_character": attacker_attached_character_unit is not None,
+        "attacker_attached_ability_names": collect_unit_ability_names(attacker_attached_character_unit),
         "attacker_package_model_count": (
             int(attacker_unit.get("models", 0))
             + int(attacker_attached_character_unit.get("models", 0))

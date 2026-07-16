@@ -91,6 +91,30 @@ const UNFORGIVEN_TASK_FORCE = 'Unforgiven Task Force'
 const SAGA_OF_THE_HUNTER = 'Saga of the Hunter'
 const SAGA_OF_THE_BEASTSLAYER = 'Saga of the Beastslayer'
 const SAGA_OF_THE_BOLD = 'Saga of the Bold'
+const SAGA_DETACHMENT_NAMES = [SAGA_OF_THE_HUNTER, SAGA_OF_THE_BEASTSLAYER, SAGA_OF_THE_BOLD]
+const BATTLEFIELD_SIDES = ['attacker', 'defender']
+const BOLD_BOASTS = [
+  {
+    id: 'hide_as_a_trophy',
+    name: 'Your Hide as a Trophy',
+    description: 'A Space Wolves Character unit destroys your Oath of Moment target.',
+  },
+  {
+    id: 'slay_them_all',
+    name: 'Slay Them All',
+    description: 'A Space Wolves Character unit destroys its second Oath of Moment target this battle.',
+  },
+  {
+    id: 'overrun_their_position',
+    name: 'Overrun Their Position',
+    description: 'At the end of either player turn, a Space Wolves Character unit is wholly within the opponent deployment zone.',
+  },
+  {
+    id: 'hold_the_line',
+    name: 'Hold the Line',
+    description: 'From battle round 2 onwards, at the end of your Command phase, a Space Wolves Character unit is on a controlled objective outside your deployment zone.',
+  },
+]
 const WAR_HORDE = 'War Horde'
 const DA_BIG_HUNT = 'Da Big Hunt'
 const KULT_OF_SPEED = 'Kult of Speed'
@@ -1208,6 +1232,7 @@ function buildSimulationPayload(state) {
     attacker_hordeslayer_outnumbered: state.attackerHordeslayerOutnumbered,
     attacker_heroes_all_reroll_type: state.attackerHeroesAllRerollType || null,
     attacker_active_ability_names: state.attackerActiveAbilityNames || [],
+    defender_active_ability_names: state.defenderActiveAbilityNames || [],
     attacker_unbridled_ferocity_active: state.attackerUnbridledFerocityActive,
     attacker_waaagh_active: state.attackerWaaaghActive,
     defender_waaagh_active: state.defenderWaaaghActive,
@@ -3407,6 +3432,63 @@ function sumBy(items, selector) {
   return items.reduce((total, item) => total + selector(item), 0)
 }
 
+function createBattleAchievementSideState() {
+  return {
+    sagaCompleted: false,
+    hunterTally: 0,
+    beastslayerTally: 0,
+    boldBoasts: Object.fromEntries(BOLD_BOASTS.map((boast) => [boast.id, false])),
+    suggestions: [],
+  }
+}
+
+function createBattleAchievementState() {
+  return Object.fromEntries(BATTLEFIELD_SIDES.map((side) => [side, createBattleAchievementSideState()]))
+}
+
+function countCompletedBoldBoasts(sideState) {
+  return Object.values(sideState?.boldBoasts || {}).filter(Boolean).length
+}
+
+function sideLabel(side) {
+  return side === 'attacker' ? 'Attacker' : 'Defender'
+}
+
+function unitMatchesAnyKeyword(unit, keywords) {
+  const keywordSet = new Set([
+    ...(unit?.keywords || []),
+    ...(unit?.faction_keywords || []),
+  ].map((keyword) => String(keyword).toLowerCase()))
+  return keywords.some((keyword) => keywordSet.has(String(keyword).toLowerCase()))
+}
+
+function buildMortalDamageSourceSummary(combatStats) {
+  const sourceTotals = new Map()
+  combatStats.forEach((stat) => {
+    Object.entries(stat.mortal_damage_sources || {}).forEach(([source, damage]) => {
+      const normalizedSource = source || 'Mortal wounds'
+      sourceTotals.set(normalizedSource, (sourceTotals.get(normalizedSource) || 0) + Number(damage || 0))
+    })
+  })
+  return Array.from(sourceTotals.entries())
+    .filter(([, damage]) => damage > 0)
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .map(([source, damage]) => ({ source, damage }))
+}
+
+function getRunTargetModelsDestroyed(run) {
+  const target = run?.result?.target || {}
+  if (Number.isFinite(Number(target.models_destroyed))) {
+    return Math.max(0, Number(target.models_destroyed))
+  }
+  const startingModels = Number(target.starting_models ?? run?.request?.defender_model_count)
+  const modelsRemaining = Number(target.models_remaining)
+  if (Number.isFinite(startingModels) && Number.isFinite(modelsRemaining)) {
+    return Math.max(0, startingModels - modelsRemaining)
+  }
+  return 0
+}
+
 function buildRunSummary(runs) {
   const totalRuns = runs.length
   const targets = runs.map((run) => run.result.target)
@@ -3419,11 +3501,16 @@ function buildRunSummary(runs) {
   ))
   const successfulHitAttacks = sumBy(combatStats, (stat) => stat.successful_hit_attacks || 0)
   const extraHitsGenerated = sumBy(combatStats, (stat) => stat.extra_hits_generated || 0)
+  const sustainedHitsGenerated = sumBy(combatStats, (stat) => stat.sustained_hits_generated || 0)
   const successfulWoundRolls = sumBy(combatStats, (stat) => stat.successful_wound_rolls || 0)
   const autoWounds = sumBy(combatStats, (stat) => stat.auto_wounds || 0)
   const explicitHitPool = sumBy(combatStats, (stat) => stat.hit_pool || 0)
   const explicitWoundPool = sumBy(combatStats, (stat) => stat.wound_pool || 0)
   const damagePool = sumBy(combatStats, (stat) => stat.damage_pool || 0)
+  const mortalDamage = sumBy(combatStats, (stat) => stat.mortal_damage || 0)
+  const devastatingDamage = sumBy(combatStats, (stat) => stat.devastating_damage || 0)
+  const feelNoPainDamagePrevented = sumBy(combatStats, (stat) => stat.feel_no_pain_damage_prevented || 0)
+  const targetModelsDestroyed = sumBy(runs, getRunTargetModelsDestroyed)
   const attachedCharacters = runs
     .map((run) => run.result.attached_character)
     .filter(Boolean)
@@ -3434,6 +3521,7 @@ function buildRunSummary(runs) {
   return {
     totalRuns,
     targetDestroyedCount: targets.filter((item) => item.destroyed).length,
+    targetModelsDestroyed,
     averageTargetModelsRemaining: average(targets.map((item) => item.models_remaining)),
     averageTargetCurrentWounds: average(targets.map((item) => item.current_model_wounds)),
     attachedCharacterRuns: attachedCharacters.length,
@@ -3454,6 +3542,9 @@ function buildRunSummary(runs) {
       failedHitAttacks: sumBy(combatStats, (stat) => stat.failed_hit_attacks || 0),
       criticalHitAttacks: sumBy(combatStats, (stat) => stat.critical_hit_attacks || 0),
       extraHitsGenerated,
+      sustainedHitsGenerated,
+      lethalHitsTriggered: sumBy(combatStats, (stat) => stat.lethal_hits_triggered || 0),
+      torrentHits: sumBy(combatStats, (stat) => stat.torrent_hits || 0),
       hitRerollsUsed: sumBy(combatStats, (stat) => stat.hit_rerolls_used || 0),
       hitRerollSuccesses: sumBy(combatStats, (stat) => stat.hit_reroll_successes || 0),
       woundRolls: sumBy(combatStats, (stat) => stat.wound_rolls || 0),
@@ -3462,13 +3553,24 @@ function buildRunSummary(runs) {
       woundPool: explicitWoundPool || successfulWoundRolls + autoWounds,
       failedWoundRolls: sumBy(combatStats, (stat) => stat.failed_wound_rolls || 0),
       criticalWounds: sumBy(combatStats, (stat) => stat.critical_wounds || 0),
+      devastatingWoundsTriggered: sumBy(combatStats, (stat) => stat.devastating_wounds_triggered || 0),
       woundRerollsUsed: sumBy(combatStats, (stat) => stat.wound_rerolls_used || 0),
       woundRerollSuccesses: sumBy(combatStats, (stat) => stat.wound_reroll_successes || 0),
+      damageRerollsUsed: sumBy(combatStats, (stat) => stat.damage_rerolls_used || 0),
+      damageRerollImprovements: sumBy(combatStats, (stat) => stat.damage_reroll_improvements || 0),
       saveAttempts: sumBy(combatStats, (stat) => stat.save_attempts || 0),
       savesPassed: sumBy(combatStats, (stat) => stat.saves_passed || 0),
       savesFailed: sumBy(combatStats, (stat) => stat.saves_failed || 0),
       unsavableWounds: sumBy(combatStats, (stat) => stat.unsavable_wounds || 0),
       damagePool,
+      devastatingDamage,
+      mortalDamage,
+      normalDamage: Math.max(0, damagePool - mortalDamage),
+      mortalDamageSources: buildMortalDamageSourceSummary(combatStats),
+      feelNoPainRolls: sumBy(combatStats, (stat) => stat.feel_no_pain_rolls || 0),
+      feelNoPainSuccesses: sumBy(combatStats, (stat) => stat.feel_no_pain_successes || 0),
+      feelNoPainDamagePrevented,
+      damageAfterFeelNoPain: Math.max(0, damagePool - feelNoPainDamagePrevented),
     },
   }
 }
@@ -3496,12 +3598,20 @@ function selectedWeaponsIncludeProfileGroup(selectedWeapons, profileGroupName) {
   return selectedWeapons.some((weapon) => getWeaponProfileGroupName(weapon) === profileGroupName)
 }
 
-const SUPPORTED_COMBAT_TRIGGER_ABILITIES = {
+const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'hail of bullets': ({ phaseId, selectedWeapons }) => (
     phaseId === 'shooting' && selectedWeaponsIncludeProfileGroup(selectedWeapons, 'bolt rifle')
   ),
-  'finest hour': ({ phaseId, selectedWeapons }) => (
-    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  'finest hour': ({ phaseId, selectedWeapons, selectedEntries, unit }) => (
+    phaseId === 'fight'
+    && (
+      selectedEntries?.length
+        ? selectedEntries.some((entry) => (
+          entry.ownerName === unit?.name
+          && entry.weapon?.range === 'Melee'
+        ))
+        : selectedWeapons.some((weapon) => weapon.range === 'Melee')
+    )
   ),
   'exhortation of rage': ({ phaseId, selectedWeapons }) => (
     phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
@@ -3517,46 +3627,142 @@ const SUPPORTED_COMBAT_TRIGGER_ABILITIES = {
     && waaaghActive
     && selectedWeapons.some((weapon) => weapon.range === 'Melee')
   ),
-  'vanguard assault': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
-    phaseId === 'fight'
-    && chargedThisTurn
-    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
-  ),
+  'headhunters': ({ selectedWeapons }) => selectedWeapons.length > 0,
 }
 
-function getCombatTriggerAbilities(unit, phaseId, selectedWeapons = [], context = {}) {
-  if (!unit || !['shooting', 'fight'].includes(phaseId)) {
+const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
+  'battle-lust',
+  'champion of the kingsguard',
+  'cunning hunters',
+  "dok's sawy arrgh",
+  'litany of hate',
+  'might is right',
+  'oathbound',
+  'prophet of da great waaagh!',
+  'tempered ferocity',
+  "the emperor's shield",
+  'thunderous charge',
+  'vanguard assault',
+  'violent fury',
+  'waaagh! energy',
+  'war howl',
+])
+
+const CHARGE_DEPENDENT_COMBAT_ABILITIES = new Set([
+  'battle-lust',
+  'thunderous charge',
+  'vanguard assault',
+])
+
+function unitListHasAnyAbility(units, abilityNames) {
+  const unitList = (Array.isArray(units) ? units : [units]).filter(Boolean)
+  return unitList.some((unit) => [
+    ...(unit.abilities || []),
+    ...(unit.wargear_abilities || []),
+    ...(unit.selectable_abilities || []),
+  ].some((ability) => {
+    const normalizedName = String(ability.name || '').toLowerCase()
+    return Array.from(abilityNames).some((abilityName) => normalizedName.includes(abilityName))
+  }))
+}
+
+function canUseChargedThisTurnOption({
+  units,
+  selectedWeapons = [],
+  selectedEntries = null,
+  attackerEnhancementName = '',
+}) {
+  const hasSelectedMeleeWeapon = selectedEntries?.length
+    ? selectedEntries.some((entry) => entry.weapon?.range === 'Melee')
+    : selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  if (!hasSelectedMeleeWeapon) {
+    return false
+  }
+  return (
+    selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Lance'))
+    || unitListHasAnyAbility(units, CHARGE_DEPENDENT_COMBAT_ABILITIES)
+    || attackerEnhancementName === 'Feral Rage'
+  )
+}
+
+function getPassiveCombatAbilityRules(units) {
+  const unitList = (Array.isArray(units) ? units : [units]).filter(Boolean)
+  const seenAbilityNames = new Set()
+  return unitList.flatMap((unit) => [
+    ...(unit.abilities || []).map((ability) => ({ ability, fallback: 'Datasheet Ability', unitName: unit.name })),
+    ...(unit.wargear_abilities || []).map((ability) => ({ ability, fallback: 'Wargear Ability', unitName: unit.name })),
+    ...(unit.selectable_abilities || []).map((ability) => ({ ability, fallback: 'Selectable Ability', unitName: unit.name })),
+  ])
+    .filter(({ ability }) => {
+      const normalizedName = String(ability.name || '').toLowerCase()
+      return Array.from(SUPPORTED_PASSIVE_COMBAT_ABILITIES).some((supportedName) => normalizedName.includes(supportedName))
+    })
+    .filter(({ ability }) => {
+      const normalizedName = String(ability.name || '').toLowerCase()
+      if (seenAbilityNames.has(normalizedName)) {
+        return false
+      }
+      seenAbilityNames.add(normalizedName)
+      return true
+    })
+    .map(({ ability, fallback, unitName }) => ({
+      name: ability.name,
+      source: unitName ? `${unitName} ${getAbilitySourceLabel(ability, fallback)}` : getAbilitySourceLabel(ability, fallback),
+      text: ability.rules_text,
+    }))
+}
+
+function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], context = {}) {
+  const unitList = (Array.isArray(units) ? units : [units]).filter(Boolean)
+  if (!unitList.length || !['shooting', 'fight'].includes(phaseId)) {
     return []
   }
 
-  const { targetUnit = null, waaaghActive = false, chargedThisTurn = false } = context
-  const collections = [
-    ...(unit.abilities || []).map((ability) => ({ ability, fallback: 'Datasheet Ability' })),
-    ...(unit.wargear_abilities || []).map((ability) => ({ ability, fallback: 'Wargear Ability' })),
-    ...(unit.selectable_abilities || []).map((ability) => ({ ability, fallback: 'Selectable Ability' })),
-  ]
+  const {
+    targetUnit = null,
+    waaaghActive = false,
+    chargedThisTurn = false,
+    selectedEntries = null,
+  } = context
+  const collections = unitList.flatMap((unit) => [
+    ...(unit.abilities || []).map((ability) => ({ ability, fallback: 'Datasheet Ability', unitName: unit.name, unit })),
+    ...(unit.wargear_abilities || []).map((ability) => ({ ability, fallback: 'Wargear Ability', unitName: unit.name, unit })),
+    ...(unit.selectable_abilities || []).map((ability) => ({ ability, fallback: 'Selectable Ability', unitName: unit.name, unit })),
+  ])
+  const seenAbilityNames = new Set()
 
   return collections
-    .filter(({ ability }) => {
+    .filter(({ ability, unit }) => {
       const name = String(ability.name || '').toLowerCase()
-      const isSupported = SUPPORTED_COMBAT_TRIGGER_ABILITIES[name]
+      const isSupported = SUPPORTED_COMBAT_ACTIVATED_ABILITIES[name]
       return Boolean(isSupported?.({
+        unit,
         phaseId,
         selectedWeapons,
+        selectedEntries,
         targetUnit,
         waaaghActive,
         chargedThisTurn,
       }))
     })
-    .map(({ ability, fallback }) => ({
+    .filter(({ ability }) => {
+      const normalizedName = String(ability.name || '').toLowerCase()
+      if (seenAbilityNames.has(normalizedName)) {
+        return false
+      }
+      seenAbilityNames.add(normalizedName)
+      return true
+    })
+    .map(({ ability, fallback, unitName }) => ({
       name: ability.name,
-      source: getAbilitySourceLabel(ability, fallback),
+      source: unitName ? `${unitName} ${getAbilitySourceLabel(ability, fallback)}` : getAbilitySourceLabel(ability, fallback),
       text: ability.rules_text,
     }))
 }
 
 function buildAttackerActiveRules({
   attackerUnitDetails,
+  attackerAttachedLeaderUnitDetails,
   attackerPackageIsCharacterUnit,
   attackerPackageModelCount,
   defenderPackageModelCount,
@@ -3592,10 +3798,17 @@ function buildAttackerActiveRules({
 }) {
   const rules = [
     ...getRelevantUnitRules(attackerUnitDetails, 'attacker', hasHazardous),
+    ...getPassiveCombatAbilityRules([attackerUnitDetails, attackerAttachedLeaderUnitDetails]),
+    ...getPassiveCombatAbilityRules(defenderUnitDetails),
   ]
   const activeAbilityNameSet = new Set((attackerActiveAbilityNames || []).map((name) => String(name).toLowerCase()))
-  getCombatTriggerAbilities(
-    attackerUnitDetails,
+  getCombatActivatedAbilities(
+    [
+      attackerUnitDetails,
+      attackerAttachedLeaderUnitDetails,
+      attackerUnitDetails?.attached_leader,
+      attackerUnitDetails?.attached_support,
+    ],
     selectedAttackWeapons.some((weapon) => weapon.range !== 'Melee') ? 'shooting' : 'fight',
     selectedAttackWeapons,
     {
@@ -4285,6 +4498,7 @@ function App() {
   const [gameStepDetailsExpanded, setGameStepDetailsExpanded] = useState(false)
   const [completedGameStepKeys, setCompletedGameStepKeys] = useState({})
   const [gameLogEntries, setGameLogEntries] = useState([])
+  const [battleAchievements, setBattleAchievements] = useState(createBattleAchievementState)
   const [battlefieldWaaaghBattleRounds, setBattlefieldWaaaghBattleRounds] = useState({
     attacker: null,
     defender: null,
@@ -4420,6 +4634,7 @@ function App() {
   const battlefieldDragStateRef = useRef({})
   const battlefieldPointerFrameRef = useRef(0)
   const battlefieldPendingPointerRef = useRef(null)
+  const removeSelectedBattlefieldUnitInstanceRef = useRef(null)
 
   const [attackerFaction, setAttackerFaction] = useState('')
   const [attackerUnit, setAttackerUnit] = useState('')
@@ -4452,6 +4667,7 @@ function App() {
   const [targetInEngagementRangeOfAllies, setTargetInEngagementRangeOfAllies] = useState(initialOptions.target_in_engagement_range_of_allies)
   const [inHalfRange, setInHalfRange] = useState(initialOptions.in_half_range)
   const [attackerActiveAbilityNames, setAttackerActiveAbilityNames] = useState([])
+  const [defenderActiveAbilityNames, setDefenderActiveAbilityNames] = useState([])
   const [battlefieldActiveAbilityNames, setBattlefieldActiveAbilityNames] = useState([])
   const [oathOfMomentActive, setOathOfMomentActive] = useState(initialOptions.oath_of_moment_active)
   const [chargedThisTurn, setChargedThisTurn] = useState(initialOptions.charged_this_turn)
@@ -5385,18 +5601,69 @@ function App() {
     [selectedAttackWeapons, selectedCombatWeaponOptions],
   )
   const selectedCombatPhaseId = selectedAttackWeapons.some((weapon) => weapon.range !== 'Melee') ? 'shooting' : 'fight'
-  const attackerCombatTriggerAbilityOptions = useMemo(
-    () => getCombatTriggerAbilities(attackerUnitDetails, selectedCombatPhaseId, selectedAttackWeapons, {
+  const defenderCombatWeaponOptions = useMemo(
+    () => getCombatWeaponOptions(
+      defenderUnitDetails,
+      attachedCharacterUnitDetails,
+      getResolvedLoadoutSelections(defenderUnitDetails, defenderLoadoutSelections),
+      getResolvedLoadoutSelections(attachedCharacterUnitDetails, attachedCharacterLoadoutSelections),
+    ),
+    [
+      attachedCharacterLoadoutSelections,
+      attachedCharacterUnitDetails,
+      defenderLoadoutSelections,
+      defenderUnitDetails,
+    ],
+  )
+  const defenderTriggerWeapons = useMemo(
+    () => defenderCombatWeaponOptions.filter((weapon) => (
+      selectedCombatPhaseId === 'fight'
+        ? weapon.range === 'Melee'
+        : weapon.range !== 'Melee'
+    )),
+    [defenderCombatWeaponOptions, selectedCombatPhaseId],
+  )
+  const attackerCombatActivatedAbilityOptions = useMemo(
+    () => getCombatActivatedAbilities([attackerUnitDetails, attackerAttachedLeaderUnitDetails], selectedCombatPhaseId, selectedAttackWeapons, {
       targetUnit: defenderUnitDetails,
       waaaghActive: attackerWaaaghActive,
       chargedThisTurn,
+      selectedEntries: selectedAttackEntries,
     }),
-    [attackerUnitDetails, attackerWaaaghActive, chargedThisTurn, defenderUnitDetails, selectedAttackWeapons, selectedCombatPhaseId],
+    [
+      attackerAttachedLeaderUnitDetails,
+      attackerUnitDetails,
+      attackerWaaaghActive,
+      chargedThisTurn,
+      defenderUnitDetails,
+      selectedAttackWeapons,
+      selectedAttackEntries,
+      selectedCombatPhaseId,
+    ],
+  )
+  const defenderCombatActivatedAbilityOptions = useMemo(
+    () => getCombatActivatedAbilities([defenderUnitDetails, attachedCharacterUnitDetails], selectedCombatPhaseId, defenderTriggerWeapons, {
+      targetUnit: attackerUnitDetails,
+      waaaghActive: defenderWaaaghActive,
+      chargedThisTurn: false,
+    }),
+    [
+      attachedCharacterUnitDetails,
+      attackerUnitDetails,
+      defenderTriggerWeapons,
+      defenderUnitDetails,
+      defenderWaaaghActive,
+      selectedCombatPhaseId,
+    ],
   )
   useEffect(() => {
-    const availableAbilityNames = new Set(attackerCombatTriggerAbilityOptions.map((ability) => ability.name))
+    const availableAbilityNames = new Set(attackerCombatActivatedAbilityOptions.map((ability) => ability.name))
     setAttackerActiveAbilityNames((currentNames) => currentNames.filter((name) => availableAbilityNames.has(name)))
-  }, [attackerCombatTriggerAbilityOptions])
+  }, [attackerCombatActivatedAbilityOptions])
+  useEffect(() => {
+    const availableAbilityNames = new Set(defenderCombatActivatedAbilityOptions.map((ability) => ability.name))
+    setDefenderActiveAbilityNames((currentNames) => currentNames.filter((name) => availableAbilityNames.has(name)))
+  }, [defenderCombatActivatedAbilityOptions])
   const attackerPackageIsCharacterUnit = unitHasKeyword(attackerUnitDetails, 'character') || unitHasKeyword(attackerAttachedLeaderUnitDetails, 'character')
   const attackerPackageModelCount = Number(attackerUnitDetails?.model_count ?? 0) + Number(attackerAttachedLeaderUnitDetails?.model_count ?? 0)
   const defenderPackageModelCount = Number(defenderUnitDetails?.model_count ?? 0) + Number(attachedCharacterUnitDetails?.model_count ?? 0)
@@ -5422,7 +5689,12 @@ function App() {
   const hasIndirectFire = selectedAttackWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Indirect Fire'))
   const hasHazardous = selectedAttackWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Hazardous'))
   const canUsePrecision = selectedAttackWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Precision'))
-  const canUseLance = selectedAttackWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Lance'))
+  const canUseChargedThisTurn = canUseChargedThisTurnOption({
+    units: [attackerUnitDetails, attackerAttachedLeaderUnitDetails],
+    selectedWeapons: selectedAttackWeapons,
+    selectedEntries: selectedAttackEntries,
+    attackerEnhancementName,
+  })
 
   useEffect(() => {
     if (!combatWeaponOptions.length) {
@@ -5690,8 +5962,9 @@ function App() {
       && (unitHasKeyword(attackerUnitDetails, 'gretchin') || unitHasKeyword(attackerUnitDetails, 'grots'))
     )
   )
-  const canUseSagaCompleted = [SAGA_OF_THE_HUNTER, SAGA_OF_THE_BEASTSLAYER, SAGA_OF_THE_BOLD].includes(selectedAttackerDetachment?.name || '')
-  const canUseHeroesAllRerollType = selectedAttackerDetachment?.name === SAGA_OF_THE_BOLD && !attackerSagaCompleted && attackerPackageIsCharacterUnit
+  const effectiveAttackerSagaCompleted = attackerSagaCompleted || Boolean(battleAchievements.attacker?.sagaCompleted)
+  const canUseSagaCompleted = SAGA_DETACHMENT_NAMES.includes(selectedAttackerDetachment?.name || '')
+  const canUseHeroesAllRerollType = selectedAttackerDetachment?.name === SAGA_OF_THE_BOLD && !effectiveAttackerSagaCompleted && attackerPackageIsCharacterUnit
   const canUseEldersGuidance = attackerEnhancementName === "Elder's Guidance" && isMeleeWeapon && attackerUnitDetails?.name === 'Blood Claws'
   const canUseBoastAchieved = attackerEnhancementName === "Braggart's Steel" || attackerEnhancementName === 'Hordeslayer'
   const canUseHordeslayerOutnumbered = attackerEnhancementName === 'Hordeslayer'
@@ -6090,7 +6363,7 @@ function App() {
     canUsePrecision,
   ])
   const indirectTooltip = 'Indirect Fire: if no defender models are visible, the attack takes -1 to Hit, hit rolls of 1-3 always fail, and the defender gets the benefit of cover.'
-  const lanceTooltip = 'Lance: if the bearer made a charge move this turn, add 1 to the Wound roll for this attack.'
+  const chargedThisTurnTooltip = 'Set when the attacker made a charge move this turn. Enables Lance and supported charge-dependent abilities or enhancements.'
   const attackerArmyBattleshockTooltip = 'Unforgiven Fury: if one or more Adeptus Astartes units from your army are Battle-shocked, successful unmodified Hit rolls of 5+ score a Critical Hit until the end of the phase.'
   const attackerBelowStartingStrengthTooltip = attackerEnhancementTooltip
   const attackerBattleshockedTooltip = buildTooltip(
@@ -6154,6 +6427,7 @@ function App() {
   const attackerActiveRules = useMemo(
     () => buildAttackerActiveRules({
       attackerUnitDetails,
+      attackerAttachedLeaderUnitDetails,
       attackerPackageIsCharacterUnit,
       attackerPackageModelCount,
       defenderPackageModelCount,
@@ -6163,7 +6437,7 @@ function App() {
       oathOfMomentActive,
       attackerDetachment: selectedAttackerDetachment,
       attackerEnhancementName,
-      attackerSagaCompleted,
+      attackerSagaCompleted: effectiveAttackerSagaCompleted,
       attackerEldersGuidanceActive,
       attackerBoastAchieved,
       attackerHordeslayerOutnumbered,
@@ -6189,6 +6463,7 @@ function App() {
     }),
     [
       attackerUnitDetails,
+      attackerAttachedLeaderUnitDetails,
       attackerPackageIsCharacterUnit,
       attackerPackageModelCount,
       defenderPackageModelCount,
@@ -6198,7 +6473,7 @@ function App() {
       oathOfMomentActive,
       selectedAttackerDetachment,
       attackerEnhancementName,
-      attackerSagaCompleted,
+      effectiveAttackerSagaCompleted,
       attackerEldersGuidanceActive,
       attackerBoastAchieved,
       attackerHordeslayerOutnumbered,
@@ -6258,6 +6533,96 @@ function App() {
     }
     return simulationRuns.find((run) => run.runIndex === activeRunView) || null
   }, [activeRunView, simulationRuns])
+  const activeRunSummaryStats = useMemo(() => (
+    activeRun ? buildRunSummary([activeRun]) : null
+  ), [activeRun])
+
+  function renderCombatBreakdownCards(stats, damageFallback = 0) {
+    return (
+      <>
+        <article className="result-card">
+          <p className="kicker">Hit Breakdown</p>
+          <h3>Accuracy</h3>
+          <p>Attack instances: {stats.combat.attackInstances}</p>
+          <p>Hits landed: {stats.combat.hitPool} ({formatPercent(stats.combat.hitPool, stats.combat.attackInstances)})</p>
+          {stats.combat.autoHitAttacks > 0 ? (
+            <p>Auto-hits: {stats.combat.autoHitAttacks}</p>
+          ) : null}
+          {stats.combat.torrentHits > 0 ? (
+            <p>Torrent: {stats.combat.torrentHits} auto-hits</p>
+          ) : null}
+          <p>Critical hits: {stats.combat.criticalHitAttacks} ({formatPercent(stats.combat.criticalHitAttacks, stats.combat.attackInstances)})</p>
+          {stats.combat.extraHitsGenerated > 0 ? (
+            <p>Extra hits generated: {stats.combat.extraHitsGenerated}</p>
+          ) : null}
+          {stats.combat.sustainedHitsGenerated > 0 ? (
+            <p>Sustained Hits: {stats.combat.sustainedHitsGenerated} extra hits</p>
+          ) : null}
+          {stats.combat.lethalHitsTriggered > 0 ? (
+            <p>Lethal Hits: {stats.combat.lethalHitsTriggered} auto-wounds</p>
+          ) : null}
+          {stats.combat.hitRerollsUsed > 0 ? (
+            <p>Hit re-rolls: {stats.combat.hitRerollSuccesses}/{stats.combat.hitRerollsUsed} improved</p>
+          ) : null}
+        </article>
+
+        <article className="result-card">
+          <p className="kicker">Wound Breakdown</p>
+          <h3>Wounds</h3>
+          <p>Wound rolls made: {stats.combat.woundRolls}</p>
+          <p>Successful wound rolls: {stats.combat.successfulWoundRolls} ({formatPercent(stats.combat.successfulWoundRolls, stats.combat.woundRolls)})</p>
+          {stats.combat.autoWounds > 0 ? (
+            <p>Auto-wounds: {stats.combat.autoWounds}</p>
+          ) : null}
+          <p>Critical wounds: {stats.combat.criticalWounds} ({formatPercent(stats.combat.criticalWounds, stats.combat.woundRolls + stats.combat.autoWounds)})</p>
+          {stats.combat.devastatingWoundsTriggered > 0 ? (
+            <p>Devastating Wounds: {stats.combat.devastatingWoundsTriggered}</p>
+          ) : null}
+          {stats.combat.woundRerollsUsed > 0 ? (
+            <p>Wound re-rolls: {stats.combat.woundRerollSuccesses}/{stats.combat.woundRerollsUsed} improved</p>
+          ) : null}
+          <p>Total wounds created: {stats.combat.woundPool}</p>
+        </article>
+
+        <article className="result-card">
+          <p className="kicker">Save Breakdown</p>
+          <h3>Defense</h3>
+          <p>Save attempts: {stats.combat.saveAttempts}</p>
+          <p>Failed saves: {stats.combat.savesFailed} ({formatPercent(stats.combat.savesFailed, stats.combat.saveAttempts)})</p>
+          <p>Passed saves: {stats.combat.savesPassed} ({formatPercent(stats.combat.savesPassed, stats.combat.saveAttempts)})</p>
+          {stats.combat.unsavableWounds > 0 ? (
+            <p>Unsavable wounds: {stats.combat.unsavableWounds}</p>
+          ) : null}
+        </article>
+
+        <article className="result-card">
+          <p className="kicker">Damage Breakdown</p>
+          <h3>Damage</h3>
+          <p>Total damage dealt: {stats.combat.damagePool || damageFallback}</p>
+          <p>Models destroyed: {stats.targetModelsDestroyed}</p>
+          {stats.combat.normalDamage > 0 ? (
+            <p>Normal damage: {stats.combat.normalDamage}</p>
+          ) : null}
+          {stats.combat.mortalDamage > 0 ? (
+            <p>
+              Mortals: {stats.combat.mortalDamageSources.map((entry) => (
+                `${entry.source}: ${entry.damage}`
+              )).join(', ')}
+            </p>
+          ) : null}
+          {stats.combat.damageRerollsUsed > 0 ? (
+            <p>Damage re-rolls: {stats.combat.damageRerollImprovements}/{stats.combat.damageRerollsUsed} improved</p>
+          ) : null}
+          {stats.combat.feelNoPainRolls > 0 ? (
+            <>
+              <p>After Feel No Pain: {stats.combat.damageAfterFeelNoPain}</p>
+              <p>Feel No Pain: {stats.combat.feelNoPainSuccesses}/{stats.combat.feelNoPainRolls} ignored, {stats.combat.feelNoPainDamagePrevented} damage prevented</p>
+            </>
+          ) : null}
+        </article>
+      </>
+    )
+  }
   const turnSequence = turnStructure.turn_sequence?.length ? turnStructure.turn_sequence : DEFAULT_TURN_STRUCTURE
   const activeTurnPhaseIndex = Math.max(
     0,
@@ -6953,9 +7318,13 @@ function App() {
     () => battlefieldCombatWeaponOptions.filter((weapon) => battlefieldCombatWeaponNames.includes(weapon.name)),
     [battlefieldCombatWeaponNames, battlefieldCombatWeaponOptions],
   )
-  const battlefieldCombatTriggerAbilityOptions = useMemo(
-    () => getCombatTriggerAbilities(
-      selectedBattlefieldCombatant?.attackerDetails,
+  const battlefieldCombatActivatedAbilityOptions = useMemo(
+    () => getCombatActivatedAbilities(
+      [
+        selectedBattlefieldCombatant?.attackerDetails,
+        selectedBattlefieldCombatant?.attackerDetails?.attached_leader,
+        selectedBattlefieldCombatant?.attackerDetails?.attached_support,
+      ],
       activeGamePhase?.id,
       selectedBattlefieldCombatWeapons,
       {
@@ -7940,9 +8309,9 @@ function App() {
   }, [battlefieldCombatWeaponNames, battlefieldCombatWeaponOptions])
 
   useEffect(() => {
-    const availableAbilityNames = new Set(battlefieldCombatTriggerAbilityOptions.map((ability) => ability.name))
+    const availableAbilityNames = new Set(battlefieldCombatActivatedAbilityOptions.map((ability) => ability.name))
     setBattlefieldActiveAbilityNames((currentNames) => currentNames.filter((name) => availableAbilityNames.has(name)))
-  }, [battlefieldCombatTriggerAbilityOptions])
+  }, [battlefieldCombatActivatedAbilityOptions])
 
   useEffect(() => {
     battlefieldDragStateRef.current = {
@@ -8290,6 +8659,7 @@ function App() {
       simulationRuns: cloneForUndo(simulationRuns),
       activeRunView,
       gameLogEntries: cloneForUndo(gameLogEntries),
+      battleAchievements: cloneForUndo(battleAchievements),
       battlefieldExtraUnits: cloneForUndo(battlefieldExtraUnits),
     }
   }
@@ -8329,6 +8699,7 @@ function App() {
     setSimulationRuns(snapshot.simulationRuns)
     setActiveRunView(snapshot.activeRunView)
     setGameLogEntries(snapshot.gameLogEntries)
+    setBattleAchievements(snapshot.battleAchievements || createBattleAchievementState())
     setBattlefieldExtraUnits(snapshot.battlefieldExtraUnits || [])
     setDraggingUnitId('')
     setDraggingModelId('')
@@ -8377,6 +8748,69 @@ function App() {
     }
   }
 
+  function queueBattlefieldAchievementSuggestions(runs, simulationOptions = {}) {
+    const firstRun = runs[0]
+    if (!firstRun?.result?.target?.destroyed) {
+      return
+    }
+
+    const isBattlefieldRun = Boolean(simulationOptions.battlefieldDamageTargetId)
+    const attackerSide = simulationOptions.battlefieldAttackerSide || 'attacker'
+    const detachmentName = simulationOptions.battlefieldAttackerDetachmentName || (
+      isBattlefieldRun
+        ? (attackerSide === 'attacker' ? attackerDetachmentName : defenderDetachmentName)
+        : firstRun.request?.attacker_detachment_name || attackerDetachmentName
+    )
+    if (!SAGA_DETACHMENT_NAMES.includes(detachmentName)) {
+      return
+    }
+
+    const targetId = simulationOptions.battlefieldDamageTargetId
+    const targetUnit = targetId ? battlefieldUnitMap[targetId] : null
+    const targetDetails = targetId ? getBattlefieldUnitDetails(targetId) : defenderUnitDetails
+    const targetName = targetUnit?.name || firstRun.result.target.name || targetDetails?.name || 'target'
+    const attackerUnit = isBattlefieldRun ? battlefieldUnitMap[selectedBattlefieldCombatant?.attackerId] : null
+    const attackerDetails = isBattlefieldRun
+      ? getBattlefieldUnitDetails(selectedBattlefieldCombatant?.attackerId)
+      : attackerUnitDetails
+    const targetIsBeastslayerUnit = unitMatchesAnyKeyword(targetDetails || targetUnit, ['character', 'monster', 'vehicle'])
+    const attackerIsCharacter = unitMatchesAnyKeyword(attackerDetails || attackerUnit, ['character'])
+    const inferredCombatPhase = isBattlefieldRun
+      ? activeGamePhase?.id
+      : selectedAttackWeapons.some((weapon) => weapon.range !== 'Melee') ? 'shooting' : 'fight'
+    const foughtInFightPhase = inferredCombatPhase === 'fight'
+    const shotOrFought = inferredCombatPhase === 'shooting' || inferredCombatPhase === 'fight'
+
+    if (detachmentName === SAGA_OF_THE_HUNTER && foughtInFightPhase) {
+      queueBattleAchievementSuggestion(attackerSide, {
+        id: `${gameBattleRound}:${inferredCombatPhase}:${attackerSide}:hunter:${targetId || targetName}`,
+        title: `Add Quarry tally for ${targetName}`,
+        description: `${targetName} was destroyed by attacks resolved in the Fight phase.`,
+        tallyKey: 'hunterTally',
+        tallyDelta: 1,
+      })
+    }
+
+    if (detachmentName === SAGA_OF_THE_BEASTSLAYER && shotOrFought && targetIsBeastslayerUnit) {
+      queueBattleAchievementSuggestion(attackerSide, {
+        id: `${gameBattleRound}:${inferredCombatPhase}:${attackerSide}:beastslayer:${targetId || targetName}`,
+        title: `Add Beastslayer tally for ${targetName}`,
+        description: `${targetName} was destroyed and has Character, Monster, or Vehicle.`,
+        tallyKey: 'beastslayerTally',
+        tallyDelta: 1,
+      })
+    }
+
+    if (detachmentName === SAGA_OF_THE_BOLD && attackerIsCharacter && firstRun.request?.options?.oath_of_moment_active) {
+      queueBattleAchievementSuggestion(attackerSide, {
+        id: `${gameBattleRound}:${inferredCombatPhase}:${attackerSide}:bold-hide:${targetId || targetName}`,
+        title: 'Achieve Your Hide as a Trophy',
+        description: `${attackerUnit?.name || attackerDetails?.name || 'A Character unit'} destroyed the selected Oath of Moment target.`,
+        boastId: 'hide_as_a_trophy',
+      })
+    }
+  }
+
   async function executeSimulation(payload, runsToExecute, simulationOptions = {}) {
     try {
       if (simulationOptions.battlefieldDamageTargetId) {
@@ -8399,6 +8833,7 @@ function App() {
       }))
       setSimulationRuns(runs)
       setActiveRunView('summary')
+      queueBattlefieldAchievementSuggestions(runs, simulationOptions)
       if (simulationOptions.battlefieldDamageTargetId) {
         const targetId = simulationOptions.battlefieldDamageTargetId
         const targetDetails = getBattlefieldUnitDetails(targetId)
@@ -8495,7 +8930,7 @@ function App() {
       attackerPennantOfRemembranceActive,
       attackerBelowStartingStrength,
       attackerBattleshocked,
-      attackerSagaCompleted,
+      attackerSagaCompleted: effectiveAttackerSagaCompleted,
       attackerEldersGuidanceActive,
       attackerBoastAchieved,
       attackerHordeslayerOutnumbered,
@@ -8538,6 +8973,14 @@ function App() {
     const battlefieldDefenderModelInput = getBattlefieldModelCountInput(selectedBattlefieldCombatant.defenderId)
     const battlefieldAttackerModelCount = battlefieldAttackerModelInput !== '' ? Number(battlefieldAttackerModelInput) : undefined
     const battlefieldDefenderModelCount = battlefieldDefenderModelInput !== '' ? Number(battlefieldDefenderModelInput) : undefined
+    const battlefieldAttackerSide = getBattlefieldSourceSide(selectedBattlefieldCombatant.attackerId)
+    const battlefieldDefenderSide = getBattlefieldSourceSide(selectedBattlefieldCombatant.defenderId)
+    const battlefieldAttackerDetachmentName = battlefieldAttackerSide === 'attacker'
+      ? attackerDetachmentName
+      : defenderDetachmentName
+    const battlefieldDefenderDetachmentName = battlefieldDefenderSide === 'attacker'
+      ? attackerDetachmentName
+      : defenderDetachmentName
 
     const battlefieldDamageTargetId = selectedBattlefieldCombatant.defenderId
     const expectedAttackDice = calculateExpectedAttackDice(
@@ -8548,6 +8991,7 @@ function App() {
     await executeSimulation({
       attacker_faction: selectedBattlefieldCombatant.attackerFaction,
       attacker_unit: selectedBattlefieldCombatant.attackerName,
+      attacker_detachment_name: battlefieldAttackerDetachmentName || undefined,
       expected_attack_dice: expectedAttackDice,
       attacker_loadout: battlefieldAttackerLoadoutSelections,
       attacker_model_count: battlefieldAttackerModelCount,
@@ -8568,6 +9012,7 @@ function App() {
       weapon_model_counts: selectedBattlefieldCombatWeaponModelCounts,
       defender_faction: selectedBattlefieldCombatant.defenderFaction,
       defender_unit: selectedBattlefieldCombatant.defenderName,
+      defender_detachment_name: battlefieldDefenderDetachmentName || undefined,
       defender_loadout: battlefieldDefenderLoadoutSelections,
       defender_model_count: battlefieldDefenderModelCount,
       defender_model_counts: battlefieldDefenderModelCounts,
@@ -8583,6 +9028,7 @@ function App() {
         defender_charged_this_turn: battlefieldCombatDefenderWasCharged,
         remained_stationary: battlefieldCombatAttackerRemainedStationary,
         attacker_eligible_model_count: selectedBattlefieldEligibleAttackerModelCount,
+        attacker_saga_completed: Boolean(battleAchievements[battlefieldAttackerSide]?.sagaCompleted),
         attacker_active_ability_names: battlefieldActiveAbilityNames,
         attacker_waaagh_active: battlefieldAttackerWaaaghActive,
         defender_waaagh_active: battlefieldDefenderWaaaghActive,
@@ -8591,6 +9037,8 @@ function App() {
       },
     }, Math.max(1, Number(runCount) || 1), {
       battlefieldDamageTargetId,
+      battlefieldAttackerSide,
+      battlefieldAttackerDetachmentName,
     })
   }
 
@@ -9710,6 +10158,37 @@ function App() {
     setSelectedBattlefieldModelId('')
   }
 
+  removeSelectedBattlefieldUnitInstanceRef.current = removeSelectedBattlefieldUnitInstance
+
+  useEffect(() => {
+    if (activePage !== 'battlefield' || battlefieldDeploymentComplete || !selectedBattlefieldUnitId) {
+      return undefined
+    }
+
+    function handleBattlefieldDeploymentKeyDown(event) {
+      if (event.key !== 'Delete') {
+        return
+      }
+
+      const activeElement = document.activeElement
+      const activeTagName = activeElement?.tagName?.toLowerCase()
+      if (
+        activeElement?.isContentEditable
+        || ['input', 'select', 'textarea'].includes(activeTagName)
+      ) {
+        return
+      }
+
+      event.preventDefault()
+      removeSelectedBattlefieldUnitInstanceRef.current?.()
+    }
+
+    window.addEventListener('keydown', handleBattlefieldDeploymentKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleBattlefieldDeploymentKeyDown)
+    }
+  }, [activePage, battlefieldDeploymentComplete, selectedBattlefieldUnitId])
+
   function clearBattlefieldDeployment() {
     if (!battlefieldUnits.length) {
       return
@@ -9780,6 +10259,110 @@ function App() {
       },
       ...currentEntries,
     ].slice(0, 20))
+  }
+
+  function updateBattleAchievementSide(side, updater) {
+    setBattleAchievements((current) => {
+      const currentSideState = current[side] || createBattleAchievementSideState()
+      const nextSideState = typeof updater === 'function'
+        ? updater(currentSideState)
+        : { ...currentSideState, ...updater }
+      return {
+        ...current,
+        [side]: nextSideState,
+      }
+    })
+  }
+
+  function setBattleSagaCompleted(side, completed) {
+    updateBattleAchievementSide(side, (sideState) => ({
+      ...sideState,
+      sagaCompleted: completed,
+    }))
+    if (side === 'attacker') {
+      setAttackerSagaCompleted(completed)
+    }
+    appendGameLog(`${sideLabel(side)} Saga ${completed ? 'marked completed' : 'marked incomplete'}.`)
+  }
+
+  function updateBattleTally(side, key, value) {
+    updateBattleAchievementSide(side, (sideState) => ({
+      ...sideState,
+      [key]: Math.max(0, Number(value) || 0),
+    }))
+  }
+
+  function toggleBattleBoast(side, boastId, checked) {
+    let nextSagaCompleted = false
+    updateBattleAchievementSide(side, (sideState) => {
+      const nextBoasts = {
+        ...(sideState.boldBoasts || {}),
+        [boastId]: checked,
+      }
+      nextSagaCompleted = sideState.sagaCompleted || countCompletedBoldBoasts({ boldBoasts: nextBoasts }) >= 3
+      return {
+        ...sideState,
+        boldBoasts: nextBoasts,
+        sagaCompleted: nextSagaCompleted,
+      }
+    })
+    if (side === 'attacker' && nextSagaCompleted) {
+      setAttackerSagaCompleted(true)
+    }
+    appendGameLog(`${sideLabel(side)} ${checked ? 'achieved' : 'cleared'} ${BOLD_BOASTS.find((boast) => boast.id === boastId)?.name || 'a Boast'}.`)
+  }
+
+  function queueBattleAchievementSuggestion(side, suggestion) {
+    updateBattleAchievementSide(side, (sideState) => {
+      if ((sideState.suggestions || []).some((item) => item.id === suggestion.id)) {
+        return sideState
+      }
+      return {
+        ...sideState,
+        suggestions: [
+          {
+            ...suggestion,
+            createdAt: Date.now(),
+          },
+          ...(sideState.suggestions || []),
+        ].slice(0, 6),
+      }
+    })
+  }
+
+  function dismissBattleAchievementSuggestion(side, suggestionId) {
+    updateBattleAchievementSide(side, (sideState) => ({
+      ...sideState,
+      suggestions: (sideState.suggestions || []).filter((suggestion) => suggestion.id !== suggestionId),
+    }))
+  }
+
+  function acceptBattleAchievementSuggestion(side, suggestion) {
+    let nextSagaCompleted = false
+    updateBattleAchievementSide(side, (sideState) => {
+      const nextState = {
+        ...sideState,
+        suggestions: (sideState.suggestions || []).filter((item) => item.id !== suggestion.id),
+      }
+      if (suggestion.tallyKey) {
+        nextState[suggestion.tallyKey] = Math.max(0, Number(nextState[suggestion.tallyKey] || 0) + Number(suggestion.tallyDelta || 0))
+      }
+      if (suggestion.boastId) {
+        nextState.boldBoasts = {
+          ...(nextState.boldBoasts || {}),
+          [suggestion.boastId]: true,
+        }
+      }
+      if (suggestion.completeSaga || countCompletedBoldBoasts(nextState) >= 3) {
+        nextState.sagaCompleted = true
+      }
+      nextSagaCompleted = nextState.sagaCompleted
+      return nextState
+    })
+    if (nextSagaCompleted && side === 'attacker') {
+      setAttackerSagaCompleted(true)
+    }
+    appendGameLog(`${sideLabel(side)} accepted achievement: ${suggestion.title}.`)
   }
 
   function formatBattlefieldSideLabel(side) {
@@ -10186,6 +10769,7 @@ function App() {
     setCompletedGameStepKeys({})
     setGameLogEntries([])
     setGameNotes('')
+    setBattleAchievements(createBattleAchievementState())
     setBattlefieldWaaaghBattleRounds({ attacker: null, defender: null })
     setBattlefieldCommandPoints({ attacker: 0, defender: 0 })
     setBattlefieldUsedStratagems([])
@@ -10197,6 +10781,117 @@ function App() {
     setBattlefieldUndoStack([])
     setAttackerWaaaghActive(false)
     setDefenderWaaaghActive(false)
+  }
+
+  function renderBattleAchievementPanel({ compact = false } = {}) {
+    return (
+      <div className={`battlefield-battle-state-panel ${compact ? 'compact' : ''}`}>
+        <div>
+          <p className="kicker">Battle State</p>
+          <h3>Achievements</h3>
+          <p>Confirm achievements the table state cannot prove. Confirmed Sagas feed directly into combat resolution.</p>
+        </div>
+        {BATTLEFIELD_SIDES.map((side) => {
+          const sideState = battleAchievements[side] || createBattleAchievementSideState()
+          const detachment = side === 'attacker' ? selectedAttackerDetachment : selectedDefenderDetachment
+          const hasSaga = SAGA_DETACHMENT_NAMES.includes(detachment?.name || '')
+          const completedBoasts = countCompletedBoldBoasts(sideState)
+          return (
+            <article key={side} className="battlefield-battle-state-card">
+              <div className="battlefield-battle-state-card-header">
+                <div>
+                  <p className="kicker">{sideLabel(side)}</p>
+                  <h4>{detachment?.name || 'No Detachment'}</h4>
+                </div>
+                <span className={sideState.sagaCompleted ? 'valid' : 'invalid'}>
+                  {sideState.sagaCompleted ? 'Saga Complete' : hasSaga ? 'Saga Open' : 'No Saga'}
+                </span>
+              </div>
+              {hasSaga ? (
+                <>
+                  <label className="checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={sideState.sagaCompleted}
+                      onChange={(event) => setBattleSagaCompleted(side, event.target.checked)}
+                    />
+                    <span>Apply completed Saga bonus</span>
+                  </label>
+                  {detachment.name === SAGA_OF_THE_HUNTER ? (
+                    <label>
+                      <span>Quarry tally</span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={sideState.hunterTally}
+                        onChange={(event) => updateBattleTally(side, 'hunterTally', event.target.value)}
+                      />
+                    </label>
+                  ) : null}
+                  {detachment.name === SAGA_OF_THE_BEASTSLAYER ? (
+                    <label>
+                      <span>Beastslayer tally</span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={sideState.beastslayerTally}
+                        onChange={(event) => updateBattleTally(side, 'beastslayerTally', event.target.value)}
+                      />
+                    </label>
+                  ) : null}
+                  {detachment.name === SAGA_OF_THE_BOLD ? (
+                    <div className="battlefield-boast-list">
+                      <p>{completedBoasts}/3 Boasts achieved</p>
+                      {BOLD_BOASTS.map((boast) => (
+                        <label key={`${side}-${boast.id}`} className="checkbox-row" title={boast.description}>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(sideState.boldBoasts?.[boast.id])}
+                            onChange={(event) => toggleBattleBoast(side, boast.id, event.target.checked)}
+                          />
+                          <span>{boast.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <p>No Saga achievement tracking applies to this detachment.</p>
+              )}
+              {sideState.suggestions?.length ? (
+                <div className="battlefield-achievement-suggestions">
+                  <p className="kicker">Suggested Updates</p>
+                  {sideState.suggestions.map((suggestion) => (
+                    <div key={suggestion.id} className="battlefield-achievement-suggestion">
+                      <div>
+                        <strong>{suggestion.title}</strong>
+                        <p>{suggestion.description}</p>
+                      </div>
+                      <div className="battlefield-action-entry-controls">
+                        <button
+                          type="button"
+                          className="secondary-button compact-action-button"
+                          onClick={() => acceptBattleAchievementSuggestion(side, suggestion)}
+                        >
+                          Apply
+                        </button>
+                        <button
+                          type="button"
+                          className="secondary-button compact-action-button"
+                          onClick={() => dismissBattleAchievementSuggestion(side, suggestion.id)}
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </article>
+          )
+        })}
+      </div>
+    )
   }
 
   function jumpToFreeFormCombat() {
@@ -10238,6 +10933,7 @@ function App() {
     setAttackerBelowStartingStrength(initialOptions.attacker_below_starting_strength)
     setAttackerBattleshocked(initialOptions.attacker_battleshocked)
     setAttackerSagaCompleted(initialOptions.attacker_saga_completed)
+    setBattleAchievements(createBattleAchievementState())
     setAttackerEldersGuidanceActive(initialOptions.attacker_elders_guidance_active)
     setAttackerBoastAchieved(initialOptions.attacker_boast_achieved)
     setAttackerHordeslayerOutnumbered(initialOptions.attacker_hordeslayer_outnumbered)
@@ -10630,36 +11326,79 @@ function App() {
               </div>
             ) : null}
 
-            {attackerCombatTriggerAbilityOptions.length ? (
+            {(attackerCombatActivatedAbilityOptions.length || defenderCombatActivatedAbilityOptions.length) ? (
               <div className="weapon-selection-panel">
                 <div className="weapon-selection-header">
-                  <span>Combat Triggers</span>
-                  <span>{attackerActiveAbilityNames.length} active</span>
+                  <span>Activated Abilities</span>
+                  <span>{attackerActiveAbilityNames.length + defenderActiveAbilityNames.length} active</span>
                 </div>
-                <div className="weapon-selection-grid">
-                  {attackerCombatTriggerAbilityOptions.map((ability) => (
-                    <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
-                      <input
-                        type="checkbox"
-                        checked={attackerActiveAbilityNames.includes(ability.name)}
-                        onChange={(event) => {
-                          setAttackerActiveAbilityNames((currentNames) => (
-                            event.target.checked
-                              ? Array.from(new Set([...currentNames, ability.name]))
-                              : currentNames.filter((name) => name !== ability.name)
-                          ))
-                        }}
-                      />
-                      <span>{ability.name}</span>
-                    </label>
-                  ))}
+                <div className="combat-side-grid">
+                  <div className="combat-side-panel">
+                    <div className="weapon-selection-header compact">
+                      <span>Attacker</span>
+                      <span>{attackerActiveAbilityNames.length} active</span>
+                    </div>
+                    {attackerCombatActivatedAbilityOptions.length ? (
+                      <div className="weapon-selection-grid single-column">
+                        {attackerCombatActivatedAbilityOptions.map((ability) => (
+                          <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
+                            <input
+                              type="checkbox"
+                              checked={attackerActiveAbilityNames.includes(ability.name)}
+                              onChange={(event) => {
+                                setAttackerActiveAbilityNames((currentNames) => (
+                                  event.target.checked
+                                    ? Array.from(new Set([...currentNames, ability.name]))
+                                    : currentNames.filter((name) => name !== ability.name)
+                                ))
+                              }}
+                            />
+                            <span>{ability.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="muted-note">No attacker abilities can be activated for the selected attack.</p>
+                    )}
+                  </div>
+
+                  <div className="combat-side-panel">
+                    <div className="weapon-selection-header compact">
+                      <span>Defender</span>
+                      <span>{defenderActiveAbilityNames.length} active</span>
+                    </div>
+                    {defenderCombatActivatedAbilityOptions.length ? (
+                      <div className="weapon-selection-grid single-column">
+                        {defenderCombatActivatedAbilityOptions.map((ability) => (
+                          <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
+                            <input
+                              type="checkbox"
+                              checked={defenderActiveAbilityNames.includes(ability.name)}
+                              onChange={(event) => {
+                                setDefenderActiveAbilityNames((currentNames) => (
+                                  event.target.checked
+                                    ? Array.from(new Set([...currentNames, ability.name]))
+                                    : currentNames.filter((name) => name !== ability.name)
+                                ))
+                              }}
+                            />
+                            <span>{ability.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="muted-note">No defender abilities can be activated for a fight-back in this phase.</p>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : null}
 
-            <div className="rule-grid">
+            <div className="rule-grid combat-option-grid">
+              <p className="kicker combat-option-heading combat-option-attacker">Attacker Options</p>
+              <p className="kicker combat-option-heading combat-option-defender">Defender / Target Options</p>
               {attackerEnhancementOptions.length ? (
-                <label title={attackerEnhancementTooltip}>
+                <label className="combat-option-attacker" title={attackerEnhancementTooltip}>
                   <span>Attacker Enhancement</span>
                   <select
                     title={attackerEnhancementTooltip}
@@ -10681,7 +11420,7 @@ function App() {
               ) : null}
 
               {defenderEnhancementOptions.length ? (
-                <label title={defenderEnhancementTooltip}>
+                <label className="combat-option-defender" title={defenderEnhancementTooltip}>
                   <span>Defender Enhancement</span>
                   <select
                     title={defenderEnhancementTooltip}
@@ -10758,7 +11497,7 @@ function App() {
               ) : null}
 
               {canUseDefenderArmourOfContempt ? (
-                <label className="checkbox-row" title={armourOfContemptTooltip}>
+                <label className="checkbox-row combat-option-defender" title={armourOfContemptTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderArmourOfContemptActive}
@@ -10769,7 +11508,7 @@ function App() {
               ) : null}
 
               {canUseDefenderOverwhelmingOnslaught ? (
-                <label className="checkbox-row" title={overwhelmingOnslaughtTooltip}>
+                <label className="checkbox-row combat-option-defender" title={overwhelmingOnslaughtTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderOverwhelmingOnslaughtActive}
@@ -10780,7 +11519,7 @@ function App() {
               ) : null}
 
               {canUseDefenderUnbreakableLines ? (
-                <label className="checkbox-row" title={unbreakableLinesTooltip}>
+                <label className="checkbox-row combat-option-defender" title={unbreakableLinesTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderUnbreakableLinesActive}
@@ -10791,7 +11530,7 @@ function App() {
               ) : null}
 
               {canUseCover ? (
-                <label className="checkbox-row" title={coverTooltip}>
+                <label className="checkbox-row combat-option-defender" title={coverTooltip}>
                   <input
                     type="checkbox"
                     checked={targetHasCover}
@@ -10802,7 +11541,7 @@ function App() {
               ) : null}
 
               {hasOathOfMoment ? (
-                <label className="checkbox-row" title={oathTooltip}>
+                <label className="checkbox-row combat-option-defender" title={oathTooltip}>
                   <input
                     type="checkbox"
                     checked={oathOfMomentActive}
@@ -10813,7 +11552,7 @@ function App() {
               ) : null}
 
               {canUseHalfRange ? (
-                <label className="checkbox-row" title={halfRangeTooltip}>
+                <label className="checkbox-row combat-option-defender" title={halfRangeTooltip}>
                   <input
                     type="checkbox"
                     checked={inHalfRange}
@@ -10827,8 +11566,8 @@ function App() {
                 <label className="checkbox-row" title={attackerSagaCompletedTooltip}>
                   <input
                     type="checkbox"
-                    checked={attackerSagaCompleted}
-                    onChange={(event) => setAttackerSagaCompleted(event.target.checked)}
+                    checked={effectiveAttackerSagaCompleted}
+                    onChange={(event) => setBattleSagaCompleted('attacker', event.target.checked)}
                   />
                   <span>Attacker Saga is completed</span>
                 </label>
@@ -10847,7 +11586,7 @@ function App() {
               ) : null}
 
               {canUseDefenderWaaagh ? (
-                <label className="checkbox-row" title={defenderWaaaghControlTooltip}>
+                <label className="checkbox-row combat-option-defender" title={defenderWaaaghControlTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderWaaaghActive}
@@ -10870,7 +11609,7 @@ function App() {
               ) : null}
 
               {canUseTargetWithinNine ? (
-                <label className="checkbox-row" title={attackerTargetWithinNineTooltip}>
+                <label className="checkbox-row combat-option-defender" title={attackerTargetWithinNineTooltip}>
                   <input
                     type="checkbox"
                     checked={attackerTargetWithinNine}
@@ -10892,7 +11631,7 @@ function App() {
               ) : null}
 
               {canUseDefenderCountsAsTenPlus ? (
-                <label className="checkbox-row" title={defenderCountsAsTenTooltip}>
+                <label className="checkbox-row combat-option-defender" title={defenderCountsAsTenTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderCountsAsTenPlusModels}
@@ -10903,7 +11642,7 @@ function App() {
               ) : null}
 
               {canUseTargetBelowStartingStrength ? (
-                <label className="checkbox-row" title={targetBelowStartingStrengthTooltip}>
+                <label className="checkbox-row combat-option-defender" title={targetBelowStartingStrengthTooltip}>
                   <input
                     type="checkbox"
                     checked={targetBelowStartingStrength}
@@ -10914,7 +11653,7 @@ function App() {
               ) : null}
 
               {canUseTargetBelowHalfStrength ? (
-                <label className="checkbox-row" title={targetBelowHalfStrengthTooltip}>
+                <label className="checkbox-row combat-option-defender" title={targetBelowHalfStrengthTooltip}>
                   <input
                     type="checkbox"
                     checked={targetBelowHalfStrength}
@@ -11006,7 +11745,7 @@ function App() {
               ) : null}
 
               {canUseTargetInEngagementRangeOfAllies ? (
-                <label className="checkbox-row" title={targetInEngagementTooltip}>
+                <label className="checkbox-row combat-option-defender" title={targetInEngagementTooltip}>
                   <input
                     type="checkbox"
                     checked={targetInEngagementRangeOfAllies}
@@ -11017,7 +11756,7 @@ function App() {
               ) : null}
 
               {hasIndirectFire ? (
-                <label className="checkbox-row" title={indirectTooltip}>
+                <label className="checkbox-row combat-option-defender" title={indirectTooltip}>
                   <input
                     type="checkbox"
                     checked={indirectTargetVisible}
@@ -11038,8 +11777,8 @@ function App() {
                 </label>
               ) : null}
 
-              {canUseLance && isMeleeWeapon ? (
-                <label className="checkbox-row" title={lanceTooltip}>
+              {canUseChargedThisTurn && isMeleeWeapon ? (
+                <label className="checkbox-row" title={chargedThisTurnTooltip}>
                   <input
                     type="checkbox"
                     checked={chargedThisTurn}
@@ -11072,7 +11811,7 @@ function App() {
               ) : null}
 
               {canUseDefenderArdAsNails ? (
-                <label className="checkbox-row" title={ardAsNailsTooltip}>
+                <label className="checkbox-row combat-option-defender" title={ardAsNailsTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderArdAsNailsActive}
@@ -11094,7 +11833,7 @@ function App() {
               ) : null}
 
               {canUseDefenderStalkinTaktiks ? (
-                <label className="checkbox-row" title={stalkinTaktiksTooltip}>
+                <label className="checkbox-row combat-option-defender" title={stalkinTaktiksTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderStalkinTaktiksActive}
@@ -11105,7 +11844,7 @@ function App() {
               ) : null}
 
               {canUseDefenderSpeediestFreeks ? (
-                <label className="checkbox-row" title={speediestFreeksTooltip}>
+                <label className="checkbox-row combat-option-defender" title={speediestFreeksTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderSpeediestFreeksActive}
@@ -11230,7 +11969,7 @@ function App() {
               ) : null}
 
               {canUseDefenderExtraGubbinz ? (
-                <label className="checkbox-row" title={extraGubbinzTooltip}>
+                <label className="checkbox-row combat-option-defender" title={extraGubbinzTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderExtraGubbinzActive}
@@ -11263,7 +12002,7 @@ function App() {
               ) : null}
 
               {canUseDefenderHulkingBrutes ? (
-                <label className="checkbox-row" title={hulkingBrutesTooltip}>
+                <label className="checkbox-row combat-option-defender" title={hulkingBrutesTooltip}>
                   <input
                     type="checkbox"
                     checked={defenderHulkingBrutesActive}
@@ -11331,7 +12070,7 @@ function App() {
                 <span>Attacker is Battle-shocked</span>
               </label>
 
-              <label className="checkbox-row" title={defenderBattleshockedTooltip}>
+              <label className="checkbox-row combat-option-defender" title={defenderBattleshockedTooltip}>
                 <input
                   type="checkbox"
                   checked={defenderBattleshocked}
@@ -11341,7 +12080,7 @@ function App() {
               </label>
 
               {(attackerAttachedLeaderUnitDetails || attachedCharacterUnitDetails) ? (
-                <div className="attached-unit-rule-card">
+                <div className="attached-unit-rule-card combat-option-spanning">
                   <p className="kicker">Attached Units</p>
                   {attackerAttachedLeaderUnitDetails ? (
                     <p>
@@ -11364,7 +12103,7 @@ function App() {
               ) : null}
 
               {canUsePrecision ? (
-                <>
+                <div className="combat-option-defender cluster">
                   <label title={attachedCharacterTooltip}>
                     <span>Attached Character</span>
                     <select
@@ -11396,7 +12135,7 @@ function App() {
                     attachedCharacterModelCounts,
                     setAttachedCharacterModelCounts,
                   )}
-                </>
+                </div>
               ) : null}
 
               {hasHazardous ? (
@@ -11545,43 +12284,7 @@ function App() {
                     <p>Avg current model wounds: {formatAverage(summaryStats.averageTargetCurrentWounds)}</p>
                   </article>
 
-                  <article className="result-card">
-                    <p className="kicker">Hit Breakdown</p>
-                    <h3>Accuracy</h3>
-                    <p>Attack instances: {summaryStats.combat.attackInstances}</p>
-                    <p>Hits landed: {summaryStats.combat.hitPool} ({formatPercent(summaryStats.combat.hitPool, summaryStats.combat.attackInstances)})</p>
-                    <p>Auto-hits: {summaryStats.combat.autoHitAttacks}</p>
-                    <p>Critical hits: {summaryStats.combat.criticalHitAttacks} ({formatPercent(summaryStats.combat.criticalHitAttacks, summaryStats.combat.attackInstances)})</p>
-                    <p>Extra hits generated: {summaryStats.combat.extraHitsGenerated}</p>
-                  </article>
-
-                  <article className="result-card">
-                    <p className="kicker">Wound Breakdown</p>
-                    <h3>Conversion</h3>
-                    <p>Wound rolls made: {summaryStats.combat.woundRolls}</p>
-                    <p>Successful wound rolls: {summaryStats.combat.successfulWoundRolls} ({formatPercent(summaryStats.combat.successfulWoundRolls, summaryStats.combat.woundRolls)})</p>
-                    <p>Auto-wounds: {summaryStats.combat.autoWounds}</p>
-                    <p>Critical wounds: {summaryStats.combat.criticalWounds} ({formatPercent(summaryStats.combat.criticalWounds, summaryStats.combat.woundRolls + summaryStats.combat.autoWounds)})</p>
-                    <p>Total wounds created: {summaryStats.combat.woundPool}</p>
-                  </article>
-
-                  <article className="result-card">
-                    <p className="kicker">Save Breakdown</p>
-                    <h3>Defense</h3>
-                    <p>Save attempts: {summaryStats.combat.saveAttempts}</p>
-                    <p>Failed saves: {summaryStats.combat.savesFailed} ({formatPercent(summaryStats.combat.savesFailed, summaryStats.combat.saveAttempts)})</p>
-                    <p>Passed saves: {summaryStats.combat.savesPassed} ({formatPercent(summaryStats.combat.savesPassed, summaryStats.combat.saveAttempts)})</p>
-                    <p>Unsavable wounds: {summaryStats.combat.unsavableWounds}</p>
-                  </article>
-
-                  <article className="result-card">
-                    <p className="kicker">Re-roll Breakdown</p>
-                    <h3>Efficiency</h3>
-                    <p>Hit re-rolls used: {summaryStats.combat.hitRerollsUsed}</p>
-                    <p>Hit re-roll success: {summaryStats.combat.hitRerollSuccesses} ({formatPercent(summaryStats.combat.hitRerollSuccesses, summaryStats.combat.hitRerollsUsed)})</p>
-                    <p>Wound re-rolls used: {summaryStats.combat.woundRerollsUsed}</p>
-                    <p>Wound re-roll success: {summaryStats.combat.woundRerollSuccesses} ({formatPercent(summaryStats.combat.woundRerollSuccesses, summaryStats.combat.woundRerollsUsed)})</p>
-                  </article>
+                  {renderCombatBreakdownCards(summaryStats)}
 
                   {summaryStats.attachedCharacterRuns > 0 ? (
                     <article className="result-card">
@@ -11616,17 +12319,7 @@ function App() {
                     <p>Current model wounds: {activeRun.result.target.current_model_wounds}</p>
                   </article>
 
-                  {activeRun.result.attack_resolution_plan?.steps?.length ? (
-                    <article className="result-card">
-                      <p className="kicker">Resolve Attacks</p>
-                      <h3>Attack Sequence</h3>
-                      {activeRun.result.attack_resolution_plan.steps.slice(0, 3).map((step, index) => (
-                        <p key={`${step.gather_attack_dice.selected_weapon_name}-${index}`}>
-                          {step.select_enemy_unit.target_name}: {index === 0 && Math.max(summaryStats.combat.expectedAttackDice, summaryStats.combat.gatheredAttackDice) > step.gather_attack_dice.attack_dice_maximum ? Math.max(summaryStats.combat.expectedAttackDice, summaryStats.combat.gatheredAttackDice) : formatAttackDiceRange(step)} dice with {step.gather_attack_dice.identical_weapon_count} profile{step.gather_attack_dice.identical_weapon_count === 1 ? '' : 's'}
-                        </p>
-                      ))}
-                    </article>
-                  ) : null}
+                  {activeRunSummaryStats ? renderCombatBreakdownCards(activeRunSummaryStats) : null}
 
                   {activeRun.result.attached_character ? (
                     <article className="result-card">
@@ -12875,7 +13568,7 @@ function App() {
                     <p>Hits: {summaryStats.combat.hitPool}</p>
                     <p>Wounds: {summaryStats.combat.woundPool}</p>
                     <p>Saves: {summaryStats.combat.savesFailed} failed</p>
-                    <p>Damage: {summaryStats.combat.damagePool || selectedBattlefieldDamageInflicted}</p>
+                    <p>Damage dealt: {summaryStats.combat.damagePool || selectedBattlefieldDamageInflicted}</p>
                   </article>
                   <article className="result-card">
                     <h3>Hits</h3>
@@ -12884,7 +13577,24 @@ function App() {
                       {' '}({formatPercent(summaryStats.combat.hitPool, summaryStats.combat.attackInstances)})
                     </p>
                     <p>Critical: {summaryStats.combat.criticalHitAttacks}</p>
-                    <p>Extra hits: {summaryStats.combat.extraHitsGenerated}</p>
+                    {summaryStats.combat.autoHitAttacks > 0 ? (
+                      <p>Auto-hits: {summaryStats.combat.autoHitAttacks}</p>
+                    ) : null}
+                    {summaryStats.combat.torrentHits > 0 ? (
+                      <p>Torrent: {summaryStats.combat.torrentHits} auto-hits</p>
+                    ) : null}
+                    {summaryStats.combat.extraHitsGenerated > 0 ? (
+                      <p>Extra hits: {summaryStats.combat.extraHitsGenerated}</p>
+                    ) : null}
+                    {summaryStats.combat.sustainedHitsGenerated > 0 ? (
+                      <p>Sustained Hits: {summaryStats.combat.sustainedHitsGenerated} extra hits</p>
+                    ) : null}
+                    {summaryStats.combat.lethalHitsTriggered > 0 ? (
+                      <p>Lethal Hits: {summaryStats.combat.lethalHitsTriggered} auto-wounds</p>
+                    ) : null}
+                    {summaryStats.combat.hitRerollsUsed > 0 ? (
+                      <p>Hit re-rolls: {summaryStats.combat.hitRerollSuccesses}/{summaryStats.combat.hitRerollsUsed} improved</p>
+                    ) : null}
                   </article>
                   <article className="result-card">
                     <h3>Wounds</h3>
@@ -12893,15 +13603,47 @@ function App() {
                       {' '}({formatPercent(summaryStats.combat.woundPool, summaryStats.combat.woundRolls + summaryStats.combat.autoWounds)})
                     </p>
                     <p>Critical: {summaryStats.combat.criticalWounds}</p>
-                    <p>Auto-wounds: {summaryStats.combat.autoWounds}</p>
-                    <p>Saves: {summaryStats.combat.saveAttempts}</p>
-                    <p>Damage: {summaryStats.combat.damagePool || selectedBattlefieldDamageInflicted}</p>
+                    {summaryStats.combat.autoWounds > 0 ? (
+                      <p>Auto-wounds: {summaryStats.combat.autoWounds}</p>
+                    ) : null}
+                    {summaryStats.combat.devastatingWoundsTriggered > 0 ? (
+                      <p>Devastating Wounds: {summaryStats.combat.devastatingWoundsTriggered}</p>
+                    ) : null}
+                    {summaryStats.combat.woundRerollsUsed > 0 ? (
+                      <p>Wound re-rolls: {summaryStats.combat.woundRerollSuccesses}/{summaryStats.combat.woundRerollsUsed} improved</p>
+                    ) : null}
                   </article>
                   <article className="result-card">
                     <h3>Saves</h3>
                     <p>Attempts: {summaryStats.combat.saveAttempts}</p>
                     <p>Failed: {summaryStats.combat.savesFailed} ({formatPercent(summaryStats.combat.savesFailed, summaryStats.combat.saveAttempts)})</p>
-                    <p>Unsavable: {summaryStats.combat.unsavableWounds}</p>
+                    {summaryStats.combat.unsavableWounds > 0 ? (
+                      <p>Unsavable: {summaryStats.combat.unsavableWounds}</p>
+                    ) : null}
+                  </article>
+                  <article className="result-card">
+                    <h3>Damage</h3>
+                    <p>Total damage dealt: {summaryStats.combat.damagePool || selectedBattlefieldDamageInflicted}</p>
+                    <p>Models destroyed: {summaryStats.targetModelsDestroyed}</p>
+                    {summaryStats.combat.normalDamage > 0 ? (
+                      <p>Normal damage: {summaryStats.combat.normalDamage}</p>
+                    ) : null}
+                    {summaryStats.combat.mortalDamage > 0 ? (
+                      <p>
+                        Mortals: {summaryStats.combat.mortalDamageSources.map((entry) => (
+                          `${entry.source}: ${entry.damage}`
+                        )).join(', ')}
+                      </p>
+                    ) : null}
+                    {summaryStats.combat.damageRerollsUsed > 0 ? (
+                      <p>Damage re-rolls: {summaryStats.combat.damageRerollImprovements}/{summaryStats.combat.damageRerollsUsed} improved</p>
+                    ) : null}
+                    {summaryStats.combat.feelNoPainRolls > 0 ? (
+                      <>
+                        <p>After Feel No Pain: {summaryStats.combat.damageAfterFeelNoPain}</p>
+                        <p>Feel No Pain: {summaryStats.combat.feelNoPainSuccesses}/{summaryStats.combat.feelNoPainRolls} ignored, {summaryStats.combat.feelNoPainDamagePrevented} damage prevented</p>
+                      </>
+                    ) : null}
                   </article>
                   <article className="result-card battlefield-wound-card">
                     <h3>Damage Tracker</h3>
@@ -13007,7 +13749,7 @@ function App() {
                     <p><strong>Active unit:</strong> {gameActivePlayer === 'Player 1' ? battlefieldUnitMap.attacker?.name : battlefieldUnitMap.defender?.name}.</p>
                   </div>
                 ) : null}
-                {activeGamePhase?.id === 'start_of_turn' ? (
+                {activeGamePhase?.id === 'start_of_turn' && (attackerArmyIsOrks || defenderArmyIsOrks) ? (
                   <div className="phase-inline-controls">
                     <p className="kicker">Battle Round Declarations</p>
                     <h3>Waaagh!</h3>
@@ -13045,9 +13787,6 @@ function App() {
                           </div>
                         )
                       })}
-                      {!attackerArmyIsOrks && !defenderArmyIsOrks ? (
-                        <p>No Orks army is present in this game, so no Waaagh! declaration is available.</p>
-                      ) : null}
                     </div>
                   </div>
                 ) : null}
@@ -13260,9 +13999,9 @@ function App() {
                             )
                           })}
                         </div>
-                        {battlefieldCombatTriggerAbilityOptions.length ? (
-                          <div className="phase-inline-weapon-list">
-                            {battlefieldCombatTriggerAbilityOptions.map((ability) => (
+                        {battlefieldCombatActivatedAbilityOptions.length ? (
+                          <div className="phase-inline-weapon-list" aria-label="Activated Abilities">
+                            {battlefieldCombatActivatedAbilityOptions.map((ability) => (
                               <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
                                 <input
                                   type="checkbox"
@@ -13300,6 +14039,7 @@ function App() {
                   ['actions', 'Actions'],
                   ['transports', 'Transports'],
                   ['reserves', 'Reserves'],
+                  ['battle-state', 'Battle State'],
                   ['log', 'Notes / Log'],
                 ].map(([toolId, label]) => (
                   <button
@@ -13760,6 +14500,9 @@ function App() {
                   Ingress Move
                 </button>
               </div>
+              ) : null}
+              {selectedBattlefieldTool === 'battle-state' ? (
+                renderBattleAchievementPanel()
               ) : null}
               {selectedBattlefieldTool === 'log' ? (
               <div className="battlefield-log-panel">
@@ -14468,14 +15211,14 @@ function App() {
                   </div>
                 </div>
 
-                {battlefieldCombatTriggerAbilityOptions.length ? (
+                {battlefieldCombatActivatedAbilityOptions.length ? (
                   <div className="weapon-selection-panel battlefield-combat-span">
                     <div className="weapon-selection-header">
-                      <span>Combat Triggers</span>
+                      <span>Activated Abilities</span>
                       <span>{battlefieldActiveAbilityNames.length} active</span>
                     </div>
                     <div className="weapon-selection-grid">
-                      {battlefieldCombatTriggerAbilityOptions.map((ability) => (
+                      {battlefieldCombatActivatedAbilityOptions.map((ability) => (
                         <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
                           <input
                             type="checkbox"

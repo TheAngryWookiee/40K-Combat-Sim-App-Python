@@ -179,7 +179,7 @@
 }
 
 .battlefield-preboard-persistent-controls {
-  margin-top: 12px;
+  margin: 12px 0;
 }
 
 .hero-copy {
@@ -470,10 +470,24 @@ textarea:focus {
   font-size: 0.88rem;
 }
 
+.weapon-selection-header.compact {
+  font-size: 0.92rem;
+}
+
 .weapon-selection-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 10px;
+}
+
+.weapon-selection-grid.single-column {
+  grid-template-columns: 1fr;
+}
+
+.muted-note {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
 }
 
 .weapon-checkbox {
@@ -1512,7 +1526,8 @@ textarea:focus {
 .battlefield-action-panel,
 .battlefield-transport-panel,
 .battlefield-reserve-panel,
-.battlefield-log-panel {
+.battlefield-log-panel,
+.battlefield-battle-state-panel {
   display: grid;
   gap: 10px;
   padding: 12px;
@@ -1525,12 +1540,74 @@ textarea:focus {
 .phase-resolver-panel .battlefield-action-panel,
 .phase-resolver-panel .battlefield-transport-panel,
 .phase-resolver-panel .battlefield-reserve-panel,
-.phase-resolver-panel .battlefield-log-panel {
+.phase-resolver-panel .battlefield-log-panel,
+.phase-resolver-panel .battlefield-battle-state-panel {
   padding: 12px 0 0;
   border: 0;
   border-top: 1px solid var(--line);
   border-radius: 0;
   background: transparent;
+}
+
+.battlefield-battle-state-panel.compact {
+  padding: 12px;
+}
+
+.battlefield-battle-state-panel h3,
+.battlefield-battle-state-panel h4,
+.battlefield-battle-state-panel p {
+  margin: 0;
+}
+
+.battlefield-battle-state-panel > div > p:not(.kicker),
+.battlefield-battle-state-card > p,
+.battlefield-achievement-suggestion p,
+.battlefield-boast-list p {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.battlefield-battle-state-card,
+.battlefield-achievement-suggestion {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-card);
+}
+
+.battlefield-battle-state-card-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.battlefield-battle-state-card-header span {
+  flex-shrink: 0;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.battlefield-battle-state-card-header span.valid {
+  border: 1px solid #a6cf8d;
+  background: #e7f3dc;
+  color: #183f24;
+}
+
+.battlefield-battle-state-card-header span.invalid {
+  border: 1px solid #d49084;
+  background: #f7ddd7;
+  color: #7d241d;
+}
+
+.battlefield-boast-list,
+.battlefield-achievement-suggestions {
+  display: grid;
+  gap: 8px;
 }
 
 .phase-resolver-panel .module-detail-card {
@@ -2633,16 +2710,30 @@ textarea:focus {
   gap: 10px;
 }
 
-.result-card p:last-child {
-  padding: 8px 10px;
-  border-radius: 999px;
-  background: rgba(67, 49, 34, 0.08);
-  color: var(--ink-soft);
-  font-size: 0.9rem;
-}
-
 .rule-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.combat-option-grid {
+  align-items: start;
+  grid-auto-flow: dense;
+}
+
+.combat-option-grid > * {
+  grid-column: 1;
+}
+
+.combat-option-heading {
+  margin: 0;
+  padding: 0 2px;
+}
+
+.combat-option-defender {
+  grid-column: 2;
+}
+
+.combat-option-spanning {
+  grid-column: 1 / -1;
 }
 
 .snapshot-grid,
@@ -3091,6 +3182,12 @@ textarea:focus {
   .rule-grid,
   .stat-row {
     grid-template-columns: 1fr;
+  }
+
+  .combat-option-grid > *,
+  .combat-option-defender,
+  .combat-option-spanning {
+    grid-column: 1;
   }
 
   .panel-heading {

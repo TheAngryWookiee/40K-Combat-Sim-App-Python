@@ -12,8 +12,9 @@
   -moz-osx-font-smoothing: grayscale;
 
   --app-background:
-    radial-gradient(circle at top left, rgba(236, 210, 158, 0.4), transparent 28%),
-    linear-gradient(180deg, #efe4d0, #e4d6c1 60%, #d7c4a7 100%);
+    radial-gradient(circle at top left, rgba(41, 142, 232, 0.2), transparent 32%),
+    radial-gradient(circle at top right, rgba(226, 60, 70, 0.14), transparent 26%),
+    linear-gradient(180deg, #e6ebf2, #d7dee8 58%, #bcc7d6 100%);
   --paper: #f4ebdc;
   --paper-soft: #eee2cf;
   --ink: #201913;

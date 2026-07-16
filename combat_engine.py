@@ -525,6 +525,9 @@ class CombatSimulator:
             "failed_hit_attacks": 0,
             "critical_hit_attacks": 0,
             "extra_hits_generated": 0,
+            "sustained_hits_generated": 0,
+            "lethal_hits_triggered": 0,
+            "torrent_hits": 0,
             "hit_pool": 0,
             "hit_rerolls_used": 0,
             "hit_reroll_successes": 0,
@@ -533,17 +536,33 @@ class CombatSimulator:
             "successful_wound_rolls": 0,
             "failed_wound_rolls": 0,
             "critical_wounds": 0,
+            "devastating_wounds_triggered": 0,
             "wound_pool": 0,
             "wound_rerolls_used": 0,
             "wound_reroll_successes": 0,
             "damage_rerolls_used": 0,
             "damage_reroll_improvements": 0,
             "damage_pool": 0,
+            "damage_inflicted": 0,
+            "devastating_damage": 0,
+            "mortal_damage": 0,
+            "mortal_damage_sources": {},
+            "feel_no_pain_rolls": 0,
+            "feel_no_pain_successes": 0,
+            "feel_no_pain_damage_prevented": 0,
             "save_attempts": 0,
             "saves_passed": 0,
             "saves_failed": 0,
             "unsavable_wounds": 0,
         }
+
+    def record_mortal_damage(self, source: str, damage: int) -> None:
+        mortal_damage = max(0, int(damage))
+        if mortal_damage <= 0:
+            return
+        self.stats["mortal_damage"] += mortal_damage
+        mortal_sources = self.stats.setdefault("mortal_damage_sources", {})
+        mortal_sources[source] = mortal_sources.get(source, 0) + mortal_damage
 
     @staticmethod
     def get_turn_structure() -> dict[str, Any]:
@@ -1984,10 +2003,60 @@ class CombatSimulator:
     @staticmethod
     def unit_has_ability(unit: dict[str, Any], ability_name: str) -> bool:
         normalized_ability_name = ability_name.lower()
-        for ability in unit.get("abilities", []):
-            name = str(ability.get("name", "")).lower()
-            if normalized_ability_name in name:
+        for ability_group in ("abilities", "wargear_abilities", "selectable_abilities"):
+            for ability in unit.get(ability_group, []):
+                name = str(ability.get("name", "")).lower()
+                if normalized_ability_name in name:
+                    return True
+        return False
+
+    @staticmethod
+    def unit_ability_name_set(unit: dict[str, Any]) -> set[str]:
+        names: set[str] = set()
+        for ability_group in ("abilities", "wargear_abilities", "selectable_abilities"):
+            for ability in unit.get(ability_group, []):
+                name = str(ability.get("name", "")).strip().lower()
+                if name:
+                    names.add(name)
+        return names
+
+    @staticmethod
+    def ability_names_include(ability_names: set[str], ability_name: str) -> bool:
+        normalized_ability_name = ability_name.lower()
+        return any(normalized_ability_name in name for name in ability_names)
+
+    def unit_or_attached_has_ability(
+        self,
+        unit: dict[str, Any],
+        attached_ability_names: set[str],
+        ability_name: str,
+    ) -> bool:
+        normalized_ability_name = ability_name.lower()
+        if self.unit_has_ability(unit, normalized_ability_name):
+            return True
+        return self.ability_names_include(attached_ability_names, normalized_ability_name)
+
+    @staticmethod
+    def weapon_base_name(weapon: dict[str, Any]) -> str:
+        return CombatSimulator.normalize_wargear_name(weapon["name"]).split(" - ", 1)[-1]
+
+    def unit_has_multiple_melee_weapons(self, unit: dict[str, Any]) -> bool:
+        melee_weapons = [
+            weapon
+            for weapon in unit.get("weapons", {}).values()
+            if str(weapon.get("range", "")).lower() == "melee"
+        ]
+        return len(melee_weapons) >= 2
+
+    def target_state_has_ability(self, target_state: dict[str, Any], ability_name: str) -> bool:
+        normalized_ability_name = ability_name.lower()
+        for ability_name_value in target_state.get("ability_names", []):
+            if normalized_ability_name in str(ability_name_value).lower():
                 return True
+        for profile in target_state.get("profiles", []):
+            for ability_name_value in profile.get("ability_names", []):
+                if normalized_ability_name in str(ability_name_value).lower():
+                    return True
         return False
 
     def unit_gets_oath_wound_bonus(self, unit: dict[str, Any]) -> bool:
@@ -2529,6 +2598,7 @@ class CombatSimulator:
         if self.weapon_has_keyword(weapon, "Torrent", attack_context):
             self.stats["auto_hit_attacks"] += 1
             self.stats["successful_hit_attacks"] += 1
+            self.stats["torrent_hits"] += 1
             self.log(f"{weapon['name']} automatically hits {target_name} because it has Torrent")
             return 1, 0
 
@@ -2620,6 +2690,7 @@ class CombatSimulator:
         if critical_hit and sustained_hits_bonus > 0:
             normal_hits += sustained_hits_bonus
             self.stats["extra_hits_generated"] += sustained_hits_bonus
+            self.stats["sustained_hits_generated"] += sustained_hits_bonus
             suffix = "" if sustained_hits_bonus == 1 else "s"
             self.log(f"On a critical hit the attack explodes, causing {sustained_hits_bonus} extra hit{suffix}")
 
@@ -2627,6 +2698,7 @@ class CombatSimulator:
             auto_wounds = 1
             normal_hits -= 1
             self.stats["auto_wounds"] += 1
+            self.stats["lethal_hits_triggered"] += 1
             self.log(f"On a critical hit {unit_name} automatically wounds {target_name} due to Lethal Hits")
 
         return normal_hits, auto_wounds
@@ -2694,6 +2766,7 @@ class CombatSimulator:
         if critical_wound:
             self.stats["critical_wounds"] += 1
         if devastating_wound:
+            self.stats["devastating_wounds_triggered"] += 1
             self.log(f"On a 6 {unit_name} scores a critical wound with Devastating Wounds")
 
         return True, devastating_wound, critical_wound
@@ -2845,6 +2918,9 @@ class CombatSimulator:
         rolls = [self.die_roll() for _ in range(damage)]
         ignored_wounds = sum(1 for roll in rolls if roll >= feel_no_pain)
         remaining_damage = damage - ignored_wounds
+        self.stats["feel_no_pain_rolls"] += len(rolls)
+        self.stats["feel_no_pain_successes"] += ignored_wounds
+        self.stats["feel_no_pain_damage_prevented"] += ignored_wounds
         self.log(
             f"{target_state['name']} rolls Feel No Pain {feel_no_pain}+ for {damage} wounds: "
             f"{', '.join(str(roll) for roll in rolls)}"
@@ -2951,6 +3027,7 @@ class CombatSimulator:
             self.log(f"{active_target['name']} suffers no damage")
             return
 
+        self.stats["damage_inflicted"] += min(active_target["current_wounds"], damage)
         active_target["current_wounds"] -= damage
 
         if active_target["current_wounds"] > 0:
@@ -2986,6 +3063,7 @@ class CombatSimulator:
         while remaining_damage > 0 and target_state["models"] > 0:
             active_target = self.get_active_target_profile(target_state)
             wounds_to_allocate = min(active_target["current_wounds"], remaining_damage)
+            self.stats["damage_inflicted"] += wounds_to_allocate
             active_target["current_wounds"] -= wounds_to_allocate
             remaining_damage -= wounds_to_allocate
 
@@ -3084,6 +3162,8 @@ class CombatSimulator:
 
             if mortal_wounds > 0:
                 self.log(f"Exhortation of Rage inflicts {mortal_wounds} mortal wounds")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage("Exhortation of Rage", mortal_wounds)
                 self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
             else:
                 self.log("Exhortation of Rage inflicts no mortal wounds")
@@ -3219,6 +3299,8 @@ class CombatSimulator:
         effective_strength = weapon["strength"]
         if weapon["range"].lower() == "melee":
             effective_strength += attack_context.get("melee_strength_bonus", 0)
+        else:
+            effective_strength += attack_context.get("ranged_strength_bonus", 0)
         active_target = self.get_active_target_profile(target_state)
         base_to_wound = self.get_to_wound_threshold(effective_strength, active_target["toughness"])
         wound_roll_modifier = self.get_wound_roll_modifier(attacker_unit, active_target, attack_context)
@@ -3240,6 +3322,8 @@ class CombatSimulator:
             if melee_damage_bonus > 0:
                 self.log(f"Active melee damage bonus: +{melee_damage_bonus}")
         else:
+            if attack_context.get("ranged_strength_bonus", 0) > 0:
+                self.log(f"Active ranged strength bonus: +{attack_context['ranged_strength_bonus']}")
             if attack_context.get("ranged_attack_bonus", 0) > 0:
                 self.log(f"Active ranged attack bonus: +{attack_context['ranged_attack_bonus']}")
             if attack_context.get("ranged_damage_bonus", 0) > 0:
@@ -3323,9 +3407,25 @@ class CombatSimulator:
                 self.log(
                     f"{weapon['name']} uses Precision to allocate the successful wound to {allocation_target['name']}"
                 )
+            if (
+                wound_event["critical_wound"]
+                and self.ability_names_include(self.unit_ability_name_set(attacker_unit), "dok's sawy arrgh")
+                and self.weapon_base_name(weapon) == "'urty syringe"
+                and not self.unit_has_keyword(damage_target, "vehicle")
+            ):
+                extra_mortal_wounds = self.roll_value("D6")
+                pending_mortal_wounds += extra_mortal_wounds
+                self.stats["damage_pool"] += extra_mortal_wounds
+                self.record_mortal_damage("Dok's Sawy Arrgh", extra_mortal_wounds)
+                self.log(
+                    f"Dok's Sawy Arrgh adds {extra_mortal_wounds} mortal wound"
+                    f"{'' if extra_mortal_wounds == 1 else 's'} on a critical wound"
+                )
             if wound_event["devastating_wound"]:
                 mortal_damage, melta_bonus = self.roll_damage(weapon, attack_context)
                 self.stats["damage_pool"] += mortal_damage
+                self.stats["devastating_damage"] += mortal_damage
+                self.record_mortal_damage("Devastating Wounds", mortal_damage)
                 if melta_bonus > 0:
                     self.log(f"Melta adds {melta_bonus} damage at this range")
                 pending_mortal_wounds += mortal_damage
@@ -3447,6 +3547,7 @@ class CombatSimulator:
                 **profile,
                 "effects": list(profile.get("effects", [])),
                 "keywords": list(profile.get("keywords", [])),
+                "ability_names": sorted(self.unit_ability_name_set(unit)),
             }
             for profile in unit.get("target_profiles", [])
             if profile.get("models", 0) > 0
@@ -3461,10 +3562,12 @@ class CombatSimulator:
                 "armor_save": unit["armor_save"],
                 "invulnerable_save": unit["invulnerable_save"],
                 "models": sum(profile["models"] for profile in target_profiles),
+                "starting_models": self.get_unit_starting_model_count(unit),
                 "effects": list(unit.get("effects", [])),
                 "feel_no_pain": self.get_lowest_effect_value(unit.get("effects", []), "feel_no_pain"),
                 "has_cover": False,
                 "keywords": list(unit["keywords"]),
+                "ability_names": sorted(self.unit_ability_name_set(unit)),
                 "profiles": target_profiles,
             }
             if use_highest_bodyguard_toughness:
@@ -3486,17 +3589,23 @@ class CombatSimulator:
             "armor_save": unit["armor_save"],
             "invulnerable_save": unit["invulnerable_save"],
             "models": unit["models"],
+            "starting_models": self.get_unit_starting_model_count(unit),
             "effects": list(unit.get("effects", [])),
             "feel_no_pain": self.get_lowest_effect_value(unit.get("effects", []), "feel_no_pain"),
             "has_cover": False,
             "keywords": list(unit["keywords"]),
+            "ability_names": sorted(self.unit_ability_name_set(unit)),
         }
 
     @staticmethod
     def summarize_state(target_state: dict[str, Any]) -> dict[str, Any]:
+        starting_models = max(0, int(target_state.get("starting_models", target_state["models"])))
+        models_remaining = max(0, int(target_state["models"]))
         return {
             "name": target_state["name"],
-            "models_remaining": target_state["models"],
+            "starting_models": starting_models,
+            "models_remaining": models_remaining,
+            "models_destroyed": max(0, starting_models - models_remaining),
             "current_model_wounds": target_state["current_wounds"],
             "destroyed": target_state["models"] <= 0,
         }
@@ -3559,6 +3668,12 @@ class CombatSimulator:
             str(name).lower()
             for name in options.get("attacker_active_ability_names", [])
         }
+        attacker_attached_ability_names = {
+            str(name).lower()
+            for name in options.get("attacker_attached_ability_names", [])
+        }
+        attacker_ability_names = self.unit_ability_name_set(attacker_unit)
+        attacker_or_attached_ability_names = attacker_ability_names | attacker_attached_ability_names
 
         temporary_weapon_keywords: set[str] = set()
         temporary_melee_weapon_keywords: set[str] = set()
@@ -3583,8 +3698,13 @@ class CombatSimulator:
             )
         if bool(options.get("attacker_unforgiven_fury_active", False)):
             temporary_weapon_keywords.add("LH")
-        if "finest hour" in attacker_active_ability_names:
+        if (
+            "finest hour" in attacker_active_ability_names
+            and self.unit_has_ability(attacker_unit, "Finest Hour")
+        ):
             temporary_melee_weapon_keywords.add("DW")
+        if "headhunters" in attacker_active_ability_names:
+            temporary_weapon_keywords.update({"DW", "Precision"})
         if (
             bool(options.get("charged_this_turn", False))
             and weapon["range"].lower() == "melee"
@@ -3704,10 +3824,39 @@ class CombatSimulator:
         reroll_all_hit_rolls = False
         reroll_wound_rolls_of_1 = False
         reroll_all_wound_rolls = False
+        current_weapon_base_name = self.weapon_base_name(weapon)
         if bool(options.get("attacker_stubborn_tenacity_active", False)) and bool(options.get("attacker_below_starting_strength", False)):
             attacker_hit_modifier += 1
             if bool(options.get("attacker_battleshocked", False)):
                 attacker_outgoing_wound_modifier += 1
+        if weapon["range"].lower() == "melee":
+            if self.ability_names_include(attacker_or_attached_ability_names, "litany of hate"):
+                attacker_outgoing_wound_modifier += 1
+            if (
+                self.ability_names_include(attacker_or_attached_ability_names, "might is right")
+                or self.ability_names_include(attacker_or_attached_ability_names, "oathbound")
+            ):
+                attacker_hit_modifier += 1
+            if self.ability_names_include(attacker_or_attached_ability_names, "prophet of da great waaagh"):
+                attacker_hit_modifier += 1
+                attacker_outgoing_wound_modifier += 1
+            if (
+                self.ability_names_include(attacker_or_attached_ability_names, "war howl")
+                and str(options.get("attacker_primary_unit_name", "")) == "Blood Claws"
+            ):
+                reroll_all_wound_rolls = True
+            if (
+                self.ability_names_include(attacker_ability_names, "champion of the kingsguard")
+                and self.unit_has_keyword(target_state, "character")
+            ):
+                reroll_all_hit_rolls = True
+                reroll_all_wound_rolls = True
+            if self.ability_names_include(attacker_ability_names, "death totem"):
+                reroll_hit_rolls_of_1 = True
+        if self.ability_names_include(attacker_or_attached_ability_names, "tempered ferocity"):
+            temporary_weapon_keywords.add("SH1")
+        if self.ability_names_include(attacker_ability_names, "cunning hunters"):
+            reroll_wound_rolls_of_1 = True
         if bool(options.get("defender_overwhelming_onslaught_active", False)) and weapon["range"].lower() == "melee":
             attacker_hit_modifier -= 1
         if bool(options.get("defender_stalkin_taktiks_active", False)) and weapon["range"].lower() != "melee" and self.unit_has_keyword(target_state, "infantry"):
@@ -3771,15 +3920,31 @@ class CombatSimulator:
         melee_attack_bonus = 0
         melee_strength_bonus = 0
         melee_damage_bonus = 0
+        ranged_strength_bonus = 0
         ranged_damage_bonus = 0
         ranged_attack_bonus = 0
-        weapon_base_name = self.normalize_wargear_name(weapon["name"]).split(" - ", 1)[-1]
+        weapon_base_name = current_weapon_base_name
         if (
             "hail of bullets" in attacker_active_ability_names
             and weapon["range"].lower() != "melee"
             and weapon_base_name == "bolt rifle"
         ):
             ranged_attack_bonus += 2
+        if (
+            self.ability_names_include(attacker_ability_names, "waaagh energy")
+            and weapon_base_name == "'eadbanger"
+        ):
+            model_count_bonus = attacker_package_model_count // 5
+            ranged_strength_bonus += model_count_bonus
+            ranged_damage_bonus += model_count_bonus
+            if attacker_package_model_count >= 10:
+                temporary_weapon_keywords_by_weapon_name.setdefault(weapon_base_name, set()).add("Blast")
+        if (
+            self.ability_names_include(attacker_ability_names, "battle-lust")
+            and bool(options.get("charged_this_turn", False))
+            and weapon_base_name == "frostfang"
+        ):
+            melee_attack_bonus += 2
         if bool(options.get("attacker_weapons_of_the_first_legion_active", False)):
             weapons_of_the_first_legion_bonus = 2 if bool(options.get("attacker_battleshocked", False)) else 1
             melee_attack_bonus += weapons_of_the_first_legion_bonus
@@ -3850,6 +4015,25 @@ class CombatSimulator:
             )
         ):
             ranged_damage_bonus += 1
+        if (
+            self.ability_names_include(attacker_ability_names, "dead brutal")
+            and bool(options.get("attacker_waaagh_active", False))
+            and weapon_base_name == "'uge choppa"
+        ):
+            melee_damage_bonus += 1
+        if (
+            self.ability_names_include(attacker_ability_names, "thunderous charge")
+            and bool(options.get("charged_this_turn", False))
+            and weapon["range"].lower() == "melee"
+            and weapon_base_name == "wolf guard weapon"
+        ):
+            melee_damage_bonus += 1
+        if (
+            self.ability_names_include(attacker_ability_names, "violent fury")
+            and weapon["range"].lower() == "melee"
+            and self.unit_has_multiple_melee_weapons(attacker_unit)
+        ):
+            temporary_weapon_keywords.add("Twin-linked")
 
         attacker_feel_no_pain = 0
         if bool(options.get("attacker_pennant_of_remembrance_active", False)):
@@ -3864,6 +4048,21 @@ class CombatSimulator:
         if bool(options.get("defender_unbreakable_lines_active", False)):
             target_incoming_wound_modifier -= 1
         if bool(options.get("defender_ard_as_nails_active", False)):
+            target_incoming_wound_modifier -= 1
+        if self.target_state_has_ability(target_state, "the emperor's shield"):
+            target_incoming_wound_modifier -= 1
+        effective_attack_strength_for_defense = weapon["strength"] + (
+            melee_strength_bonus
+            if weapon["range"].lower() == "melee"
+            else ranged_strength_bonus
+        )
+        if (
+            (
+                self.target_state_has_ability(target_state, "legendary tenacity")
+                or self.target_state_has_ability(target_state, "rugged resilience")
+            )
+            and effective_attack_strength_for_defense > int(target_state.get("toughness", 0))
+        ):
             target_incoming_wound_modifier -= 1
         if (
             defender_enhancement_name == "Helm of the Beastslayer"
@@ -3889,10 +4088,7 @@ class CombatSimulator:
             defender_enhancement_name == "Surly As a Squiggoth"
             and defender_has_attached_character
         ):
-            effective_attack_strength = weapon["strength"] + (
-                melee_strength_bonus if weapon["range"].lower() == "melee" else 0
-            )
-            if effective_attack_strength > int(target_state.get("toughness", 0)):
+            if effective_attack_strength_for_defense > int(target_state.get("toughness", 0)):
                 target_incoming_wound_modifier -= 1
 
         target_invulnerable_save = 0
@@ -4005,6 +4201,9 @@ class CombatSimulator:
                         and bool(options.get("attacker_prey_active", False)) else 6,
                         5 if bool(options.get("attacker_blitza_fire_active", False))
                         and bool(options.get("attacker_target_within_9", False)) else 6,
+                        5 if self.ability_names_include(attacker_or_attached_ability_names, "prophet of da great waaagh")
+                        and bool(options.get("attacker_waaagh_active", False))
+                        and weapon["range"].lower() == "melee" else 6,
                     ]
                 ],
             ),
@@ -4014,6 +4213,7 @@ class CombatSimulator:
             "melee_attack_bonus": melee_attack_bonus,
             "melee_strength_bonus": melee_strength_bonus,
             "melee_damage_bonus": melee_damage_bonus,
+            "ranged_strength_bonus": ranged_strength_bonus,
             "ranged_attack_bonus": ranged_attack_bonus,
             "ranged_damage_bonus": ranged_damage_bonus,
             "target_incoming_wound_modifier": target_incoming_wound_modifier,
@@ -4307,7 +4507,7 @@ class CombatSimulator:
                     raise CombatSimulationError("Aircraft units can only make melee attacks that target Flying units.")
 
             if index > 0:
-                self.log(f"\n{attacker_unit['name']} joins the attack")
+                self.log(f"\n{attacker_unit['name']} attacks")
 
             self.resolve_pre_attack_active_abilities(attacker_unit, reference_weapon, target_state, attack_context)
             if len(weapons) == 1:
