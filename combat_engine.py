@@ -3560,6 +3560,7 @@ class CombatSimulator:
         target_profiles = [
             {
                 **profile,
+                "starting_models": max(0, int(profile.get("models", 0))),
                 "effects": list(profile.get("effects", [])),
                 "keywords": list(profile.get("keywords", [])),
                 "ability_names": sorted(self.unit_ability_name_set(unit)),
@@ -3627,9 +3628,11 @@ class CombatSimulator:
                 for profile in target_state["profiles"]
             )
             starting_total_wounds = sum(
-                max(0, int(profile.get("models", 0))) * max(0, int(profile.get("wounds", 0)))
+                max(0, int(profile.get("starting_models", profile.get("models", 0)))) * max(0, int(profile.get("wounds", 0)))
                 for profile in target_state["profiles"]
             )
+            if starting_total_wounds <= 0 and starting_models > 0:
+                starting_total_wounds = starting_models * max(0, int(target_state.get("wounds", 0)))
         else:
             current_total_wounds = (
                 max(0, int(target_state.get("current_wounds", 0)))
@@ -4136,6 +4139,11 @@ class CombatSimulator:
         if (
             defender_enhancement_name == "Fenrisian Grit"
             and bool(options.get("defender_enhancement_bearer_is_single_model_unit", False))
+        ):
+            target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 4)
+        if (
+            self.target_state_has_ability(target_state, "Psychic Hood")
+            and self.weapon_has_keyword(weapon, "Psychic")
         ):
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 4)
         if (

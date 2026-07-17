@@ -261,7 +261,8 @@
 
 .control-panel,
 .data-panel,
-.log-panel {
+.log-panel,
+.matrix-panel {
   padding: 22px;
 }
 
@@ -3039,12 +3040,14 @@ textarea:focus {
 .run-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+  align-items: center;
   margin-bottom: 14px;
 }
 
 .run-tab,
-.summary-index-card {
+.summary-index-card,
+.run-step-button {
   border: 1px solid var(--line-strong);
   background: var(--surface-lightwash);
   color: var(--ink);
@@ -3061,6 +3064,54 @@ textarea:focus {
 .run-tab.active {
   background: var(--run-tab-active-bg);
   border-color: var(--run-tab-active-border);
+}
+
+.run-selector {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface-card-soft) 70%, transparent);
+}
+
+.run-selector label {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 160px);
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.run-selector label span,
+.run-count-label {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.run-selector select {
+  min-height: 34px;
+  padding: 5px 30px 5px 10px;
+  border-radius: 10px;
+}
+
+.run-step-button {
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.run-step-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.run-count-label {
+  padding: 0 8px;
 }
 
 .summary-index {
@@ -3095,6 +3146,242 @@ textarea:focus {
 .summary-index-card span {
   color: var(--ink-soft);
   font-size: 0.92rem;
+}
+
+.matrix-layout {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.matrix-panel {
+  min-width: 0;
+}
+
+.matrix-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.matrix-summary-grid .result-card {
+  min-width: 0;
+}
+
+.matrix-summary-grid .result-card h3 {
+  overflow-wrap: anywhere;
+  font-size: clamp(1.2rem, 1.6vw, 1.8rem);
+  line-height: 1.12;
+}
+
+.matrix-summary-grid .result-card p {
+  overflow-wrap: anywhere;
+}
+
+.matrix-column-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-card-soft) 68%, transparent);
+}
+
+.matrix-column-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.matrix-column-summary p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.matrix-column-disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 5px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface-control);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.matrix-column-disclosure span {
+  font-size: 0.84rem;
+  font-weight: 850;
+}
+
+.matrix-column-disclosure strong {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.matrix-column-picker {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: 6px 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.matrix-column-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.matrix-column-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.matrix-column-toggle:hover {
+  background: color-mix(in srgb, var(--surface-control) 72%, transparent);
+}
+
+.matrix-column-toggle input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+}
+
+.matrix-column-toggle span {
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.secondary-button.compact {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 0.82rem;
+}
+
+.matrix-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--surface-card) 92%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36);
+}
+
+.matrix-table {
+  width: 100%;
+  border-collapse: separate;
+  table-layout: fixed;
+  border-spacing: 0;
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+
+.matrix-table th,
+.matrix-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  vertical-align: top;
+  text-align: left;
+}
+
+.matrix-table th:last-child,
+.matrix-table td:last-child {
+  border-right: 0;
+}
+
+.matrix-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: color-mix(in srgb, var(--surface-card-alt) 94%, white 6%);
+}
+
+.matrix-column-resizer {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 8px;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: col-resize;
+  z-index: 2;
+}
+
+.matrix-column-resizer::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  right: 3px;
+  bottom: 12px;
+  width: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line-strong) 68%, transparent);
+  opacity: 0;
+}
+
+.matrix-table th:hover .matrix-column-resizer::after,
+.matrix-column-resizer:focus-visible::after {
+  opacity: 1;
+}
+
+.matrix-table th span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.matrix-table th input {
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface-control);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.84rem;
+}
+
+.matrix-table td {
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.matrix-table .numeric {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.matrix-table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--surface-lightwash) 48%, transparent);
 }
 
 .combat-log {

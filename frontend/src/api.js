@@ -56,6 +56,16 @@ export async function simulateCombat(payload) {
   return response.data
 }
 
+export async function simulateCombatBatch(payload) {
+  const response = await api.post('/simulate-batch', payload, { timeout: 180000 })
+  return response.data
+}
+
+export async function fetchMatrixRuns(limit = 5000) {
+  const response = await api.get('/matrix/runs', { params: { limit } })
+  return response.data
+}
+
 export async function fetchTurnStructure() {
   const response = await api.get('/rules/turn-structure')
   return response.data

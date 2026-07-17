@@ -4,9 +4,11 @@ import {
   fetchFactions,
   fetchFactionDetails,
   fetchTurnStructure,
+  fetchMatrixRuns,
   fetchUnitDetailsWithLoadout,
   fetchUnits,
   simulateCombat,
+  simulateCombatBatch,
 } from './api'
 
 const statDisplayRows = [
@@ -23,6 +25,7 @@ const statDisplayRows = [
 ]
 
 const ATTACHED_LEADER_WEAPON_PREFIX = '__attacker_leader__::'
+const GAME_VERSION = '11.06.27.26'
 
 const initialOptions = {
   target_has_cover: false,
@@ -136,7 +139,11 @@ const BATTLEFIELD_WIDTH_INCHES = 60
 const BATTLEFIELD_HEIGHT_INCHES = 44
 const SAVED_ARMY_LISTS_STORAGE_KEY = 'tactica-forge:saved-army-lists'
 const APP_THEME_STORAGE_KEY = 'strategium-forge:theme'
+const MATRIX_RUN_HISTORY_STORAGE_KEY = 'strategium-forge:matrix-run-history'
 const BATTLEFIELD_GRID_STEP_INCHES = 6
+const SIMULATION_REQUEST_CONCURRENCY = 12
+const SUMMARY_ONLY_RUN_THRESHOLD = 500
+const MAX_SIMULATION_RUNS = 100
 const APP_THEMES = {
   classic: {
     id: 'classic',
@@ -176,6 +183,15 @@ function readThemePreference() {
     return APP_THEMES[storedTheme] ? storedTheme : 'forge'
   } catch {
     return 'forge'
+  }
+}
+
+function readMatrixRunHistoryFromStorage() {
+  try {
+    const storedRuns = JSON.parse(localStorage.getItem(MATRIX_RUN_HISTORY_STORAGE_KEY) || '[]')
+    return Array.isArray(storedRuns) ? storedRuns : []
+  } catch {
+    return []
   }
 }
 
@@ -1281,6 +1297,7 @@ function buildSimulationPayload(state) {
   }
 
   return {
+    game_version: GAME_VERSION,
     attacker_faction: state.attackerFaction,
     attacker_unit: state.attackerUnit,
     attacker_detachment_name: state.attackerDetachmentName || undefined,
@@ -3581,16 +3598,31 @@ function getRunTargetModelsDestroyed(run) {
 
 function getRunTargetStartingTotalWounds(run) {
   const target = run?.result?.target || {}
-  if (Number.isFinite(Number(target.starting_total_wounds))) {
-    return Math.max(0, Number(target.starting_total_wounds))
+  const directWoundPool = Number(target.starting_total_wounds)
+  if (Number.isFinite(directWoundPool) && directWoundPool > 0) {
+    return directWoundPool
+  }
+  const defender = run?.combat_metadata?.defender || {}
+  const modelCount = Number(defender.resolved_model_count ?? target.starting_models ?? run?.request?.defender_model_count)
+  const woundsPerModel = Number(defender.wounds || defender.resolved_wounds)
+  if (Number.isFinite(modelCount) && modelCount > 0 && Number.isFinite(woundsPerModel) && woundsPerModel > 0) {
+    return modelCount * woundsPerModel
   }
   return 0
 }
 
 function getRunDamageInflicted(run) {
   const combatStats = run?.result?.stats || {}
-  if (Number.isFinite(Number(combatStats.damage_inflicted))) {
-    return Math.max(0, Number(combatStats.damage_inflicted))
+  const damageInflicted = Number(combatStats.damage_inflicted)
+  const damagePool = Number(combatStats.damage_pool)
+  if (Number.isFinite(damageInflicted) && damageInflicted > 0) {
+    return Math.max(0, damageInflicted)
+  }
+  if (Number.isFinite(damagePool) && damagePool > 0 && run?.result?.target?.destroyed) {
+    return Math.max(0, damagePool)
+  }
+  if (Number.isFinite(damageInflicted)) {
+    return Math.max(0, damageInflicted)
   }
   const target = run?.result?.target || {}
   if (
@@ -3600,6 +3632,423 @@ function getRunDamageInflicted(run) {
     return Math.max(0, Number(target.starting_total_wounds) - Number(target.current_total_wounds))
   }
   return 0
+}
+
+function stableMatrixStringify(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map(stableMatrixStringify).join(',')}]`
+  }
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableMatrixStringify(value[key])}`)
+      .join(',')}}`
+  }
+  return JSON.stringify(value)
+}
+
+function omitMatrixVolatileFields(value) {
+  if (Array.isArray(value)) {
+    return value.map(omitMatrixVolatileFields)
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([key]) => !['seed', 'stored_at', 'run_id', 'batch_id'].includes(key))
+        .map(([key, entryValue]) => [key, omitMatrixVolatileFields(entryValue)]),
+    )
+  }
+  return value
+}
+
+function getMatrixRunKey(run) {
+  return stableMatrixStringify(omitMatrixVolatileFields(run?.combat_metadata || run?.request || {}))
+}
+
+function humanizeMatrixText(value) {
+  return String(value || '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/(^|\s)(\S)/g, (_, prefix, letter) => `${prefix}${letter.toUpperCase()}`)
+}
+
+function formatMatrixLoadoutValue(value) {
+  if (Array.isArray(value)) {
+    return value.map(formatMatrixLoadoutValue).join(', ')
+  }
+  if (value && typeof value === 'object') {
+    return Object.entries(value)
+      .filter(([, entryValue]) => entryValue !== 0 && entryValue !== false && entryValue !== null && entryValue !== '')
+      .map(([key, entryValue]) => {
+        if (entryValue === true) {
+          return humanizeMatrixText(key)
+        }
+        return `${humanizeMatrixText(key)} x${entryValue}`
+      })
+      .join(', ')
+  }
+  return humanizeMatrixText(value)
+}
+
+function formatMatrixAbilityName(value) {
+  return String(value || '').trim()
+}
+
+function matrixAbilityIsCombatRelevant(name) {
+  const normalizedName = String(name || '').trim().toLowerCase()
+  if (!normalizedName || ['core', 'faction'].includes(normalizedName)) {
+    return false
+  }
+  return (
+    SUPPORTED_PASSIVE_COMBAT_ABILITIES.has(normalizedName)
+    || Object.prototype.hasOwnProperty.call(SUPPORTED_COMBAT_ACTIVATED_ABILITIES, normalizedName)
+    || normalizedName === "pack's quarry"
+  )
+}
+
+function formatMatrixOptionKey(key) {
+  const labels = {
+    charged_this_turn: 'Charged',
+    attacker_active_ability_names: '',
+    defender_active_ability_names: '',
+    attacker_try_dat_button_effects: 'Try Dat Button',
+    attacker_on_objective: 'Attacker On Objective',
+    defender_on_objective: 'Defender On Objective',
+  }
+  if (Object.prototype.hasOwnProperty.call(labels, key)) {
+    return labels[key]
+  }
+  return humanizeMatrixText(key)
+}
+
+function getMatrixLoadoutLabel(snapshot) {
+  const resolvedLoadout = snapshot?.resolved_loadout || {}
+  const loadoutLines = Object.entries(resolvedLoadout)
+    .map(([, value]) => formatMatrixLoadoutValue(value))
+    .filter((value) => {
+      if (Array.isArray(value)) {
+        return value.length > 0
+      }
+      if (value && typeof value === 'object') {
+        return Object.keys(value).length > 0
+      }
+      return value !== null && value !== undefined && value !== ''
+    })
+    .filter(Boolean)
+  return loadoutLines.length ? loadoutLines.join('; ') : 'Default'
+}
+
+function getMatrixUnitLabel(snapshot) {
+  if (!snapshot) {
+    return ''
+  }
+  return [
+    snapshot.unit,
+    snapshot.detachment,
+    snapshot.enhancement,
+  ].filter(Boolean).join(' | ')
+}
+
+function getMatrixAttackerLabel(metadata) {
+  const units = [
+    getMatrixUnitLabel(metadata?.attacker),
+    getMatrixUnitLabel(metadata?.attacker_attached_character),
+  ].filter(Boolean)
+  return units.length ? units.join(' + ') : ''
+}
+
+function getMatrixWeaponLabel(metadata) {
+  const attackWeapons = metadata?.attack_weapons || []
+  const weaponLabels = attackWeapons.flatMap((entry) => (
+    (entry.weapons || []).map((weapon) => `${entry.unit}: ${weapon.name}`)
+  ))
+  if (weaponLabels.length) {
+    return weaponLabels.join(', ')
+  }
+  return (metadata?.selected_weapon_names || []).join(', ') || 'Weapons not tracked'
+}
+
+function getMatrixOptionLabel(options = {}) {
+  const activeOptions = Object.entries(options)
+    .filter(([key, value]) => {
+      const defaultValue = initialOptions[key]
+      if (Array.isArray(value)) {
+        return value.length > 0
+      }
+      if (value === true) {
+        return defaultValue !== true
+      }
+      if (value === false) {
+        return defaultValue === true
+      }
+      if (typeof value === 'string') {
+        return value.trim() && value !== defaultValue
+      }
+      if (Number.isFinite(value)) {
+        return value !== defaultValue
+      }
+      return false
+    })
+    .map(([key, value]) => {
+      const optionLabel = formatMatrixOptionKey(key)
+      if (Array.isArray(value)) {
+        const formattedValues = value
+          .map((entry) => (
+            key === 'attacker_active_ability_names' || key === 'defender_active_ability_names'
+              ? formatMatrixAbilityName(entry)
+              : humanizeMatrixText(entry)
+          ))
+          .filter(Boolean)
+          .join(', ')
+        return optionLabel ? `${optionLabel}: ${formattedValues}` : formattedValues
+      }
+      if (value === true) {
+        return optionLabel
+      }
+      if (value === false) {
+        return optionLabel ? `No ${optionLabel}` : ''
+      }
+      return optionLabel ? `${optionLabel}: ${humanizeMatrixText(value)}` : humanizeMatrixText(value)
+    })
+    .filter(Boolean)
+  return activeOptions.length ? activeOptions.join(', ') : 'Baseline'
+}
+
+function getMatrixContextAbilityNames(metadata = {}) {
+  const abilityNames = []
+  const appendNames = (names) => {
+    ;(names || []).forEach((name) => {
+      const formattedName = formatMatrixAbilityName(name)
+      if (formattedName && matrixAbilityIsCombatRelevant(formattedName) && !abilityNames.includes(formattedName)) {
+        abilityNames.push(formattedName)
+      }
+    })
+  }
+
+  appendNames(metadata.attacker?.ability_names)
+  appendNames(metadata.attacker_attached_character?.ability_names)
+  appendNames(metadata.defender?.ability_names)
+  appendNames(metadata.defender_attached_character?.ability_names)
+
+  const attackerName = String(metadata.attacker?.unit || '').toLowerCase()
+  const attackerLeaderName = String(metadata.attacker_attached_character?.unit || '').toLowerCase()
+  const attackerDetachment = String(metadata.attacker?.detachment || '').toLowerCase()
+  if (attackerName.includes('blood claws') && attackerDetachment.includes('saga of the hunter')) {
+    appendNames(["Pack's Quarry"])
+  }
+  if (attackerLeaderName.includes('ragnar blackmane')) {
+    appendNames(['Battle-lust'])
+  }
+
+  return abilityNames
+}
+
+function getMatrixAbilityStratagemLabel(metadata = {}) {
+  const optionLabel = getMatrixOptionLabel(metadata.options)
+  const labels = [
+    ...getMatrixContextAbilityNames(metadata),
+    ...(optionLabel === 'Baseline' ? [] : optionLabel.split(', ').filter(Boolean)),
+  ]
+  const uniqueLabels = []
+  labels.forEach((label) => {
+    if (label && !uniqueLabels.includes(label)) {
+      uniqueLabels.push(label)
+    }
+  })
+  return uniqueLabels.length ? uniqueLabels.join(', ') : 'Baseline'
+}
+
+function getMatrixTargetWoundPool(run) {
+  const target = run?.result?.target || {}
+  const directWoundPool = Number(target.starting_total_wounds)
+  if (Number.isFinite(directWoundPool) && directWoundPool > 0) {
+    return directWoundPool
+  }
+  const defender = run?.combat_metadata?.defender || {}
+  const modelCount = Number(defender.resolved_model_count)
+  const woundsPerModel = Number(defender.wounds || defender.resolved_wounds)
+  if (Number.isFinite(modelCount) && modelCount > 0 && Number.isFinite(woundsPerModel) && woundsPerModel > 0) {
+    return modelCount * woundsPerModel
+  }
+  return 0
+}
+
+function getMatrixDamageValues(groupedRuns) {
+  return groupedRuns.map((run) => {
+    const stats = run?.result?.stats || {}
+    if (Number.isFinite(Number(stats.damage_pool))) {
+      return Math.max(0, Number(stats.damage_pool))
+    }
+    if (Number.isFinite(Number(stats.damage_inflicted))) {
+      return Math.max(0, Number(stats.damage_inflicted))
+    }
+    return getRunDamageInflicted(run)
+  })
+}
+
+function getMatrixTargetStartingModels(run) {
+  const targetStartingModels = Number(run?.result?.target?.starting_models)
+  if (Number.isFinite(targetStartingModels) && targetStartingModels > 0) {
+    return targetStartingModels
+  }
+  const defenderModelCount = Number(run?.combat_metadata?.defender?.resolved_model_count)
+  return Number.isFinite(defenderModelCount) ? defenderModelCount : 0
+}
+
+function createMatrixRunRecord(run, batchId) {
+  return {
+    id: run.matrix_storage?.id || `${batchId}-${run.runIndex}`,
+    batch_id: batchId,
+    run_index: run.runIndex,
+    stored_at: run.matrix_storage?.created_at || new Date().toISOString(),
+    game_version: run.game_version || run.combat_metadata?.game_version || run.request?.game_version || GAME_VERSION,
+    combat_metadata: run.combat_metadata || null,
+    request: run.request || null,
+    result: {
+      target: run.result?.target || null,
+      stats: run.result?.stats || {},
+      attached_character: run.result?.attached_character || null,
+      hazardous_bearer: run.result?.hazardous_bearer || null,
+      attack_resolution_plan: run.result?.attack_resolution_plan || null,
+    },
+  }
+}
+
+function buildMatrixRows(runs) {
+  const groups = new Map()
+  runs.forEach((run) => {
+    const key = getMatrixRunKey(run)
+    if (!groups.has(key)) {
+      groups.set(key, [])
+    }
+    groups.get(key).push(run)
+  })
+
+  return Array.from(groups.entries()).map(([key, groupedRuns]) => {
+    const summary = buildRunSummary(groupedRuns)
+    const firstRun = groupedRuns[0]
+    const metadata = firstRun?.combat_metadata || {}
+    const perRun = (value) => (summary.totalRuns ? value / summary.totalRuns : 0)
+    const damageValues = getMatrixDamageValues(groupedRuns)
+    const averageMatrixDamage = average(damageValues)
+    const matrixDamageStdDev = standardDeviation(damageValues)
+    const measuredTargetWoundPool = average(groupedRuns.map(getMatrixTargetWoundPool).filter((value) => value > 0))
+    const inferredTargetWoundPool = perRun(summary.combat.damageInflicted) || averageMatrixDamage
+    const matrixTargetWoundPool = measuredTargetWoundPool || inferredTargetWoundPool
+    const matrixEffectiveness = buildEffectivenessScores({
+      averageDamageInflicted: averageMatrixDamage,
+      damageInflictedStdDev: matrixDamageStdDev,
+      killPressure: summary.effectiveness.killPressure,
+      targetWoundPool: matrixTargetWoundPool,
+    })
+    const averageMortalDamage = perRun(summary.combat.mortalDamage)
+    const averageNormalDamage = averageMortalDamage > 0
+      ? Math.max(0, averageMatrixDamage - averageMortalDamage)
+      : averageMatrixDamage
+    const latestStoredAt = groupedRuns
+      .map((run) => run.stored_at)
+      .filter(Boolean)
+      .sort()
+      .at(-1) || ''
+    return {
+      key,
+      gameVersion: metadata.game_version || firstRun?.game_version || firstRun?.request?.game_version || GAME_VERSION,
+      attacker: getMatrixAttackerLabel(metadata),
+      attackerLoadout: getMatrixLoadoutLabel(metadata.attacker),
+      weapons: getMatrixWeaponLabel(metadata),
+      defender: getMatrixUnitLabel(metadata.defender),
+      defenderLoadout: getMatrixLoadoutLabel(metadata.defender),
+      options: getMatrixAbilityStratagemLabel(metadata),
+      runs: summary.totalRuns,
+      targetDestroyed: summary.targetDestroyedCount,
+      avgDamage: averageMatrixDamage,
+      avgNormalDamage: averageNormalDamage,
+      avgMortalDamage: averageMortalDamage || null,
+      avgModelsDestroyed: summary.totalRuns ? summary.targetModelsDestroyed / summary.totalRuns : 0,
+      targetStartingModels: average(groupedRuns.map(getMatrixTargetStartingModels).filter((value) => value > 0)),
+      avgModelsRemaining: summary.averageTargetModelsRemaining,
+      avgCurrentWounds: summary.averageTargetCurrentWounds,
+      killRate: matrixEffectiveness.killPressure,
+      ces: matrixEffectiveness.offenseScore,
+      attackInstances: perRun(summary.combat.attackInstances),
+      gatheredAttackDice: perRun(summary.combat.gatheredAttackDice),
+      plannedAttackDice: perRun(summary.combat.plannedAttackDice),
+      hitRolls: perRun(summary.combat.hitRolls),
+      autoHitAttacks: perRun(summary.combat.autoHitAttacks),
+      torrentHits: perRun(summary.combat.torrentHits),
+      hitPool: perRun(summary.combat.hitPool),
+      hitRate: summary.combat.attackInstances ? (summary.combat.hitPool / summary.combat.attackInstances) * 100 : 0,
+      failedHitAttacks: perRun(summary.combat.failedHitAttacks),
+      criticalHitAttacks: perRun(summary.combat.criticalHitAttacks),
+      extraHitsGenerated: perRun(summary.combat.extraHitsGenerated),
+      sustainedHitsGenerated: perRun(summary.combat.sustainedHitsGenerated),
+      lethalHitsTriggered: perRun(summary.combat.lethalHitsTriggered),
+      hitRerollsUsed: perRun(summary.combat.hitRerollsUsed),
+      hitRerollSuccesses: perRun(summary.combat.hitRerollSuccesses),
+      woundRolls: perRun(summary.combat.woundRolls),
+      autoWounds: perRun(summary.combat.autoWounds),
+      woundPool: perRun(summary.combat.woundPool),
+      woundRate: summary.combat.woundRolls ? (summary.combat.successfulWoundRolls / summary.combat.woundRolls) * 100 : 0,
+      successfulWoundRolls: perRun(summary.combat.successfulWoundRolls),
+      failedWoundRolls: perRun(summary.combat.failedWoundRolls),
+      criticalWounds: perRun(summary.combat.criticalWounds),
+      devastatingWoundsTriggered: perRun(summary.combat.devastatingWoundsTriggered),
+      woundRerollsUsed: perRun(summary.combat.woundRerollsUsed),
+      woundRerollSuccesses: perRun(summary.combat.woundRerollSuccesses),
+      saveAttempts: perRun(summary.combat.saveAttempts),
+      savesPassed: perRun(summary.combat.savesPassed),
+      savesFailed: perRun(summary.combat.savesFailed),
+      failedSaveRate: summary.combat.saveAttempts ? (summary.combat.savesFailed / summary.combat.saveAttempts) * 100 : 0,
+      unsavableWounds: perRun(summary.combat.unsavableWounds),
+      damagePool: perRun(summary.combat.damagePool),
+      devastatingDamage: perRun(summary.combat.devastatingDamage),
+      damageRerollsUsed: perRun(summary.combat.damageRerollsUsed),
+      damageRerollImprovements: perRun(summary.combat.damageRerollImprovements),
+      feelNoPainRolls: perRun(summary.combat.feelNoPainRolls),
+      feelNoPainSuccesses: perRun(summary.combat.feelNoPainSuccesses),
+      feelNoPainDamagePrevented: perRun(summary.combat.feelNoPainDamagePrevented),
+      damageAfterFeelNoPain: perRun(summary.combat.damageAfterFeelNoPain),
+      attachedCharacterDestroyed: summary.attachedCharacterDestroyedCount,
+      hazardousBearerDestroyed: summary.hazardousBearerDestroyedCount,
+      latestStoredAt,
+    }
+  }).sort((left, right) => (
+    right.runs - left.runs
+    || right.avgDamage - left.avgDamage
+    || left.attacker.localeCompare(right.attacker)
+  ))
+}
+
+function mergeMatrixRunSources(globalRuns, localRuns) {
+  const mergedRuns = []
+  const seenIds = new Set()
+  const seenFallbackKeys = new Set()
+
+  ;[...(globalRuns || []), ...(localRuns || [])].forEach((run) => {
+    if (run?.id) {
+      if (seenIds.has(run.id)) {
+        return
+      }
+      seenIds.add(run.id)
+      mergedRuns.push(run)
+      return
+    }
+    const fallbackKey = stableMatrixStringify({
+      stored_at: run?.stored_at,
+      run_index: run?.run_index,
+      combat_key: getMatrixRunKey(run),
+      target: run?.result?.target,
+      stats: run?.result?.stats,
+    })
+    if (seenFallbackKeys.has(fallbackKey)) {
+      return
+    }
+    seenFallbackKeys.add(fallbackKey)
+    mergedRuns.push(run)
+  })
+
+  return mergedRuns
 }
 
 function buildRunSummary(runs) {
@@ -3883,6 +4332,34 @@ function getObjectiveActiveRules(units, predicate) {
     ...(unit.selectable_abilities || []).map((ability) => ({ ability, fallback: 'Selectable Ability', unitName: unit.name })),
   ])
     .filter(({ ability }) => predicate(`${ability.name || ''} ${ability.rules_text || ''}`.toLowerCase()))
+    .filter(({ ability }) => {
+      const normalizedName = String(ability.name || '').toLowerCase()
+      if (seenAbilityNames.has(normalizedName)) {
+        return false
+      }
+      seenAbilityNames.add(normalizedName)
+      return true
+    })
+    .map(({ ability, fallback, unitName }) => ({
+      name: ability.name,
+      source: unitName ? `${unitName} ${getAbilitySourceLabel(ability, fallback)}` : getAbilitySourceLabel(ability, fallback),
+      text: ability.rules_text,
+    }))
+}
+
+function getNamedActiveRules(units, abilityNames) {
+  const unitList = (Array.isArray(units) ? units : [units]).filter(Boolean)
+  const normalizedAbilityNames = abilityNames.map((abilityName) => String(abilityName).toLowerCase())
+  const seenAbilityNames = new Set()
+  return unitList.flatMap((unit) => [
+    ...(unit.abilities || []).map((ability) => ({ ability, fallback: 'Datasheet Ability', unitName: unit.name })),
+    ...(unit.wargear_abilities || []).map((ability) => ({ ability, fallback: 'Wargear Ability', unitName: unit.name })),
+    ...(unit.selectable_abilities || []).map((ability) => ({ ability, fallback: 'Selectable Ability', unitName: unit.name })),
+  ])
+    .filter(({ ability }) => {
+      const normalizedName = String(ability.name || '').toLowerCase()
+      return normalizedAbilityNames.some((abilityName) => normalizedName === abilityName)
+    })
     .filter(({ ability }) => {
       const normalizedName = String(ability.name || '').toLowerCase()
       if (seenAbilityNames.has(normalizedName)) {
@@ -4363,7 +4840,9 @@ function buildAttackerActiveRules({
 
 function buildDefenderActiveRules({
   defenderUnitDetails,
+  attachedCharacterUnitDetails,
   selectedWeapon,
+  selectedAttackWeapons,
   defenderDetachment,
   defenderEnhancementName,
   defenderArmourOfContemptActive,
@@ -4375,9 +4854,17 @@ function buildDefenderActiveRules({
   attackerFireDisciplineActive,
   defenderOnObjective,
 }) {
+  const defenderUnits = [defenderUnitDetails, attachedCharacterUnitDetails].filter(Boolean)
   const rules = [
     ...getRelevantUnitRules(defenderUnitDetails, 'defender', false),
   ]
+  const psychicWeaponSelected = (selectedAttackWeapons || [selectedWeapon]).filter(Boolean).some((weapon) => (
+    weaponHasRawKeyword(weapon, 'Psychic')
+  ))
+
+  if (psychicWeaponSelected) {
+    rules.push(...getNamedActiveRules(defenderUnits, ['Psychic Hood']))
+  }
 
   if (defenderArmourOfContemptActive) {
     const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Armour of Contempt')
@@ -4682,9 +5169,20 @@ function App() {
   const [attackerAttachedLeaderUnitDetails, setAttackerAttachedLeaderUnitDetails] = useState(null)
   const [attachedCharacterUnitDetails, setAttachedCharacterUnitDetails] = useState(null)
   const [simulationRuns, setSimulationRuns] = useState([])
+  const [matrixRunHistory, setMatrixRunHistory] = useState(readMatrixRunHistoryFromStorage)
+  const [globalMatrixRuns, setGlobalMatrixRuns] = useState([])
+  const [matrixFilters, setMatrixFilters] = useState({})
+  const [matrixVisibleColumnKeys, setMatrixVisibleColumnKeys] = useState(null)
+  const [matrixColumnWidths, setMatrixColumnWidths] = useState({})
+  const [matrixColumnsOpen, setMatrixColumnsOpen] = useState(false)
+  const [matrixLoading, setMatrixLoading] = useState(false)
+  const [matrixError, setMatrixError] = useState('')
+  const [matrixDatabaseConfigured, setMatrixDatabaseConfigured] = useState(false)
   const [activeRunView, setActiveRunView] = useState('summary')
   const [loading, setLoading] = useState(true)
   const [simulating, setSimulating] = useState(false)
+  const [simulationProgress, setSimulationProgress] = useState(null)
+  const [summaryOnlySimulation, setSummaryOnlySimulation] = useState(false)
   const [error, setError] = useState('')
   const [activePage, setActivePage] = useState('combat')
   const [appTheme, setAppTheme] = useState(readThemePreference)
@@ -4971,9 +5469,48 @@ function App() {
   }, [savedArmyLists])
 
   useEffect(() => {
+    localStorage.setItem(MATRIX_RUN_HISTORY_STORAGE_KEY, JSON.stringify(matrixRunHistory))
+  }, [matrixRunHistory])
+
+  useEffect(() => {
     document.documentElement.setAttribute('data-theme', appTheme)
     localStorage.setItem(APP_THEME_STORAGE_KEY, appTheme)
   }, [appTheme])
+
+  useEffect(() => {
+    if (activePage !== 'matrix') {
+      return undefined
+    }
+
+    let cancelled = false
+
+    async function loadGlobalMatrixRuns() {
+      try {
+        setMatrixLoading(true)
+        setMatrixError('')
+        const data = await fetchMatrixRuns(10000)
+        if (cancelled) {
+          return
+        }
+        setMatrixDatabaseConfigured(Boolean(data.database_configured))
+        setGlobalMatrixRuns(data.items || [])
+      } catch (requestError) {
+        if (!cancelled) {
+          setMatrixError(formatError(requestError))
+        }
+      } finally {
+        if (!cancelled) {
+          setMatrixLoading(false)
+        }
+      }
+    }
+
+    loadGlobalMatrixRuns()
+
+    return () => {
+      cancelled = true
+    }
+  }, [activePage])
 
   useEffect(() => {
     if (!settingsOpen) {
@@ -6737,7 +7274,9 @@ function App() {
   const defenderActiveRules = useMemo(
     () => buildDefenderActiveRules({
       defenderUnitDetails,
+      attachedCharacterUnitDetails,
       selectedWeapon,
+      selectedAttackWeapons,
       defenderDetachment: selectedDefenderDetachment,
       defenderEnhancementName,
       defenderArmourOfContemptActive,
@@ -6751,7 +7290,9 @@ function App() {
     }),
     [
       defenderUnitDetails,
+      attachedCharacterUnitDetails,
       selectedWeapon,
+      selectedAttackWeapons,
       selectedDefenderDetachment,
       defenderEnhancementName,
       defenderArmourOfContemptActive,
@@ -6765,15 +7306,98 @@ function App() {
     ],
   )
   const summaryStats = useMemo(() => buildRunSummary(simulationRuns), [simulationRuns])
+  const matrixColumns = useMemo(() => [
+    { key: 'gameVersion', label: 'Version', width: 118, defaultVisible: false },
+    { key: 'attacker', label: 'Attacker', width: 210, defaultVisible: true },
+    { key: 'attackerLoadout', label: 'Attacker Loadout', width: 210, defaultVisible: true },
+    { key: 'weapons', label: 'Weapons', width: 260, defaultVisible: true },
+    { key: 'defender', label: 'Defender', width: 180, defaultVisible: true },
+    { key: 'defenderLoadout', label: 'Defender Loadout', width: 190, defaultVisible: true },
+    { key: 'options', label: 'Abilities / Stratagems', width: 240, defaultVisible: true },
+    { key: 'runs', label: 'Runs', width: 78, numeric: true, defaultVisible: true },
+    { key: 'targetDestroyed', label: 'Destroyed', width: 104, numeric: true, defaultVisible: false },
+    { key: 'avgDamage', label: 'Avg Damage', width: 118, numeric: true, defaultVisible: true },
+    { key: 'avgNormalDamage', label: 'Avg Normal', width: 118, numeric: true, defaultVisible: false },
+    { key: 'avgMortalDamage', label: 'Avg Mortals', width: 118, numeric: true, defaultVisible: false },
+    { key: 'avgModelsDestroyed', label: 'Avg Destroyed', width: 124, numeric: true, defaultVisible: true },
+    { key: 'targetStartingModels', label: 'Starting Models', width: 132, numeric: true, defaultVisible: false },
+    { key: 'avgModelsRemaining', label: 'Avg Remain', width: 110, numeric: true, defaultVisible: false },
+    { key: 'avgCurrentWounds', label: 'Avg Wounds Left', width: 124, numeric: true, defaultVisible: false },
+    { key: 'killRate', label: 'Kill %', width: 92, numeric: true, defaultVisible: false },
+    { key: 'ces', label: 'CES', width: 76, numeric: true, defaultVisible: true },
+    { key: 'attackInstances', label: 'Attacks', width: 96, numeric: true, defaultVisible: false },
+    { key: 'gatheredAttackDice', label: 'Attack Dice', width: 108, numeric: true, defaultVisible: false },
+    { key: 'plannedAttackDice', label: 'Planned Dice', width: 112, numeric: true, defaultVisible: false },
+    { key: 'hitRolls', label: 'Hit Rolls', width: 96, numeric: true, defaultVisible: false },
+    { key: 'autoHitAttacks', label: 'Auto-Hits', width: 100, numeric: true, defaultVisible: false },
+    { key: 'torrentHits', label: 'Torrent Hits', width: 110, numeric: true, defaultVisible: false },
+    { key: 'hitPool', label: 'Hits', width: 84, numeric: true, defaultVisible: false },
+    { key: 'hitRate', label: 'Hit %', width: 84, numeric: true, format: 'percent', defaultVisible: false },
+    { key: 'failedHitAttacks', label: 'Misses', width: 88, numeric: true, defaultVisible: false },
+    { key: 'criticalHitAttacks', label: 'Crit Hits', width: 96, numeric: true, defaultVisible: false },
+    { key: 'extraHitsGenerated', label: 'Extra Hits', width: 104, numeric: true, defaultVisible: false },
+    { key: 'sustainedHitsGenerated', label: 'Sustained', width: 104, numeric: true, defaultVisible: false },
+    { key: 'lethalHitsTriggered', label: 'Lethal', width: 88, numeric: true, defaultVisible: false },
+    { key: 'hitRerollsUsed', label: 'Hit Rerolls', width: 112, numeric: true, defaultVisible: false },
+    { key: 'hitRerollSuccesses', label: 'Hit Reroll Wins', width: 132, numeric: true, defaultVisible: false },
+    { key: 'woundRolls', label: 'Wound Rolls', width: 112, numeric: true, defaultVisible: false },
+    { key: 'autoWounds', label: 'Auto-Wounds', width: 116, numeric: true, defaultVisible: false },
+    { key: 'woundPool', label: 'Wounds', width: 92, numeric: true, defaultVisible: false },
+    { key: 'woundRate', label: 'Wound %', width: 96, numeric: true, format: 'percent', defaultVisible: false },
+    { key: 'successfulWoundRolls', label: 'Wound Wins', width: 112, numeric: true, defaultVisible: false },
+    { key: 'failedWoundRolls', label: 'Failed Wounds', width: 122, numeric: true, defaultVisible: false },
+    { key: 'criticalWounds', label: 'Crit Wounds', width: 112, numeric: true, defaultVisible: false },
+    { key: 'devastatingWoundsTriggered', label: 'Dev Wounds', width: 112, numeric: true, defaultVisible: false },
+    { key: 'woundRerollsUsed', label: 'Wound Rerolls', width: 128, numeric: true, defaultVisible: false },
+    { key: 'woundRerollSuccesses', label: 'Wound Reroll Wins', width: 150, numeric: true, defaultVisible: false },
+    { key: 'saveAttempts', label: 'Saves', width: 90, numeric: true, defaultVisible: false },
+    { key: 'savesPassed', label: 'Saves Passed', width: 118, numeric: true, defaultVisible: false },
+    { key: 'savesFailed', label: 'Saves Failed', width: 112, numeric: true, defaultVisible: false },
+    { key: 'failedSaveRate', label: 'Failed Save %', width: 122, numeric: true, format: 'percent', defaultVisible: false },
+    { key: 'unsavableWounds', label: 'Unsavable', width: 104, numeric: true, defaultVisible: false },
+    { key: 'damagePool', label: 'Damage Pool', width: 118, numeric: true, defaultVisible: false },
+    { key: 'devastatingDamage', label: 'Dev Damage', width: 112, numeric: true, defaultVisible: false },
+    { key: 'damageRerollsUsed', label: 'Damage Rerolls', width: 136, numeric: true, defaultVisible: false },
+    { key: 'damageRerollImprovements', label: 'Damage Reroll Wins', width: 154, numeric: true, defaultVisible: false },
+    { key: 'feelNoPainRolls', label: 'FNP Rolls', width: 104, numeric: true, defaultVisible: false },
+    { key: 'feelNoPainSuccesses', label: 'FNP Successes', width: 128, numeric: true, defaultVisible: false },
+    { key: 'feelNoPainDamagePrevented', label: 'FNP Prevented', width: 132, numeric: true, defaultVisible: false },
+    { key: 'damageAfterFeelNoPain', label: 'After FNP', width: 106, numeric: true, defaultVisible: false },
+    { key: 'attachedCharacterDestroyed', label: 'Leader Destroyed', width: 136, numeric: true, defaultVisible: false },
+    { key: 'hazardousBearerDestroyed', label: 'Hazard Destroyed', width: 140, numeric: true, defaultVisible: false },
+  ], [])
+  const visibleMatrixColumnKeys = useMemo(() => (
+    matrixVisibleColumnKeys || matrixColumns
+      .filter((column) => column.defaultVisible)
+      .map((column) => column.key)
+  ), [matrixColumns, matrixVisibleColumnKeys])
+  const visibleMatrixColumns = useMemo(() => (
+    matrixColumns.filter((column) => visibleMatrixColumnKeys.includes(column.key))
+  ), [matrixColumns, visibleMatrixColumnKeys])
+  const combinedMatrixRuns = useMemo(
+    () => mergeMatrixRunSources(globalMatrixRuns, matrixRunHistory),
+    [globalMatrixRuns, matrixRunHistory],
+  )
+  const matrixRows = useMemo(() => buildMatrixRows(combinedMatrixRuns), [combinedMatrixRuns])
+  const filteredMatrixRows = useMemo(() => (
+    matrixRows.filter((row) => visibleMatrixColumns.every((column) => {
+      const filterValue = String(matrixFilters[column.key] || '').trim().toLowerCase()
+      if (!filterValue) {
+        return true
+      }
+      return String(row[column.key] ?? '').toLowerCase().includes(filterValue)
+    }))
+  ), [matrixFilters, matrixRows, visibleMatrixColumns])
   const activeRun = useMemo(() => {
-    if (activeRunView === 'summary') {
+    if (activeRunView === 'summary' || summaryOnlySimulation) {
       return null
     }
     return simulationRuns.find((run) => run.runIndex === activeRunView) || null
-  }, [activeRunView, simulationRuns])
+  }, [activeRunView, simulationRuns, summaryOnlySimulation])
   const activeRunSummaryStats = useMemo(() => (
     activeRun ? buildRunSummary([activeRun]) : null
   ), [activeRun])
+  const activeRunIndex = activeRunView === 'summary' ? 0 : Number(activeRunView) || 0
 
   function renderCombatBreakdownCards(stats, damageFallback = 0, options = {}) {
     const { showEffectivenessScores = false } = options
@@ -6889,6 +7513,83 @@ function App() {
         </article>
       </>
     )
+  }
+
+  function moveActiveRun(offset) {
+    if (!simulationRuns.length) {
+      return
+    }
+    const currentIndex = activeRunView === 'summary' ? 0 : Number(activeRunView) || 1
+    const nextIndex = Math.min(simulationRuns.length, Math.max(1, currentIndex + offset))
+    setActiveRunView(nextIndex)
+  }
+
+  function updateMatrixFilter(key, value) {
+    setMatrixFilters((current) => ({
+      ...current,
+      [key]: value,
+    }))
+  }
+
+  function toggleMatrixColumn(key) {
+    setMatrixVisibleColumnKeys((currentKeys) => {
+      const currentSet = new Set(currentKeys || matrixColumns.filter((column) => column.defaultVisible).map((column) => column.key))
+      if (currentSet.has(key)) {
+        currentSet.delete(key)
+      } else {
+        currentSet.add(key)
+      }
+      return Array.from(currentSet)
+    })
+  }
+
+  function resetMatrixColumns() {
+    setMatrixVisibleColumnKeys(null)
+  }
+
+  function getMatrixColumnWidth(column) {
+    return matrixColumnWidths[column.key] || column.width
+  }
+
+  function startMatrixColumnResize(event, column) {
+    event.preventDefault()
+    const startX = event.clientX
+    const startWidth = getMatrixColumnWidth(column)
+
+    function handlePointerMove(pointerEvent) {
+      const nextWidth = Math.min(520, Math.max(64, startWidth + pointerEvent.clientX - startX))
+      setMatrixColumnWidths((currentWidths) => ({
+        ...currentWidths,
+        [column.key]: nextWidth,
+      }))
+    }
+
+    function handlePointerUp() {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+  }
+
+  function resetMatrixColumnWidths() {
+    setMatrixColumnWidths({})
+  }
+
+  function formatMatrixCell(row, column) {
+    const value = row[column.key]
+    if (column.format === 'percent' || column.key === 'killRate') {
+      return `${formatAverage(value)}%`
+    }
+    if (['avgDamage', 'avgNormalDamage', 'avgMortalDamage', 'avgModelsDestroyed'].includes(column.key)) {
+      return formatAverage(value)
+    }
+    if (column.numeric && Number.isFinite(Number(value))) {
+      const numericValue = Number(value)
+      return Number.isInteger(numericValue) ? String(numericValue) : formatAverage(numericValue)
+    }
+    return value
   }
 
   const turnSequence = turnStructure.turn_sequence?.length ? turnStructure.turn_sequence : DEFAULT_TURN_STRUCTURE
@@ -9099,18 +9800,55 @@ function App() {
       setSimulating(true)
       setError('')
       setSimulationRuns([])
+      const summaryOnly = runsToExecute > SUMMARY_ONLY_RUN_THRESHOLD
+      setSummaryOnlySimulation(summaryOnly)
+      setSimulationProgress({ completed: 0, total: runsToExecute })
       const seedBase = Date.now()
-      const responses = await Promise.all(
-        Array.from({ length: runsToExecute }, (_, index) => simulateCombat({
+      const requests = Array.from({ length: runsToExecute }, (_, index) => ({
+        ...payload,
+        seed: seedBase + index,
+        include_log: !summaryOnly,
+      }))
+      let responses = []
+      if (summaryOnly) {
+        const batchResponse = await simulateCombatBatch({
           ...payload,
-          seed: seedBase + index,
-        })),
-      )
+          seed: seedBase,
+          include_log: false,
+          runs: runsToExecute,
+        })
+        responses = batchResponse.runs || []
+        setSimulationProgress({ completed: responses.length, total: runsToExecute })
+      } else {
+        responses = Array.from({ length: requests.length })
+        let nextRequestIndex = 0
+        let completedRequests = 0
+        const workerCount = Math.min(SIMULATION_REQUEST_CONCURRENCY, requests.length)
+        await Promise.all(Array.from({ length: workerCount }, async () => {
+          while (nextRequestIndex < requests.length) {
+            const requestIndex = nextRequestIndex
+            nextRequestIndex += 1
+            responses[requestIndex] = await simulateCombat(requests[requestIndex])
+            completedRequests += 1
+            setSimulationProgress({ completed: completedRequests, total: runsToExecute })
+          }
+        }))
+      }
       const runs = responses.map((data, index) => ({
         ...data,
-        request: payload,
+        request: requests[index],
         runIndex: index + 1,
       }))
+      const matrixBatchId = `${seedBase}`
+      const matrixRecords = runs.map((run) => createMatrixRunRecord(run, matrixBatchId))
+      setMatrixRunHistory((currentRuns) => (
+        [...currentRuns, ...matrixRecords]
+      ))
+      const storedMatrixRecords = matrixRecords.filter((record, index) => runs[index]?.matrix_storage?.stored)
+      if (storedMatrixRecords.length) {
+        setGlobalMatrixRuns((currentRuns) => mergeMatrixRunSources(currentRuns, storedMatrixRecords))
+        setMatrixDatabaseConfigured(true)
+      }
       setSimulationRuns(runs)
       setActiveRunView('summary')
       queueBattlefieldAchievementSuggestions(runs, simulationOptions)
@@ -9153,8 +9891,10 @@ function App() {
     } catch (requestError) {
       setError(formatError(requestError))
       setSimulationRuns([])
+      setSummaryOnlySimulation(false)
     } finally {
       setSimulating(false)
+      setSimulationProgress(null)
     }
   }
 
@@ -9225,7 +9965,7 @@ function App() {
       defenderPennantOfRemembranceActive,
       defenderBattleshocked,
     })
-    await executeSimulation(payload, Math.max(1, Number(runCount) || 1))
+    await executeSimulation(payload, Math.min(MAX_SIMULATION_RUNS, Math.max(1, Number(runCount) || 1)))
   }
 
   async function handleBattlefieldSimulate() {
@@ -9317,7 +10057,7 @@ function App() {
         defender_current_model_count: selectedBattlefieldCombatTargetModels.length,
         plunging_fire_active: plungingFireActive,
       },
-    }, Math.max(1, Number(runCount) || 1), {
+    }, Math.min(MAX_SIMULATION_RUNS, Math.max(1, Number(runCount) || 1)), {
       battlefieldDamageTargetId,
       battlefieldAttackerSide,
       battlefieldAttackerDetachmentName,
@@ -11241,11 +11981,11 @@ function App() {
             <p className="eyebrow">Strategium Forge | Warhammer 40,000 Simulator</p>
             <h1>
               {activePage === 'combat'
-                ? 'Check Unit Effectiveness'
+                ? 'Combat Effectiveness'
                 : activePage === 'battlefield'
                   ? 'Deploy Units'
-                  : activePage === 'turn'
-                    ? 'Run the Turn Sequence'
+                  : activePage === 'matrix'
+                    ? 'Combat Matrix'
                     : 'Build Army Lists'}
             </h1>
             <p>
@@ -11253,8 +11993,8 @@ function App() {
                 ? 'Pick an attacker, a weapon profile, a defender, and the combat context. Applies the rules engine and returns a full combat log.'
                 : activePage === 'battlefield'
                   ? 'The selected units from Combat are shown as scaled bases on a 44 x 60 inch top-down board.'
-                  : activePage === 'turn'
-                    ? 'Track the 11th Edition turn order and inspect which rule modules are available in each phase.'
+                  : activePage === 'matrix'
+                    ? 'Review stored combat runs grouped by identical loadout, weapons, abilities, stratagems, target, and game version.'
                     : 'Build named rosters from selected combat units and save them locally for later sessions.'}
             </p>
           </div>
@@ -11285,10 +12025,10 @@ function App() {
         </button>
         <button
           type="button"
-          className={`page-nav-button ${activePage === 'turn' ? 'active' : ''}`}
-          onClick={() => setActivePage('turn')}
+          className={`page-nav-button ${activePage === 'matrix' ? 'active' : ''}`}
+          onClick={() => setActivePage('matrix')}
         >
-          Turn
+          Matrix
         </button>
         <button
           type="button"
@@ -11363,6 +12103,11 @@ function App() {
 
           {loading ? <p className="status-line">Loading faction data...</p> : null}
           {error ? <p className="status-line error">{error}</p> : null}
+          {simulationProgress ? (
+            <p className="status-line">
+              Running simulations {simulationProgress.completed}/{simulationProgress.total}
+            </p>
+          ) : null}
 
           <form className="sim-form" onSubmit={handleSimulate}>
             <div className="combat-side-grid">
@@ -11595,7 +12340,7 @@ function App() {
               <input
                 type="number"
                 min="1"
-                max="100"
+                max={MAX_SIMULATION_RUNS}
                 value={runCount}
                 onChange={(event) => setRunCount(event.target.value)}
               />
@@ -12567,16 +13312,47 @@ function App() {
                 >
                   Summary
                 </button>
-                {simulationRuns.map((run) => (
+                {summaryOnlySimulation ? (
+                  <span className="run-count-label">
+                    {simulationRuns.length} runs | summary only
+                  </span>
+                ) : (
+                <div className="run-selector">
                   <button
-                    key={run.runIndex}
                     type="button"
-                    className={`run-tab ${activeRunView === run.runIndex ? 'active' : ''}`}
-                    onClick={() => setActiveRunView(run.runIndex)}
+                    className="run-step-button"
+                    onClick={() => moveActiveRun(-1)}
+                    disabled={activeRunView === 'summary' || activeRunIndex <= 1}
+                    aria-label="Previous run"
                   >
-                    Run {run.runIndex}
+                    Previous
                   </button>
-                ))}
+                  <label>
+                    <span>Run</span>
+                    <select
+                      value={activeRunView === 'summary' ? '' : activeRunView}
+                      onChange={(event) => setActiveRunView(Number(event.target.value))}
+                    >
+                      <option value="" disabled>Select run</option>
+                      {simulationRuns.map((run) => (
+                        <option key={run.runIndex} value={run.runIndex}>
+                          Run {run.runIndex}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    type="button"
+                    className="run-step-button"
+                    onClick={() => moveActiveRun(1)}
+                    disabled={activeRunView === 'summary' || activeRunIndex >= simulationRuns.length}
+                    aria-label="Next run"
+                  >
+                    Next
+                  </button>
+                  <span className="run-count-label">{simulationRuns.length} runs</span>
+                </div>
+                )}
               </div>
 
               {activeRunView === 'summary' ? (
@@ -12612,7 +13388,7 @@ function App() {
                     </article>
                   ) : null}
                 </div>
-              ) : activeRun ? (
+              ) : !summaryOnlySimulation && activeRun ? (
                 <div className="outcome-grid">
                   <article className="result-card accent">
                     <p className="kicker">Run {activeRun.runIndex}</p>
@@ -12671,7 +13447,14 @@ function App() {
               </div>
             </div>
 
-            {simulationRuns.length && activeRunView === 'summary' ? (
+            {simulationRuns.length && summaryOnlySimulation ? (
+              <div className="empty-state compact">
+                <p>
+                  Summary-only batch: individual run logs were omitted for {simulationRuns.length} runs.
+                  Matrix and SQL records were still generated for every run.
+                </p>
+              </div>
+            ) : simulationRuns.length && activeRunView === 'summary' ? (
               <div className="summary-index">
                 <p className="summary-index-copy">
                   Use the tabs above to switch between the summary page and each individual run.
@@ -12704,6 +13487,145 @@ function App() {
             )}
           </section>
         </>
+      ) : activePage === 'matrix' ? (
+        <main className="matrix-layout">
+          <section className="panel matrix-panel">
+            <div className="panel-heading">
+              <div>
+                <p className="kicker">Stored Combat Data</p>
+                <h2>Matrix</h2>
+              </div>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setMatrixRunHistory([])}
+                disabled={!matrixRunHistory.length}
+              >
+                Clear Local Matrix Data
+              </button>
+            </div>
+
+            <div className="matrix-summary-grid">
+              <article className="result-card accent">
+                <p className="kicker">Runs Stored</p>
+                <h3>{combinedMatrixRuns.length}</h3>
+                <p>{matrixRows.length} identical-run group{matrixRows.length === 1 ? '' : 's'}</p>
+              </article>
+              <article className="result-card">
+                <p className="kicker">Visible Rows</p>
+                <h3>{filteredMatrixRows.length}</h3>
+                <p>Filtered by the header inputs below.</p>
+              </article>
+              <article className="result-card">
+                <p className="kicker">Storage</p>
+                <h3>{matrixDatabaseConfigured ? 'Neon + Local' : 'Local Cache'}</h3>
+                <p>
+                  {matrixDatabaseConfigured
+                    ? 'Global runs are loaded from Neon; clearing only removes this browser cache.'
+                    : 'No database is configured for this environment; using browser JSON only.'}
+                </p>
+              </article>
+            </div>
+
+            {matrixLoading ? <p className="status-line">Loading global Matrix data...</p> : null}
+            {matrixError ? <p className="status-line error">{matrixError}</p> : null}
+
+            {matrixRows.length ? (
+              <>
+                <div className="matrix-column-toolbar">
+                  <div className="matrix-column-summary">
+                    <button
+                      type="button"
+                      className="matrix-column-disclosure"
+                      onClick={() => setMatrixColumnsOpen((current) => !current)}
+                      aria-expanded={matrixColumnsOpen}
+                    >
+                      <span>{matrixColumnsOpen ? 'Hide Columns' : 'Show Columns'}</span>
+                      <strong>{visibleMatrixColumns.length}/{matrixColumns.length}</strong>
+                    </button>
+                    <p>Drag header edges to resize visible columns.</p>
+                  </div>
+                  <div className="matrix-column-actions">
+                    <button type="button" className="secondary-button compact" onClick={resetMatrixColumns}>
+                      Reset Columns
+                    </button>
+                    <button type="button" className="secondary-button compact" onClick={resetMatrixColumnWidths}>
+                      Reset Widths
+                    </button>
+                  </div>
+                  {matrixColumnsOpen ? (
+                    <div className="matrix-column-picker">
+                      {matrixColumns.map((column) => (
+                        <label key={column.key} className="matrix-column-toggle">
+                          <input
+                            type="checkbox"
+                            checked={visibleMatrixColumnKeys.includes(column.key)}
+                            onChange={() => toggleMatrixColumn(column.key)}
+                          />
+                          <span>{column.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="matrix-table-wrap">
+                  <table
+                    className="matrix-table"
+                    style={{ minWidth: `${visibleMatrixColumns.reduce((total, column) => total + getMatrixColumnWidth(column), 0)}px` }}
+                  >
+                    <colgroup>
+                      {visibleMatrixColumns.map((column) => (
+                        <col key={column.key} style={{ width: `${getMatrixColumnWidth(column)}px` }} />
+                      ))}
+                    </colgroup>
+                    <thead>
+                      <tr>
+                        {visibleMatrixColumns.map((column) => (
+                          <th key={column.key} className={column.numeric ? 'numeric' : ''}>
+                            <span>{column.label}</span>
+                            <input
+                              type="search"
+                              value={matrixFilters[column.key] || ''}
+                              onChange={(event) => updateMatrixFilter(column.key, event.target.value)}
+                              aria-label={`Filter ${column.label}`}
+                            />
+                            <button
+                              type="button"
+                              className="matrix-column-resizer"
+                              aria-label={`Resize ${column.label}`}
+                              onPointerDown={(event) => startMatrixColumnResize(event, column)}
+                            />
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredMatrixRows.map((row) => (
+                        <tr key={row.key}>
+                          {visibleMatrixColumns.map((column) => (
+                            <td key={column.key} className={column.numeric ? 'numeric' : ''}>
+                              {formatMatrixCell(row, column)}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {!filteredMatrixRows.length ? (
+                    <div className="empty-state compact">
+                      <p>No stored run groups match the current filters.</p>
+                    </div>
+                  ) : null}
+                </div>
+              </>
+            ) : (
+              <div className="empty-state">
+                <p>Run simulations from the Combat or Battlefield page to populate the Matrix.</p>
+              </div>
+            )}
+          </section>
+        </main>
       ) : activePage === 'turn' ? (
         <main className="turn-layout">
           <section className="panel turn-panel">

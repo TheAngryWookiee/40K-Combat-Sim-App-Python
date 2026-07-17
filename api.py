@@ -2,13 +2,26 @@ from __future__ import annotations
 
 from copy import deepcopy
 from functools import lru_cache
+import hashlib
 import json
+import os
 from pathlib import Path
+import time
 from typing import Any
+from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+
+try:
+    import psycopg
+    from psycopg.rows import dict_row
+    from psycopg.types.json import Jsonb
+except ImportError:  # pragma: no cover - local installs without optional db support still run.
+    psycopg = None
+    dict_row = None
+    Jsonb = None
 
 from combat_engine import CombatSimulationError, CombatSimulator
 from data_loader import (
@@ -20,12 +33,70 @@ from data_loader import (
     list_faction_summaries,
     list_unit_summaries,
     load_factions,
+    normalize_wargear_name,
     serialize_unit,
 )
 
 ALL_RANGED_WEAPONS = "__all_ranged__"
 ALL_MELEE_WEAPONS = "__all_melee__"
 ATTACHED_LEADER_WEAPON_PREFIX = "__attacker_leader__::"
+GAME_VERSION = "11.06.27.26"
+COMBAT_STATS_SCHEMA_VERSION = 1
+DATABASE_URL_ENV_NAMES = ("DATABASE_URL", "POSTGRES_URL")
+COMBAT_RUN_ANALYSIS_COLUMNS = {
+    "result_payload": "jsonb NOT NULL DEFAULT '{}'::jsonb",
+    "attacker_model_count": "integer",
+    "defender_model_count": "integer",
+    "attacker_package_model_count": "integer",
+    "defender_package_model_count": "integer",
+    "attack_instances": "integer",
+    "gathered_attack_dice": "integer",
+    "hit_rolls": "integer",
+    "auto_hit_attacks": "integer",
+    "successful_hit_attacks": "integer",
+    "failed_hit_attacks": "integer",
+    "critical_hit_attacks": "integer",
+    "hit_pool": "integer",
+    "extra_hits_generated": "integer",
+    "sustained_hits_generated": "integer",
+    "lethal_hits_triggered": "integer",
+    "torrent_hits": "integer",
+    "hit_rerolls_used": "integer",
+    "hit_reroll_successes": "integer",
+    "wound_rolls": "integer",
+    "auto_wounds": "integer",
+    "successful_wound_rolls": "integer",
+    "failed_wound_rolls": "integer",
+    "critical_wounds": "integer",
+    "wound_pool": "integer",
+    "devastating_wounds_triggered": "integer",
+    "wound_rerolls_used": "integer",
+    "wound_reroll_successes": "integer",
+    "save_attempts": "integer",
+    "saves_passed": "integer",
+    "saves_failed": "integer",
+    "unsavable_wounds": "integer",
+    "damage_pool": "integer",
+    "normal_damage": "integer",
+    "damage_inflicted": "integer",
+    "mortal_damage": "integer",
+    "devastating_damage": "integer",
+    "damage_rerolls_used": "integer",
+    "damage_reroll_improvements": "integer",
+    "feel_no_pain_rolls": "integer",
+    "feel_no_pain_successes": "integer",
+    "feel_no_pain_damage_prevented": "integer",
+    "target_destroyed": "boolean",
+    "target_starting_models": "integer",
+    "target_models_remaining": "integer",
+    "target_models_destroyed": "integer",
+    "target_starting_total_wounds": "integer",
+    "target_current_total_wounds": "integer",
+    "target_current_model_wounds": "integer",
+    "attached_character_destroyed": "boolean",
+    "hazardous_bearer_destroyed": "boolean",
+    "result_log_length": "integer",
+}
 
 
 class SimulationOptions(BaseModel):
@@ -100,6 +171,7 @@ class SimulationOptions(BaseModel):
 
 
 class SimulationRequest(BaseModel):
+    game_version: str = GAME_VERSION
     attacker_faction: str
     attacker_unit: str
     attacker_detachment_name: str | None = None
@@ -126,6 +198,11 @@ class SimulationRequest(BaseModel):
     attached_character_model_counts: dict[str, int] = Field(default_factory=dict)
     options: SimulationOptions = Field(default_factory=SimulationOptions)
     seed: int | None = None
+    include_log: bool = True
+
+
+class SimulationBatchRequest(SimulationRequest):
+    runs: int = Field(default=1, ge=1, le=5000)
 
 
 class UnitRulesRequest(BaseModel):
@@ -576,6 +653,416 @@ def build_attack_entry(
         "attacker_unit": attacker_unit,
         "weapons": weapons,
     }
+
+
+def build_unit_combat_snapshot(
+    unit: dict[str, Any] | None,
+    *,
+    faction: str,
+    unit_name: str | None,
+    detachment_name: str | None = None,
+    enhancement_name: str | None = None,
+    requested_loadout: dict[str, Any] | None = None,
+    requested_model_count: int | None = None,
+    requested_model_counts: dict[str, int] | None = None,
+) -> dict[str, Any] | None:
+    if unit is None and not unit_name:
+        return None
+
+    resolved_weapons = []
+    if unit is not None:
+        resolved_weapons = [
+            {
+                "name": weapon["name"],
+                "bearer_count": int(
+                    unit.get("weapon_bearer_counts", {}).get(
+                        normalize_wargear_name(weapon["name"]),
+                        unit.get("weapon_bearer_counts", {}).get(
+                            normalize_wargear_name(weapon["name"]).split(" - ", 1)[0],
+                            0,
+                        ),
+                    )
+                ),
+            }
+            for weapon in unit.get("weapons", {}).values()
+        ]
+
+    return {
+        "faction": faction,
+        "unit": unit_name or unit.get("name", "") if unit is not None else unit_name,
+        "detachment": detachment_name,
+        "enhancement": enhancement_name,
+        "wounds": unit.get("wounds") if unit is not None else None,
+        "toughness": unit.get("toughness") if unit is not None else None,
+        "armor_save": unit.get("armor_save") if unit is not None else None,
+        "invulnerable_save": unit.get("invulnerable_save") if unit is not None else None,
+        "ability_names": collect_unit_ability_names(unit),
+        "requested_loadout": requested_loadout or {},
+        "resolved_loadout": unit.get("selected_loadout", {}) if unit is not None else {},
+        "requested_model_count": requested_model_count,
+        "requested_model_counts": requested_model_counts or {},
+        "resolved_model_count": int(unit.get("models", 0)) if unit is not None else None,
+        "resolved_model_counts": unit.get("model_counts_by_name", {}) if unit is not None else {},
+        "resolved_weapons": resolved_weapons,
+    }
+
+
+def build_attack_weapon_snapshot(attack_entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "unit": entry["attacker_unit"]["name"],
+            "weapons": [
+                {
+                    "name": weapon["name"],
+                    "selected_model_count": weapon.get("selected_model_count"),
+                }
+                for weapon in entry["weapons"]
+            ],
+        }
+        for entry in attack_entries
+    ]
+
+
+def build_combat_metadata(
+    request: SimulationRequest,
+    *,
+    attacker_unit: dict[str, Any],
+    defender_unit: dict[str, Any],
+    attack_entries: list[dict[str, Any]],
+    attacker_attached_character_unit: dict[str, Any] | None,
+    attached_character_unit: dict[str, Any] | None,
+    requested_weapon_names: list[str],
+) -> dict[str, Any]:
+    return {
+        "schema_version": COMBAT_STATS_SCHEMA_VERSION,
+        "game_version": request.game_version,
+        "source": "combat_tab",
+        "seed": request.seed,
+        "attacker": build_unit_combat_snapshot(
+            attacker_unit,
+            faction=request.attacker_faction,
+            unit_name=request.attacker_unit,
+            detachment_name=request.attacker_detachment_name,
+            enhancement_name=request.attacker_enhancement_name,
+            requested_loadout=request.attacker_loadout,
+            requested_model_count=request.attacker_model_count,
+            requested_model_counts=request.attacker_model_counts,
+        ),
+        "attacker_attached_character": build_unit_combat_snapshot(
+            attacker_attached_character_unit,
+            faction=request.attacker_faction,
+            unit_name=request.attacker_attached_character_name,
+            requested_loadout=request.attacker_attached_character_loadout,
+            requested_model_count=request.attacker_attached_character_model_count,
+            requested_model_counts=request.attacker_attached_character_model_counts,
+        ),
+        "defender": build_unit_combat_snapshot(
+            defender_unit,
+            faction=request.defender_faction,
+            unit_name=request.defender_unit,
+            detachment_name=request.defender_detachment_name,
+            enhancement_name=request.defender_enhancement_name,
+            requested_loadout=request.defender_loadout,
+            requested_model_count=request.defender_model_count,
+            requested_model_counts=request.defender_model_counts,
+        ),
+        "defender_attached_character": build_unit_combat_snapshot(
+            attached_character_unit,
+            faction=request.defender_faction,
+            unit_name=request.options.attached_character_name,
+            requested_loadout=request.attached_character_loadout,
+            requested_model_count=request.attached_character_model_count,
+            requested_model_counts=request.attached_character_model_counts,
+        ),
+        "selected_weapon_names": requested_weapon_names,
+        "weapon_model_counts": request.weapon_model_counts,
+        "attack_weapons": build_attack_weapon_snapshot(attack_entries),
+        "options": request.options.model_dump(),
+    }
+
+
+def get_database_url() -> str:
+    for env_name in DATABASE_URL_ENV_NAMES:
+        value = os.environ.get(env_name, "").strip()
+        if value:
+            return value
+    return ""
+
+
+def database_is_configured() -> bool:
+    return bool(get_database_url() and psycopg is not None)
+
+
+def to_jsonable(value: Any) -> Any:
+    return json.loads(json.dumps(value, default=str))
+
+
+def omit_combat_key_volatile_fields(value: Any) -> Any:
+    if isinstance(value, list):
+        return [omit_combat_key_volatile_fields(item) for item in value]
+    if isinstance(value, dict):
+        return {
+            key: omit_combat_key_volatile_fields(entry_value)
+            for key, entry_value in sorted(value.items())
+            if key not in {"seed", "stored_at", "run_id", "batch_id"}
+        }
+    return value
+
+
+def build_combat_key(combat_metadata: dict[str, Any]) -> str:
+    normalized_metadata = omit_combat_key_volatile_fields(combat_metadata)
+    encoded_metadata = json.dumps(normalized_metadata, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(encoded_metadata.encode("utf-8")).hexdigest()
+
+
+def as_int(value: Any) -> int | None:
+    if value is None or value == "":
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def as_bool(value: Any) -> bool | None:
+    if value is None:
+        return None
+    return bool(value)
+
+
+def build_compact_result_payload(result: dict[str, Any]) -> dict[str, Any]:
+    return {
+        key: value
+        for key, value in result.items()
+        if key != "log"
+    }
+
+
+def build_combat_run_analysis_values(
+    combat_metadata: dict[str, Any],
+    result: dict[str, Any],
+) -> dict[str, Any]:
+    stats = result.get("stats", {}) or {}
+    target = result.get("target", {}) or {}
+    attached_character = result.get("attached_character") or {}
+    hazardous_bearer = result.get("hazardous_bearer") or {}
+    attacker = combat_metadata.get("attacker") or {}
+    attacker_attached_character = combat_metadata.get("attacker_attached_character") or {}
+    defender = combat_metadata.get("defender") or {}
+    defender_attached_character = combat_metadata.get("defender_attached_character") or {}
+
+    damage_pool = as_int(stats.get("damage_pool")) or 0
+    mortal_damage = as_int(stats.get("mortal_damage")) or 0
+    attacker_model_count = as_int(attacker.get("resolved_model_count"))
+    attacker_attached_model_count = as_int(attacker_attached_character.get("resolved_model_count")) or 0
+    defender_model_count = as_int(defender.get("resolved_model_count"))
+    defender_attached_model_count = as_int(defender_attached_character.get("resolved_model_count")) or 0
+
+    return {
+        "attacker_model_count": attacker_model_count,
+        "defender_model_count": defender_model_count,
+        "attacker_package_model_count": (
+            attacker_model_count + attacker_attached_model_count
+            if attacker_model_count is not None
+            else None
+        ),
+        "defender_package_model_count": (
+            defender_model_count + defender_attached_model_count
+            if defender_model_count is not None
+            else None
+        ),
+        "attack_instances": as_int(stats.get("attack_instances")),
+        "gathered_attack_dice": as_int(stats.get("gathered_attack_dice")),
+        "hit_rolls": as_int(stats.get("hit_rolls")),
+        "auto_hit_attacks": as_int(stats.get("auto_hit_attacks")),
+        "successful_hit_attacks": as_int(stats.get("successful_hit_attacks")),
+        "failed_hit_attacks": as_int(stats.get("failed_hit_attacks")),
+        "critical_hit_attacks": as_int(stats.get("critical_hit_attacks")),
+        "hit_pool": as_int(stats.get("hit_pool")),
+        "extra_hits_generated": as_int(stats.get("extra_hits_generated")),
+        "sustained_hits_generated": as_int(stats.get("sustained_hits_generated")),
+        "lethal_hits_triggered": as_int(stats.get("lethal_hits_triggered")),
+        "torrent_hits": as_int(stats.get("torrent_hits")),
+        "hit_rerolls_used": as_int(stats.get("hit_rerolls_used")),
+        "hit_reroll_successes": as_int(stats.get("hit_reroll_successes")),
+        "wound_rolls": as_int(stats.get("wound_rolls")),
+        "auto_wounds": as_int(stats.get("auto_wounds")),
+        "successful_wound_rolls": as_int(stats.get("successful_wound_rolls")),
+        "failed_wound_rolls": as_int(stats.get("failed_wound_rolls")),
+        "critical_wounds": as_int(stats.get("critical_wounds")),
+        "wound_pool": as_int(stats.get("wound_pool")),
+        "devastating_wounds_triggered": as_int(stats.get("devastating_wounds_triggered")),
+        "wound_rerolls_used": as_int(stats.get("wound_rerolls_used")),
+        "wound_reroll_successes": as_int(stats.get("wound_reroll_successes")),
+        "save_attempts": as_int(stats.get("save_attempts")),
+        "saves_passed": as_int(stats.get("saves_passed")),
+        "saves_failed": as_int(stats.get("saves_failed")),
+        "unsavable_wounds": as_int(stats.get("unsavable_wounds")),
+        "damage_pool": as_int(stats.get("damage_pool")),
+        "normal_damage": max(0, damage_pool - mortal_damage),
+        "damage_inflicted": as_int(stats.get("damage_inflicted")),
+        "mortal_damage": as_int(stats.get("mortal_damage")),
+        "devastating_damage": as_int(stats.get("devastating_damage")),
+        "damage_rerolls_used": as_int(stats.get("damage_rerolls_used")),
+        "damage_reroll_improvements": as_int(stats.get("damage_reroll_improvements")),
+        "feel_no_pain_rolls": as_int(stats.get("feel_no_pain_rolls")),
+        "feel_no_pain_successes": as_int(stats.get("feel_no_pain_successes")),
+        "feel_no_pain_damage_prevented": as_int(stats.get("feel_no_pain_damage_prevented")),
+        "target_destroyed": as_bool(target.get("destroyed")),
+        "target_starting_models": as_int(target.get("starting_models")),
+        "target_models_remaining": as_int(target.get("models_remaining")),
+        "target_models_destroyed": as_int(target.get("models_destroyed")),
+        "target_starting_total_wounds": as_int(target.get("starting_total_wounds")),
+        "target_current_total_wounds": as_int(target.get("current_total_wounds")),
+        "target_current_model_wounds": as_int(target.get("current_model_wounds")),
+        "attached_character_destroyed": as_bool(attached_character.get("destroyed")),
+        "hazardous_bearer_destroyed": as_bool(hazardous_bearer.get("destroyed")),
+        "result_log_length": len(result.get("log", []) or []),
+    }
+
+
+def ensure_combat_runs_table(conn: Any) -> None:
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS combat_runs (
+            id text PRIMARY KEY,
+            created_at timestamptz NOT NULL DEFAULT now(),
+            game_version text NOT NULL,
+            combat_key text NOT NULL,
+            attacker_faction text,
+            attacker_unit text,
+            defender_faction text,
+            defender_unit text,
+            combat_metadata jsonb NOT NULL,
+            request_payload jsonb NOT NULL,
+            result_stats jsonb NOT NULL,
+            result_target jsonb NOT NULL,
+            result_attached_character jsonb,
+            result_hazardous_bearer jsonb
+        )
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS combat_runs_combat_key_idx ON combat_runs (combat_key)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS combat_runs_created_at_idx ON combat_runs (created_at DESC)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS combat_runs_units_idx ON combat_runs (attacker_unit, defender_unit)"
+    )
+    for column_name, column_type in COMBAT_RUN_ANALYSIS_COLUMNS.items():
+        conn.execute(
+            f"ALTER TABLE combat_runs ADD COLUMN IF NOT EXISTS {column_name} {column_type}"
+        )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS combat_runs_damage_idx ON combat_runs (damage_inflicted)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS combat_runs_target_destroyed_idx ON combat_runs (target_destroyed)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS combat_runs_model_counts_idx ON combat_runs (attacker_model_count, defender_model_count)"
+    )
+
+
+def store_combat_run(
+    request: SimulationRequest,
+    combat_metadata: dict[str, Any],
+    result: dict[str, Any],
+) -> dict[str, Any]:
+    if not database_is_configured():
+        return {"stored": False, "reason": "database_not_configured"}
+
+    run_id = str(uuid4())
+    combat_key = build_combat_key(combat_metadata)
+    try:
+        with psycopg.connect(get_database_url(), row_factory=dict_row) as conn:
+            ensure_combat_runs_table(conn)
+            insert_values = {
+                "id": run_id,
+                "game_version": request.game_version,
+                "combat_key": combat_key,
+                "attacker_faction": request.attacker_faction,
+                "attacker_unit": request.attacker_unit,
+                "defender_faction": request.defender_faction,
+                "defender_unit": request.defender_unit,
+                "combat_metadata": Jsonb(to_jsonable(combat_metadata)),
+                "request_payload": Jsonb(to_jsonable(request.model_dump())),
+                "result_stats": Jsonb(to_jsonable(result.get("stats", {}))),
+                "result_target": Jsonb(to_jsonable(result.get("target", {}))),
+                "result_attached_character": Jsonb(to_jsonable(result.get("attached_character"))),
+                "result_hazardous_bearer": Jsonb(to_jsonable(result.get("hazardous_bearer"))),
+                "result_payload": Jsonb(to_jsonable(build_compact_result_payload(result))),
+                **build_combat_run_analysis_values(combat_metadata, result),
+            }
+            insert_columns = list(insert_values.keys())
+            insert_column_sql = ", ".join(insert_columns)
+            insert_placeholder_sql = ", ".join(f"%({column})s" for column in insert_columns)
+            row = conn.execute(
+                f"""
+                INSERT INTO combat_runs ({insert_column_sql})
+                VALUES ({insert_placeholder_sql})
+                RETURNING id, created_at
+                """,
+                insert_values,
+            ).fetchone()
+        return {
+            "stored": True,
+            "id": row["id"],
+            "created_at": row["created_at"].isoformat(),
+            "combat_key": combat_key,
+        }
+    except Exception as exc:  # pragma: no cover - storage must not break combat resolution.
+        return {"stored": False, "reason": "database_error", "detail": str(exc)}
+
+
+def load_matrix_runs(limit: int = 5000) -> list[dict[str, Any]]:
+    if not database_is_configured():
+        return []
+
+    bounded_limit = min(max(int(limit), 1), 25000)
+    with psycopg.connect(get_database_url(), row_factory=dict_row) as conn:
+        ensure_combat_runs_table(conn)
+        rows = conn.execute(
+            """
+            SELECT
+                id,
+                created_at,
+                game_version,
+                combat_key,
+                combat_metadata,
+                request_payload,
+                result_stats,
+                result_target,
+                result_attached_character,
+                result_hazardous_bearer,
+                result_payload
+            FROM combat_runs
+            ORDER BY created_at DESC
+            LIMIT %(limit)s
+            """,
+            {"limit": bounded_limit},
+        ).fetchall()
+
+    return [
+        {
+            "id": row["id"],
+            "stored_at": row["created_at"].isoformat(),
+            "game_version": row["game_version"],
+            "combat_key": row["combat_key"],
+            "combat_metadata": row["combat_metadata"],
+            "request": row["request_payload"],
+            "result": {
+                "stats": row["result_stats"],
+                "target": row["result_target"],
+                "attached_character": row["result_attached_character"],
+                "hazardous_bearer": row["result_hazardous_bearer"],
+                "payload": row["result_payload"],
+            },
+        }
+        for row in rows
+    ]
 
 
 def resolve_requested_attack_entries(
@@ -1233,7 +1720,24 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
     except CombatSimulationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
+    result.setdefault("context", {})["game_version"] = request.game_version
+    result.setdefault("context", {})["combat_stats_schema_version"] = COMBAT_STATS_SCHEMA_VERSION
+    combat_metadata = build_combat_metadata(
+        request,
+        attacker_unit=attacker_unit,
+        defender_unit=defender_unit,
+        attack_entries=attack_entries,
+        attacker_attached_character_unit=attacker_attached_character_unit,
+        attached_character_unit=attached_character_unit,
+        requested_weapon_names=requested_weapon_names,
+    )
+    matrix_storage = store_combat_run(request, combat_metadata, result)
+    response_result = result if request.include_log else build_compact_result_payload(result)
+
     return {
+        "game_version": request.game_version,
+        "combat_metadata": combat_metadata,
+        "matrix_storage": matrix_storage,
         "attacker": {
             "faction": request.attacker_faction,
             "unit": request.attacker_unit,
@@ -1253,5 +1757,48 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
             "unit": request.defender_unit,
             "attached_character": request.options.attached_character_name,
         },
-        "result": result,
+        "result": response_result,
     }
+
+
+@app.post("/simulate-batch")
+def simulate_batch(request: SimulationBatchRequest) -> dict[str, object]:
+    seed_base = request.seed if request.seed is not None else int(time.time() * 1000)
+    request_payload = request.model_dump(exclude={"runs"})
+    request_payload["include_log"] = False
+
+    runs: list[dict[str, object]] = []
+    for index in range(request.runs):
+        run_request = SimulationRequest(
+            **{
+                **request_payload,
+                "seed": seed_base + index,
+            }
+        )
+        run_response = simulate(run_request)
+        run_response["run_index"] = index + 1
+        runs.append(run_response)
+
+    return {
+        "game_version": request.game_version,
+        "seed_base": seed_base,
+        "runs": runs,
+        "summary_only": True,
+    }
+
+
+@app.get("/matrix/runs")
+def get_matrix_runs(limit: int = 5000) -> dict[str, object]:
+    if not database_is_configured():
+        return {
+            "database_configured": False,
+            "items": [],
+        }
+
+    try:
+        return {
+            "database_configured": True,
+            "items": load_matrix_runs(limit),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Unable to load Matrix runs: {exc}") from exc
