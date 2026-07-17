@@ -61,7 +61,7 @@
         },
         {
           "name": "Finest Hour",
-          "rules_text": "Once per battle: In the Fight phase, when this unit is selected to fight, this model's melee weapons have the [DEVASTATING WOUNDS] ability until the end of the phase."
+          "rules_text": "Once per battle: In the Fight phase, when this unit is selected to fight, this model's melee weapons have the following until the end of the phase: +3 A, [DEVASTATING WOUNDS]"
         }
       ],
       "selectable_abilities": [],

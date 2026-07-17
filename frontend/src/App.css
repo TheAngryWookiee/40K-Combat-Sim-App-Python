@@ -2987,6 +2987,51 @@ textarea:focus {
   background: var(--result-accent-bg);
 }
 
+.effectiveness-score-card {
+  gap: 14px;
+}
+
+.effectiveness-score-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.effectiveness-score-item {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface-card) 92%, transparent);
+}
+
+.effectiveness-score-label {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.effectiveness-score-value {
+  color: var(--accent-deep);
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.effectiveness-score-band {
+  color: var(--ink);
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.effectiveness-score-meta {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+
 .result-card.warning {
   background: linear-gradient(180deg, rgba(245, 219, 208, 0.92), rgba(232, 186, 162, 0.94));
 }

@@ -155,6 +155,7 @@ class ModelState(BaseModel):
     name: str | None = None
     wounds: int = Field(gt=0)
     current_wounds: int | None = Field(default=None, ge=0)
+    feel_no_pain: int = Field(default=0, ge=0, le=6)
     keywords: list[str] = Field(default_factory=list)
     is_character: bool = False
 

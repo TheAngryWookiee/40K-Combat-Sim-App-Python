@@ -2834,7 +2834,7 @@ class CombatSimulator:
         required, save_type = min(available_saves, key=lambda item: item[0])
         self.stats["save_attempts"] += 1
         save_roll = self.die_roll()
-        self.log(f"{target['name']} attempts a {save_type} save on {required}+")
+        self.log(f"{target['name']} attempts an {save_type} save on {required}+")
 
         if save_roll == 1 and attack_context.get("reroll_save_rolls_of_1", False):
             reroll_save = self.die_roll()
@@ -2923,13 +2923,13 @@ class CombatSimulator:
         self.stats["feel_no_pain_successes"] += ignored_wounds
         self.stats["feel_no_pain_damage_prevented"] += ignored_wounds
         self.log(
-            f"{target_state['name']} rolls Feel No Pain {feel_no_pain}+ for {damage} wounds: "
+            f"{target_state['name']} rolls Feel No Pain {feel_no_pain}+ for {damage} damage: "
             f"{', '.join(str(roll) for roll in rolls)}"
         )
         if ignored_wounds > 0:
-            self.log(f"{target_state['name']} ignores {ignored_wounds} wounds with Feel No Pain")
+            self.log(f"{target_state['name']} ignores {ignored_wounds} damage with Feel No Pain")
         else:
-            self.log(f"{target_state['name']} ignores no wounds with Feel No Pain")
+            self.log(f"{target_state['name']} ignores no damage with Feel No Pain")
         return remaining_damage
 
     @staticmethod
@@ -2982,12 +2982,14 @@ class CombatSimulator:
                 **model,
                 "current_wounds": cls.model_remaining_wounds(model),
                 "wounds": cls.model_starting_wounds(model),
+                "feel_no_pain": max(0, int(model.get("feel_no_pain", 0) or 0)),
             }
             for model in models
         ]
         allocation_log: list[dict[str, Any]] = []
         destroyed_model_indexes: list[int] = []
         unresolved_mortal_wounds = 0
+        ignored_mortal_wounds = 0
 
         for mortal_wound_index in range(max(0, int(mortal_wounds))):
             selected_index = cls.select_model_for_mortal_wound(resolved_models)
@@ -2996,16 +2998,27 @@ class CombatSimulator:
                 break
 
             selected_model = resolved_models[selected_index]
-            selected_model["current_wounds"] = cls.model_remaining_wounds(selected_model) - 1
-            destroyed = selected_model["current_wounds"] <= 0
-            if destroyed:
-                selected_model["current_wounds"] = 0
-                destroyed_model_indexes.append(selected_index)
+            feel_no_pain = max(0, int(selected_model.get("feel_no_pain", 0) or 0))
+            feel_no_pain_roll = random.randint(1, 6) if feel_no_pain > 0 else None
+            ignored = feel_no_pain_roll is not None and feel_no_pain_roll >= feel_no_pain
+            destroyed = False
+
+            if ignored:
+                ignored_mortal_wounds += 1
+            else:
+                selected_model["current_wounds"] = cls.model_remaining_wounds(selected_model) - 1
+                destroyed = selected_model["current_wounds"] <= 0
+                if destroyed:
+                    selected_model["current_wounds"] = 0
+                    destroyed_model_indexes.append(selected_index)
 
             allocation_log.append({
                 "model_index": selected_index,
                 "model_id": selected_model.get("id"),
                 "model_name": selected_model.get("name", f"Model {selected_index + 1}"),
+                "feel_no_pain": feel_no_pain,
+                "feel_no_pain_roll": feel_no_pain_roll,
+                "ignored": ignored,
                 "remaining_wounds": selected_model["current_wounds"],
                 "destroyed": destroyed,
             })
@@ -3014,6 +3027,7 @@ class CombatSimulator:
             "models": resolved_models,
             "mortal_wounds": max(0, int(mortal_wounds)),
             "allocated_mortal_wounds": len(allocation_log),
+            "ignored_mortal_wounds": ignored_mortal_wounds,
             "unresolved_mortal_wounds": unresolved_mortal_wounds,
             "destroyed_model_indexes": destroyed_model_indexes,
             "allocation_log": allocation_log,
@@ -3602,12 +3616,34 @@ class CombatSimulator:
     def summarize_state(target_state: dict[str, Any]) -> dict[str, Any]:
         starting_models = max(0, int(target_state.get("starting_models", target_state["models"])))
         models_remaining = max(0, int(target_state["models"]))
+        if target_state.get("profiles"):
+            current_total_wounds = sum(
+                (
+                    max(0, int(profile.get("current_wounds", 0)))
+                    + max(0, int(profile.get("models", 0)) - 1) * max(0, int(profile.get("wounds", 0)))
+                )
+                if int(profile.get("models", 0)) > 0
+                else 0
+                for profile in target_state["profiles"]
+            )
+            starting_total_wounds = sum(
+                max(0, int(profile.get("models", 0))) * max(0, int(profile.get("wounds", 0)))
+                for profile in target_state["profiles"]
+            )
+        else:
+            current_total_wounds = (
+                max(0, int(target_state.get("current_wounds", 0)))
+                + max(0, models_remaining - 1) * max(0, int(target_state.get("wounds", 0)))
+            ) if models_remaining > 0 else 0
+            starting_total_wounds = max(0, starting_models) * max(0, int(target_state.get("wounds", 0)))
         return {
             "name": target_state["name"],
             "starting_models": starting_models,
+            "starting_total_wounds": starting_total_wounds,
             "models_remaining": models_remaining,
             "models_destroyed": max(0, starting_models - models_remaining),
             "current_model_wounds": target_state["current_wounds"],
+            "current_total_wounds": current_total_wounds,
             "destroyed": target_state["models"] <= 0,
         }
 
@@ -3957,6 +3993,12 @@ class CombatSimulator:
         if bool(options.get("attacker_waaagh_active", False)) and self.unit_has_waaagh(attacker_unit):
             melee_attack_bonus += 1
             melee_strength_bonus += 1
+        if (
+            "finest hour" in attacker_active_ability_names
+            and self.unit_has_ability(attacker_unit, "Finest Hour")
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_attack_bonus += 3
         if (
             "da biggest and da best" in attacker_active_ability_names
             and bool(options.get("attacker_waaagh_active", False))

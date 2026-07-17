@@ -3421,6 +3421,15 @@ function average(values) {
   return values.reduce((total, value) => total + value, 0) / values.length
 }
 
+function standardDeviation(values) {
+  if (values.length <= 1) {
+    return 0
+  }
+  const mean = average(values)
+  const variance = average(values.map((value) => ((value - mean) ** 2)))
+  return Math.sqrt(variance)
+}
+
 function formatAverage(value) {
   return Number.isInteger(value) ? String(value) : value.toFixed(2)
 }
@@ -3434,6 +3443,83 @@ function formatPercent(value, total) {
 
 function sumBy(items, selector) {
   return items.reduce((total, item) => total + selector(item), 0)
+}
+
+function getEffectivenessBand(score) {
+  if (score >= 90) {
+    return 'Devastating'
+  }
+  if (score >= 75) {
+    return 'Strong'
+  }
+  if (score >= 60) {
+    return 'Solid'
+  }
+  if (score >= 40) {
+    return 'Situational'
+  }
+  return 'Weak'
+}
+
+function buildEffectivenessScores({
+  averageDamageInflicted,
+  damageInflictedStdDev,
+  killPressure,
+  targetWoundPool,
+}) {
+  if (targetWoundPool <= 0) {
+    return {
+      offenseScore: 0,
+      offenseBand: 'Weak',
+      defenseScore: 0,
+      defenseBand: 'Weak',
+      damagePressure: 0,
+      damageResistance: 0,
+      killPressure: 0,
+      survivalChance: 0,
+      averageDamageInflicted: 0,
+      targetWoundPool: 0,
+    }
+  }
+
+  const damagePressure = clamp((averageDamageInflicted / targetWoundPool) * 100, 0, 100)
+  const survivalChance = clamp(100 - killPressure, 0, 100)
+  const damageResistance = clamp(100 - damagePressure, 0, 100)
+  const offensiveConsistency = clamp(
+    100 * (1 - (damageInflictedStdDev / Math.max(averageDamageInflicted, targetWoundPool * 0.25, 1))),
+    0,
+    100,
+  )
+  const defensiveConsistency = clamp(
+    100 * (1 - (damageInflictedStdDev / Math.max(targetWoundPool * 0.5, 1))),
+    0,
+    100,
+  )
+  const offensiveReliability = offensiveConsistency * (Math.max(damagePressure, killPressure) / 100)
+  const defensiveReliability = defensiveConsistency * (Math.max(damageResistance, survivalChance) / 100)
+  const offenseScore = clamp(
+    (0.5 * damagePressure) + (0.35 * killPressure) + (0.15 * offensiveReliability),
+    0,
+    100,
+  )
+  const defenseScore = clamp(
+    (0.5 * damageResistance) + (0.35 * survivalChance) + (0.15 * defensiveReliability),
+    0,
+    100,
+  )
+
+  return {
+    offenseScore: Math.round(offenseScore),
+    offenseBand: getEffectivenessBand(offenseScore),
+    defenseScore: Math.round(defenseScore),
+    defenseBand: getEffectivenessBand(defenseScore),
+    damagePressure,
+    damageResistance,
+    killPressure,
+    survivalChance,
+    averageDamageInflicted,
+    targetWoundPool,
+  }
 }
 
 function createBattleAchievementSideState() {
@@ -3493,10 +3579,35 @@ function getRunTargetModelsDestroyed(run) {
   return 0
 }
 
+function getRunTargetStartingTotalWounds(run) {
+  const target = run?.result?.target || {}
+  if (Number.isFinite(Number(target.starting_total_wounds))) {
+    return Math.max(0, Number(target.starting_total_wounds))
+  }
+  return 0
+}
+
+function getRunDamageInflicted(run) {
+  const combatStats = run?.result?.stats || {}
+  if (Number.isFinite(Number(combatStats.damage_inflicted))) {
+    return Math.max(0, Number(combatStats.damage_inflicted))
+  }
+  const target = run?.result?.target || {}
+  if (
+    Number.isFinite(Number(target.starting_total_wounds))
+    && Number.isFinite(Number(target.current_total_wounds))
+  ) {
+    return Math.max(0, Number(target.starting_total_wounds) - Number(target.current_total_wounds))
+  }
+  return 0
+}
+
 function buildRunSummary(runs) {
   const totalRuns = runs.length
   const targets = runs.map((run) => run.result.target)
   const combatStats = runs.map((run) => run.result.stats || {})
+  const damageInflictedByRun = runs.map(getRunDamageInflicted)
+  const targetWoundPools = runs.map(getRunTargetStartingTotalWounds).filter((value) => value > 0)
   const expectedAttackDice = sumBy(runs, (run) => run.request?.expected_attack_dice || 0)
   const gatheredAttackDice = sumBy(combatStats, (stat) => stat.gathered_attack_dice || 0)
   const plannedAttackDice = sumBy(runs, (run) => sumBy(
@@ -3513,8 +3624,14 @@ function buildRunSummary(runs) {
   const damagePool = sumBy(combatStats, (stat) => stat.damage_pool || 0)
   const mortalDamage = sumBy(combatStats, (stat) => stat.mortal_damage || 0)
   const devastatingDamage = sumBy(combatStats, (stat) => stat.devastating_damage || 0)
+  const averageDamageInflicted = average(damageInflictedByRun)
+  const damageInflictedStdDev = standardDeviation(damageInflictedByRun)
   const feelNoPainDamagePrevented = sumBy(combatStats, (stat) => stat.feel_no_pain_damage_prevented || 0)
   const targetModelsDestroyed = sumBy(runs, getRunTargetModelsDestroyed)
+  const targetWoundPool = average(targetWoundPools)
+  const killPressure = totalRuns
+    ? (targets.filter((item) => item.destroyed).length / totalRuns) * 100
+    : 0
   const attachedCharacters = runs
     .map((run) => run.result.attached_character)
     .filter(Boolean)
@@ -3534,6 +3651,12 @@ function buildRunSummary(runs) {
     hazardousBearerRuns: hazardousBearers.length,
     hazardousBearerDestroyedCount: hazardousBearers.filter((item) => item.destroyed).length,
     averageHazardousBearerWounds: average(hazardousBearers.map((item) => item.current_model_wounds)),
+    effectiveness: buildEffectivenessScores({
+      averageDamageInflicted,
+      damageInflictedStdDev,
+      killPressure,
+      targetWoundPool,
+    }),
     combat: {
       expectedAttackDice,
       gatheredAttackDice,
@@ -3567,6 +3690,9 @@ function buildRunSummary(runs) {
       savesFailed: sumBy(combatStats, (stat) => stat.saves_failed || 0),
       unsavableWounds: sumBy(combatStats, (stat) => stat.unsavable_wounds || 0),
       damagePool,
+      damageInflicted: sumBy(combatStats, (stat) => stat.damage_inflicted || 0),
+      averageDamageInflicted,
+      damageInflictedStdDev,
       devastatingDamage,
       mortalDamage,
       normalDamage: Math.max(0, damagePool - mortalDamage),
@@ -6649,9 +6775,38 @@ function App() {
     activeRun ? buildRunSummary([activeRun]) : null
   ), [activeRun])
 
-  function renderCombatBreakdownCards(stats, damageFallback = 0) {
+  function renderCombatBreakdownCards(stats, damageFallback = 0, options = {}) {
+    const { showEffectivenessScores = false } = options
     return (
       <>
+        {showEffectivenessScores ? (
+          <article className="result-card accent effectiveness-score-card">
+            <p className="kicker">Effectiveness</p>
+            <h3>Matchup Snapshot</h3>
+            <div className="effectiveness-score-grid">
+              <div className="effectiveness-score-item">
+                <span className="effectiveness-score-label">Attacker Offense</span>
+                <strong className="effectiveness-score-value">{stats.effectiveness.offenseScore}</strong>
+                <span className="effectiveness-score-band">{stats.effectiveness.offenseBand}</span>
+                <span className="effectiveness-score-meta">
+                  {formatAverage(stats.effectiveness.averageDamageInflicted)} avg damage
+                  {' | '}
+                  {stats.effectiveness.killPressure.toFixed(1)}% kill
+                </span>
+              </div>
+              <div className="effectiveness-score-item">
+                <span className="effectiveness-score-label">Defender Defense</span>
+                <strong className="effectiveness-score-value">{stats.effectiveness.defenseScore}</strong>
+                <span className="effectiveness-score-band">{stats.effectiveness.defenseBand}</span>
+                <span className="effectiveness-score-meta">
+                  {stats.effectiveness.survivalChance.toFixed(1)}% survive
+                  {' | '}
+                  {formatAverage(stats.effectiveness.targetWoundPool)} wound pool
+                </span>
+              </div>
+            </div>
+          </article>
+        ) : null}
         <article className="result-card">
           <p className="kicker">Hit Breakdown</p>
           <h3>Accuracy</h3>
@@ -6728,7 +6883,7 @@ function App() {
           {stats.combat.feelNoPainRolls > 0 ? (
             <>
               <p>After Feel No Pain: {stats.combat.damageAfterFeelNoPain}</p>
-              <p>Feel No Pain: {stats.combat.feelNoPainSuccesses}/{stats.combat.feelNoPainRolls} ignored, {stats.combat.feelNoPainDamagePrevented} damage prevented</p>
+              <p>Feel No Pain: {stats.combat.feelNoPainSuccesses}/{stats.combat.damagePool || damageFallback} ignored, {stats.combat.feelNoPainDamagePrevented} damage prevented</p>
             </>
           ) : null}
         </article>
@@ -12435,7 +12590,7 @@ function App() {
                     <p>Avg current model wounds: {formatAverage(summaryStats.averageTargetCurrentWounds)}</p>
                   </article>
 
-                  {renderCombatBreakdownCards(summaryStats)}
+                  {renderCombatBreakdownCards(summaryStats, 0, { showEffectivenessScores: true })}
 
                   {summaryStats.attachedCharacterRuns > 0 ? (
                     <article className="result-card">
@@ -13792,7 +13947,7 @@ function App() {
                     {summaryStats.combat.feelNoPainRolls > 0 ? (
                       <>
                         <p>After Feel No Pain: {summaryStats.combat.damageAfterFeelNoPain}</p>
-                        <p>Feel No Pain: {summaryStats.combat.feelNoPainSuccesses}/{summaryStats.combat.feelNoPainRolls} ignored, {summaryStats.combat.feelNoPainDamagePrevented} damage prevented</p>
+                        <p>Feel No Pain: {summaryStats.combat.feelNoPainSuccesses}/{summaryStats.combat.damagePool} ignored, {summaryStats.combat.feelNoPainDamagePrevented} damage prevented</p>
                       </>
                     ) : null}
                   </article>
