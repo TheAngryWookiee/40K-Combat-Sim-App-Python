@@ -10,6 +10,7 @@ import time
 from typing import Any
 from uuid import uuid4
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -37,9 +38,14 @@ from data_loader import (
     serialize_unit,
 )
 
+PROJECT_ROOT = Path(__file__).resolve().parent
+load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT / ".env.local", override=True)
+
 ALL_RANGED_WEAPONS = "__all_ranged__"
 ALL_MELEE_WEAPONS = "__all_melee__"
 ATTACHED_LEADER_WEAPON_PREFIX = "__attacker_leader__::"
+ATTACHED_SUPPORT_WEAPON_MARKER = "support::"
 GAME_VERSION = "11.06.27.26"
 COMBAT_STATS_SCHEMA_VERSION = 1
 DATABASE_URL_ENV_NAMES = ("DATABASE_URL", "POSTGRES_URL")
@@ -168,6 +174,7 @@ class SimulationOptions(BaseModel):
     defender_unbreakable_lines_active: bool = False
     defender_pennant_of_remembrance_active: bool = False
     defender_battleshocked: bool = False
+    defender_allocation_order: list[str] = Field(default_factory=list)
 
 
 class SimulationRequest(BaseModel):
@@ -183,6 +190,10 @@ class SimulationRequest(BaseModel):
     attacker_attached_character_loadout: dict[str, Any] = Field(default_factory=dict)
     attacker_attached_character_model_count: int | None = Field(default=None, ge=1)
     attacker_attached_character_model_counts: dict[str, int] = Field(default_factory=dict)
+    attacker_attached_support_name: str | None = None
+    attacker_attached_support_loadout: dict[str, Any] = Field(default_factory=dict)
+    attacker_attached_support_model_count: int | None = Field(default=None, ge=1)
+    attacker_attached_support_model_counts: dict[str, int] = Field(default_factory=dict)
     weapon_name: str | None = None
     weapon_names: list[str] = Field(default_factory=list)
     weapon_model_counts: dict[str, int] = Field(default_factory=dict)
@@ -196,6 +207,10 @@ class SimulationRequest(BaseModel):
     attached_character_loadout: dict[str, Any] = Field(default_factory=dict)
     attached_character_model_count: int | None = Field(default=None, ge=1)
     attached_character_model_counts: dict[str, int] = Field(default_factory=dict)
+    attached_support_name: str | None = None
+    attached_support_loadout: dict[str, Any] = Field(default_factory=dict)
+    attached_support_model_count: int | None = Field(default=None, ge=1)
+    attached_support_model_counts: dict[str, int] = Field(default_factory=dict)
     options: SimulationOptions = Field(default_factory=SimulationOptions)
     seed: int | None = None
     include_log: bool = True
@@ -506,6 +521,20 @@ def unit_can_lead_target(leader_unit: dict[str, object], target_unit_name: str) 
     return target_unit_name in can_lead
 
 
+def unit_can_support_target(support_unit: dict[str, object], target_unit_name: str) -> bool:
+    support_data = support_unit.get("support")
+    if not isinstance(support_data, dict):
+        return False
+    support_targets = (
+        support_data.get("can_support")
+        or support_data.get("can_join")
+        or support_data.get("can_attach_to")
+    )
+    if not isinstance(support_targets, list):
+        return False
+    return target_unit_name in support_targets
+
+
 def unit_has_keyword(unit: dict[str, object], keyword: str) -> bool:
     keyword_lower = keyword.lower()
     return any(str(item).lower() == keyword_lower for item in unit.get("keywords", []))
@@ -523,19 +552,25 @@ def collect_unit_ability_names(unit: dict[str, Any] | None) -> list[str]:
     return ability_names
 
 
-def apply_attached_unit_keywords(bodyguard_unit: dict[str, Any], leader_unit: dict[str, Any] | None) -> None:
-    if leader_unit is None:
+def apply_attached_unit_keywords(bodyguard_unit: dict[str, Any], *attached_units: dict[str, Any] | None) -> None:
+    resolved_attached_units = [unit for unit in attached_units if unit is not None]
+    if not resolved_attached_units:
         return
 
     combined_keywords = {
         str(keyword)
         for keyword in bodyguard_unit.get("keywords", [])
     }
-    combined_keywords.update(str(keyword) for keyword in leader_unit.get("keywords", []))
+    for attached_unit in resolved_attached_units:
+        combined_keywords.update(str(keyword) for keyword in attached_unit.get("keywords", []))
     bodyguard_unit["keywords"] = sorted(combined_keywords, key=str.lower)
     bodyguard_unit["attached_component_keywords"] = {
         "bodyguard": list(bodyguard_unit.get("display_keywords", bodyguard_unit.get("keywords", []))),
-        "leader_support": list(leader_unit.get("display_keywords", leader_unit.get("keywords", []))),
+        "leader_support": sorted({
+            str(keyword)
+            for attached_unit in resolved_attached_units
+            for keyword in attached_unit.get("display_keywords", attached_unit.get("keywords", []))
+        }, key=str.lower),
     }
 
 
@@ -730,7 +765,9 @@ def build_combat_metadata(
     defender_unit: dict[str, Any],
     attack_entries: list[dict[str, Any]],
     attacker_attached_character_unit: dict[str, Any] | None,
-    attached_character_unit: dict[str, Any] | None,
+    attacker_attached_support_unit: dict[str, Any] | None,
+    defender_attached_character_unit: dict[str, Any] | None,
+    defender_attached_support_unit: dict[str, Any] | None,
     requested_weapon_names: list[str],
 ) -> dict[str, Any]:
     return {
@@ -756,6 +793,14 @@ def build_combat_metadata(
             requested_model_count=request.attacker_attached_character_model_count,
             requested_model_counts=request.attacker_attached_character_model_counts,
         ),
+        "attacker_attached_support": build_unit_combat_snapshot(
+            attacker_attached_support_unit,
+            faction=request.attacker_faction,
+            unit_name=request.attacker_attached_support_name,
+            requested_loadout=request.attacker_attached_support_loadout,
+            requested_model_count=request.attacker_attached_support_model_count,
+            requested_model_counts=request.attacker_attached_support_model_counts,
+        ),
         "defender": build_unit_combat_snapshot(
             defender_unit,
             faction=request.defender_faction,
@@ -767,12 +812,20 @@ def build_combat_metadata(
             requested_model_counts=request.defender_model_counts,
         ),
         "defender_attached_character": build_unit_combat_snapshot(
-            attached_character_unit,
+            defender_attached_character_unit,
             faction=request.defender_faction,
             unit_name=request.options.attached_character_name,
             requested_loadout=request.attached_character_loadout,
             requested_model_count=request.attached_character_model_count,
             requested_model_counts=request.attached_character_model_counts,
+        ),
+        "defender_attached_support": build_unit_combat_snapshot(
+            defender_attached_support_unit,
+            faction=request.defender_faction,
+            unit_name=request.attached_support_name,
+            requested_loadout=request.attached_support_loadout,
+            requested_model_count=request.attached_support_model_count,
+            requested_model_counts=request.attached_support_model_counts,
         ),
         "selected_weapon_names": requested_weapon_names,
         "weapon_model_counts": request.weapon_model_counts,
@@ -789,8 +842,40 @@ def get_database_url() -> str:
     return ""
 
 
+def get_database_status() -> dict[str, Any]:
+    configured_env_name = ""
+    database_url = ""
+    for env_name in DATABASE_URL_ENV_NAMES:
+        value = os.environ.get(env_name, "").strip()
+        if value:
+            configured_env_name = env_name
+            database_url = value
+            break
+
+    driver_available = psycopg is not None
+    database_url_present = bool(database_url)
+    configured = driver_available and database_url_present
+
+    if configured:
+        reason = "configured"
+    elif database_url_present:
+        reason = "missing_psycopg"
+    elif driver_available:
+        reason = "missing_database_url"
+    else:
+        reason = "missing_database_url_and_psycopg"
+
+    return {
+        "configured": configured,
+        "reason": reason,
+        "database_url_present": database_url_present,
+        "database_env_name": configured_env_name,
+        "driver_available": driver_available,
+    }
+
+
 def database_is_configured() -> bool:
-    return bool(get_database_url() and psycopg is not None)
+    return bool(get_database_status()["configured"])
 
 
 def to_jsonable(value: Any) -> Any:
@@ -848,26 +933,30 @@ def build_combat_run_analysis_values(
     hazardous_bearer = result.get("hazardous_bearer") or {}
     attacker = combat_metadata.get("attacker") or {}
     attacker_attached_character = combat_metadata.get("attacker_attached_character") or {}
+    attacker_attached_support = combat_metadata.get("attacker_attached_support") or {}
     defender = combat_metadata.get("defender") or {}
     defender_attached_character = combat_metadata.get("defender_attached_character") or {}
+    defender_attached_support = combat_metadata.get("defender_attached_support") or {}
 
     damage_pool = as_int(stats.get("damage_pool")) or 0
     mortal_damage = as_int(stats.get("mortal_damage")) or 0
     attacker_model_count = as_int(attacker.get("resolved_model_count"))
     attacker_attached_model_count = as_int(attacker_attached_character.get("resolved_model_count")) or 0
+    attacker_attached_support_model_count = as_int(attacker_attached_support.get("resolved_model_count")) or 0
     defender_model_count = as_int(defender.get("resolved_model_count"))
     defender_attached_model_count = as_int(defender_attached_character.get("resolved_model_count")) or 0
+    defender_attached_support_model_count = as_int(defender_attached_support.get("resolved_model_count")) or 0
 
     return {
         "attacker_model_count": attacker_model_count,
         "defender_model_count": defender_model_count,
         "attacker_package_model_count": (
-            attacker_model_count + attacker_attached_model_count
+            attacker_model_count + attacker_attached_model_count + attacker_attached_support_model_count
             if attacker_model_count is not None
             else None
         ),
         "defender_package_model_count": (
-            defender_model_count + defender_attached_model_count
+            defender_model_count + defender_attached_model_count + defender_attached_support_model_count
             if defender_model_count is not None
             else None
         ),
@@ -1069,6 +1158,7 @@ def resolve_requested_attack_entries(
     attacker_unit: dict[str, Any],
     weapon_names: list[str],
     attacker_attached_character_unit: dict[str, Any] | None = None,
+    attacker_attached_support_unit: dict[str, Any] | None = None,
     weapon_model_counts: dict[str, int] | None = None,
 ) -> list[dict[str, Any]]:
     attack_entries_by_unit: dict[str, dict[str, Any]] = {}
@@ -1108,6 +1198,12 @@ def resolve_requested_attack_entries(
                     resolve_requested_weapons(attacker_attached_character_unit, ALL_RANGED_WEAPONS),
                     weapon_name,
                 )
+            if attacker_attached_support_unit is not None:
+                add_weapons_for_unit(
+                    attacker_attached_support_unit,
+                    resolve_requested_weapons(attacker_attached_support_unit, ALL_RANGED_WEAPONS),
+                    weapon_name,
+                )
             continue
 
         if weapon_name == ALL_MELEE_WEAPONS:
@@ -1122,16 +1218,26 @@ def resolve_requested_attack_entries(
                     resolve_requested_weapons(attacker_attached_character_unit, ALL_MELEE_WEAPONS),
                     weapon_name,
                 )
+            if attacker_attached_support_unit is not None:
+                add_weapons_for_unit(
+                    attacker_attached_support_unit,
+                    resolve_requested_weapons(attacker_attached_support_unit, ALL_MELEE_WEAPONS),
+                    weapon_name,
+                )
             continue
 
         if weapon_name.startswith(ATTACHED_LEADER_WEAPON_PREFIX):
-            if attacker_attached_character_unit is None:
+            selected_attached_unit = attacker_attached_character_unit
+            selected_weapon_name = weapon_name.removeprefix(ATTACHED_LEADER_WEAPON_PREFIX)
+            if selected_weapon_name.startswith(ATTACHED_SUPPORT_WEAPON_MARKER):
+                selected_attached_unit = attacker_attached_support_unit
+                selected_weapon_name = selected_weapon_name.removeprefix(ATTACHED_SUPPORT_WEAPON_MARKER)
+            if selected_attached_unit is None:
                 return []
-            leader_weapon_name = weapon_name.removeprefix(ATTACHED_LEADER_WEAPON_PREFIX)
-            leader_weapons = resolve_requested_weapons(attacker_attached_character_unit, leader_weapon_name)
-            if not leader_weapons:
+            attached_weapons = resolve_requested_weapons(selected_attached_unit, selected_weapon_name)
+            if not attached_weapons:
                 return []
-            add_weapons_for_unit(attacker_attached_character_unit, leader_weapons, weapon_name)
+            add_weapons_for_unit(selected_attached_unit, attached_weapons, weapon_name)
             continue
 
         attacker_weapons = resolve_requested_weapons(attacker_unit, weapon_name)
@@ -1604,7 +1710,33 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
                 ),
             )
 
-    apply_attached_unit_keywords(attacker_unit, attacker_attached_character_unit)
+    attacker_attached_support_unit = None
+    if request.attacker_attached_support_name:
+        try:
+            attacker_attached_support_unit = deepcopy(apply_unit_loadout(
+                get_unit(
+                    factions,
+                    request.attacker_faction,
+                    request.attacker_attached_support_name,
+                ),
+                request.attacker_attached_support_loadout,
+                request.attacker_attached_support_model_count,
+                request.attacker_attached_support_model_counts,
+            ))
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        if not unit_can_support_target(attacker_attached_support_unit, attacker_unit["name"]):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Unit '{request.attacker_attached_support_name}' cannot support "
+                    f"'{request.attacker_unit}'."
+                ),
+            )
+
+    apply_attached_unit_keywords(attacker_unit, attacker_attached_character_unit, attacker_attached_support_unit)
 
     requested_weapon_names = list(request.weapon_names)
     if not requested_weapon_names and request.weapon_name:
@@ -1614,6 +1746,7 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
         attacker_unit,
         requested_weapon_names,
         attacker_attached_character_unit,
+        attacker_attached_support_unit,
         request.weapon_model_counts,
     )
     if not attack_entries:
@@ -1648,11 +1781,39 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
                 ),
             )
 
-    apply_attached_unit_keywords(defender_unit, attached_character_unit)
+    attached_support_unit = None
+    if request.attached_support_name:
+        try:
+            attached_support_unit = deepcopy(apply_unit_loadout(
+                get_unit(
+                    factions,
+                    request.defender_faction,
+                    request.attached_support_name,
+                ),
+                request.attached_support_loadout,
+                request.attached_support_model_count,
+                request.attached_support_model_counts,
+            ))
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        if not unit_can_support_target(attached_support_unit, defender_unit["name"]):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Unit '{request.attached_support_name}' cannot support "
+                    f"'{request.defender_unit}'."
+                ),
+            )
+
+    apply_attached_unit_keywords(defender_unit, attached_character_unit, attached_support_unit)
 
     attacker_enhancement_bearer_unit = (
         attacker_attached_character_unit
         if attacker_attached_character_unit is not None
+        else attacker_attached_support_unit
+        if attacker_attached_support_unit is not None
         else attacker_unit
     )
     apply_simulation_enhancement_modifiers(
@@ -1663,6 +1824,8 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
     defender_enhancement_bearer_unit = (
         attached_character_unit
         if attached_character_unit is not None
+        else attached_support_unit
+        if attached_support_unit is not None
         else defender_unit
     )
     apply_simulation_enhancement_modifiers(
@@ -1678,17 +1841,30 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
             attacker_enhancement_bearer_unit["name"]
         ),
         "attacker_primary_unit_name": attacker_unit["name"],
-        "attacker_has_attached_character": attacker_attached_character_unit is not None,
-        "attacker_attached_ability_names": collect_unit_ability_names(attacker_attached_character_unit),
+        "attacker_has_attached_character": attacker_attached_character_unit is not None or attacker_attached_support_unit is not None,
+        "attacker_attached_ability_names": sorted({
+            *collect_unit_ability_names(attacker_attached_character_unit),
+            *collect_unit_ability_names(attacker_attached_support_unit),
+        }),
         "attacker_package_model_count": (
             int(attacker_unit.get("models", 0))
-            + int(attacker_attached_character_unit.get("models", 0))
-            if attacker_attached_character_unit is not None
-            else int(attacker_unit.get("models", 0))
+            + (
+                int(attacker_attached_character_unit.get("models", 0))
+                if attacker_attached_character_unit is not None
+                else 0
+            )
+            + (
+                int(attacker_attached_support_unit.get("models", 0))
+                if attacker_attached_support_unit is not None
+                else 0
+            )
         ),
         "attacker_package_is_character_unit": (
             unit_has_keyword(attacker_unit, "character")
-            or attacker_attached_character_unit is not None
+            or any(
+                unit is not None and unit_has_keyword(unit, "character")
+                for unit in (attacker_attached_character_unit, attacker_attached_support_unit)
+            )
         ),
         "defender_detachment_name": request.defender_detachment_name,
         "defender_enhancement_name": request.defender_enhancement_name,
@@ -1700,14 +1876,30 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
             + int(attached_character_unit.get("models", 0))
             if attached_character_unit is not None
             else int(defender_unit.get("models", 0))
+        ) + (
+            int(attached_support_unit.get("models", 0))
+            if attached_support_unit is not None
+            else 0
         ),
         "defender_enhancement_bearer_is_single_model_unit": (
             int(attached_character_unit.get("models", 1)) == 1
             if attached_character_unit is not None
+            else int(attached_support_unit.get("models", 1)) == 1
+            if attached_support_unit is not None
             else int(defender_unit.get("models", 1)) == 1
         ),
-        "defender_has_attached_character": attached_character_unit is not None,
+        "defender_has_attached_character": attached_character_unit is not None or attached_support_unit is not None,
     })
+
+    defender_attached_units = [
+        unit
+        for unit in (attached_character_unit, attached_support_unit)
+        if unit is not None
+    ]
+    defender_precision_unit = next(
+        (unit for unit in defender_attached_units if unit_has_keyword(unit, "character")),
+        None,
+    )
 
     simulator = CombatSimulator(seed=request.seed)
     try:
@@ -1715,7 +1907,8 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
             attack_entries,
             defender_unit,
             options=simulation_options,
-            attached_character_unit=attached_character_unit,
+            attached_character_unit=defender_precision_unit,
+            attached_units=defender_attached_units,
         )
     except CombatSimulationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -1728,7 +1921,9 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
         defender_unit=defender_unit,
         attack_entries=attack_entries,
         attacker_attached_character_unit=attacker_attached_character_unit,
-        attached_character_unit=attached_character_unit,
+        attacker_attached_support_unit=attacker_attached_support_unit,
+        defender_attached_character_unit=attached_character_unit,
+        defender_attached_support_unit=attached_support_unit,
         requested_weapon_names=requested_weapon_names,
     )
     matrix_storage = store_combat_run(request, combat_metadata, result)
@@ -1737,11 +1932,13 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
     return {
         "game_version": request.game_version,
         "combat_metadata": combat_metadata,
+        "database_status": get_database_status(),
         "matrix_storage": matrix_storage,
         "attacker": {
             "faction": request.attacker_faction,
             "unit": request.attacker_unit,
             "attached_character": request.attacker_attached_character_name,
+            "attached_support": request.attacker_attached_support_name,
             "weapon": request.weapon_name,
             "weapon_names": requested_weapon_names,
             "weapons": [
@@ -1756,6 +1953,7 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
             "faction": request.defender_faction,
             "unit": request.defender_unit,
             "attached_character": request.options.attached_character_name,
+            "attached_support": request.attached_support_name,
         },
         "result": response_result,
     }
@@ -1781,6 +1979,7 @@ def simulate_batch(request: SimulationBatchRequest) -> dict[str, object]:
 
     return {
         "game_version": request.game_version,
+        "database_status": get_database_status(),
         "seed_base": seed_base,
         "runs": runs,
         "summary_only": True,
@@ -1789,15 +1988,18 @@ def simulate_batch(request: SimulationBatchRequest) -> dict[str, object]:
 
 @app.get("/matrix/runs")
 def get_matrix_runs(limit: int = 5000) -> dict[str, object]:
-    if not database_is_configured():
+    database_status = get_database_status()
+    if not database_status["configured"]:
         return {
             "database_configured": False,
+            "database_status": database_status,
             "items": [],
         }
 
     try:
         return {
             "database_configured": True,
+            "database_status": database_status,
             "items": load_matrix_runs(limit),
         }
     except Exception as exc:

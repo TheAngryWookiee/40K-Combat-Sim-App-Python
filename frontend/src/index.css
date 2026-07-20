@@ -77,6 +77,8 @@
   --legend-text-soft: rgba(255, 239, 209, 0.86);
   --legend-profile-bg: rgba(255, 245, 220, 0.96);
   --legend-profile-text: #362411;
+  --theme-option-active-bg: linear-gradient(180deg, color-mix(in srgb, var(--surface-control) 88%, white 12%), color-mix(in srgb, var(--surface-card-soft) 82%, transparent));
+  --theme-option-active-shadow: 0 10px 20px rgba(29, 23, 18, 0.08);
 }
 
 :root[data-theme="forge"] {
@@ -146,6 +148,79 @@
   --legend-text-soft: rgba(222, 235, 250, 0.86);
   --legend-profile-bg: rgba(222, 235, 250, 0.96);
   --legend-profile-text: #162333;
+  --theme-option-active-bg: linear-gradient(180deg, rgba(232, 241, 252, 0.98), rgba(223, 235, 249, 0.92));
+  --theme-option-active-shadow: 0 10px 20px rgba(24, 32, 46, 0.12);
+}
+
+:root[data-theme="forge-night"] {
+  color: #e7eef9;
+  --app-background:
+    radial-gradient(circle at top left, rgba(34, 146, 237, 0.18), transparent 30%),
+    radial-gradient(circle at top right, rgba(213, 63, 72, 0.16), transparent 28%),
+    linear-gradient(180deg, #0a121b, #111b28 52%, #172333 100%);
+  --paper: #182433;
+  --paper-soft: #13202f;
+  --ink: #e7eef9;
+  --ink-soft: #98a7bc;
+  --accent: #2292ed;
+  --accent-deep: #196eb3;
+  --accent-strong: #d53f48;
+  --line: rgba(160, 187, 220, 0.14);
+  --line-strong: rgba(160, 187, 220, 0.28);
+  --shadow: 0 24px 48px rgba(2, 7, 14, 0.38);
+  --hero-background:
+    radial-gradient(circle at left center, rgba(34, 146, 237, 0.28), transparent 30%),
+    radial-gradient(circle at right center, rgba(213, 63, 72, 0.24), transparent 28%),
+    linear-gradient(135deg, rgba(5, 10, 18, 0.98), rgba(16, 28, 43, 0.98));
+  --hero-glow: radial-gradient(circle, rgba(62, 153, 232, 0.16), transparent 70%);
+  --hero-ink: #f4f8ff;
+  --hero-ink-soft: #d3deef;
+  --hero-eyebrow: rgba(191, 210, 236, 0.84);
+  --nav-active-start: #2292ed;
+  --nav-active-end: #d53f48;
+  --nav-active-shadow: rgba(17, 77, 140, 0.34);
+  --settings-surface: rgba(17, 28, 43, 0.96);
+  --settings-surface-strong: rgba(12, 22, 35, 0.98);
+  --surface-panel: linear-gradient(180deg, rgba(18, 29, 44, 0.96), rgba(13, 22, 35, 0.98));
+  --surface-card: rgba(22, 36, 53, 0.92);
+  --surface-card-soft: rgba(24, 39, 58, 0.82);
+  --surface-card-alt: rgba(26, 42, 63, 0.94);
+  --surface-control: rgba(14, 24, 37, 0.98);
+  --surface-subtle: rgba(154, 180, 212, 0.08);
+  --surface-float: rgba(15, 24, 38, 0.9);
+  --button-primary-start: #2292ed;
+  --button-primary-end: #d53f48;
+  --button-primary-text: #f5f9ff;
+  --button-primary-shadow: rgba(17, 77, 140, 0.34);
+  --button-utility-bg: rgba(34, 54, 82, 0.96);
+  --button-utility-hover: #d53f48;
+  --button-utility-text: #eef5ff;
+  --state-active-bg: linear-gradient(90deg, rgba(18, 58, 96, 0.82), rgba(92, 28, 41, 0.78));
+  --state-complete-bg: rgba(27, 47, 69, 0.92);
+  --state-accent-border: rgba(34, 146, 237, 0.54);
+  --state-marker-border: rgba(108, 150, 198, 0.38);
+  --state-marker-text: #d7e8ff;
+  --state-active-panel: linear-gradient(180deg, rgba(19, 36, 55, 0.96), rgba(13, 22, 35, 0.98));
+  --surface-lightwash: rgba(18, 29, 44, 0.92);
+  --surface-lightwash-soft: rgba(20, 33, 50, 0.68);
+  --battlefield-warm-overlay: rgba(34, 146, 237, 0.08);
+  --battlefield-light-line: rgba(203, 221, 245, 0.28);
+  --battlefield-light-text: #dcecff;
+  --selection-ring: rgba(67, 175, 255, 0.95);
+  --selection-ring-soft: rgba(67, 175, 255, 0.32);
+  --result-accent-bg: linear-gradient(180deg, rgba(20, 45, 74, 0.96), rgba(25, 34, 49, 0.96));
+  --run-tab-active-bg: linear-gradient(135deg, rgba(34, 146, 237, 0.2), rgba(213, 63, 72, 0.18));
+  --run-tab-active-border: rgba(84, 173, 242, 0.44);
+  --range-ring-neutral-border: rgba(188, 209, 234, 0.28);
+  --range-ring-neutral-bg: rgba(160, 208, 252, 0.025);
+  --move-ring-color: rgba(88, 186, 255, 0.86);
+  --move-ring-bg: rgba(34, 146, 237, 0.08);
+  --move-ring-shadow: rgba(34, 146, 237, 0.26);
+  --legend-text-soft: rgba(217, 231, 249, 0.88);
+  --legend-profile-bg: rgba(223, 235, 250, 0.14);
+  --legend-profile-text: #edf5ff;
+  --theme-option-active-bg: linear-gradient(180deg, rgba(27, 56, 88, 0.94), rgba(72, 25, 36, 0.9));
+  --theme-option-active-shadow: 0 14px 28px rgba(2, 7, 14, 0.34);
 }
 
 * {

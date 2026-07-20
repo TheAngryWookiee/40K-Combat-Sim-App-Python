@@ -25,6 +25,7 @@ const statDisplayRows = [
 ]
 
 const ATTACHED_LEADER_WEAPON_PREFIX = '__attacker_leader__::'
+const ATTACHED_SUPPORT_WEAPON_MARKER = 'support::'
 const GAME_VERSION = '11.06.27.26'
 
 const initialOptions = {
@@ -90,6 +91,7 @@ const initialOptions = {
   defender_unbreakable_lines_active: false,
   defender_pennant_of_remembrance_active: false,
   defender_battleshocked: false,
+  defender_allocation_order: [],
 }
 
 const UNFORGIVEN_TASK_FORCE = 'Unforgiven Task Force'
@@ -154,6 +156,11 @@ const APP_THEMES = {
     id: 'forge',
     name: 'Forge',
     description: 'Steel, blue, and red pulled from the Strategium Forge logo.',
+  },
+  'forge-night': {
+    id: 'forge-night',
+    name: 'Forge Night',
+    description: 'A dark steel version of Forge with logo blues and reds for glow and contrast.',
   },
 }
 const BATTLEFIELD_X_AXIS_LABELS = Array.from(
@@ -1222,6 +1229,126 @@ function formatError(error) {
   return error?.message || 'Something went wrong.'
 }
 
+function compareMatrixValues(leftValue, rightValue, numeric = false) {
+  const leftIsEmpty = leftValue === null || leftValue === undefined || leftValue === ''
+  const rightIsEmpty = rightValue === null || rightValue === undefined || rightValue === ''
+
+  if (leftIsEmpty && rightIsEmpty) {
+    return 0
+  }
+  if (leftIsEmpty) {
+    return 1
+  }
+  if (rightIsEmpty) {
+    return -1
+  }
+
+  if (numeric) {
+    const leftNumber = Number(leftValue)
+    const rightNumber = Number(rightValue)
+    if (Number.isFinite(leftNumber) && Number.isFinite(rightNumber)) {
+      return leftNumber - rightNumber
+    }
+  }
+
+  return String(leftValue).localeCompare(String(rightValue), undefined, {
+    numeric: true,
+    sensitivity: 'base',
+  })
+}
+
+function buildDefenderAllocationLabel(role, name) {
+  const roleLabel = role === 'attached_character'
+    ? 'Attached Character'
+    : role === 'attached_support'
+      ? 'Attached Support'
+      : 'Bodyguard'
+  return `${roleLabel} - ${getDisplayModelName(name || 'Model')}`
+}
+
+function getAttachedUnitAllocationRole(unitDetails) {
+  return unitHasKeyword(unitDetails, 'character') ? 'attached_character' : 'attached_support'
+}
+
+function buildDefenderAllocationChoices(defenderUnitDetails, attachedCharacterUnitDetails, attachedSupportUnitDetails) {
+  if (!defenderUnitDetails) {
+    return []
+  }
+
+  const choices = []
+  const targetProfiles = defenderUnitDetails.target_profiles || []
+  if (targetProfiles.length) {
+    targetProfiles.forEach((profile) => {
+      choices.push({
+        role: 'bodyguard',
+        label: buildDefenderAllocationLabel('bodyguard', profile.name || defenderUnitDetails.name),
+      })
+    })
+  } else {
+    choices.push({
+      role: 'bodyguard',
+      label: buildDefenderAllocationLabel('bodyguard', defenderUnitDetails.name),
+    })
+  }
+
+  if (attachedCharacterUnitDetails) {
+    const attachedRole = getAttachedUnitAllocationRole(attachedCharacterUnitDetails)
+    const attachedProfiles = attachedCharacterUnitDetails.target_profiles || []
+    if (attachedProfiles.length) {
+      attachedProfiles.forEach((profile) => {
+        choices.push({
+          role: attachedRole,
+          label: buildDefenderAllocationLabel(attachedRole, profile.name || attachedCharacterUnitDetails.name),
+        })
+      })
+    } else {
+      choices.push({
+        role: attachedRole,
+        label: buildDefenderAllocationLabel(attachedRole, attachedCharacterUnitDetails.name),
+      })
+    }
+  }
+
+  if (attachedSupportUnitDetails) {
+    const attachedRole = getAttachedUnitAllocationRole(attachedSupportUnitDetails)
+    const attachedProfiles = attachedSupportUnitDetails.target_profiles || []
+    if (attachedProfiles.length) {
+      attachedProfiles.forEach((profile) => {
+        choices.push({
+          role: attachedRole,
+          label: buildDefenderAllocationLabel(attachedRole, profile.name || attachedSupportUnitDetails.name),
+        })
+      })
+    } else {
+      choices.push({
+        role: attachedRole,
+        label: buildDefenderAllocationLabel(attachedRole, attachedSupportUnitDetails.name),
+      })
+    }
+  }
+
+  return choices
+}
+
+function sanitizeDefenderAllocationOrder(currentOrder, allocationChoices) {
+  const validLabels = allocationChoices.map((choice) => choice.label)
+  const nextOrder = []
+
+  ;(currentOrder || []).forEach((label) => {
+    if (validLabels.includes(label) && !nextOrder.includes(label)) {
+      nextOrder.push(label)
+    }
+  })
+
+  validLabels.forEach((label) => {
+    if (!nextOrder.includes(label)) {
+      nextOrder.push(label)
+    }
+  })
+
+  return nextOrder
+}
+
 function buildSimulationPayload(state) {
   const options = {
     target_has_cover: state.targetHasCover,
@@ -1287,6 +1414,7 @@ function buildSimulationPayload(state) {
     defender_unbreakable_lines_active: state.defenderUnbreakableLinesActive,
     defender_pennant_of_remembrance_active: state.defenderPennantOfRemembranceActive,
     defender_battleshocked: state.defenderBattleshocked,
+    defender_allocation_order: state.defenderAllocationOrder || [],
   }
 
   if (state.attachedCharacterName) {
@@ -1309,6 +1437,10 @@ function buildSimulationPayload(state) {
     attacker_attached_character_loadout: state.attackerAttachedLeaderLoadoutSelections || {},
     attacker_attached_character_model_count: state.attackerAttachedLeaderModelCount !== '' ? Number(state.attackerAttachedLeaderModelCount) : undefined,
     attacker_attached_character_model_counts: state.attackerAttachedLeaderModelCounts || {},
+    attacker_attached_support_name: state.attackerAttachedSupportName || undefined,
+    attacker_attached_support_loadout: state.attackerAttachedSupportLoadoutSelections || {},
+    attacker_attached_support_model_count: state.attackerAttachedSupportModelCount !== '' ? Number(state.attackerAttachedSupportModelCount) : undefined,
+    attacker_attached_support_model_counts: state.attackerAttachedSupportModelCounts || {},
     weapon_names: state.weaponNames || [],
     weapon_model_counts: state.weaponModelCounts || {},
     defender_faction: state.defenderFaction,
@@ -1321,6 +1453,10 @@ function buildSimulationPayload(state) {
     attached_character_loadout: state.attachedCharacterLoadoutSelections || {},
     attached_character_model_count: state.attachedCharacterModelCount !== '' ? Number(state.attachedCharacterModelCount) : undefined,
     attached_character_model_counts: state.attachedCharacterModelCounts || {},
+    attached_support_name: state.attachedSupportName || undefined,
+    attached_support_loadout: state.attachedSupportLoadoutSelections || {},
+    attached_support_model_count: state.attachedSupportModelCount !== '' ? Number(state.attachedSupportModelCount) : undefined,
+    attached_support_model_counts: state.attachedSupportModelCounts || {},
     options,
   }
 }
@@ -1394,12 +1530,17 @@ function inferWeaponBearerCountFromModels(unitDetails, normalizedWeaponName, bas
   return bearerCount
 }
 
-function getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, weapon) {
-  const sourceUnit = String(weapon?.name || '').startsWith(ATTACHED_LEADER_WEAPON_PREFIX)
-    ? attachedLeaderUnitDetails
-    : unitDetails
-  const sourceWeaponName = String(weapon?.name || '').startsWith(ATTACHED_LEADER_WEAPON_PREFIX)
+function getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, attachedSupportUnitDetails, weapon) {
+  const isAttachedWeapon = String(weapon?.name || '').startsWith(ATTACHED_LEADER_WEAPON_PREFIX)
+  const attachedWeaponName = isAttachedWeapon
     ? String(weapon.name).slice(ATTACHED_LEADER_WEAPON_PREFIX.length)
+    : ''
+  const isSupportWeapon = attachedWeaponName.startsWith(ATTACHED_SUPPORT_WEAPON_MARKER)
+  const sourceUnit = isAttachedWeapon
+    ? (isSupportWeapon ? attachedSupportUnitDetails : attachedLeaderUnitDetails)
+    : unitDetails
+  const sourceWeaponName = isAttachedWeapon
+    ? (isSupportWeapon ? attachedWeaponName.slice(ATTACHED_SUPPORT_WEAPON_MARKER.length) : attachedWeaponName)
     : weapon?.name
   const bearerCounts = sourceUnit?.weapon_bearer_counts || {}
   const normalizedName = normalizeWargearName(sourceWeaponName)
@@ -1423,7 +1564,12 @@ function getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails
 }
 
 function getWeaponSelectionOwnerKey(weapon) {
-  return String(weapon?.name || '').startsWith(ATTACHED_LEADER_WEAPON_PREFIX) ? 'leader' : 'unit'
+  if (!String(weapon?.name || '').startsWith(ATTACHED_LEADER_WEAPON_PREFIX)) {
+    return 'unit'
+  }
+  return String(weapon.name).slice(ATTACHED_LEADER_WEAPON_PREFIX.length).startsWith(ATTACHED_SUPPORT_WEAPON_MARKER)
+    ? 'support'
+    : 'leader'
 }
 
 function normalizeWeaponModelCountsForSelection({
@@ -1432,6 +1578,7 @@ function normalizeWeaponModelCountsForSelection({
   weaponOptions,
   unitDetails,
   attachedLeaderUnitDetails,
+  attachedSupportUnitDetails,
 }) {
   const selectedWeapons = weaponOptions.filter((weapon) => weaponNames.includes(weapon.name))
   const nextCounts = {}
@@ -1444,26 +1591,30 @@ function normalizeWeaponModelCountsForSelection({
   }, {})
 
   for (const [ownerKey, weapons] of Object.entries(selectedByOwner)) {
-    const sourceUnit = ownerKey === 'leader' ? attachedLeaderUnitDetails : unitDetails
+    const sourceUnit = ownerKey === 'leader'
+      ? attachedLeaderUnitDetails
+      : ownerKey === 'support'
+        ? attachedSupportUnitDetails
+        : unitDetails
     const ownerModelCount = Math.max(1, Number(sourceUnit?.model_count ?? 1) || 1)
     const meleeWeapons = weapons.filter((weapon) => weapon.range === 'Melee')
     const nonMeleeWeapons = weapons.filter((weapon) => weapon.range !== 'Melee')
 
     for (const weapon of nonMeleeWeapons) {
-      const maxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, weapon)
+      const maxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, attachedSupportUnitDetails, weapon)
       nextCounts[weapon.name] = Math.min(maxCount, Number(currentCounts[weapon.name] || maxCount) || maxCount)
     }
 
     if (meleeWeapons.length === 1) {
       const weapon = meleeWeapons[0]
-      const maxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, weapon)
+      const maxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, attachedSupportUnitDetails, weapon)
       nextCounts[weapon.name] = Math.min(maxCount, Number(currentCounts[weapon.name] || maxCount) || maxCount)
       continue
     }
 
     if (meleeWeapons.length > 1) {
       const seededCounts = meleeWeapons.map((weapon) => {
-        const maxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, weapon)
+        const maxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, attachedSupportUnitDetails, weapon)
         return {
           weapon,
           maxCount,
@@ -1489,6 +1640,7 @@ function updateWeaponModelCountForSelection({
   weaponOptions,
   unitDetails,
   attachedLeaderUnitDetails,
+  attachedSupportUnitDetails,
   weapon,
   requestedCount,
 }) {
@@ -1498,7 +1650,7 @@ function updateWeaponModelCountForSelection({
     && option.range === 'Melee'
     && getWeaponSelectionOwnerKey(option) === ownerKey
   ))
-  const maxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, weapon)
+  const maxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, attachedSupportUnitDetails, weapon)
   if (selectedWeaponsForOwner.length <= 1 || weapon.range !== 'Melee') {
     return {
       ...currentCounts,
@@ -1506,7 +1658,11 @@ function updateWeaponModelCountForSelection({
     }
   }
 
-  const sourceUnit = ownerKey === 'leader' ? attachedLeaderUnitDetails : unitDetails
+  const sourceUnit = ownerKey === 'leader'
+    ? attachedLeaderUnitDetails
+    : ownerKey === 'support'
+      ? attachedSupportUnitDetails
+      : unitDetails
   const ownerModelCount = Math.max(1, Number(sourceUnit?.model_count ?? 1) || 1)
   const otherWeapons = selectedWeaponsForOwner.filter((option) => option.name !== weapon.name)
   const changedCount = clamp(requestedCount, 1, Math.max(1, Math.min(maxCount, ownerModelCount - otherWeapons.length)))
@@ -1517,7 +1673,7 @@ function updateWeaponModelCountForSelection({
   let remaining = ownerModelCount - changedCount
 
   otherWeapons.forEach((otherWeapon, index) => {
-    const otherMaxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, otherWeapon)
+    const otherMaxCount = getWeaponBearerCountForSelection(unitDetails, attachedLeaderUnitDetails, attachedSupportUnitDetails, otherWeapon)
     const laterMinimum = otherWeapons.length - index - 1
     const currentCount = Number(currentCounts[otherWeapon.name] || 1) || 1
     const count = clamp(
@@ -1539,6 +1695,7 @@ function resolveCombatWeaponSelection({
   weaponOptions,
   unitDetails,
   attachedLeaderUnitDetails,
+  attachedSupportUnitDetails,
 }) {
   if (!checked) {
     return currentWeaponNames.filter((name) => name !== weapon.name)
@@ -1550,18 +1707,27 @@ function resolveCombatWeaponSelection({
     const selectedWeapon = weaponByName.get(name)
     return selectedWeapon && getWeaponProfileGroupName(selectedWeapon) !== selectedGroupName
   })
+  const targetIsMelee = weapon.range === 'Melee'
+  const sameAttackModeSelections = withoutSameProfileGroup.filter((name) => {
+    const selectedWeapon = weaponByName.get(name)
+    if (!selectedWeapon) {
+      return false
+    }
+    return (selectedWeapon.range === 'Melee') === targetIsMelee
+  })
   const ownerKey = getWeaponSelectionOwnerKey(weapon)
-  const selectedForSameOwner = withoutSameProfileGroup
+  const selectedForSameOwner = sameAttackModeSelections
     .map((name) => weaponByName.get(name))
     .filter((selectedWeapon) => selectedWeapon && getWeaponSelectionOwnerKey(selectedWeapon) === ownerKey)
-  const sourceUnit = ownerKey === 'leader' ? attachedLeaderUnitDetails : unitDetails
+  const sourceUnit = ownerKey === 'leader'
+    ? attachedLeaderUnitDetails
+    : ownerKey === 'support'
+      ? attachedSupportUnitDetails
+      : unitDetails
   const sourceModelCount = Math.max(1, Number(sourceUnit?.model_count ?? 1) || 1)
   if (weapon.range !== 'Melee') {
     return [
-      ...withoutSameProfileGroup.filter((name) => {
-        const selectedWeapon = weaponByName.get(name)
-        return getWeaponSelectionOwnerKey(selectedWeapon) !== ownerKey || selectedWeapon.range !== 'Melee'
-      }),
+      ...sameAttackModeSelections,
       weapon.name,
     ]
   }
@@ -1573,11 +1739,11 @@ function resolveCombatWeaponSelection({
 
   if (!canSplitMeleeProfiles) {
     return [
-      ...withoutSameProfileGroup.filter((name) => getWeaponSelectionOwnerKey(weaponByName.get(name)) !== ownerKey),
+      ...sameAttackModeSelections.filter((name) => getWeaponSelectionOwnerKey(weaponByName.get(name)) !== ownerKey),
       weapon.name,
     ]
   }
-  return [...withoutSameProfileGroup, weapon.name]
+  return [...sameAttackModeSelections, weapon.name]
 }
 
 function weaponHasExtraAttacks(weapon) {
@@ -3246,9 +3412,12 @@ function getCombatWeaponOptions(
   attachedLeaderUnitDetails = null,
   loadoutSelections = null,
   attachedLeaderLoadoutSelections = null,
+  attachedSupportUnitDetails = null,
+  attachedSupportLoadoutSelections = null,
 ) {
   const unitWeapons = mergeSelectedLoadoutWeaponProfiles(unitDetails, loadoutSelections).filter((weapon) => !weaponHasExtraAttacks(weapon))
   const leaderWeapons = mergeSelectedLoadoutWeaponProfiles(attachedLeaderUnitDetails, attachedLeaderLoadoutSelections).filter((weapon) => !weaponHasExtraAttacks(weapon))
+  const supportWeapons = mergeSelectedLoadoutWeaponProfiles(attachedSupportUnitDetails, attachedSupportLoadoutSelections).filter((weapon) => !weaponHasExtraAttacks(weapon))
   return [
     ...unitWeapons,
     ...leaderWeapons.map((weapon) => ({
@@ -3256,39 +3425,54 @@ function getCombatWeaponOptions(
       name: buildAttachedLeaderWeaponId(weapon.name),
       label: `${attachedLeaderUnitDetails.name}: ${formatWeaponName(weapon)}`,
     })),
+    ...supportWeapons.map((weapon) => ({
+      ...weapon,
+      name: buildAttachedLeaderWeaponId(`support::${weapon.name}`),
+      label: `${attachedSupportUnitDetails.name}: ${formatWeaponName(weapon)}`,
+    })),
   ]
 }
 
 function getSelectedAttackEntries(
   unitDetails,
   attachedLeaderUnitDetails,
+  attachedSupportUnitDetails,
   weaponNames,
   loadoutSelections = null,
   attachedLeaderLoadoutSelections = null,
+  attachedSupportLoadoutSelections = null,
 ) {
   const entries = []
   const unitWeapons = mergeSelectedLoadoutWeaponProfiles(unitDetails, loadoutSelections)
   const leaderWeapons = mergeSelectedLoadoutWeaponProfiles(attachedLeaderUnitDetails, attachedLeaderLoadoutSelections)
+  const supportWeapons = mergeSelectedLoadoutWeaponProfiles(attachedSupportUnitDetails, attachedSupportLoadoutSelections)
   const requestedWeaponNames = Array.isArray(weaponNames) ? weaponNames : []
   const seenEntryKeys = new Set()
 
   for (const weaponName of requestedWeaponNames) {
     if (weaponName.startsWith(ATTACHED_LEADER_WEAPON_PREFIX)) {
-      const leaderWeaponName = weaponName.slice(ATTACHED_LEADER_WEAPON_PREFIX.length)
-      const leaderWeapon = leaderWeapons.find((weapon) => weapon.name === leaderWeaponName)
-      if (!leaderWeapon) {
+      const attachedWeaponName = weaponName.slice(ATTACHED_LEADER_WEAPON_PREFIX.length)
+      const isSupportWeapon = attachedWeaponName.startsWith(ATTACHED_SUPPORT_WEAPON_MARKER)
+      const resolvedWeaponName = isSupportWeapon
+        ? attachedWeaponName.slice(ATTACHED_SUPPORT_WEAPON_MARKER.length)
+        : attachedWeaponName
+      const sourceWeapons = isSupportWeapon ? supportWeapons : leaderWeapons
+      const sourceUnit = isSupportWeapon ? attachedSupportUnitDetails : attachedLeaderUnitDetails
+      const owner = isSupportWeapon ? 'support' : 'leader'
+      const attachedWeapon = sourceWeapons.find((weapon) => weapon.name === resolvedWeaponName)
+      if (!attachedWeapon) {
         continue
       }
-      const entryKey = `leader::${leaderWeapon.name}`
+      const entryKey = `${owner}::${attachedWeapon.name}`
       if (seenEntryKeys.has(entryKey)) {
         continue
       }
       seenEntryKeys.add(entryKey)
       entries.push({
-        owner: 'leader',
-        ownerName: attachedLeaderUnitDetails?.name || '',
-        label: `${attachedLeaderUnitDetails?.name || 'Attached Leader'}: ${formatWeaponName(leaderWeapon)}`,
-        weapon: leaderWeapon,
+        owner,
+        ownerName: sourceUnit?.name || '',
+        label: `${sourceUnit?.name || (isSupportWeapon ? 'Attached Support' : 'Attached Leader')}: ${formatWeaponName(attachedWeapon)}`,
+        weapon: attachedWeapon,
       })
       continue
     }
@@ -3715,6 +3899,7 @@ function formatMatrixOptionKey(key) {
     attacker_try_dat_button_effects: 'Try Dat Button',
     attacker_on_objective: 'Attacker On Objective',
     defender_on_objective: 'Defender On Objective',
+    defender_allocation_order: 'Allocation Order',
   }
   if (Object.prototype.hasOwnProperty.call(labels, key)) {
     return labels[key]
@@ -3754,6 +3939,7 @@ function getMatrixAttackerLabel(metadata) {
   const units = [
     getMatrixUnitLabel(metadata?.attacker),
     getMatrixUnitLabel(metadata?.attacker_attached_character),
+    getMatrixUnitLabel(metadata?.attacker_attached_support),
   ].filter(Boolean)
   return units.length ? units.join(' + ') : ''
 }
@@ -3828,8 +4014,10 @@ function getMatrixContextAbilityNames(metadata = {}) {
 
   appendNames(metadata.attacker?.ability_names)
   appendNames(metadata.attacker_attached_character?.ability_names)
+  appendNames(metadata.attacker_attached_support?.ability_names)
   appendNames(metadata.defender?.ability_names)
   appendNames(metadata.defender_attached_character?.ability_names)
+  appendNames(metadata.defender_attached_support?.ability_names)
 
   const attackerName = String(metadata.attacker?.unit || '').toLowerCase()
   const attackerLeaderName = String(metadata.attacker_attached_character?.unit || '').toLowerCase()
@@ -4426,6 +4614,7 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
 function buildAttackerActiveRules({
   attackerUnitDetails,
   attackerAttachedLeaderUnitDetails,
+  attackerAttachedSupportUnitDetails,
   attackerPackageIsCharacterUnit,
   attackerPackageModelCount,
   defenderPackageModelCount,
@@ -4462,7 +4651,7 @@ function buildAttackerActiveRules({
 }) {
   const rules = [
     ...getRelevantUnitRules(attackerUnitDetails, 'attacker', hasHazardous),
-    ...getPassiveCombatAbilityRules([attackerUnitDetails, attackerAttachedLeaderUnitDetails]),
+    ...getPassiveCombatAbilityRules([attackerUnitDetails, attackerAttachedLeaderUnitDetails, attackerAttachedSupportUnitDetails]),
     ...getPassiveCombatAbilityRules(defenderUnitDetails),
   ]
   const activeAbilityNameSet = new Set((attackerActiveAbilityNames || []).map((name) => String(name).toLowerCase()))
@@ -4470,6 +4659,7 @@ function buildAttackerActiveRules({
     [
       attackerUnitDetails,
       attackerAttachedLeaderUnitDetails,
+      attackerAttachedSupportUnitDetails,
       attackerUnitDetails?.attached_leader,
       attackerUnitDetails?.attached_support,
     ],
@@ -4727,7 +4917,7 @@ function buildAttackerActiveRules({
     const extraAttacks = Math.floor((Number(defenderPackageModelCount) || 0) / 5) * blastValue
     if (extraAttacks > 0) {
       rules.push({
-        name: blastValue > 1 ? `Blast ${blastValue}` : 'Blast',
+        name: `Blast ${blastValue}`,
         source: 'Weapon Rule',
         text: `The target has ${defenderPackageModelCount} models, so this weapon gains ${extraAttacks} additional attack dice.`,
       })
@@ -4841,6 +5031,7 @@ function buildAttackerActiveRules({
 function buildDefenderActiveRules({
   defenderUnitDetails,
   attachedCharacterUnitDetails,
+  attachedSupportUnitDetails,
   selectedWeapon,
   selectedAttackWeapons,
   defenderDetachment,
@@ -4854,7 +5045,7 @@ function buildDefenderActiveRules({
   attackerFireDisciplineActive,
   defenderOnObjective,
 }) {
-  const defenderUnits = [defenderUnitDetails, attachedCharacterUnitDetails].filter(Boolean)
+  const defenderUnits = [defenderUnitDetails, attachedCharacterUnitDetails, attachedSupportUnitDetails].filter(Boolean)
   const rules = [
     ...getRelevantUnitRules(defenderUnitDetails, 'defender', false),
   ]
@@ -5167,7 +5358,9 @@ function App() {
   const [attackerUnitDetails, setAttackerUnitDetails] = useState(null)
   const [defenderUnitDetails, setDefenderUnitDetails] = useState(null)
   const [attackerAttachedLeaderUnitDetails, setAttackerAttachedLeaderUnitDetails] = useState(null)
+  const [attackerAttachedSupportUnitDetails, setAttackerAttachedSupportUnitDetails] = useState(null)
   const [attachedCharacterUnitDetails, setAttachedCharacterUnitDetails] = useState(null)
+  const [attachedSupportUnitDetails, setAttachedSupportUnitDetails] = useState(null)
   const [simulationRuns, setSimulationRuns] = useState([])
   const [matrixRunHistory, setMatrixRunHistory] = useState(readMatrixRunHistoryFromStorage)
   const [globalMatrixRuns, setGlobalMatrixRuns] = useState([])
@@ -5177,7 +5370,7 @@ function App() {
   const [matrixColumnsOpen, setMatrixColumnsOpen] = useState(false)
   const [matrixLoading, setMatrixLoading] = useState(false)
   const [matrixError, setMatrixError] = useState('')
-  const [matrixDatabaseConfigured, setMatrixDatabaseConfigured] = useState(false)
+  const [matrixSort, setMatrixSort] = useState(null)
   const [activeRunView, setActiveRunView] = useState('summary')
   const [loading, setLoading] = useState(true)
   const [simulating, setSimulating] = useState(false)
@@ -5360,6 +5553,10 @@ function App() {
   const [attackerAttachedLeaderLoadoutSelections, setAttackerAttachedLeaderLoadoutSelections] = useState({})
   const [attackerAttachedLeaderModelCount, setAttackerAttachedLeaderModelCount] = useState('')
   const [attackerAttachedLeaderModelCounts, setAttackerAttachedLeaderModelCounts] = useState({})
+  const [attackerAttachedSupportName, setAttackerAttachedSupportName] = useState('')
+  const [attackerAttachedSupportLoadoutSelections, setAttackerAttachedSupportLoadoutSelections] = useState({})
+  const [attackerAttachedSupportModelCount, setAttackerAttachedSupportModelCount] = useState('')
+  const [attackerAttachedSupportModelCounts, setAttackerAttachedSupportModelCounts] = useState({})
   const [defenderFaction, setDefenderFaction] = useState('')
   const [defenderUnit, setDefenderUnit] = useState('')
   const [defenderLoadoutSelections, setDefenderLoadoutSelections] = useState({})
@@ -5369,6 +5566,11 @@ function App() {
   const [attachedCharacterLoadoutSelections, setAttachedCharacterLoadoutSelections] = useState({})
   const [attachedCharacterModelCount, setAttachedCharacterModelCount] = useState('')
   const [attachedCharacterModelCounts, setAttachedCharacterModelCounts] = useState({})
+  const [attachedSupportName, setAttachedSupportName] = useState('')
+  const [attachedSupportLoadoutSelections, setAttachedSupportLoadoutSelections] = useState({})
+  const [attachedSupportModelCount, setAttachedSupportModelCount] = useState('')
+  const [attachedSupportModelCounts, setAttachedSupportModelCounts] = useState({})
+  const [defenderAllocationOrder, setDefenderAllocationOrder] = useState(initialOptions.defender_allocation_order)
   const [attackerDetachmentName, setAttackerDetachmentName] = useState('')
   const [defenderDetachmentName, setDefenderDetachmentName] = useState('')
   const [attackerEnhancementName, setAttackerEnhancementName] = useState('')
@@ -5492,7 +5694,6 @@ function App() {
         if (cancelled) {
           return
         }
-        setMatrixDatabaseConfigured(Boolean(data.database_configured))
         setGlobalMatrixRuns(data.items || [])
       } catch (requestError) {
         if (!cancelled) {
@@ -6181,6 +6382,22 @@ function App() {
       return unit.name !== attackerUnit && canLead.includes(attackerUnit)
     })
   }, [attackerFactionDetails, attackerUnit])
+  const attackerAttachedSupportOptions = useMemo(() => {
+    if (!attackerUnit || !attackerFactionDetails?.units?.length) {
+      return []
+    }
+    return attackerFactionDetails.units.filter((unit) => {
+      if (unit.name === attackerUnit) {
+        return false
+      }
+      const supportTargets = [
+        ...(unit.support?.can_support || []),
+        ...(unit.support?.can_join || []),
+        ...(unit.support?.can_attach_to || []),
+      ]
+      return supportTargets.includes(attackerUnit)
+    })
+  }, [attackerFactionDetails, attackerUnit])
 
   useEffect(() => {
     if (
@@ -6250,6 +6467,74 @@ function App() {
     attackerAttachedLeaderOptions,
     attackerFaction,
   ])
+  useEffect(() => {
+    if (
+      !attackerAttachedSupportName
+      || !attackerFaction
+      || !attackerAttachedSupportOptions.some((unit) => unit.name === attackerAttachedSupportName)
+    ) {
+      return
+    }
+
+    let active = true
+
+    async function loadAttackerAttachedSupportDetails() {
+      try {
+        const data = await fetchUnitDetailsWithLoadout(
+          attackerFaction,
+          attackerAttachedSupportName,
+          attackerAttachedSupportLoadoutSelections,
+          attackerAttachedSupportModelCount,
+          attackerAttachedSupportModelCounts,
+        )
+        if (!active) {
+          return
+        }
+        setAttackerAttachedSupportUnitDetails(data)
+        setAttackerAttachedSupportModelCount((currentModelCount) => {
+          if (unitUsesModelBreakdownSelectors(data)) {
+            return String(data.model_count ?? data.unit_composition?.min_models ?? 1)
+          }
+          const currentValue = currentModelCount === '' ? null : Number(currentModelCount)
+          const minimumModels = Number(data.unit_composition?.min_models ?? data.model_count ?? 1)
+          const maximumModels = Number(data.unit_composition?.max_models ?? minimumModels)
+          if (
+            currentValue === null
+            || Number.isNaN(currentValue)
+            || currentValue < minimumModels
+            || currentValue > maximumModels
+          ) {
+            return String(data.model_count ?? minimumModels)
+          }
+          return currentModelCount
+        })
+        setAttackerAttachedSupportModelCounts((currentModelCounts) => {
+          const nextModelCounts = unitUsesModelBreakdownSelectors(data) ? (data.model_counts_by_name || {}) : {}
+          return areModelCountSelectionsEqual(currentModelCounts, nextModelCounts)
+            ? currentModelCounts
+            : nextModelCounts
+        })
+        setError('')
+      } catch (requestError) {
+        if (active) {
+          setError(formatError(requestError))
+        }
+      }
+    }
+
+    loadAttackerAttachedSupportDetails()
+
+    return () => {
+      active = false
+    }
+  }, [
+    attackerAttachedSupportLoadoutSelections,
+    attackerAttachedSupportModelCount,
+    attackerAttachedSupportModelCounts,
+    attackerAttachedSupportName,
+    attackerAttachedSupportOptions,
+    attackerFaction,
+  ])
 
   useEffect(() => {
     if (!defenderFaction || !defenderUnit || !defenderUnits.some((unit) => unit.name === defenderUnit)) {
@@ -6315,10 +6600,14 @@ function App() {
       attackerAttachedLeaderUnitDetails,
       getResolvedLoadoutSelections(attackerUnitDetails, attackerLoadoutSelections),
       getResolvedLoadoutSelections(attackerAttachedLeaderUnitDetails, attackerAttachedLeaderLoadoutSelections),
+      attackerAttachedSupportUnitDetails,
+      getResolvedLoadoutSelections(attackerAttachedSupportUnitDetails, attackerAttachedSupportLoadoutSelections),
     ),
     [
       attackerAttachedLeaderLoadoutSelections,
       attackerAttachedLeaderUnitDetails,
+      attackerAttachedSupportLoadoutSelections,
+      attackerAttachedSupportUnitDetails,
       attackerLoadoutSelections,
       attackerUnitDetails,
     ],
@@ -6331,13 +6620,17 @@ function App() {
     () => getSelectedAttackEntries(
       attackerUnitDetails,
       attackerAttachedLeaderUnitDetails,
+      attackerAttachedSupportUnitDetails,
       weaponNames,
       getResolvedLoadoutSelections(attackerUnitDetails, attackerLoadoutSelections),
       getResolvedLoadoutSelections(attackerAttachedLeaderUnitDetails, attackerAttachedLeaderLoadoutSelections),
+      getResolvedLoadoutSelections(attackerAttachedSupportUnitDetails, attackerAttachedSupportLoadoutSelections),
     ),
     [
       attackerAttachedLeaderLoadoutSelections,
       attackerAttachedLeaderUnitDetails,
+      attackerAttachedSupportLoadoutSelections,
+      attackerAttachedSupportUnitDetails,
       attackerLoadoutSelections,
       attackerUnitDetails,
       weaponNames,
@@ -6361,10 +6654,14 @@ function App() {
       attachedCharacterUnitDetails,
       getResolvedLoadoutSelections(defenderUnitDetails, defenderLoadoutSelections),
       getResolvedLoadoutSelections(attachedCharacterUnitDetails, attachedCharacterLoadoutSelections),
+      attachedSupportUnitDetails,
+      getResolvedLoadoutSelections(attachedSupportUnitDetails, attachedSupportLoadoutSelections),
     ),
     [
       attachedCharacterLoadoutSelections,
       attachedCharacterUnitDetails,
+      attachedSupportLoadoutSelections,
+      attachedSupportUnitDetails,
       defenderLoadoutSelections,
       defenderUnitDetails,
     ],
@@ -6378,7 +6675,7 @@ function App() {
     [defenderCombatWeaponOptions, selectedCombatPhaseId],
   )
   const attackerCombatActivatedAbilityOptions = useMemo(
-    () => getCombatActivatedAbilities([attackerUnitDetails, attackerAttachedLeaderUnitDetails], selectedCombatPhaseId, selectedAttackWeapons, {
+    () => getCombatActivatedAbilities([attackerUnitDetails, attackerAttachedLeaderUnitDetails, attackerAttachedSupportUnitDetails], selectedCombatPhaseId, selectedAttackWeapons, {
       targetUnit: defenderUnitDetails,
       waaaghActive: attackerWaaaghActive,
       chargedThisTurn,
@@ -6386,6 +6683,7 @@ function App() {
     }),
     [
       attackerAttachedLeaderUnitDetails,
+      attackerAttachedSupportUnitDetails,
       attackerUnitDetails,
       attackerWaaaghActive,
       chargedThisTurn,
@@ -6396,13 +6694,14 @@ function App() {
     ],
   )
   const defenderCombatActivatedAbilityOptions = useMemo(
-    () => getCombatActivatedAbilities([defenderUnitDetails, attachedCharacterUnitDetails], selectedCombatPhaseId, defenderTriggerWeapons, {
+    () => getCombatActivatedAbilities([defenderUnitDetails, attachedCharacterUnitDetails, attachedSupportUnitDetails], selectedCombatPhaseId, defenderTriggerWeapons, {
       targetUnit: attackerUnitDetails,
       waaaghActive: defenderWaaaghActive,
       chargedThisTurn: false,
     }),
     [
       attachedCharacterUnitDetails,
+      attachedSupportUnitDetails,
       attackerUnitDetails,
       defenderTriggerWeapons,
       defenderUnitDetails,
@@ -6418,16 +6717,28 @@ function App() {
     const availableAbilityNames = new Set(defenderCombatActivatedAbilityOptions.map((ability) => ability.name))
     setDefenderActiveAbilityNames((currentNames) => currentNames.filter((name) => availableAbilityNames.has(name)))
   }, [defenderCombatActivatedAbilityOptions])
-  const attackerPackageIsCharacterUnit = unitHasKeyword(attackerUnitDetails, 'character') || unitHasKeyword(attackerAttachedLeaderUnitDetails, 'character')
-  const attackerPackageModelCount = Number(attackerUnitDetails?.model_count ?? 0) + Number(attackerAttachedLeaderUnitDetails?.model_count ?? 0)
-  const defenderPackageModelCount = Number(defenderUnitDetails?.model_count ?? 0) + Number(attachedCharacterUnitDetails?.model_count ?? 0)
+  const attackerPackageIsCharacterUnit = (
+    unitHasKeyword(attackerUnitDetails, 'character')
+    || unitHasKeyword(attackerAttachedLeaderUnitDetails, 'character')
+    || unitHasKeyword(attackerAttachedSupportUnitDetails, 'character')
+  )
+  const attackerPackageModelCount = (
+    Number(attackerUnitDetails?.model_count ?? 0)
+    + Number(attackerAttachedLeaderUnitDetails?.model_count ?? 0)
+    + Number(attackerAttachedSupportUnitDetails?.model_count ?? 0)
+  )
+  const defenderPackageModelCount = (
+    Number(defenderUnitDetails?.model_count ?? 0)
+    + Number(attachedCharacterUnitDetails?.model_count ?? 0)
+    + Number(attachedSupportUnitDetails?.model_count ?? 0)
+  )
   const attackerAttachedUnitKeywords = useMemo(
-    () => getCombinedUnitKeywords(attackerUnitDetails, attackerAttachedLeaderUnitDetails),
-    [attackerAttachedLeaderUnitDetails, attackerUnitDetails],
+    () => getCombinedUnitKeywords(attackerUnitDetails, attackerAttachedLeaderUnitDetails, attackerAttachedSupportUnitDetails),
+    [attackerAttachedLeaderUnitDetails, attackerAttachedSupportUnitDetails, attackerUnitDetails],
   )
   const defenderAttachedUnitKeywords = useMemo(
-    () => getCombinedUnitKeywords(defenderUnitDetails, attachedCharacterUnitDetails),
-    [attachedCharacterUnitDetails, defenderUnitDetails],
+    () => getCombinedUnitKeywords(defenderUnitDetails, attachedCharacterUnitDetails, attachedSupportUnitDetails),
+    [attachedCharacterUnitDetails, attachedSupportUnitDetails, defenderUnitDetails],
   )
   const defenderBodyguardHighestToughness = useMemo(() => {
     const values = [
@@ -6438,13 +6749,14 @@ function App() {
   }, [defenderUnitDetails])
   const isRangedWeapon = selectedAttackWeapons.some((weapon) => weapon.range !== 'Melee')
   const isMeleeWeapon = selectedAttackWeapons.some((weapon) => weapon.range === 'Melee')
+  const hasMixedAttackModes = isRangedWeapon && isMeleeWeapon
   const hasHeavy = selectedAttackWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Heavy'))
   const hasBlast = selectedAttackWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Blast'))
   const hasIndirectFire = selectedAttackWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Indirect Fire'))
   const hasHazardous = selectedAttackWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Hazardous'))
   const canUsePrecision = selectedAttackWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Precision'))
   const canUseChargedThisTurn = canUseChargedThisTurnOption({
-    units: [attackerUnitDetails, attackerAttachedLeaderUnitDetails],
+    units: [attackerUnitDetails, attackerAttachedLeaderUnitDetails, attackerAttachedSupportUnitDetails],
     selectedWeapons: selectedAttackWeapons,
     selectedEntries: selectedAttackEntries,
     attackerEnhancementName,
@@ -6478,6 +6790,7 @@ function App() {
       weaponOptions: combatWeaponOptions,
       unitDetails: attackerUnitDetails,
       attachedLeaderUnitDetails: attackerAttachedLeaderUnitDetails,
+      attachedSupportUnitDetails: attackerAttachedSupportUnitDetails,
     })
     const currentKeys = Object.keys(weaponModelCounts).sort()
     const nextKeys = Object.keys(nextCounts).sort()
@@ -6490,21 +6803,51 @@ function App() {
     setWeaponModelCounts(nextCounts)
   }, [
     attackerAttachedLeaderUnitDetails,
+    attackerAttachedSupportUnitDetails,
     attackerUnitDetails,
     combatWeaponOptions,
     weaponModelCounts,
     weaponNames,
   ])
 
-  const attachedCharacterOptions = useMemo(() => {
+  const defenderAttachedLeaderOptions = useMemo(() => {
     if (!defenderUnit || !defenderFactionDetails?.units?.length) {
       return []
     }
-    return defenderFactionDetails.units.filter((unit) => {
+    return defenderFactionDetails.units.reduce((options, unit) => {
+      if (unit.name === defenderUnit) {
+        return options
+      }
       const canLead = unit.leader?.can_lead || []
-      return unit.name !== defenderUnit && canLead.includes(defenderUnit)
-    })
+      if (canLead.includes(defenderUnit)) {
+        options.push(unit)
+      }
+      return options
+    }, [])
   }, [defenderFactionDetails, defenderUnit])
+  const defenderAttachedSupportOptions = useMemo(() => {
+    if (!defenderUnit || !defenderFactionDetails?.units?.length) {
+      return []
+    }
+    return defenderFactionDetails.units.reduce((options, unit) => {
+      if (unit.name === defenderUnit) {
+        return options
+      }
+      const supportTargets = [
+        ...(unit.support?.can_support || []),
+        ...(unit.support?.can_join || []),
+        ...(unit.support?.can_attach_to || []),
+      ]
+      if (supportTargets.includes(defenderUnit)) {
+        options.push(unit)
+      }
+      return options
+    }, [])
+  }, [defenderFactionDetails, defenderUnit])
+  const defenderAllocationChoices = useMemo(
+    () => buildDefenderAllocationChoices(defenderUnitDetails, attachedCharacterUnitDetails, attachedSupportUnitDetails),
+    [attachedCharacterUnitDetails, attachedSupportUnitDetails, defenderUnitDetails],
+  )
 
   useEffect(() => {
     const attackerLeaderStillValid = attackerAttachedLeaderOptions.some((unit) => unit.name === attackerAttachedLeaderName)
@@ -6532,13 +6875,38 @@ function App() {
     attackerAttachedLeaderOptions,
     attackerAttachedLeaderUnitDetails,
   ])
+  useEffect(() => {
+    const attackerSupportStillValid = attackerAttachedSupportOptions.some((unit) => unit.name === attackerAttachedSupportName)
+    if (!attackerAttachedSupportName || attackerSupportStillValid) {
+      return
+    }
+    setAttackerAttachedSupportName('')
+    if (attackerAttachedSupportUnitDetails) {
+      setAttackerAttachedSupportUnitDetails(null)
+    }
+    if (Object.keys(attackerAttachedSupportLoadoutSelections).length) {
+      setAttackerAttachedSupportLoadoutSelections({})
+    }
+    if (attackerAttachedSupportModelCount !== '') {
+      setAttackerAttachedSupportModelCount('')
+    }
+    if (Object.keys(attackerAttachedSupportModelCounts).length) {
+      setAttackerAttachedSupportModelCounts({})
+    }
+  }, [
+    attackerAttachedSupportLoadoutSelections,
+    attackerAttachedSupportModelCount,
+    attackerAttachedSupportModelCounts,
+    attackerAttachedSupportName,
+    attackerAttachedSupportOptions,
+    attackerAttachedSupportUnitDetails,
+  ])
 
   useEffect(() => {
     if (
-      !canUsePrecision
-      || !attachedCharacterName
+      !attachedCharacterName
       || !defenderFaction
-      || !attachedCharacterOptions.some((unit) => unit.name === attachedCharacterName)
+      || !defenderAttachedLeaderOptions.some((unit) => unit.name === attachedCharacterName)
     ) {
       return
     }
@@ -6599,8 +6967,7 @@ function App() {
     attachedCharacterModelCount,
     attachedCharacterModelCounts,
     attachedCharacterName,
-    attachedCharacterOptions,
-    canUsePrecision,
+    defenderAttachedLeaderOptions,
     defenderFaction,
   ])
 
@@ -6629,6 +6996,14 @@ function App() {
     () => getResolvedModelCountSelections(attackerAttachedLeaderUnitDetails, attackerAttachedLeaderModelCounts),
     [attackerAttachedLeaderModelCounts, attackerAttachedLeaderUnitDetails],
   )
+  const resolvedAttackerAttachedSupportLoadoutSelections = useMemo(
+    () => getResolvedLoadoutSelections(attackerAttachedSupportUnitDetails, attackerAttachedSupportLoadoutSelections),
+    [attackerAttachedSupportLoadoutSelections, attackerAttachedSupportUnitDetails],
+  )
+  const resolvedAttackerAttachedSupportModelCounts = useMemo(
+    () => getResolvedModelCountSelections(attackerAttachedSupportUnitDetails, attackerAttachedSupportModelCounts),
+    [attackerAttachedSupportModelCounts, attackerAttachedSupportUnitDetails],
+  )
   const resolvedDefenderLoadoutSelections = useMemo(
     () => getResolvedLoadoutSelections(defenderUnitDetails, defenderLoadoutSelections),
     [defenderLoadoutSelections, defenderUnitDetails],
@@ -6645,14 +7020,22 @@ function App() {
     () => getResolvedModelCountSelections(attachedCharacterUnitDetails, attachedCharacterModelCounts),
     [attachedCharacterModelCounts, attachedCharacterUnitDetails],
   )
+  const resolvedAttachedSupportLoadoutSelections = useMemo(
+    () => getResolvedLoadoutSelections(attachedSupportUnitDetails, attachedSupportLoadoutSelections),
+    [attachedSupportLoadoutSelections, attachedSupportUnitDetails],
+  )
+  const resolvedAttachedSupportModelCounts = useMemo(
+    () => getResolvedModelCountSelections(attachedSupportUnitDetails, attachedSupportModelCounts),
+    [attachedSupportModelCounts, attachedSupportUnitDetails],
+  )
   const canUseCover = isRangedWeapon
   const canUseHalfRange = isRangedWeapon && (
     selectedAttackWeapons.some((weapon) => getWeaponKeywordValue(weapon, 'Rapid Fire') > 0)
     || selectedAttackWeapons.some((weapon) => getWeaponKeywordValue(weapon, 'Melta') > 0)
   )
   const hasOathOfMoment = unitHasOathOfMoment(attackerUnitDetails)
-  const attackerEnhancementBearerUnit = attackerAttachedLeaderUnitDetails || attackerUnitDetails
-  const defenderEnhancementBearerUnit = attachedCharacterUnitDetails || defenderUnitDetails
+  const attackerEnhancementBearerUnit = attackerAttachedLeaderUnitDetails || attackerAttachedSupportUnitDetails || attackerUnitDetails
+  const defenderEnhancementBearerUnit = attachedCharacterUnitDetails || attachedSupportUnitDetails || defenderUnitDetails
   const attackerEnhancementOptions = useMemo(
     () => getAttackerEnhancementOptions(
       selectedAttackerDetachment,
@@ -6700,8 +7083,16 @@ function App() {
   const canUseDefenderSpeediestFreeks = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Speediest Freeks')
   const canUseDefenderExtraGubbinz = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Extra Gubbinz')
   const canUseDefenderHulkingBrutes = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Hulking Brutes')
-  const canUseAttackerWaaagh = unitHasWaaagh(attackerUnitDetails) || unitHasWaaagh(attackerAttachedLeaderUnitDetails)
-  const canUseDefenderWaaagh = unitHasWaaagh(defenderUnitDetails) || unitHasWaaagh(attachedCharacterUnitDetails)
+  const canUseAttackerWaaagh = (
+    unitHasWaaagh(attackerUnitDetails)
+    || unitHasWaaagh(attackerAttachedLeaderUnitDetails)
+    || unitHasWaaagh(attackerAttachedSupportUnitDetails)
+  )
+  const canUseDefenderWaaagh = (
+    unitHasWaaagh(defenderUnitDetails)
+    || unitHasWaaagh(attachedCharacterUnitDetails)
+    || unitHasWaaagh(attachedSupportUnitDetails)
+  )
   const canUseAttackerPrey = selectedAttackerDetachment?.name === DA_BIG_HUNT
   const canUseTargetWithinNine = selectedAttackerDetachment?.name === KULT_OF_SPEED && (canUseAttackerBlitzaFire || canUseAttackerDakkastorm)
   const canUseTargetBelowStartingStrength = attackerEnhancementName === "'Eadstompa"
@@ -6711,12 +7102,14 @@ function App() {
   const attackerObjectiveRuleUnits = [
     attackerUnitDetails,
     attackerAttachedLeaderUnitDetails,
+    attackerAttachedSupportUnitDetails,
     attackerUnitDetails?.attached_leader,
     attackerUnitDetails?.attached_support,
   ]
   const defenderObjectiveRuleUnits = [
     defenderUnitDetails,
     attachedCharacterUnitDetails,
+    attachedSupportUnitDetails,
     defenderUnitDetails?.attached_leader,
     defenderUnitDetails?.attached_support,
   ]
@@ -7105,11 +7498,11 @@ function App() {
   }
 
   useEffect(() => {
-    const attachedCharacterStillValid = attachedCharacterOptions.some((unit) => unit.name === attachedCharacterName)
-    if (canUsePrecision && (!attachedCharacterName || attachedCharacterStillValid)) {
+    const attachedCharacterStillValid = defenderAttachedLeaderOptions.some((unit) => unit.name === attachedCharacterName)
+    if (!attachedCharacterName || attachedCharacterStillValid) {
       return
     }
-    if (attachedCharacterName && (!canUsePrecision || !attachedCharacterStillValid)) {
+    if (attachedCharacterName && !attachedCharacterStillValid) {
       setAttachedCharacterName('')
     }
     if (attachedCharacterUnitDetails) {
@@ -7129,10 +7522,111 @@ function App() {
     attachedCharacterModelCount,
     attachedCharacterModelCounts,
     attachedCharacterName,
-    attachedCharacterOptions,
+    defenderAttachedLeaderOptions,
     attachedCharacterUnitDetails,
-    canUsePrecision,
   ])
+  useEffect(() => {
+    if (
+      !attachedSupportName
+      || !defenderFaction
+      || !defenderAttachedSupportOptions.some((unit) => unit.name === attachedSupportName)
+    ) {
+      return
+    }
+
+    let active = true
+
+    async function loadAttachedSupportUnitDetails() {
+      try {
+        const data = await fetchUnitDetailsWithLoadout(
+          defenderFaction,
+          attachedSupportName,
+          attachedSupportLoadoutSelections,
+          attachedSupportModelCount,
+          attachedSupportModelCounts,
+        )
+        if (!active) {
+          return
+        }
+        setAttachedSupportUnitDetails(data)
+        setAttachedSupportModelCount((currentModelCount) => {
+          if (unitUsesModelBreakdownSelectors(data)) {
+            return String(data.model_count ?? data.unit_composition?.min_models ?? 1)
+          }
+          const currentValue = currentModelCount === '' ? null : Number(currentModelCount)
+          const minimumModels = Number(data.unit_composition?.min_models ?? data.model_count ?? 1)
+          const maximumModels = Number(data.unit_composition?.max_models ?? minimumModels)
+          if (
+            currentValue === null
+            || Number.isNaN(currentValue)
+            || currentValue < minimumModels
+            || currentValue > maximumModels
+          ) {
+            return String(data.model_count ?? minimumModels)
+          }
+          return currentModelCount
+        })
+        setAttachedSupportModelCounts((currentModelCounts) => {
+          const nextModelCounts = unitUsesModelBreakdownSelectors(data) ? (data.model_counts_by_name || {}) : {}
+          return areModelCountSelectionsEqual(currentModelCounts, nextModelCounts)
+            ? currentModelCounts
+            : nextModelCounts
+        })
+        setError('')
+      } catch (requestError) {
+        if (active) {
+          setError(formatError(requestError))
+        }
+      }
+    }
+
+    loadAttachedSupportUnitDetails()
+
+    return () => {
+      active = false
+    }
+  }, [
+    attachedSupportLoadoutSelections,
+    attachedSupportModelCount,
+    attachedSupportModelCounts,
+    attachedSupportName,
+    defenderAttachedSupportOptions,
+    defenderFaction,
+  ])
+  useEffect(() => {
+    const attachedSupportStillValid = defenderAttachedSupportOptions.some((unit) => unit.name === attachedSupportName)
+    if (!attachedSupportName || attachedSupportStillValid) {
+      return
+    }
+    if (attachedSupportName && !attachedSupportStillValid) {
+      setAttachedSupportName('')
+    }
+    if (attachedSupportUnitDetails) {
+      setAttachedSupportUnitDetails(null)
+    }
+    if (Object.keys(attachedSupportLoadoutSelections).length) {
+      setAttachedSupportLoadoutSelections({})
+    }
+    if (attachedSupportModelCount !== '') {
+      setAttachedSupportModelCount('')
+    }
+    if (Object.keys(attachedSupportModelCounts).length) {
+      setAttachedSupportModelCounts({})
+    }
+  }, [
+    attachedSupportLoadoutSelections,
+    attachedSupportModelCount,
+    attachedSupportModelCounts,
+    attachedSupportName,
+    defenderAttachedSupportOptions,
+    attachedSupportUnitDetails,
+  ])
+  useEffect(() => {
+    setDefenderAllocationOrder((currentOrder) => {
+      const nextOrder = sanitizeDefenderAllocationOrder(currentOrder, defenderAllocationChoices)
+      return JSON.stringify(nextOrder) === JSON.stringify(currentOrder) ? currentOrder : nextOrder
+    })
+  }, [defenderAllocationChoices])
   const indirectTooltip = 'Indirect Fire: if no defender models are visible, the attack takes -1 to Hit, hit rolls of 1-3 always fail, and the defender gets the benefit of cover.'
   const chargedThisTurnTooltip = 'Set when the attacker made a charge move this turn. Enables Lance and supported charge-dependent abilities or enhancements.'
   const attackerArmyBattleshockTooltip = 'Unforgiven Fury: if one or more Adeptus Astartes units from your army are Battle-shocked, successful unmodified Hit rolls of 5+ score a Critical Hit until the end of the phase.'
@@ -7192,13 +7686,16 @@ function App() {
     'Battle-shocked units have OC -, cannot be targeted with stratagems, cannot start actions, and cannot complete actions they started.',
     defenderEnhancementTooltip,
   )
-  const attachedCharacterTooltip = 'Precision: successful wounds from this attack can be allocated to the attached Character first.'
+  const attachedCharacterTooltip = 'Attach an eligible leader or support unit to the defender so wound allocation resolves against the full package.'
+  const attackerAttachmentTooltip = 'Attach an eligible leader or support unit to the attacker so its weapons, abilities, and keywords are included in the attacking package.'
+  const defenderAllocationTooltip = 'Top entry takes normal allocated wounds first. Precision can still allocate successful wounds directly to an attached Character when one is present.'
   const hazardousOverwatchTooltip = 'If this Hazardous weapon was used for Fire Overwatch in the opponent charge phase, the self-inflicted mortal wounds are allocated after the charging unit ends its charge move.'
   const hazardousBearerTooltip = 'Set the current wounds on the Hazardous bearer so self-damage is allocated against the correct model state.'
   const attackerActiveRules = useMemo(
     () => buildAttackerActiveRules({
       attackerUnitDetails,
       attackerAttachedLeaderUnitDetails,
+      attackerAttachedSupportUnitDetails,
       attackerPackageIsCharacterUnit,
       attackerPackageModelCount,
       defenderPackageModelCount,
@@ -7236,6 +7733,7 @@ function App() {
     [
       attackerUnitDetails,
       attackerAttachedLeaderUnitDetails,
+      attackerAttachedSupportUnitDetails,
       attackerPackageIsCharacterUnit,
       attackerPackageModelCount,
       defenderPackageModelCount,
@@ -7275,6 +7773,7 @@ function App() {
     () => buildDefenderActiveRules({
       defenderUnitDetails,
       attachedCharacterUnitDetails,
+      attachedSupportUnitDetails,
       selectedWeapon,
       selectedAttackWeapons,
       defenderDetachment: selectedDefenderDetachment,
@@ -7291,6 +7790,7 @@ function App() {
     [
       defenderUnitDetails,
       attachedCharacterUnitDetails,
+      attachedSupportUnitDetails,
       selectedWeapon,
       selectedAttackWeapons,
       selectedDefenderDetachment,
@@ -7363,7 +7863,7 @@ function App() {
     { key: 'feelNoPainSuccesses', label: 'FNP Successes', width: 128, numeric: true, defaultVisible: false },
     { key: 'feelNoPainDamagePrevented', label: 'FNP Prevented', width: 132, numeric: true, defaultVisible: false },
     { key: 'damageAfterFeelNoPain', label: 'After FNP', width: 106, numeric: true, defaultVisible: false },
-    { key: 'attachedCharacterDestroyed', label: 'Leader Destroyed', width: 136, numeric: true, defaultVisible: false },
+    { key: 'attachedCharacterDestroyed', label: 'Attached Destroyed', width: 136, numeric: true, defaultVisible: false },
     { key: 'hazardousBearerDestroyed', label: 'Hazard Destroyed', width: 140, numeric: true, defaultVisible: false },
   ], [])
   const visibleMatrixColumnKeys = useMemo(() => (
@@ -7388,6 +7888,32 @@ function App() {
       return String(row[column.key] ?? '').toLowerCase().includes(filterValue)
     }))
   ), [matrixFilters, matrixRows, visibleMatrixColumns])
+  const sortedMatrixRows = useMemo(() => {
+    if (!matrixSort?.key || !matrixSort?.direction) {
+      return filteredMatrixRows
+    }
+
+    const sortColumn = matrixColumns.find((column) => column.key === matrixSort.key)
+    if (!sortColumn) {
+      return filteredMatrixRows
+    }
+
+    const directionMultiplier = matrixSort.direction === 'asc' ? 1 : -1
+    return filteredMatrixRows
+      .map((row, index) => ({ row, index }))
+      .sort((leftEntry, rightEntry) => {
+        const comparison = compareMatrixValues(
+          leftEntry.row[sortColumn.key],
+          rightEntry.row[sortColumn.key],
+          sortColumn.numeric,
+        )
+        if (comparison !== 0) {
+          return comparison * directionMultiplier
+        }
+        return leftEntry.index - rightEntry.index
+      })
+      .map((entry) => entry.row)
+  }, [filteredMatrixRows, matrixColumns, matrixSort])
   const activeRun = useMemo(() => {
     if (activeRunView === 'summary' || summaryOnlySimulation) {
       return null
@@ -7575,6 +8101,39 @@ function App() {
 
   function resetMatrixColumnWidths() {
     setMatrixColumnWidths({})
+  }
+
+  function toggleMatrixSort(column) {
+    setMatrixSort((currentSort) => {
+      if (currentSort?.key !== column.key) {
+        return { key: column.key, direction: 'desc' }
+      }
+      if (currentSort.direction === 'desc') {
+        return { key: column.key, direction: 'asc' }
+      }
+      return null
+    })
+  }
+
+  function getMatrixSortDirection(columnKey) {
+    return matrixSort?.key === columnKey ? matrixSort.direction : null
+  }
+
+  function moveDefenderAllocationChoice(label, direction) {
+    setDefenderAllocationOrder((currentOrder) => {
+      const currentIndex = currentOrder.indexOf(label)
+      if (currentIndex === -1) {
+        return currentOrder
+      }
+      const nextIndex = currentIndex + direction
+      if (nextIndex < 0 || nextIndex >= currentOrder.length) {
+        return currentOrder
+      }
+      const nextOrder = [...currentOrder]
+      const [movedLabel] = nextOrder.splice(currentIndex, 1)
+      nextOrder.splice(nextIndex, 0, movedLabel)
+      return nextOrder
+    })
   }
 
   function formatMatrixCell(row, column) {
@@ -8427,6 +8986,7 @@ function App() {
         getWeaponBearerCountForSelection(
           selectedBattlefieldCombatant?.attackerDetails,
           null,
+          null,
           weapon,
         ),
         weapon.range === 'Melee'
@@ -8736,7 +9296,14 @@ function App() {
   ].filter(Boolean)
   const canIngressBattlefieldUnit = battlefieldIngressViolations.length === 0
 
-  const readyToSimulate = attackerFaction && attackerUnit && weaponNames.length > 0 && defenderFaction && defenderUnit
+  const readyToSimulate = (
+    attackerFaction
+    && attackerUnit
+    && weaponNames.length > 0
+    && defenderFaction
+    && defenderUnit
+    && !hasMixedAttackModes
+  )
 
   useEffect(() => {
     if (!canUseCover && targetHasCover) {
@@ -9847,7 +10414,6 @@ function App() {
       const storedMatrixRecords = matrixRecords.filter((record, index) => runs[index]?.matrix_storage?.stored)
       if (storedMatrixRecords.length) {
         setGlobalMatrixRuns((currentRuns) => mergeMatrixRunSources(currentRuns, storedMatrixRecords))
-        setMatrixDatabaseConfigured(true)
       }
       setSimulationRuns(runs)
       setActiveRunView('summary')
@@ -9918,6 +10484,10 @@ function App() {
       attackerAttachedLeaderLoadoutSelections: resolvedAttackerAttachedLeaderLoadoutSelections,
       attackerAttachedLeaderModelCount,
       attackerAttachedLeaderModelCounts: resolvedAttackerAttachedLeaderModelCounts,
+      attackerAttachedSupportName,
+      attackerAttachedSupportLoadoutSelections: resolvedAttackerAttachedSupportLoadoutSelections,
+      attackerAttachedSupportModelCount,
+      attackerAttachedSupportModelCounts: resolvedAttackerAttachedSupportModelCounts,
       weaponNames,
       weaponModelCounts,
       defenderFaction,
@@ -9925,9 +10495,14 @@ function App() {
       defenderLoadoutSelections: resolvedDefenderLoadoutSelections,
       defenderModelCount,
       defenderModelCounts: resolvedDefenderModelCounts,
+      attachedSupportName,
+      attachedSupportLoadoutSelections: resolvedAttachedSupportLoadoutSelections,
+      attachedSupportModelCount,
+      attachedSupportModelCounts: resolvedAttachedSupportModelCounts,
       attachedCharacterLoadoutSelections: resolvedAttachedCharacterLoadoutSelections,
       attachedCharacterModelCount,
       attachedCharacterModelCounts: resolvedAttachedCharacterModelCounts,
+      defenderAllocationOrder,
       targetHasCover,
       attackerInEngagementRange,
       targetInEngagementRangeOfAllies,
@@ -10030,6 +10605,18 @@ function App() {
       attacker_attached_character_model_counts: getBattlefieldSourceSide(selectedBattlefieldCombatant.attackerId) === 'attacker'
         ? resolvedAttackerAttachedLeaderModelCounts
         : {},
+      attacker_attached_support_name: getBattlefieldSourceSide(selectedBattlefieldCombatant.attackerId) === 'attacker'
+        ? attackerAttachedSupportName || undefined
+        : undefined,
+      attacker_attached_support_loadout: getBattlefieldSourceSide(selectedBattlefieldCombatant.attackerId) === 'attacker'
+        ? resolvedAttackerAttachedSupportLoadoutSelections
+        : {},
+      attacker_attached_support_model_count: getBattlefieldSourceSide(selectedBattlefieldCombatant.attackerId) === 'attacker' && attackerAttachedSupportModelCount !== ''
+        ? Number(attackerAttachedSupportModelCount)
+        : undefined,
+      attacker_attached_support_model_counts: getBattlefieldSourceSide(selectedBattlefieldCombatant.attackerId) === 'attacker'
+        ? resolvedAttackerAttachedSupportModelCounts
+        : {},
       weapon_names: selectedBattlefieldCombatWeaponNames,
       weapon_model_counts: selectedBattlefieldCombatWeaponModelCounts,
       defender_faction: selectedBattlefieldCombatant.defenderFaction,
@@ -10038,6 +10625,10 @@ function App() {
       defender_loadout: battlefieldDefenderLoadoutSelections,
       defender_model_count: battlefieldDefenderModelCount,
       defender_model_counts: battlefieldDefenderModelCounts,
+      attached_support_name: attachedSupportName || undefined,
+      attached_support_loadout: resolvedAttachedSupportLoadoutSelections,
+      attached_support_model_count: attachedSupportModelCount !== '' ? Number(attachedSupportModelCount) : undefined,
+      attached_support_model_counts: resolvedAttachedSupportModelCounts,
       attached_character_loadout: resolvedAttachedCharacterLoadoutSelections,
       attached_character_model_count: attachedCharacterModelCount !== '' ? Number(attachedCharacterModelCount) : undefined,
       attached_character_model_counts: resolvedAttachedCharacterModelCounts,
@@ -10054,7 +10645,9 @@ function App() {
         attacker_active_ability_names: battlefieldActiveAbilityNames,
         attacker_waaagh_active: battlefieldAttackerWaaaghActive,
         defender_waaagh_active: battlefieldDefenderWaaaghActive,
+        attached_character_name: attachedCharacterName || undefined,
         defender_current_model_count: selectedBattlefieldCombatTargetModels.length,
+        defender_allocation_order: defenderAllocationOrder,
         plunging_fire_active: plungingFireActive,
       },
     }, Math.min(MAX_SIMULATION_RUNS, Math.max(1, Number(runCount) || 1)), {
@@ -11944,7 +12537,27 @@ function App() {
     setRemainedStationary(initialOptions.remained_stationary)
     setIndirectTargetVisible(initialOptions.indirect_target_visible)
     setPlungingFireActive(initialOptions.plunging_fire_active)
+    setAttackerAttachedLeaderName('')
+    setAttackerAttachedLeaderUnitDetails(null)
+    setAttackerAttachedLeaderLoadoutSelections({})
+    setAttackerAttachedLeaderModelCount('')
+    setAttackerAttachedLeaderModelCounts({})
+    setAttackerAttachedSupportName('')
+    setAttackerAttachedSupportUnitDetails(null)
+    setAttackerAttachedSupportLoadoutSelections({})
+    setAttackerAttachedSupportModelCount('')
+    setAttackerAttachedSupportModelCounts({})
     setAttachedCharacterName(initialOptions.attached_character_name)
+    setAttachedCharacterUnitDetails(null)
+    setAttachedCharacterLoadoutSelections({})
+    setAttachedCharacterModelCount('')
+    setAttachedCharacterModelCounts({})
+    setAttachedSupportName('')
+    setAttachedSupportUnitDetails(null)
+    setAttachedSupportLoadoutSelections({})
+    setAttachedSupportModelCount('')
+    setAttachedSupportModelCounts({})
+    setDefenderAllocationOrder(initialOptions.defender_allocation_order)
     setHazardousOverwatchChargePhase(initialOptions.hazardous_overwatch_charge_phase)
     setHazardousBearerCurrentWounds(initialOptions.hazardous_bearer_current_wounds)
     setAttackerFireDisciplineActive(initialOptions.attacker_fire_discipline_active)
@@ -12153,9 +12766,10 @@ function App() {
 
                 {attackerAttachedLeaderOptions.length ? (
                   <>
-                    <label>
+                    <label title={attackerAttachmentTooltip}>
                       <span>Attacker Attached Leader</span>
                       <select
+                        title={attackerAttachmentTooltip}
                         value={attackerAttachedLeaderName}
                         onChange={(event) => setAttackerAttachedLeaderName(event.target.value)}
                       >
@@ -12182,6 +12796,42 @@ function App() {
                       setAttackerAttachedLeaderModelCount,
                       attackerAttachedLeaderModelCounts,
                       setAttackerAttachedLeaderModelCounts,
+                    )}
+                  </>
+                ) : null}
+
+                {attackerAttachedSupportOptions.length ? (
+                  <>
+                    <label title={attackerAttachmentTooltip}>
+                      <span>Attacker Attached Support</span>
+                      <select
+                        title={attackerAttachmentTooltip}
+                        value={attackerAttachedSupportName}
+                        onChange={(event) => setAttackerAttachedSupportName(event.target.value)}
+                      >
+                        <option value="">No attached support</option>
+                        {attackerAttachedSupportOptions.map((unit) => (
+                          <option key={unit.name} value={unit.name}>
+                            {unit.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    {renderLoadoutSelectors(
+                      'Attacker Support',
+                      attackerAttachedSupportUnitDetails,
+                      attackerAttachedSupportLoadoutSelections,
+                      setAttackerAttachedSupportLoadoutSelections,
+                    )}
+
+                    {renderModelCountSelector(
+                      'Attacker Support',
+                      attackerAttachedSupportUnitDetails,
+                      attackerAttachedSupportModelCount,
+                      setAttackerAttachedSupportModelCount,
+                      attackerAttachedSupportModelCounts,
+                      setAttackerAttachedSupportModelCounts,
                     )}
                   </>
                 ) : null}
@@ -12249,6 +12899,78 @@ function App() {
                   setDefenderLoadoutSelections,
                 )}
 
+                {defenderAttachedLeaderOptions.length ? (
+                  <>
+                    <label title={attachedCharacterTooltip}>
+                      <span>Defender Attached Leader</span>
+                      <select
+                        title={attachedCharacterTooltip}
+                        value={attachedCharacterName}
+                        onChange={(event) => setAttachedCharacterName(event.target.value)}
+                      >
+                        <option value="">No attached leader</option>
+                        {defenderAttachedLeaderOptions.map((unit) => (
+                          <option key={unit.name} value={unit.name}>
+                            {unit.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    {renderLoadoutSelectors(
+                      'Defender Leader',
+                      attachedCharacterUnitDetails,
+                      attachedCharacterLoadoutSelections,
+                      setAttachedCharacterLoadoutSelections,
+                    )}
+
+                    {renderModelCountSelector(
+                      'Defender Leader',
+                      attachedCharacterUnitDetails,
+                      attachedCharacterModelCount,
+                      setAttachedCharacterModelCount,
+                      attachedCharacterModelCounts,
+                      setAttachedCharacterModelCounts,
+                    )}
+                  </>
+                ) : null}
+
+                {defenderAttachedSupportOptions.length ? (
+                  <>
+                    <label title={attachedCharacterTooltip}>
+                      <span>Defender Attached Support</span>
+                      <select
+                        title={attachedCharacterTooltip}
+                        value={attachedSupportName}
+                        onChange={(event) => setAttachedSupportName(event.target.value)}
+                      >
+                        <option value="">No attached support</option>
+                        {defenderAttachedSupportOptions.map((unit) => (
+                          <option key={unit.name} value={unit.name}>
+                            {unit.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    {renderLoadoutSelectors(
+                      'Defender Support',
+                      attachedSupportUnitDetails,
+                      attachedSupportLoadoutSelections,
+                      setAttachedSupportLoadoutSelections,
+                    )}
+
+                    {renderModelCountSelector(
+                      'Defender Support',
+                      attachedSupportUnitDetails,
+                      attachedSupportModelCount,
+                      setAttachedSupportModelCount,
+                      attachedSupportModelCounts,
+                      setAttachedSupportModelCounts,
+                    )}
+                  </>
+                ) : null}
+
                 {defenderFactionDetails?.detachments?.length ? (
                   <label title={defenderDetachmentTooltip}>
                     <span>Defender Detachment</span>
@@ -12278,10 +13000,20 @@ function App() {
                 <span>Weapon Profiles</span>
                 <span>{weaponNames.length} selected</span>
               </div>
+              {hasMixedAttackModes ? (
+                <p className="weapon-selection-warning">
+                  Ranged and melee weapons cannot be combined in the same attack. This can happen after adding an attached leader or support unit; keep either the shooting profiles or the melee profiles selected.
+                </p>
+              ) : null}
               <div className="weapon-selection-grid">
                 {combatWeaponOptions.map((weapon) => {
                   const checked = weaponNames.includes(weapon.name)
-                  const bearerCount = getWeaponBearerCountForSelection(attackerUnitDetails, attackerAttachedLeaderUnitDetails, weapon)
+                  const bearerCount = getWeaponBearerCountForSelection(
+                    attackerUnitDetails,
+                    attackerAttachedLeaderUnitDetails,
+                    attackerAttachedSupportUnitDetails,
+                    weapon,
+                  )
                   const showModelCounter = checked && weapon.range === 'Melee' && bearerCount > 1
                   return (
                     <div key={weapon.name} className={`checkbox-row weapon-checkbox ${showModelCounter ? 'with-counter' : ''}`}>
@@ -12298,6 +13030,7 @@ function App() {
                                 weaponOptions: combatWeaponOptions,
                                 unitDetails: attackerUnitDetails,
                                 attachedLeaderUnitDetails: attackerAttachedLeaderUnitDetails,
+                                attachedSupportUnitDetails: attackerAttachedSupportUnitDetails,
                               })
                             ))
                           }}
@@ -12322,6 +13055,7 @@ function App() {
                                 weaponOptions: combatWeaponOptions,
                                 unitDetails: attackerUnitDetails,
                                 attachedLeaderUnitDetails: attackerAttachedLeaderUnitDetails,
+                                attachedSupportUnitDetails: attackerAttachedSupportUnitDetails,
                                 weapon,
                                 requestedCount: nextValue,
                               })
@@ -13130,7 +13864,7 @@ function App() {
                 <span>Defender is Battle-shocked</span>
               </label>
 
-              {(attackerAttachedLeaderUnitDetails || attachedCharacterUnitDetails) ? (
+              {(attackerAttachedLeaderUnitDetails || attackerAttachedSupportUnitDetails || attachedCharacterUnitDetails || attachedSupportUnitDetails) ? (
                 <div className="attached-unit-rule-card combat-option-spanning">
                   <p className="kicker">Attached Units</p>
                   {attackerAttachedLeaderUnitDetails ? (
@@ -13139,53 +13873,66 @@ function App() {
                       The attached unit has {attackerAttachedUnitKeywords.slice(0, 8).join(', ')}{attackerAttachedUnitKeywords.length > 8 ? ', ...' : ''}.
                     </p>
                   ) : null}
+                  {attackerAttachedSupportUnitDetails ? (
+                    <p>
+                      <strong>Attacker Support:</strong> {attackerAttachedSupportUnitDetails.name} is attached to {attackerUnitDetails?.name || 'the bodyguard'}.
+                      Its weapons, abilities, and keywords are part of the attacking package.
+                    </p>
+                  ) : null}
                   {attachedCharacterUnitDetails ? (
                     <p>
                       <strong>Defender:</strong> {attachedCharacterUnitDetails.name} is attached to {defenderUnitDetails?.name || 'the bodyguard'}.
                       Attacks use the bodyguard unit&apos;s highest Toughness{defenderBodyguardHighestToughness ? ` (${defenderBodyguardHighestToughness})` : ''} until its bodyguard models are gone.
                     </p>
                   ) : null}
-                  {attachedCharacterUnitDetails ? (
+                  {attachedSupportUnitDetails ? (
                     <p>
-                      Defender keywords: {defenderAttachedUnitKeywords.slice(0, 8).join(', ')}{defenderAttachedUnitKeywords.length > 8 ? ', ...' : ''}. Precision can allocate successful wounds to the attached Character.
+                      <strong>Defender Support:</strong> {attachedSupportUnitDetails.name} is attached to {defenderUnitDetails?.name || 'the bodyguard'}.
+                      It joins the defender package for keywords, abilities, wound allocation, and durability tracking.
+                    </p>
+                  ) : null}
+                  {(attachedCharacterUnitDetails || attachedSupportUnitDetails) ? (
+                    <p>
+                      Defender keywords: {defenderAttachedUnitKeywords.slice(0, 8).join(', ')}{defenderAttachedUnitKeywords.length > 8 ? ', ...' : ''}.{attachedCharacterUnitDetails && unitHasKeyword(attachedCharacterUnitDetails, 'character') ? ' Precision can still allocate successful wounds to the attached Character when the attacking weapon has it.' : ' No attached Character is present, so Precision has no separate attached target to allocate to.'}
                     </p>
                   ) : null}
                 </div>
               ) : null}
 
-              {canUsePrecision ? (
+              {defenderAllocationChoices.length > 1 ? (
                 <div className="combat-option-defender cluster">
-                  <label title={attachedCharacterTooltip}>
-                    <span>Attached Character</span>
-                    <select
-                      title={attachedCharacterTooltip}
-                      value={attachedCharacterName}
-                      onChange={(event) => setAttachedCharacterName(event.target.value)}
-                    >
-                      <option value="">No attached character</option>
-                      {attachedCharacterOptions.map((unit) => (
-                        <option key={unit.name} value={unit.name}>
-                          {unit.name}
-                        </option>
+                  <div className="defender-allocation-card" title={defenderAllocationTooltip}>
+                    <p className="kicker">Wound Allocation Order</p>
+                    <p className="defender-allocation-copy">Top entry soaks normal damage first.</p>
+                    <div className="defender-allocation-list">
+                      {defenderAllocationOrder.map((label, index) => (
+                        <div key={label} className="defender-allocation-row">
+                          <span>{index + 1}. {label}</span>
+                          <div className="defender-allocation-actions">
+                            <button
+                              type="button"
+                              className="secondary-button compact"
+                              onClick={() => moveDefenderAllocationChoice(label, -1)}
+                              disabled={index === 0}
+                            >
+                              Up
+                            </button>
+                            <button
+                              type="button"
+                              className="secondary-button compact"
+                              onClick={() => moveDefenderAllocationChoice(label, 1)}
+                              disabled={index === defenderAllocationOrder.length - 1}
+                            >
+                              Down
+                            </button>
+                          </div>
+                        </div>
                       ))}
-                    </select>
-                  </label>
-
-                  {renderLoadoutSelectors(
-                    'Attached Character',
-                    attachedCharacterUnitDetails,
-                    attachedCharacterLoadoutSelections,
-                    setAttachedCharacterLoadoutSelections,
-                  )}
-
-                  {renderModelCountSelector(
-                    'Attached Character',
-                    attachedCharacterUnitDetails,
-                    attachedCharacterModelCount,
-                    setAttachedCharacterModelCount,
-                    attachedCharacterModelCounts,
-                    setAttachedCharacterModelCounts,
-                  )}
+                    </div>
+                    {canUsePrecision && attachedCharacterUnitDetails ? (
+                      <p className="defender-allocation-note">Precision still overrides normal allocation and can place successful wounds onto the attached character.</p>
+                    ) : null}
+                  </div>
                 </div>
               ) : null}
 
@@ -13370,8 +14117,8 @@ function App() {
 
                   {summaryStats.attachedCharacterRuns > 0 ? (
                     <article className="result-card">
-                      <p className="kicker">Attached Character Summary</p>
-                      <h3>{attachedCharacterName || 'Attached Character'}</h3>
+                      <p className="kicker">Attached Unit Summary</p>
+                      <h3>{attachedCharacterName || 'Attached Unit'}</h3>
                       <p>Tracked in {summaryStats.attachedCharacterRuns} runs</p>
                       <p>Destroyed: {summaryStats.attachedCharacterDestroyedCount} ({formatPercent(summaryStats.attachedCharacterDestroyedCount, summaryStats.attachedCharacterRuns)})</p>
                       <p>Avg current wounds: {formatAverage(summaryStats.averageAttachedCharacterWounds)}</p>
@@ -13405,7 +14152,7 @@ function App() {
 
                   {activeRun.result.attached_character ? (
                     <article className="result-card">
-                      <p className="kicker">Attached Character</p>
+                      <p className="kicker">Attached Unit</p>
                       <h3>{activeRun.result.attached_character.name}</h3>
                       <p>
                         {activeRun.result.attached_character.destroyed
@@ -13505,28 +14252,6 @@ function App() {
               </button>
             </div>
 
-            <div className="matrix-summary-grid">
-              <article className="result-card accent">
-                <p className="kicker">Runs Stored</p>
-                <h3>{combinedMatrixRuns.length}</h3>
-                <p>{matrixRows.length} identical-run group{matrixRows.length === 1 ? '' : 's'}</p>
-              </article>
-              <article className="result-card">
-                <p className="kicker">Visible Rows</p>
-                <h3>{filteredMatrixRows.length}</h3>
-                <p>Filtered by the header inputs below.</p>
-              </article>
-              <article className="result-card">
-                <p className="kicker">Storage</p>
-                <h3>{matrixDatabaseConfigured ? 'Neon + Local' : 'Local Cache'}</h3>
-                <p>
-                  {matrixDatabaseConfigured
-                    ? 'Global runs are loaded from Neon; clearing only removes this browser cache.'
-                    : 'No database is configured for this environment; using browser JSON only.'}
-                </p>
-              </article>
-            </div>
-
             {matrixLoading ? <p className="status-line">Loading global Matrix data...</p> : null}
             {matrixError ? <p className="status-line error">{matrixError}</p> : null}
 
@@ -13583,7 +14308,21 @@ function App() {
                       <tr>
                         {visibleMatrixColumns.map((column) => (
                           <th key={column.key} className={column.numeric ? 'numeric' : ''}>
-                            <span>{column.label}</span>
+                            <button
+                              type="button"
+                              className={`matrix-sort-button ${getMatrixSortDirection(column.key) ? 'active' : ''}`}
+                              onClick={() => toggleMatrixSort(column)}
+                              aria-label={`Sort by ${column.label}`}
+                            >
+                              <span>{column.label}</span>
+                              <strong className="matrix-sort-indicator" aria-hidden="true">
+                                {getMatrixSortDirection(column.key) === 'desc'
+                                  ? '↓'
+                                  : getMatrixSortDirection(column.key) === 'asc'
+                                    ? '↑'
+                                    : '·'}
+                              </strong>
+                            </button>
                             <input
                               type="search"
                               value={matrixFilters[column.key] || ''}
@@ -13601,7 +14340,7 @@ function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredMatrixRows.map((row) => (
+                      {sortedMatrixRows.map((row) => (
                         <tr key={row.key}>
                           {visibleMatrixColumns.map((column) => (
                             <td key={column.key} className={column.numeric ? 'numeric' : ''}>
@@ -13612,7 +14351,7 @@ function App() {
                       ))}
                     </tbody>
                   </table>
-                  {!filteredMatrixRows.length ? (
+                  {!sortedMatrixRows.length ? (
                     <div className="empty-state compact">
                       <p>No stored run groups match the current filters.</p>
                     </div>

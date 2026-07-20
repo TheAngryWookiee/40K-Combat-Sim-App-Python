@@ -1930,10 +1930,79 @@ class CombatSimulator:
             -int(effective_save),
         )
 
-    def get_active_target_profile(self, target_state: dict[str, Any]) -> dict[str, Any]:
+    @staticmethod
+    def build_allocation_label(allocation_role: str, name: Any) -> str:
+        if allocation_role == "attached_character":
+            role_label = "Attached Character"
+        elif allocation_role == "attached_support":
+            role_label = "Attached Support"
+        else:
+            role_label = "Bodyguard"
+        return f"{role_label} - {str(name or 'Model').strip()}"
+
+    def get_attached_unit_allocation_role(self, unit: dict[str, Any]) -> str:
+        return "attached_character" if self.unit_has_keyword(unit, "character") else "attached_support"
+
+    def build_target_state_profiles(
+        self,
+        unit: dict[str, Any],
+        allocation_role: str,
+    ) -> list[dict[str, Any]]:
+        unit_ability_names = sorted(self.unit_ability_name_set(unit))
+        target_profiles = [
+            {
+                **profile,
+                "starting_models": max(0, int(profile.get("models", 0))),
+                "effects": list(profile.get("effects", [])),
+                "keywords": list(profile.get("keywords", [])),
+                "ability_names": list(profile.get("ability_names", unit_ability_names)),
+                "allocation_role": allocation_role,
+                "allocation_label": str(
+                    profile.get("allocation_label")
+                    or self.build_allocation_label(allocation_role, profile.get("name", unit["name"]))
+                ),
+                "unit_name": unit["name"],
+                "precision_eligible": allocation_role == "attached_character",
+            }
+            for profile in unit.get("target_profiles", [])
+            if profile.get("models", 0) > 0
+        ]
+        if target_profiles:
+            if allocation_role == "bodyguard":
+                target_profiles.sort(key=self.get_target_profile_sort_key)
+            return target_profiles
+
+        return [{
+            "name": unit["name"],
+            "models": unit["models"],
+            "starting_models": self.get_unit_starting_model_count(unit),
+            "toughness": unit["toughness"],
+            "wounds": unit["wounds"],
+            "current_wounds": unit["wounds"],
+            "armor_save": unit["armor_save"],
+            "invulnerable_save": unit["invulnerable_save"],
+            "effects": list(unit.get("effects", [])),
+            "feel_no_pain": self.get_lowest_effect_value(unit.get("effects", []), "feel_no_pain"),
+            "has_cover": False,
+            "keywords": list(unit["keywords"]),
+            "ability_names": unit_ability_names,
+            "allocation_role": allocation_role,
+            "allocation_label": self.build_allocation_label(allocation_role, unit["name"]),
+            "unit_name": unit["name"],
+            "precision_eligible": allocation_role == "attached_character",
+        }]
+
+    def get_active_target_profile(
+        self,
+        target_state: dict[str, Any],
+        allocation_role: str | None = None,
+    ) -> dict[str, Any]:
         profiles = target_state.get("profiles", [])
         for profile in profiles:
-            if profile.get("models", 0) > 0:
+            if (
+                profile.get("models", 0) > 0
+                and (allocation_role is None or profile.get("allocation_role") == allocation_role)
+            ):
                 return profile
         return target_state
 
@@ -1962,10 +2031,14 @@ class CombatSimulator:
         target_state["feel_no_pain"] = active_profile.get("feel_no_pain", 0)
         target_state["active_profile_name"] = active_profile["name"]
         if target_state.get("uses_attached_bodyguard_toughness", False):
+            bodyguard_profiles = [
+                profile
+                for profile in profiles
+                if profile.get("models", 0) > 0 and not str(profile.get("allocation_role", "")).startswith("attached")
+            ]
             target_state["toughness"] = max(
                 int(profile.get("toughness", 0))
-                for profile in profiles
-                if profile.get("models", 0) > 0
+                for profile in (bodyguard_profiles or profiles)
             )
 
     def get_precision_allocation_target(
@@ -1974,12 +2047,17 @@ class CombatSimulator:
         weapon: dict[str, Any],
         attack_context: dict[str, Any],
     ) -> dict[str, Any]:
-        precision_target = attack_context.get("precision_target")
         if not self.weapon_has_keyword(weapon, "Precision"):
             return target_state
-        if precision_target is None:
-            return target_state
-        if precision_target["models"] <= 0:
+        attached_profile = self.get_active_target_profile(target_state, "attached_character")
+        if (
+            attached_profile is not target_state
+            and attached_profile.get("models", 0) > 0
+            and attached_profile.get("precision_eligible", False)
+        ):
+            return attached_profile
+        precision_target = attack_context.get("precision_target")
+        if precision_target is None or precision_target["models"] <= 0:
             return target_state
         return precision_target
 
@@ -3036,6 +3114,7 @@ class CombatSimulator:
         }
 
     def allocate_normal_damage(self, target_state: dict[str, Any], damage: int) -> None:
+        root_target_state = target_state.get("parent_target_state", target_state)
         active_target = self.get_active_target_profile(target_state)
         damage = self.apply_feel_no_pain(active_target, damage)
         if damage <= 0:
@@ -3046,7 +3125,7 @@ class CombatSimulator:
         active_target["current_wounds"] -= damage
 
         if active_target["current_wounds"] > 0:
-            self.sync_target_state_profiles(target_state)
+            self.sync_target_state_profiles(root_target_state)
             self.log(
                 f"{active_target['name']} survives with {active_target['current_wounds']} wounds remaining"
             )
@@ -3058,15 +3137,16 @@ class CombatSimulator:
         else:
             active_target["current_wounds"] = active_target["wounds"]
 
-        self.sync_target_state_profiles(target_state)
-        if target_state["models"] <= 0:
+        self.sync_target_state_profiles(root_target_state)
+        if root_target_state["models"] <= 0:
             self.log(f"{active_target['name']} has been destroyed")
             return
 
         self.log(f"One {active_target['name']} model is destroyed")
-        self.log(f"There are {target_state['models']} models left in the unit")
+        self.log(f"There are {root_target_state['models']} models left in the unit")
 
     def allocate_spillover_mortal_wounds(self, target_state: dict[str, Any], damage: int) -> None:
+        root_target_state = target_state.get("parent_target_state", target_state)
         active_target = self.get_active_target_profile(target_state)
         damage = self.apply_feel_no_pain(active_target, damage)
         if damage <= 0:
@@ -3075,7 +3155,7 @@ class CombatSimulator:
 
         remaining_damage = damage
 
-        while remaining_damage > 0 and target_state["models"] > 0:
+        while remaining_damage > 0 and root_target_state["models"] > 0:
             active_target = self.get_active_target_profile(target_state)
             wounds_to_allocate = min(active_target["current_wounds"], remaining_damage)
             self.stats["damage_inflicted"] += wounds_to_allocate
@@ -3083,7 +3163,7 @@ class CombatSimulator:
             remaining_damage -= wounds_to_allocate
 
             if active_target["current_wounds"] > 0:
-                self.sync_target_state_profiles(target_state)
+                self.sync_target_state_profiles(root_target_state)
                 self.log(
                     f"{active_target['name']} survives with {active_target['current_wounds']} wounds remaining"
                 )
@@ -3095,13 +3175,13 @@ class CombatSimulator:
             else:
                 active_target["current_wounds"] = active_target["wounds"]
 
-            self.sync_target_state_profiles(target_state)
-            if target_state["models"] <= 0:
+            self.sync_target_state_profiles(root_target_state)
+            if root_target_state["models"] <= 0:
                 self.log(f"{active_target['name']} has been destroyed")
                 return
 
             self.log(f"One {active_target['name']} model is destroyed")
-            self.log(f"There are {target_state['models']} models left in the unit")
+            self.log(f"There are {root_target_state['models']} models left in the unit")
 
     def apply_damage(
         self,
@@ -3556,22 +3636,37 @@ class CombatSimulator:
             self.log(f"\n{attacker_unit['name']} also makes attacks with {weapon['name']}")
             self.attack(attacker_unit, weapon, target_state, attack_context)
 
-    def build_target_state(self, unit: dict[str, Any], use_highest_bodyguard_toughness: bool = False) -> dict[str, Any]:
-        target_profiles = [
-            {
-                **profile,
-                "starting_models": max(0, int(profile.get("models", 0))),
-                "effects": list(profile.get("effects", [])),
-                "keywords": list(profile.get("keywords", [])),
-                "ability_names": sorted(self.unit_ability_name_set(unit)),
-            }
-            for profile in unit.get("target_profiles", [])
-            if profile.get("models", 0) > 0
+    def build_target_state(
+        self,
+        unit: dict[str, Any],
+        use_highest_bodyguard_toughness: bool = False,
+        attached_units: list[dict[str, Any]] | None = None,
+        allocation_order: list[str] | None = None,
+    ) -> dict[str, Any]:
+        bodyguard_profiles = self.build_target_state_profiles(unit, "bodyguard")
+        resolved_attached_units = [attached_unit for attached_unit in (attached_units or []) if attached_unit is not None]
+        attached_profiles = [
+            profile
+            for attached_unit in resolved_attached_units
+            for profile in self.build_target_state_profiles(
+                attached_unit,
+                self.get_attached_unit_allocation_role(attached_unit),
+            )
         ]
+        target_profiles = [*bodyguard_profiles, *attached_profiles]
         if target_profiles:
-            target_profiles.sort(key=self.get_target_profile_sort_key)
+            if allocation_order:
+                order_index = {label: index for index, label in enumerate(allocation_order)}
+                fallback_index = len(order_index)
+                target_profiles.sort(key=lambda profile: (
+                    order_index.get(profile.get("allocation_label", ""), fallback_index),
+                    fallback_index if str(profile.get("allocation_role", "")).startswith("attached") else 0,
+                    self.get_target_profile_sort_key(profile),
+                ))
             target_state = {
                 "name": unit["name"],
+                "bodyguard_name": unit["name"],
+                "attached_character_name": " + ".join(attached_unit["name"] for attached_unit in resolved_attached_units) if resolved_attached_units else None,
                 "toughness": unit["toughness"],
                 "wounds": unit["wounds"],
                 "current_wounds": unit["wounds"],
@@ -3586,19 +3681,17 @@ class CombatSimulator:
                 "ability_names": sorted(self.unit_ability_name_set(unit)),
                 "profiles": target_profiles,
             }
-            if use_highest_bodyguard_toughness:
+            if attached_profiles and use_highest_bodyguard_toughness:
                 target_state["uses_attached_bodyguard_toughness"] = True
+            for profile in target_profiles:
+                profile["parent_target_state"] = target_state
             self.sync_target_state_profiles(target_state)
-            if use_highest_bodyguard_toughness:
-                target_state["toughness"] = max(
-                    int(profile.get("toughness", 0))
-                    for profile in target_profiles
-                    if profile.get("models", 0) > 0
-                )
             return target_state
 
         return {
             "name": unit["name"],
+            "bodyguard_name": unit["name"],
+            "attached_character_name": " + ".join(attached_unit["name"] for attached_unit in resolved_attached_units) if resolved_attached_units else None,
             "toughness": unit["toughness"],
             "wounds": unit["wounds"],
             "current_wounds": unit["wounds"],
@@ -3614,31 +3707,66 @@ class CombatSimulator:
         }
 
     @staticmethod
-    def summarize_state(target_state: dict[str, Any]) -> dict[str, Any]:
+    def summarize_state(
+        target_state: dict[str, Any],
+        allocation_role: str | None = None,
+    ) -> dict[str, Any]:
+        profiles = target_state.get("profiles", [])
+        if profiles:
+            filtered_profiles = [
+                profile
+                for profile in profiles
+                if (
+                    allocation_role is None
+                    or profile.get("allocation_role") == allocation_role
+                    or (allocation_role == "attached" and profile.get("allocation_role") != "bodyguard")
+                )
+            ]
+            if filtered_profiles:
+                starting_models = sum(
+                    max(0, int(profile.get("starting_models", profile.get("models", 0))))
+                    for profile in filtered_profiles
+                )
+                models_remaining = sum(max(0, int(profile.get("models", 0))) for profile in filtered_profiles)
+                current_total_wounds = sum(
+                    (
+                        max(0, int(profile.get("current_wounds", 0)))
+                        + max(0, int(profile.get("models", 0)) - 1) * max(0, int(profile.get("wounds", 0)))
+                    )
+                    if int(profile.get("models", 0)) > 0
+                    else 0
+                    for profile in filtered_profiles
+                )
+                starting_total_wounds = sum(
+                    max(0, int(profile.get("starting_models", profile.get("models", 0)))) * max(0, int(profile.get("wounds", 0)))
+                    for profile in filtered_profiles
+                )
+                active_profile = next(
+                    (profile for profile in filtered_profiles if int(profile.get("models", 0)) > 0),
+                    None,
+                )
+                if allocation_role in {"attached_character", "attached_support", "attached"}:
+                    name = target_state.get("attached_character_name") or (active_profile or filtered_profiles[0]).get("unit_name", target_state["name"])
+                else:
+                    name = target_state.get("bodyguard_name") or target_state["name"]
+                return {
+                    "name": name,
+                    "starting_models": starting_models,
+                    "starting_total_wounds": starting_total_wounds,
+                    "models_remaining": models_remaining,
+                    "models_destroyed": max(0, starting_models - models_remaining),
+                    "current_model_wounds": max(0, int(active_profile.get("current_wounds", 0))) if active_profile else 0,
+                    "current_total_wounds": current_total_wounds,
+                    "destroyed": models_remaining <= 0,
+                }
+
         starting_models = max(0, int(target_state.get("starting_models", target_state["models"])))
         models_remaining = max(0, int(target_state["models"]))
-        if target_state.get("profiles"):
-            current_total_wounds = sum(
-                (
-                    max(0, int(profile.get("current_wounds", 0)))
-                    + max(0, int(profile.get("models", 0)) - 1) * max(0, int(profile.get("wounds", 0)))
-                )
-                if int(profile.get("models", 0)) > 0
-                else 0
-                for profile in target_state["profiles"]
-            )
-            starting_total_wounds = sum(
-                max(0, int(profile.get("starting_models", profile.get("models", 0)))) * max(0, int(profile.get("wounds", 0)))
-                for profile in target_state["profiles"]
-            )
-            if starting_total_wounds <= 0 and starting_models > 0:
-                starting_total_wounds = starting_models * max(0, int(target_state.get("wounds", 0)))
-        else:
-            current_total_wounds = (
-                max(0, int(target_state.get("current_wounds", 0)))
-                + max(0, models_remaining - 1) * max(0, int(target_state.get("wounds", 0)))
-            ) if models_remaining > 0 else 0
-            starting_total_wounds = max(0, starting_models) * max(0, int(target_state.get("wounds", 0)))
+        current_total_wounds = (
+            max(0, int(target_state.get("current_wounds", 0)))
+            + max(0, models_remaining - 1) * max(0, int(target_state.get("wounds", 0)))
+        ) if models_remaining > 0 else 0
+        starting_total_wounds = max(0, starting_models) * max(0, int(target_state.get("wounds", 0)))
         return {
             "name": target_state["name"],
             "starting_models": starting_models,
@@ -3757,7 +3885,7 @@ class CombatSimulator:
             and not self.unit_has_keyword(target_state, "vehicle")
         ):
             add_keywords_to_matching_weapons(
-                {"Blast"},
+                {"Blast 1"},
                 lambda candidate_weapon: (
                     candidate_weapon["range"].lower() != "melee"
                     and self.normalize_wargear_name(candidate_weapon["name"]).split(" - ", 1)[0] == "heavy bolter"
@@ -4292,7 +4420,7 @@ class CombatSimulator:
         }
         if attack_context["oath_of_moment_active"] and self.unit_gets_oath_wound_bonus(attacker_unit):
             attack_context["oath_of_moment_wound_bonus"] = 1
-        if attached_character_unit is not None:
+        if attached_character_unit is not None and self.unit_has_keyword(attached_character_unit, "character"):
             precision_target = self.build_target_state(attached_character_unit)
             precision_target["keywords"] = sorted({
                 *precision_target.get("keywords", []),
@@ -4318,8 +4446,19 @@ class CombatSimulator:
                 raise CombatSimulationError("Only Flying units can select Aircraft units as melee targets.")
             if self.unit_has_keyword(attacker_unit, "aircraft") and not self.unit_has_keyword(defender_unit, "fly"):
                 raise CombatSimulationError("Aircraft units can only make melee attacks that target Flying units.")
-        if attached_character_unit is not None and not self.attack_sequence_has_keyword(attacker_unit, weapon, "Precision", attack_context):
-            raise CombatSimulationError("Attached character selection is only valid for attacks that can use Precision.")
+
+    def log_target_allocation_order(self, target_state: dict[str, Any]) -> None:
+        profiles = target_state.get("profiles", [])
+        if len(profiles) <= 1:
+            return
+        labels = []
+        for profile in profiles:
+            label = str(profile.get("allocation_label", "")).strip()
+            if label and label not in labels:
+                labels.append(label)
+        if len(labels) <= 1:
+            return
+        self.log(f"Defender wound allocation order: {' -> '.join(labels)}")
 
     def simulate(
         self,
@@ -4328,6 +4467,7 @@ class CombatSimulator:
         defender_unit: dict[str, Any],
         options: dict[str, Any] | None = None,
         attached_character_unit: dict[str, Any] | None = None,
+        attached_units: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         options = options or {}
         options = {
@@ -4340,6 +4480,8 @@ class CombatSimulator:
         target_state = self.build_target_state(
             defender_unit,
             use_highest_bodyguard_toughness=bool(options.get("defender_has_attached_character", False)),
+            attached_units=attached_units,
+            allocation_order=options.get("defender_allocation_order"),
         )
         target_has_cover = bool(options.get("target_has_cover", False))
         target_state["has_cover"] = target_has_cover
@@ -4361,6 +4503,7 @@ class CombatSimulator:
             attached_character_unit,
         )
 
+        self.log_target_allocation_order(target_state)
         self.resolve_pre_attack_active_abilities(attacker_unit, weapon, target_state, attack_context)
         self.resolve_unit_attack(attacker_unit, weapon, target_state, attack_context)
         hazardous_bearer_state = self.resolve_hazardous_checks(attacker_unit, weapon, attack_context)
@@ -4368,7 +4511,7 @@ class CombatSimulator:
         result = {
             "log": list(self.log_messages),
             "stats": dict(self.stats),
-            "target": self.summarize_state(target_state),
+            "target": self.summarize_state(target_state, "bodyguard"),
             "attack_resolution_plan": self.build_attack_resolution_plan([
                 {
                     "weapon": self.get_planned_weapon(attacker_unit, weapon, attack_context),
@@ -4378,8 +4521,8 @@ class CombatSimulator:
                 },
             ]),
             "attached_character": (
-                self.summarize_state(attack_context["precision_target"])
-                if attack_context["precision_target"] is not None
+                self.summarize_state(target_state, "attached")
+                if target_state.get("attached_character_name")
                 else None
             ),
             "hazardous_bearer": (
@@ -4405,6 +4548,7 @@ class CombatSimulator:
         defender_unit: dict[str, Any],
         options: dict[str, Any] | None = None,
         attached_character_unit: dict[str, Any] | None = None,
+        attached_units: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         if not weapons:
             raise CombatSimulationError("At least one weapon is required to run a weapon-set simulation.")
@@ -4420,6 +4564,8 @@ class CombatSimulator:
         target_state = self.build_target_state(
             defender_unit,
             use_highest_bodyguard_toughness=bool(options.get("defender_has_attached_character", False)),
+            attached_units=attached_units,
+            allocation_order=options.get("defender_allocation_order"),
         )
         target_has_cover = bool(options.get("target_has_cover", False))
         target_state["has_cover"] = target_has_cover
@@ -4442,13 +4588,14 @@ class CombatSimulator:
             attached_character_unit,
         )
 
+        self.log_target_allocation_order(target_state)
         self.resolve_pre_attack_active_abilities(attacker_unit, reference_weapon, target_state, attack_context)
         self.resolve_weapon_set_attack(attacker_unit, weapons, target_state, attack_context)
 
         result = {
             "log": list(self.log_messages),
             "stats": dict(self.stats),
-            "target": self.summarize_state(target_state),
+            "target": self.summarize_state(target_state, "bodyguard"),
             "attack_resolution_plan": self.build_attack_resolution_plan([
                 {
                     "weapon": self.get_planned_weapon(
@@ -4463,8 +4610,8 @@ class CombatSimulator:
                 for weapon in weapons
             ]),
             "attached_character": (
-                self.summarize_state(attack_context["precision_target"])
-                if attack_context["precision_target"] is not None
+                self.summarize_state(target_state, "attached")
+                if target_state.get("attached_character_name")
                 else None
             ),
             "hazardous_bearer": None,
@@ -4484,6 +4631,7 @@ class CombatSimulator:
         defender_unit: dict[str, Any],
         options: dict[str, Any] | None = None,
         attached_character_unit: dict[str, Any] | None = None,
+        attached_units: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         if not attack_entries:
             raise CombatSimulationError("At least one attack entry is required to run a simulation.")
@@ -4496,7 +4644,12 @@ class CombatSimulator:
         self.log_messages = []
         self.stats = self.build_empty_stats()
 
-        target_state = self.build_target_state(defender_unit)
+        target_state = self.build_target_state(
+            defender_unit,
+            use_highest_bodyguard_toughness=bool(options.get("defender_has_attached_character", False)),
+            attached_units=attached_units,
+            allocation_order=options.get("defender_allocation_order"),
+        )
         target_has_cover = bool(options.get("target_has_cover", False))
         target_state["has_cover"] = target_has_cover
 
@@ -4507,41 +4660,13 @@ class CombatSimulator:
             reference_weapon,
             target_state,
             options,
-            None,
+            attached_character_unit,
             target_has_cover,
         )
         self.apply_temporary_target_modifiers(target_state, reference_context)
 
-        precision_target = None
-        if attached_character_unit is not None:
-            precision_target = self.build_target_state(attached_character_unit)
-            precision_target["keywords"] = sorted({
-                *precision_target.get("keywords", []),
-                *target_state.get("keywords", []),
-            }, key=str.lower)
-            precision_target["has_cover"] = target_has_cover
-            self.apply_temporary_target_modifiers(precision_target, reference_context)
-            if not any(
-                self.attack_sequence_has_keyword(
-                    entry["attacker_unit"],
-                    entry["weapons"][0],
-                    "Precision",
-                    self.build_attack_context(
-                        entry["attacker_unit"],
-                        entry["weapons"][0],
-                        target_state,
-                        options,
-                        None,
-                        target_has_cover,
-                    ),
-                )
-                for entry in attack_entries
-            ):
-                raise CombatSimulationError(
-                    "Attached character selection is only valid for attacks that can use Precision."
-                )
-
         hazardous_bearers: list[dict[str, Any]] = []
+        self.log_target_allocation_order(target_state)
 
         for index, entry in enumerate(attack_entries):
             attacker_unit = entry["attacker_unit"]
@@ -4555,10 +4680,9 @@ class CombatSimulator:
                 reference_weapon,
                 target_state,
                 options,
-                None,
+                attached_character_unit,
                 target_has_cover,
             )
-            attack_context["precision_target"] = precision_target
 
             self.validate_ranged_attack_context(attacker_unit, reference_weapon, attack_context)
             self.validate_blast_target_context(reference_weapon, attack_context, defender_unit["name"])
@@ -4594,7 +4718,7 @@ class CombatSimulator:
         return {
             "log": list(self.log_messages),
             "stats": dict(self.stats),
-            "target": self.summarize_state(target_state),
+            "target": self.summarize_state(target_state, "bodyguard"),
             "attack_resolution_plan": self.build_attack_resolution_plan([
                 {
                     "weapon": self.get_planned_weapon(
@@ -4610,8 +4734,8 @@ class CombatSimulator:
                 for weapon in entry["weapons"]
             ]),
             "attached_character": (
-                self.summarize_state(precision_target)
-                if precision_target is not None
+                self.summarize_state(target_state, "attached")
+                if target_state.get("attached_character_name")
                 else None
             ),
             "hazardous_bearer": (

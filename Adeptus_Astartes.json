@@ -399,7 +399,7 @@
         },
         {
           "name": "Overlapping Detonations",
-          "rules_text": "In your Shooting phase, when this unit is selected to shoot, select one non-Monster or non-Vehicle enemy unit visible to it. While making attacks, this unit's Heavy Bolters that target that selected unit have [BLAST]."
+          "rules_text": "In your Shooting phase, when this unit is selected to shoot, select one non-Monster or non-Vehicle enemy unit visible to it. While making attacks, this unit's Heavy Bolters that target that selected unit have [BLAST 1]."
         }
       ],
       "selectable_abilities": [],
