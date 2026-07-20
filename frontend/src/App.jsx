@@ -1,4 +1,6 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { AccountView, AuthView, SignedIn, SignedOut, UserButton } from '@neondatabase/neon-js/auth/react/ui'
 import './App.css'
 import {
   fetchFactions,
@@ -163,6 +165,11 @@ const APP_THEMES = {
     description: 'A dark steel version of Forge with logo blues and reds for glow and contrast.',
   },
 }
+const FOOTER_PAGES = [
+  { id: 'about', label: 'About' },
+  { id: 'help', label: 'Help' },
+  { id: 'contact', label: 'Contact' },
+]
 const BATTLEFIELD_X_AXIS_LABELS = Array.from(
   { length: Math.floor(BATTLEFIELD_WIDTH_INCHES / BATTLEFIELD_GRID_STEP_INCHES) + 1 },
   (_, index) => index * BATTLEFIELD_GRID_STEP_INCHES,
@@ -200,6 +207,62 @@ function readMatrixRunHistoryFromStorage() {
   } catch {
     return []
   }
+}
+
+function getPageTitle(activePage) {
+  switch (activePage) {
+    case 'combat':
+      return 'Combat Effectiveness'
+    case 'battlefield':
+      return 'Deploy Units'
+    case 'matrix':
+      return 'Combat Matrix'
+    case 'about':
+      return 'About Strategium Forge'
+    case 'help':
+      return 'Help'
+    case 'contact':
+      return 'Contact'
+    case 'auth':
+      return 'Sign In'
+    case 'account':
+      return 'Account'
+    default:
+      return 'Build Army Lists'
+  }
+}
+
+function getPageDescription(activePage) {
+  switch (activePage) {
+    case 'combat':
+      return 'Pick an attacker, a weapon profile, a defender, and the combat context. Applies the rules engine and returns a full combat log.'
+    case 'battlefield':
+      return 'The selected units from Combat are shown as scaled bases on a 44 x 60 inch top-down board.'
+    case 'matrix':
+      return 'Review stored combat runs grouped by identical loadout, weapons, abilities, stratagems, target, and game version.'
+    case 'about':
+      return 'Learn what the simulator tracks and how its results are meant to support tabletop decision-making.'
+    case 'help':
+      return 'Find quick guidance for running simulations, interpreting Matrix data, and troubleshooting common setup issues.'
+    case 'contact':
+      return 'Share feedback, report rules issues, or request additions to the simulator.'
+    case 'auth':
+      return 'Sign in to save personal run history and compare your results against global Matrix data.'
+    case 'account':
+      return 'Manage your Strategium Forge sign-in, sessions, and account details.'
+    default:
+      return 'Build named rosters from selected combat units and save them locally for later sessions.'
+  }
+}
+
+function getAuthOverlayFromPath(pathname) {
+  if (pathname === '/auth' || pathname.startsWith('/auth/')) {
+    return 'auth'
+  }
+  if (pathname === '/account' || pathname.startsWith('/account/')) {
+    return 'account'
+  }
+  return null
 }
 
 const DEFAULT_TURN_STRUCTURE = [
@@ -4239,21 +4302,6 @@ function mergeMatrixRunSources(globalRuns, localRuns) {
   return mergedRuns
 }
 
-function formatMatrixDatabaseStatus(status) {
-  if (!status) {
-    return 'Database status not loaded yet.'
-  }
-  if (status.configured) {
-    return `SQL connected via ${status.database_env_name || 'database environment variable'}.`
-  }
-  const labels = {
-    missing_database_url: 'SQL is not configured because DATABASE_URL or POSTGRES_URL is missing.',
-    missing_psycopg: 'SQL is not configured because the Python Postgres driver is missing.',
-    missing_database_url_and_psycopg: 'SQL is not configured because both the database URL and Python Postgres driver are missing.',
-  }
-  return labels[status.reason] || `SQL is not configured (${status.reason || 'unknown reason'}).`
-}
-
 function buildRunSummary(runs) {
   const totalRuns = runs.length
   const targets = runs.map((run) => run.result.target)
@@ -5364,6 +5412,8 @@ function renderSelectedWeaponProfileRows(weapons) {
 }
 
 function App() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [factions, setFactions] = useState([])
   const [attackerUnits, setAttackerUnits] = useState([])
   const [defenderUnits, setDefenderUnits] = useState([])
@@ -5384,7 +5434,6 @@ function App() {
   const [matrixColumnsOpen, setMatrixColumnsOpen] = useState(false)
   const [matrixLoading, setMatrixLoading] = useState(false)
   const [matrixError, setMatrixError] = useState('')
-  const [matrixDatabaseStatus, setMatrixDatabaseStatus] = useState(null)
   const [matrixSort, setMatrixSort] = useState(null)
   const [activeRunView, setActiveRunView] = useState('summary')
   const [loading, setLoading] = useState(true)
@@ -5393,6 +5442,7 @@ function App() {
   const [summaryOnlySimulation, setSummaryOnlySimulation] = useState(false)
   const [error, setError] = useState('')
   const [activePage, setActivePage] = useState('combat')
+  const [activeAuthOverlay, setActiveAuthOverlay] = useState(() => getAuthOverlayFromPath(location.pathname))
   const [appTheme, setAppTheme] = useState(readThemePreference)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [armyListEntries, setArmyListEntries] = useState([])
@@ -5556,6 +5606,36 @@ function App() {
   const battlefieldPointerFrameRef = useRef(0)
   const battlefieldPendingPointerRef = useRef(null)
   const removeSelectedBattlefieldUnitInstanceRef = useRef(null)
+  const activeAuthPath = location.pathname.startsWith('/auth/') ? location.pathname.split('/').pop() : 'sign-in'
+  const activeAccountPath = location.pathname.startsWith('/account/') ? location.pathname.split('/').pop() : 'settings'
+
+  const navigateToPage = useCallback((page) => {
+    setActivePage(page)
+    setActiveAuthOverlay(null)
+    const nextPath = '/'
+    if (location.pathname !== nextPath) {
+      navigate(nextPath)
+    }
+  }, [location.pathname, navigate])
+
+  const openAuthOverlay = useCallback((overlay) => {
+    setActiveAuthOverlay(overlay)
+    const nextPath = overlay === 'account' ? '/account/settings' : '/auth/sign-in'
+    if (location.pathname !== nextPath) {
+      navigate(nextPath)
+    }
+  }, [location.pathname, navigate])
+
+  const closeAuthOverlay = useCallback(() => {
+    setActiveAuthOverlay(null)
+    if (location.pathname.startsWith('/auth') || location.pathname.startsWith('/account')) {
+      navigate('/')
+    }
+  }, [location.pathname, navigate])
+
+  useEffect(() => {
+    setActiveAuthOverlay(getAuthOverlayFromPath(location.pathname))
+  }, [location.pathname])
 
   const [attackerFaction, setAttackerFaction] = useState('')
   const [attackerUnit, setAttackerUnit] = useState('')
@@ -5709,14 +5789,9 @@ function App() {
         if (cancelled) {
           return
         }
-        setMatrixDatabaseStatus(data.database_status || {
-          configured: Boolean(data.database_configured),
-          reason: data.database_configured ? 'configured' : 'unknown',
-        })
         setGlobalMatrixRuns(data.items || [])
       } catch (requestError) {
         if (!cancelled) {
-          setMatrixDatabaseStatus(null)
           setMatrixError(formatError(requestError))
         }
       } finally {
@@ -12540,7 +12615,7 @@ function App() {
     if (activeGamePhase?.id === 'shooting') {
       setAttackerInEngagementRange(false)
     }
-    setActivePage('combat')
+    navigateToPage('combat')
   }
 
   function resetOptions() {
@@ -12612,24 +12687,8 @@ function App() {
         <div className="hero-content">
           <div className="hero-copy">
             <p className="eyebrow">Strategium Forge | Warhammer 40,000 Simulator</p>
-            <h1>
-              {activePage === 'combat'
-                ? 'Combat Effectiveness'
-                : activePage === 'battlefield'
-                  ? 'Deploy Units'
-                  : activePage === 'matrix'
-                    ? 'Combat Matrix'
-                    : 'Build Army Lists'}
-            </h1>
-            <p>
-              {activePage === 'combat'
-                ? 'Pick an attacker, a weapon profile, a defender, and the combat context. Applies the rules engine and returns a full combat log.'
-                : activePage === 'battlefield'
-                  ? 'The selected units from Combat are shown as scaled bases on a 44 x 60 inch top-down board.'
-                  : activePage === 'matrix'
-                    ? 'Review stored combat runs grouped by identical loadout, weapons, abilities, stratagems, target, and game version.'
-                    : 'Build named rosters from selected combat units and save them locally for later sessions.'}
-            </p>
+            <h1>{getPageTitle(activePage)}</h1>
+            <p>{getPageDescription(activePage)}</p>
           </div>
           <div className="hero-mark">
             <img
@@ -12644,81 +12703,142 @@ function App() {
       <nav className="page-nav" aria-label="Primary">
         <button
           type="button"
-          className={`page-nav-button ${activePage === 'army-list' ? 'active' : ''}`}
-          onClick={() => setActivePage('army-list')}
-        >
-          Army List
-        </button>
-        <button
-          type="button"
           className={`page-nav-button ${activePage === 'combat' ? 'active' : ''}`}
-          onClick={() => setActivePage('combat')}
+          onClick={() => navigateToPage('combat')}
         >
           Combat
         </button>
         <button
           type="button"
           className={`page-nav-button ${activePage === 'matrix' ? 'active' : ''}`}
-          onClick={() => setActivePage('matrix')}
+          onClick={() => navigateToPage('matrix')}
         >
           Matrix
         </button>
         <button
           type="button"
+          className={`page-nav-button ${activePage === 'army-list' ? 'active' : ''}`}
+          onClick={() => navigateToPage('army-list')}
+        >
+          Army List
+        </button>
+        <button
+          type="button"
           className={`page-nav-button ${activePage === 'battlefield' ? 'active' : ''}`}
-          onClick={() => setActivePage('battlefield')}
+          onClick={() => navigateToPage('battlefield')}
         >
           Battlefield
         </button>
-        <div ref={settingsPanelRef} className="settings-shell">
-          <button
-            type="button"
-            className="settings-button"
-            aria-label="Open user settings"
-            aria-expanded={settingsOpen}
-            title="Settings"
-            onClick={() => setSettingsOpen((current) => !current)}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true" className="settings-button-icon">
-              <circle cx="12" cy="12" r="3.1" />
-              <path d="M12 2.8v2.3" />
-              <path d="M12 18.9v2.3" />
-              <path d="M21.2 12h-2.3" />
-              <path d="M5.1 12H2.8" />
-              <path d="M18.5 5.5l-1.6 1.6" />
-              <path d="M7.1 16.9l-1.6 1.6" />
-              <path d="M18.5 18.5l-1.6-1.6" />
-              <path d="M7.1 7.1L5.5 5.5" />
-            </svg>
-          </button>
-          {settingsOpen ? (
-            <div className="settings-popover">
-              <p className="kicker">User Settings</p>
-              <div className="settings-group">
-                <span className="settings-label">Theme</span>
-                <div className="theme-option-list" role="radiogroup" aria-label="Theme">
-                  {Object.values(APP_THEMES).map((theme) => (
-                    <button
-                      key={theme.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={appTheme === theme.id}
-                      className={`theme-option ${appTheme === theme.id ? 'active' : ''}`}
-                      onClick={() => {
-                        setAppTheme(theme.id)
-                        setSettingsOpen(false)
-                      }}
-                    >
-                      <strong>{theme.name}</strong>
-                      <span>{theme.description}</span>
-                    </button>
-                  ))}
+        <div className="nav-utility">
+          <div className="auth-nav">
+            <SignedOut>
+              <button
+                type="button"
+                className={`page-nav-button auth-nav-button ${activeAuthOverlay === 'auth' ? 'active' : ''}`}
+                onClick={() => openAuthOverlay('auth')}
+              >
+                Sign In
+              </button>
+            </SignedOut>
+            <SignedIn>
+              <button
+                type="button"
+                className={`page-nav-button auth-nav-button ${activeAuthOverlay === 'account' ? 'active' : ''}`}
+                onClick={() => openAuthOverlay('account')}
+              >
+                Account
+              </button>
+              <UserButton />
+            </SignedIn>
+          </div>
+          <div ref={settingsPanelRef} className="settings-shell">
+            <button
+              type="button"
+              className="settings-button"
+              aria-label="Open user settings"
+              aria-expanded={settingsOpen}
+              title="Settings"
+              onClick={() => setSettingsOpen((current) => !current)}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="settings-button-icon">
+                <circle cx="12" cy="12" r="3.1" />
+                <path d="M12 2.8v2.3" />
+                <path d="M12 18.9v2.3" />
+                <path d="M21.2 12h-2.3" />
+                <path d="M5.1 12H2.8" />
+                <path d="M18.5 5.5l-1.6 1.6" />
+                <path d="M7.1 16.9l-1.6 1.6" />
+                <path d="M18.5 18.5l-1.6-1.6" />
+                <path d="M7.1 7.1L5.5 5.5" />
+              </svg>
+            </button>
+            {settingsOpen ? (
+              <div className="settings-popover">
+                <p className="kicker">User Settings</p>
+                <div className="settings-group">
+                  <span className="settings-label">Theme</span>
+                  <div className="theme-option-list" role="radiogroup" aria-label="Theme">
+                    {Object.values(APP_THEMES).map((theme) => (
+                      <button
+                        key={theme.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={appTheme === theme.id}
+                        className={`theme-option ${appTheme === theme.id ? 'active' : ''}`}
+                        onClick={() => {
+                          setAppTheme(theme.id)
+                          setSettingsOpen(false)
+                        }}
+                      >
+                        <strong>{theme.name}</strong>
+                        <span>{theme.description}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </div>
       </nav>
+
+      {activeAuthOverlay ? (
+        <div
+          className="auth-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              closeAuthOverlay()
+            }
+          }}
+        >
+          <section className="auth-modal-content" role="dialog" aria-modal="true" aria-label={activeAuthOverlay === 'account' ? 'Account' : 'Sign In'}>
+            <button
+              type="button"
+              className="auth-modal-close"
+              aria-label="Close account panel"
+              onClick={closeAuthOverlay}
+            >
+              x
+            </button>
+            <div className="panel-heading auth-modal-heading">
+              <div>
+                <p className="kicker">Account</p>
+                <h2>{activeAuthOverlay === 'account' ? 'Profile & Security' : 'Sign In'}</h2>
+              </div>
+            </div>
+            {activeAuthOverlay === 'account' ? (
+              <div className="account-view-shell">
+                <AccountView path={activeAccountPath} />
+              </div>
+            ) : (
+              <div className="auth-view-shell">
+                <AuthView path={activeAuthPath} redirectTo="/" />
+              </div>
+            )}
+          </section>
+        </div>
+      ) : null}
 
       {activePage === 'combat' ? (
         <>
@@ -14274,13 +14394,6 @@ function App() {
 
             {matrixLoading ? <p className="status-line">Loading global Matrix data...</p> : null}
             {matrixError ? <p className="status-line error">{matrixError}</p> : null}
-            <div className="matrix-storage-status">
-              <strong>{matrixDatabaseStatus?.configured ? 'SQL Storage' : 'Local Cache'}</strong>
-              <span>{formatMatrixDatabaseStatus(matrixDatabaseStatus)}</span>
-              {!matrixDatabaseStatus?.configured && matrixRunHistory.length ? (
-                <span>{matrixRunHistory.length} local run{matrixRunHistory.length === 1 ? '' : 's'} in this browser.</span>
-              ) : null}
-            </div>
 
             {matrixRows.length ? (
               <>
@@ -17271,6 +17384,144 @@ function App() {
             ))}
           </div>
         </section>
+      ) : activePage === 'about' ? (
+        <main className="static-page-layout">
+          <section className="panel static-page-panel">
+            <div className="panel-heading">
+              <div>
+                <p className="kicker">About</p>
+                <h2>Strategium Forge</h2>
+              </div>
+            </div>
+            <div className="static-page-grid">
+              <article className="static-info-block">
+                <h3>Purpose</h3>
+                <p>
+                  Strategium Forge helps players test combat decisions before they reach the table:
+                  unit into unit, weapon into target, rule stack into expected outcome.
+                </p>
+              </article>
+              <article className="static-info-block">
+                <h3>Why Use It?</h3>
+                <p>
+                  Instead of guessing from averages by hand, run the exact matchup with selected
+                  loadouts, leaders, stratagems, objectives, and activated abilities.
+                </p>
+              </article>
+              <article className="static-info-block">
+                <h3>Features</h3>
+                <p>
+                  Combat summaries, individual run logs, active rule cards, army list planning,
+                  battlefield positioning, and Matrix history for comparing repeated results.
+                </p>
+              </article>
+              <article className="static-info-block">
+                <h3>What CES Means</h3>
+                <p>
+                  Combat Effectiveness Score is a 0-100 offensive rating for a matchup. It blends
+                  average damage into the target's wound pool, kill percentage, and result
+                  consistency, so high scores mean the attack is both dangerous and reliable.
+                </p>
+              </article>
+              <article className="static-info-block">
+                <h3>Project Status</h3>
+                <p>
+                  The simulator is under active development, with new units, rules interactions,
+                  Matrix columns, and battlefield tools being added as coverage expands.
+                </p>
+              </article>
+            </div>
+          </section>
+        </main>
+      ) : activePage === 'help' ? (
+        <main className="static-page-layout">
+          <section className="panel static-page-panel">
+            <div className="panel-heading">
+              <div>
+                <p className="kicker">Help</p>
+                <h2>Common Workflows</h2>
+              </div>
+            </div>
+            <div className="static-page-grid">
+              <article className="static-info-block">
+                <h3>1. Build the Matchup</h3>
+                <p>
+                  Pick the attacking unit, attached leader, detachment, selected weapons, defender,
+                  target size, and any loadout choices that matter for the attack.
+                </p>
+              </article>
+              <article className="static-info-block">
+                <h3>2. Set the Context</h3>
+                <p>
+                  Toggle objective status, charge status, cover, stratagems, activated 
+                  abilities, set the damage order so the run matches the board state you care about.
+                </p>
+              </article>
+              <article className="static-info-block">
+                <h3>3. Read Results</h3>
+                <p>
+                  Use the summary for expected damage, models destroyed, kill pressure, CES, and
+                  step-by-step hit, wound, save, damage, and Feel No Pain breakdowns.
+                </p>
+              </article>
+              <article className="static-info-block">
+                <h3>4. Compare in Matrix</h3>
+                <p>
+                  Matrix groups identical runs and lets you sort, filter, and resize columns to
+                  compare units, weapons, active rules, and performance over larger samples.
+                </p>
+              </article>
+              <article className="static-info-block">
+                <h3>5. Plan the Table</h3>
+                <p>
+                  Save army lists, deploy units to the battlefield view, check engagement context,
+                  and run combat from table positions when placement matters.
+                </p>
+              </article>
+              <article className="static-info-block">
+                <h3>Troubleshooting</h3>
+                <p>
+                  If results look off, check selected model counts, active rules, attached units,
+                  weapon profiles, objective toggles, and whether the target allocation is correct.
+                </p>
+              </article>
+            </div>
+          </section>
+        </main>
+      ) : activePage === 'contact' ? (
+        <main className="static-page-layout">
+          <section className="panel static-page-panel">
+            <div className="panel-heading">
+              <div>
+                <p className="kicker">Contact</p>
+                <h2>Feedback</h2>
+              </div>
+            </div>
+            <div className="static-page-grid">
+              <article className="static-info-block">
+                <h3>Email</h3>
+                <p>
+                  Send rules issues, feature requests, and general feedback to{' '}
+                  <a href="mailto:strategiumforge@gmail.com">strategiumforge@gmail.com</a>.
+                </p>
+              </article>
+              <article className="static-info-block">
+                <h3>Rules Issues</h3>
+                <p>
+                  Include the attacker, defender, selected weapons, active rules, run count, and
+                  what result looked wrong.
+                </p>
+              </article>
+              <article className="static-info-block">
+                <h3>Feature Requests</h3>
+                <p>
+                  Useful requests include missing units, unsupported abilities, new Matrix columns,
+                  battlefield tools, and deployment or storage issues.
+                </p>
+              </article>
+            </div>
+          </section>
+        </main>
       ) : (
         <section className="panel placeholder-panel">
           <div className="panel-heading">
@@ -17450,6 +17701,27 @@ function App() {
           )}
         </section>
       )}
+      <footer className="site-footer">
+        <div className="site-footer-brand">
+          <strong>Strategium Forge</strong>
+          <span>Warhammer 40,000 combat analysis and roster planning.</span>
+        </div>
+        <nav className="site-footer-links" aria-label="Footer">
+          {FOOTER_PAGES.map((page) => (
+            <button
+              key={page.id}
+              type="button"
+              className={activePage === page.id ? 'active' : ''}
+              onClick={() => navigateToPage(page.id)}
+            >
+              {page.label}
+            </button>
+          ))}
+        </nav>
+        <p className="site-footer-note">
+          Unofficial tabletop tool. Verify final rules decisions against current publications.
+        </p>
+      </footer>
     </div>
   )
 }
