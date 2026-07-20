@@ -3215,6 +3215,25 @@ textarea:focus {
   min-width: 0;
 }
 
+.matrix-storage-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 14px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-card-soft) 72%, transparent);
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.matrix-storage-status strong {
+  color: var(--ink);
+}
+
 .matrix-column-toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

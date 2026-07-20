@@ -4239,6 +4239,21 @@ function mergeMatrixRunSources(globalRuns, localRuns) {
   return mergedRuns
 }
 
+function formatMatrixDatabaseStatus(status) {
+  if (!status) {
+    return 'Database status not loaded yet.'
+  }
+  if (status.configured) {
+    return `SQL connected via ${status.database_env_name || 'database environment variable'}.`
+  }
+  const labels = {
+    missing_database_url: 'SQL is not configured because DATABASE_URL or POSTGRES_URL is missing.',
+    missing_psycopg: 'SQL is not configured because the Python Postgres driver is missing.',
+    missing_database_url_and_psycopg: 'SQL is not configured because both the database URL and Python Postgres driver are missing.',
+  }
+  return labels[status.reason] || `SQL is not configured (${status.reason || 'unknown reason'}).`
+}
+
 function buildRunSummary(runs) {
   const totalRuns = runs.length
   const targets = runs.map((run) => run.result.target)
@@ -4652,7 +4667,6 @@ function buildAttackerActiveRules({
   const rules = [
     ...getRelevantUnitRules(attackerUnitDetails, 'attacker', hasHazardous),
     ...getPassiveCombatAbilityRules([attackerUnitDetails, attackerAttachedLeaderUnitDetails, attackerAttachedSupportUnitDetails]),
-    ...getPassiveCombatAbilityRules(defenderUnitDetails),
   ]
   const activeAbilityNameSet = new Set((attackerActiveAbilityNames || []).map((name) => String(name).toLowerCase()))
   getCombatActivatedAbilities(
@@ -5370,6 +5384,7 @@ function App() {
   const [matrixColumnsOpen, setMatrixColumnsOpen] = useState(false)
   const [matrixLoading, setMatrixLoading] = useState(false)
   const [matrixError, setMatrixError] = useState('')
+  const [matrixDatabaseStatus, setMatrixDatabaseStatus] = useState(null)
   const [matrixSort, setMatrixSort] = useState(null)
   const [activeRunView, setActiveRunView] = useState('summary')
   const [loading, setLoading] = useState(true)
@@ -5694,9 +5709,14 @@ function App() {
         if (cancelled) {
           return
         }
+        setMatrixDatabaseStatus(data.database_status || {
+          configured: Boolean(data.database_configured),
+          reason: data.database_configured ? 'configured' : 'unknown',
+        })
         setGlobalMatrixRuns(data.items || [])
       } catch (requestError) {
         if (!cancelled) {
+          setMatrixDatabaseStatus(null)
           setMatrixError(formatError(requestError))
         }
       } finally {
@@ -14254,6 +14274,13 @@ function App() {
 
             {matrixLoading ? <p className="status-line">Loading global Matrix data...</p> : null}
             {matrixError ? <p className="status-line error">{matrixError}</p> : null}
+            <div className="matrix-storage-status">
+              <strong>{matrixDatabaseStatus?.configured ? 'SQL Storage' : 'Local Cache'}</strong>
+              <span>{formatMatrixDatabaseStatus(matrixDatabaseStatus)}</span>
+              {!matrixDatabaseStatus?.configured && matrixRunHistory.length ? (
+                <span>{matrixRunHistory.length} local run{matrixRunHistory.length === 1 ? '' : 's'} in this browser.</span>
+              ) : null}
+            </div>
 
             {matrixRows.length ? (
               <>
