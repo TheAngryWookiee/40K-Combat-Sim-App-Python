@@ -60,10 +60,19 @@ $backendJob = Start-Job -Name "40k-api" -ArgumentList $root, $backendPort -Scrip
 
 $frontendJob = Start-Job -Name "40k-frontend" -ArgumentList $root, $frontendPort, $backendPort -ScriptBlock {
   param($rootPath, $port, $apiPort)
-  Set-Location (Join-Path $rootPath "frontend")
+  $frontendPath = Join-Path $rootPath "frontend"
+  Set-Location $frontendPath
   $env:VITE_API_BASE_URL = "http://127.0.0.1:$apiPort"
-  $vite = Join-Path $rootPath "frontend\node_modules\.bin\vite.cmd"
-  & $vite --host 127.0.0.1 --port $port --strictPort 2>&1 | ForEach-Object {
+
+  # Clear stale optimizer caches so workspace-hoisted packages resolve cleanly.
+  @(".vite", ".vite-temp") | ForEach-Object {
+    $cachePath = Join-Path (Join-Path $frontendPath "node_modules") $_
+    if (Test-Path $cachePath) {
+      Remove-Item -LiteralPath $cachePath -Recurse -Force -ErrorAction SilentlyContinue
+    }
+  }
+
+  & npm --workspace frontend exec vite -- --host 127.0.0.1 --port $port --strictPort 2>&1 | ForEach-Object {
     "[web] $_"
   }
 }

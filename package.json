@@ -9,5 +9,9 @@
     "dev:backend": "powershell -ExecutionPolicy Bypass -File ./scripts/run-backend.ps1 -Reload -Port 8010",
     "dev:frontend": "npm --workspace frontend run dev",
     "build": "npm --workspace frontend run build"
+  },
+  "dependencies": {
+    "@neondatabase/neon-js": "^0.6.2-beta",
+    "react-router-dom": "^7.18.1"
   }
 }
