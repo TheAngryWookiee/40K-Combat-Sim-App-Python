@@ -61,8 +61,12 @@ export async function simulateCombatBatch(payload) {
   return response.data
 }
 
-export async function fetchMatrixRuns(limit = 5000) {
-  const response = await api.get('/matrix/runs', { params: { limit } })
+export async function fetchMatrixRuns(limit = 5000, options = {}) {
+  const params = { limit }
+  if (options.ownerUserId) {
+    params.owner_user_id = options.ownerUserId
+  }
+  const response = await api.get('/matrix/runs', { params })
   return response.data
 }
 

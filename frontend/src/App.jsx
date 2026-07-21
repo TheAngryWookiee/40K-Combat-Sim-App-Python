@@ -3,6 +3,14 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { AccountView, AuthView, SignedIn, SignedOut, UserButton } from '@neondatabase/neon-js/auth/react/ui'
 import './App.css'
 import {
+  authClient,
+  clearPendingEmailVerification,
+  getPendingEmailVerification,
+  getUserThemePreference,
+  PENDING_EMAIL_VERIFICATION_EVENT,
+  persistUserThemePreference,
+} from './lib/auth'
+import {
   fetchFactions,
   fetchFactionDetails,
   fetchTurnStructure,
@@ -130,6 +138,10 @@ const KULT_OF_SPEED = 'Kult of Speed'
 const DREAD_MOB = 'Dread Mob'
 const GREEN_TIDE = 'Green Tide'
 const BULLY_BOYZ = 'Bully Boyz'
+const AUTH_VERIFY_EMAIL_PATH = 'verify-email'
+const MATRIX_VIEW_GLOBAL = 'global'
+const MATRIX_VIEW_MINE = 'mine'
+const SHOW_LOCAL_MATRIX_CONTROLS = import.meta.env.DEV
 const OATH_EXCLUDED_KEYWORDS = [
   'black templars',
   'blood angels',
@@ -139,6 +151,146 @@ const OATH_EXCLUDED_KEYWORDS = [
 ]
 const OATH_OF_MOMENT_RULE_TEXT = 'Select one enemy unit. Each time a model with Oath of Moment makes an attack that targets that unit, you can re-roll the Hit roll.'
 const OATH_OF_MOMENT_CODEX_RIDER_TEXT = 'If you are using a Codex: Space Marines Detachment and your army does not include Black Templars, Blood Angels, Dark Angels, Deathwatch, or Space Wolves units, add 1 to the Wound roll as well.'
+
+function EmailVerificationView({ initialEmail, onBackToSignIn }) {
+  const [email, setEmail] = useState(initialEmail || '')
+  const [code, setCode] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isResending, setIsResending] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [statusMessage, setStatusMessage] = useState('')
+  const [isVerified, setIsVerified] = useState(false)
+
+  const handleVerify = useCallback(async () => {
+    const normalizedEmail = email.trim()
+    const normalizedCode = code.trim()
+    if (!normalizedEmail) {
+      setErrorMessage('Enter the email address you used to create the account.')
+      return
+    }
+    if (normalizedCode.length !== 6) {
+      setErrorMessage('Enter the 6-digit verification code from your email.')
+      return
+    }
+
+    setIsSubmitting(true)
+    setErrorMessage('')
+    setStatusMessage('')
+
+    try {
+      await authClient.emailOtp.verifyEmail({
+        email: normalizedEmail,
+        otp: normalizedCode,
+        fetchOptions: { throw: true },
+      })
+      clearPendingEmailVerification()
+      setIsVerified(true)
+      setStatusMessage('Email verified. You can sign in with your account now.')
+    } catch (error) {
+      setErrorMessage(error?.message || 'Verification failed. Check the code and try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [code, email])
+
+  const handleResend = useCallback(async () => {
+    const normalizedEmail = email.trim()
+    if (!normalizedEmail) {
+      setErrorMessage('Enter the email address you used to create the account.')
+      return
+    }
+
+    setIsResending(true)
+    setErrorMessage('')
+    setStatusMessage('')
+
+    try {
+      await authClient.emailOtp.sendVerificationOtp({
+        email: normalizedEmail,
+        type: 'email-verification',
+        fetchOptions: { throw: true },
+      })
+      setStatusMessage(`A new verification code was sent to ${normalizedEmail}.`)
+    } catch (error) {
+      setErrorMessage(error?.message || 'Could not resend the verification code.')
+    } finally {
+      setIsResending(false)
+    }
+  }, [email])
+
+  return (
+    <div className="email-verification-view">
+      <p className="muted-note">
+        Enter the email address and 6-digit verification code from your signup email.
+      </p>
+      <label className="field-shell">
+        <span>Email address</span>
+        <input
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="you@example.com"
+          disabled={isSubmitting || isVerified}
+        />
+      </label>
+      <label className="field-shell">
+        <span>Email verification code</span>
+        <input
+          type="text"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          maxLength={6}
+          value={code}
+          onChange={(event) => {
+            setCode(event.target.value.replace(/\D/g, '').slice(0, 6))
+          }}
+          placeholder="123456"
+          disabled={isSubmitting || isVerified}
+        />
+      </label>
+      {errorMessage ? <p className="email-verification-feedback error">{errorMessage}</p> : null}
+      {statusMessage ? <p className="email-verification-feedback success">{statusMessage}</p> : null}
+      <div className="email-verification-actions">
+        {isVerified ? (
+          <button type="button" className="primary-button" onClick={onBackToSignIn}>
+            Continue To Sign In
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={handleVerify}
+              disabled={isSubmitting || code.trim().length !== 6}
+            >
+              {isSubmitting ? 'Verifying...' : 'Verify Email'}
+            </button>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={handleResend}
+              disabled={isSubmitting || isResending}
+            >
+              {isResending ? 'Sending...' : 'Resend Code'}
+            </button>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => {
+                clearPendingEmailVerification()
+                onBackToSignIn()
+              }}
+              disabled={isSubmitting || isResending}
+            >
+              Back To Sign In
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
 const BATTLEFIELD_WIDTH_INCHES = 60
 const BATTLEFIELD_HEIGHT_INCHES = 44
 const SAVED_ARMY_LISTS_STORAGE_KEY = 'tactica-forge:saved-army-lists'
@@ -198,6 +350,11 @@ function readThemePreference() {
   } catch {
     return 'forge'
   }
+}
+
+function readAccountThemePreference(user) {
+  const storedTheme = getUserThemePreference(user)
+  return storedTheme && APP_THEMES[storedTheme] ? storedTheme : null
 }
 
 function readMatrixRunHistoryFromStorage() {
@@ -1489,6 +1646,8 @@ function buildSimulationPayload(state) {
 
   return {
     game_version: GAME_VERSION,
+    matrix_user_id: state.matrixUserId || undefined,
+    matrix_user_email: state.matrixUserEmail || undefined,
     attacker_faction: state.attackerFaction,
     attacker_unit: state.attackerUnit,
     attacker_detachment_name: state.attackerDetachmentName || undefined,
@@ -4154,6 +4313,8 @@ function createMatrixRunRecord(run, batchId) {
     run_index: run.runIndex,
     stored_at: run.matrix_storage?.created_at || new Date().toISOString(),
     game_version: run.game_version || run.combat_metadata?.game_version || run.request?.game_version || GAME_VERSION,
+    owner_user_id: run.owner_user_id || run.request?.matrix_user_id || null,
+    owner_user_email: run.owner_user_email || run.request?.matrix_user_email || null,
     combat_metadata: run.combat_metadata || null,
     request: run.request || null,
     result: {
@@ -5428,6 +5589,7 @@ function App() {
   const [simulationRuns, setSimulationRuns] = useState([])
   const [matrixRunHistory, setMatrixRunHistory] = useState(readMatrixRunHistoryFromStorage)
   const [globalMatrixRuns, setGlobalMatrixRuns] = useState([])
+  const [myMatrixRuns, setMyMatrixRuns] = useState([])
   const [matrixFilters, setMatrixFilters] = useState({})
   const [matrixVisibleColumnKeys, setMatrixVisibleColumnKeys] = useState(null)
   const [matrixColumnWidths, setMatrixColumnWidths] = useState({})
@@ -5435,6 +5597,7 @@ function App() {
   const [matrixLoading, setMatrixLoading] = useState(false)
   const [matrixError, setMatrixError] = useState('')
   const [matrixSort, setMatrixSort] = useState(null)
+  const [matrixView, setMatrixView] = useState(MATRIX_VIEW_GLOBAL)
   const [activeRunView, setActiveRunView] = useState('summary')
   const [loading, setLoading] = useState(true)
   const [simulating, setSimulating] = useState(false)
@@ -5448,6 +5611,13 @@ function App() {
   const [armyListEntries, setArmyListEntries] = useState([])
   const [savedArmyLists, setSavedArmyLists] = useState(readSavedArmyListsFromStorage)
   const [armyListName, setArmyListName] = useState('')
+  const { data: authSessionData } = authClient.useSession()
+  const signedInMatrixUser = authSessionData?.user || null
+  const signedInMatrixUserId = signedInMatrixUser?.id || ''
+  const signedInMatrixUserEmail = signedInMatrixUser?.email || ''
+  const accountThemePreference = readAccountThemePreference(signedInMatrixUser)
+  const pendingThemePreferenceRef = useRef(null)
+  const seededThemePreferenceUserIdRef = useRef('')
   const [selectedSavedArmyListId, setSelectedSavedArmyListId] = useState(() => (
     readSavedArmyListsFromStorage()[0]?.id || ''
   ))
@@ -5606,8 +5776,14 @@ function App() {
   const battlefieldPointerFrameRef = useRef(0)
   const battlefieldPendingPointerRef = useRef(null)
   const removeSelectedBattlefieldUnitInstanceRef = useRef(null)
-  const activeAuthPath = location.pathname.startsWith('/auth/') ? location.pathname.split('/').pop() : 'sign-in'
-  const activeAccountPath = location.pathname.startsWith('/account/') ? location.pathname.split('/').pop() : 'settings'
+  const [pendingEmailVerification, setPendingEmailVerification] = useState(() => getPendingEmailVerification())
+  const activeAuthPath = location.pathname.startsWith('/auth/')
+    ? location.pathname.slice('/auth/'.length) || 'sign-in'
+    : 'sign-in'
+  const activeAccountPath = location.pathname.startsWith('/account/')
+    ? location.pathname.slice('/account/'.length) || 'settings'
+    : 'settings'
+  const pendingVerificationEmail = pendingEmailVerification?.email || ''
 
   const navigateToPage = useCallback((page) => {
     setActivePage(page)
@@ -5620,11 +5796,15 @@ function App() {
 
   const openAuthOverlay = useCallback((overlay) => {
     setActiveAuthOverlay(overlay)
-    const nextPath = overlay === 'account' ? '/account/settings' : '/auth/sign-in'
+    const nextPath = overlay === 'account'
+      ? '/account/settings'
+      : pendingVerificationEmail
+        ? `/auth/${AUTH_VERIFY_EMAIL_PATH}`
+        : '/auth/sign-in'
     if (location.pathname !== nextPath) {
       navigate(nextPath)
     }
-  }, [location.pathname, navigate])
+  }, [location.pathname, navigate, pendingVerificationEmail])
 
   const closeAuthOverlay = useCallback(() => {
     setActiveAuthOverlay(null)
@@ -5636,6 +5816,31 @@ function App() {
   useEffect(() => {
     setActiveAuthOverlay(getAuthOverlayFromPath(location.pathname))
   }, [location.pathname])
+
+  useEffect(() => {
+    const handlePendingVerificationChange = (event) => {
+      const nextEmail = event?.detail?.email
+      setPendingEmailVerification(nextEmail ? { email: nextEmail } : null)
+    }
+
+    window.addEventListener(PENDING_EMAIL_VERIFICATION_EVENT, handlePendingVerificationChange)
+    return () => {
+      window.removeEventListener(PENDING_EMAIL_VERIFICATION_EVENT, handlePendingVerificationChange)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeAuthOverlay !== 'auth') {
+      return
+    }
+
+    if (
+      pendingVerificationEmail
+      && (location.pathname === '/auth' || location.pathname === '/auth/sign-in')
+    ) {
+      navigate(`/auth/${AUTH_VERIFY_EMAIL_PATH}`, { replace: true })
+    }
+  }, [activeAuthOverlay, activeAuthPath, location.pathname, navigate, pendingVerificationEmail])
 
   const [attackerFaction, setAttackerFaction] = useState('')
   const [attackerUnit, setAttackerUnit] = useState('')
@@ -5775,21 +5980,55 @@ function App() {
   }, [appTheme])
 
   useEffect(() => {
+    if (!accountThemePreference) {
+      return
+    }
+    if (pendingThemePreferenceRef.current === accountThemePreference) {
+      pendingThemePreferenceRef.current = null
+      return
+    }
+    setAppTheme((currentTheme) => (currentTheme === accountThemePreference ? currentTheme : accountThemePreference))
+  }, [accountThemePreference])
+
+  useEffect(() => {
+    if (!signedInMatrixUserId || accountThemePreference || seededThemePreferenceUserIdRef.current === signedInMatrixUserId) {
+      return
+    }
+    seededThemePreferenceUserIdRef.current = signedInMatrixUserId
+    pendingThemePreferenceRef.current = appTheme
+    persistUserThemePreference(appTheme)
+      .catch(() => {
+        pendingThemePreferenceRef.current = null
+      })
+  }, [accountThemePreference, appTheme, signedInMatrixUserId])
+
+  useEffect(() => {
+    if (!signedInMatrixUserId && matrixView === MATRIX_VIEW_MINE) {
+      setMatrixView(MATRIX_VIEW_GLOBAL)
+    }
+  }, [matrixView, signedInMatrixUserId])
+
+  useEffect(() => {
     if (activePage !== 'matrix') {
       return undefined
     }
 
     let cancelled = false
 
-    async function loadGlobalMatrixRuns() {
+    async function loadMatrixRuns() {
       try {
         setMatrixLoading(true)
         setMatrixError('')
-        const data = await fetchMatrixRuns(10000)
+        const requests = [fetchMatrixRuns(10000)]
+        if (signedInMatrixUserId) {
+          requests.push(fetchMatrixRuns(10000, { ownerUserId: signedInMatrixUserId }))
+        }
+        const [globalData, myData] = await Promise.all(requests)
         if (cancelled) {
           return
         }
-        setGlobalMatrixRuns(data.items || [])
+        setGlobalMatrixRuns(globalData?.items || [])
+        setMyMatrixRuns(myData?.items || [])
       } catch (requestError) {
         if (!cancelled) {
           setMatrixError(formatError(requestError))
@@ -5801,12 +6040,12 @@ function App() {
       }
     }
 
-    loadGlobalMatrixRuns()
+    loadMatrixRuns()
 
     return () => {
       cancelled = true
     }
-  }, [activePage])
+  }, [activePage, signedInMatrixUserId])
 
   useEffect(() => {
     if (!settingsOpen) {
@@ -5833,6 +6072,21 @@ function App() {
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [settingsOpen])
+
+  const handleThemeSelection = useCallback((themeId) => {
+    setAppTheme(themeId)
+    setSettingsOpen(false)
+    if (!signedInMatrixUserId) {
+      return
+    }
+
+    pendingThemePreferenceRef.current = themeId
+    persistUserThemePreference(themeId).catch(() => {
+      if (pendingThemePreferenceRef.current === themeId) {
+        pendingThemePreferenceRef.current = null
+      }
+    })
+  }, [signedInMatrixUserId])
 
   useEffect(() => {
     setBattlefieldAttackerSavedArmyListId((currentListId) => (
@@ -7969,11 +8223,15 @@ function App() {
   const visibleMatrixColumns = useMemo(() => (
     matrixColumns.filter((column) => visibleMatrixColumnKeys.includes(column.key))
   ), [matrixColumns, visibleMatrixColumnKeys])
-  const combinedMatrixRuns = useMemo(
-    () => mergeMatrixRunSources(globalMatrixRuns, matrixRunHistory),
-    [globalMatrixRuns, matrixRunHistory],
-  )
-  const matrixRows = useMemo(() => buildMatrixRows(combinedMatrixRuns), [combinedMatrixRuns])
+  const selectedMatrixRuns = useMemo(() => {
+    if (matrixView === MATRIX_VIEW_MINE) {
+      return myMatrixRuns
+    }
+    return SHOW_LOCAL_MATRIX_CONTROLS
+      ? mergeMatrixRunSources(globalMatrixRuns, matrixRunHistory)
+      : globalMatrixRuns
+  }, [globalMatrixRuns, matrixRunHistory, matrixView, myMatrixRuns])
+  const matrixRows = useMemo(() => buildMatrixRows(selectedMatrixRuns), [selectedMatrixRuns])
   const filteredMatrixRows = useMemo(() => (
     matrixRows.filter((row) => visibleMatrixColumns.every((column) => {
       const filterValue = String(matrixFilters[column.key] || '').trim().toLowerCase()
@@ -10503,12 +10761,20 @@ function App() {
       }))
       const matrixBatchId = `${seedBase}`
       const matrixRecords = runs.map((run) => createMatrixRunRecord(run, matrixBatchId))
-      setMatrixRunHistory((currentRuns) => (
-        [...currentRuns, ...matrixRecords]
-      ))
+      if (SHOW_LOCAL_MATRIX_CONTROLS) {
+        setMatrixRunHistory((currentRuns) => (
+          [...currentRuns, ...matrixRecords]
+        ))
+      }
       const storedMatrixRecords = matrixRecords.filter((record, index) => runs[index]?.matrix_storage?.stored)
       if (storedMatrixRecords.length) {
         setGlobalMatrixRuns((currentRuns) => mergeMatrixRunSources(currentRuns, storedMatrixRecords))
+        if (signedInMatrixUserId) {
+          const ownedRecords = storedMatrixRecords.filter((record) => record.owner_user_id === signedInMatrixUserId)
+          if (ownedRecords.length) {
+            setMyMatrixRuns((currentRuns) => mergeMatrixRunSources(currentRuns, ownedRecords))
+          }
+        }
       }
       setSimulationRuns(runs)
       setActiveRunView('summary')
@@ -10583,6 +10849,8 @@ function App() {
       attackerAttachedSupportLoadoutSelections: resolvedAttackerAttachedSupportLoadoutSelections,
       attackerAttachedSupportModelCount,
       attackerAttachedSupportModelCounts: resolvedAttackerAttachedSupportModelCounts,
+      matrixUserId: signedInMatrixUserId,
+      matrixUserEmail: signedInMatrixUserEmail,
       weaponNames,
       weaponModelCounts,
       defenderFaction,
@@ -12748,7 +13016,9 @@ function App() {
               >
                 Account
               </button>
-              <UserButton />
+              <div className="account-chip">
+                <UserButton />
+              </div>
             </SignedIn>
           </div>
           <div ref={settingsPanelRef} className="settings-shell">
@@ -12785,10 +13055,7 @@ function App() {
                         role="radio"
                         aria-checked={appTheme === theme.id}
                         className={`theme-option ${appTheme === theme.id ? 'active' : ''}`}
-                        onClick={() => {
-                          setAppTheme(theme.id)
-                          setSettingsOpen(false)
-                        }}
+                        onClick={() => handleThemeSelection(theme.id)}
                       >
                         <strong>{theme.name}</strong>
                         <span>{theme.description}</span>
@@ -12812,7 +13079,12 @@ function App() {
             }
           }}
         >
-          <section className="auth-modal-content" role="dialog" aria-modal="true" aria-label={activeAuthOverlay === 'account' ? 'Account' : 'Sign In'}>
+          <section
+            className="auth-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-label={activeAuthOverlay === 'account' ? 'Account' : activeAuthPath === AUTH_VERIFY_EMAIL_PATH ? 'Verify Email' : 'Sign In'}
+          >
             <button
               type="button"
               className="auth-modal-close"
@@ -12824,16 +13096,47 @@ function App() {
             <div className="panel-heading auth-modal-heading">
               <div>
                 <p className="kicker">Account</p>
-                <h2>{activeAuthOverlay === 'account' ? 'Profile & Security' : 'Sign In'}</h2>
+                <h2>
+                  {activeAuthOverlay === 'account'
+                    ? 'Profile & Security'
+                    : activeAuthPath === AUTH_VERIFY_EMAIL_PATH
+                      ? 'Verify Email'
+                      : 'Sign In'}
+                </h2>
               </div>
             </div>
             {activeAuthOverlay === 'account' ? (
               <div className="account-view-shell">
                 <AccountView path={activeAccountPath} />
               </div>
+            ) : activeAuthPath === AUTH_VERIFY_EMAIL_PATH && pendingVerificationEmail ? (
+              <div className="auth-view-shell">
+                <EmailVerificationView
+                  initialEmail={pendingVerificationEmail}
+                  onBackToSignIn={() => navigate('/auth/sign-in')}
+                />
+              </div>
+            ) : activeAuthPath === AUTH_VERIFY_EMAIL_PATH ? (
+              <div className="auth-view-shell">
+                <EmailVerificationView
+                  initialEmail=""
+                  onBackToSignIn={() => navigate('/auth/sign-in')}
+                />
+              </div>
             ) : (
               <div className="auth-view-shell">
-                <AuthView path={activeAuthPath} redirectTo="/" />
+                <div className="auth-view-stack">
+                  <AuthView path={activeAuthPath} redirectTo="/" />
+                  <div className="auth-utility-link-row">
+                    <button
+                      type="button"
+                      className="auth-utility-link"
+                      onClick={() => navigate(`/auth/${AUTH_VERIFY_EMAIL_PATH}`)}
+                    >
+                      Have a verification code?
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </section>
@@ -14382,17 +14685,42 @@ function App() {
                 <p className="kicker">Stored Combat Data</p>
                 <h2>Matrix</h2>
               </div>
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={() => setMatrixRunHistory([])}
-                disabled={!matrixRunHistory.length}
-              >
-                Clear Local Matrix Data
-              </button>
+              {SHOW_LOCAL_MATRIX_CONTROLS ? (
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setMatrixRunHistory([])}
+                  disabled={!matrixRunHistory.length}
+                >
+                  Clear Local Matrix Data
+                </button>
+              ) : null}
             </div>
 
-            {matrixLoading ? <p className="status-line">Loading global Matrix data...</p> : null}
+            {signedInMatrixUserId ? (
+              <div className="run-tabs matrix-view-tabs">
+                <button
+                  type="button"
+                  className={`run-tab ${matrixView === MATRIX_VIEW_GLOBAL ? 'active' : ''}`}
+                  onClick={() => setMatrixView(MATRIX_VIEW_GLOBAL)}
+                >
+                  Global Matrix
+                </button>
+                <button
+                  type="button"
+                  className={`run-tab ${matrixView === MATRIX_VIEW_MINE ? 'active' : ''}`}
+                  onClick={() => setMatrixView(MATRIX_VIEW_MINE)}
+                >
+                  My Matrix
+                </button>
+              </div>
+            ) : null}
+
+            {matrixLoading ? (
+              <p className="status-line">
+                Loading {matrixView === MATRIX_VIEW_MINE ? 'your' : 'global'} Matrix data...
+              </p>
+            ) : null}
             {matrixError ? <p className="status-line error">{matrixError}</p> : null}
 
             {matrixRows.length ? (

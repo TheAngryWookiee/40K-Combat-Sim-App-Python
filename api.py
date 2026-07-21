@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import threading
 import time
 from typing import Any
 from uuid import uuid4
@@ -49,6 +50,9 @@ ATTACHED_SUPPORT_WEAPON_MARKER = "support::"
 GAME_VERSION = "11.06.27.26"
 COMBAT_STATS_SCHEMA_VERSION = 1
 DATABASE_URL_ENV_NAMES = ("DATABASE_URL", "POSTGRES_URL")
+COMBAT_RUNS_SCHEMA_ADVISORY_LOCK = 40_000_401
+_combat_runs_schema_ready = False
+_combat_runs_schema_lock = threading.Lock()
 COMBAT_RUN_ANALYSIS_COLUMNS = {
     "result_payload": "jsonb NOT NULL DEFAULT '{}'::jsonb",
     "attacker_model_count": "integer",
@@ -179,6 +183,8 @@ class SimulationOptions(BaseModel):
 
 class SimulationRequest(BaseModel):
     game_version: str = GAME_VERSION
+    matrix_user_id: str | None = None
+    matrix_user_email: str | None = None
     attacker_faction: str
     attacker_unit: str
     attacker_detachment_name: str | None = None
@@ -1011,6 +1017,7 @@ def build_combat_run_analysis_values(
 
 
 def ensure_combat_runs_table(conn: Any) -> None:
+    conn.execute("SELECT pg_advisory_xact_lock(%s)", (COMBAT_RUNS_SCHEMA_ADVISORY_LOCK,))
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS combat_runs (
@@ -1018,6 +1025,8 @@ def ensure_combat_runs_table(conn: Any) -> None:
             created_at timestamptz NOT NULL DEFAULT now(),
             game_version text NOT NULL,
             combat_key text NOT NULL,
+            owner_user_id text,
+            owner_user_email text,
             attacker_faction text,
             attacker_unit text,
             defender_faction text,
@@ -1045,6 +1054,15 @@ def ensure_combat_runs_table(conn: Any) -> None:
             f"ALTER TABLE combat_runs ADD COLUMN IF NOT EXISTS {column_name} {column_type}"
         )
     conn.execute(
+        "ALTER TABLE combat_runs ADD COLUMN IF NOT EXISTS owner_user_id text"
+    )
+    conn.execute(
+        "ALTER TABLE combat_runs ADD COLUMN IF NOT EXISTS owner_user_email text"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS combat_runs_owner_user_id_idx ON combat_runs (owner_user_id, created_at DESC)"
+    )
+    conn.execute(
         "CREATE INDEX IF NOT EXISTS combat_runs_damage_idx ON combat_runs (damage_inflicted)"
     )
     conn.execute(
@@ -1053,6 +1071,21 @@ def ensure_combat_runs_table(conn: Any) -> None:
     conn.execute(
         "CREATE INDEX IF NOT EXISTS combat_runs_model_counts_idx ON combat_runs (attacker_model_count, defender_model_count)"
     )
+
+
+def ensure_combat_runs_schema() -> None:
+    global _combat_runs_schema_ready
+
+    if _combat_runs_schema_ready or not database_is_configured():
+        return
+
+    with _combat_runs_schema_lock:
+        if _combat_runs_schema_ready:
+            return
+        with psycopg.connect(get_database_url(), row_factory=dict_row) as conn:
+            ensure_combat_runs_table(conn)
+            conn.commit()
+        _combat_runs_schema_ready = True
 
 
 def store_combat_run(
@@ -1066,12 +1099,14 @@ def store_combat_run(
     run_id = str(uuid4())
     combat_key = build_combat_key(combat_metadata)
     try:
+        ensure_combat_runs_schema()
         with psycopg.connect(get_database_url(), row_factory=dict_row) as conn:
-            ensure_combat_runs_table(conn)
             insert_values = {
                 "id": run_id,
                 "game_version": request.game_version,
                 "combat_key": combat_key,
+                "owner_user_id": request.matrix_user_id,
+                "owner_user_email": request.matrix_user_email,
                 "attacker_faction": request.attacker_faction,
                 "attacker_unit": request.attacker_unit,
                 "defender_faction": request.defender_faction,
@@ -1106,20 +1141,21 @@ def store_combat_run(
         return {"stored": False, "reason": "database_error", "detail": str(exc)}
 
 
-def load_matrix_runs(limit: int = 5000) -> list[dict[str, Any]]:
+def load_matrix_runs(limit: int = 5000, owner_user_id: str | None = None) -> list[dict[str, Any]]:
     if not database_is_configured():
         return []
 
     bounded_limit = min(max(int(limit), 1), 25000)
+    ensure_combat_runs_schema()
     with psycopg.connect(get_database_url(), row_factory=dict_row) as conn:
-        ensure_combat_runs_table(conn)
-        rows = conn.execute(
-            """
+        query = """
             SELECT
                 id,
                 created_at,
                 game_version,
                 combat_key,
+                owner_user_id,
+                owner_user_email,
                 combat_metadata,
                 request_payload,
                 result_stats,
@@ -1128,11 +1164,18 @@ def load_matrix_runs(limit: int = 5000) -> list[dict[str, Any]]:
                 result_hazardous_bearer,
                 result_payload
             FROM combat_runs
+        """
+        params: dict[str, Any] = {"limit": bounded_limit}
+        if owner_user_id:
+            query += """
+            WHERE owner_user_id = %(owner_user_id)s
+            """
+            params["owner_user_id"] = owner_user_id
+        query += """
             ORDER BY created_at DESC
             LIMIT %(limit)s
-            """,
-            {"limit": bounded_limit},
-        ).fetchall()
+        """
+        rows = conn.execute(query, params).fetchall()
 
     return [
         {
@@ -1140,6 +1183,8 @@ def load_matrix_runs(limit: int = 5000) -> list[dict[str, Any]]:
             "stored_at": row["created_at"].isoformat(),
             "game_version": row["game_version"],
             "combat_key": row["combat_key"],
+            "owner_user_id": row["owner_user_id"],
+            "owner_user_email": row["owner_user_email"],
             "combat_metadata": row["combat_metadata"],
             "request": row["request_payload"],
             "result": {
@@ -1152,7 +1197,6 @@ def load_matrix_runs(limit: int = 5000) -> list[dict[str, Any]]:
         }
         for row in rows
     ]
-
 
 def resolve_requested_attack_entries(
     attacker_unit: dict[str, Any],
@@ -1265,6 +1309,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+def initialize_combat_run_storage() -> None:
+    if not database_is_configured():
+        return
+    ensure_combat_runs_schema()
 
 
 @app.get("/")
@@ -1987,7 +2038,7 @@ def simulate_batch(request: SimulationBatchRequest) -> dict[str, object]:
 
 
 @app.get("/matrix/runs")
-def get_matrix_runs(limit: int = 5000) -> dict[str, object]:
+def get_matrix_runs(limit: int = 5000, owner_user_id: str | None = None) -> dict[str, object]:
     database_status = get_database_status()
     if not database_status["configured"]:
         return {
@@ -2000,7 +2051,7 @@ def get_matrix_runs(limit: int = 5000) -> dict[str, object]:
         return {
             "database_configured": True,
             "database_status": database_status,
-            "items": load_matrix_runs(limit),
+            "items": load_matrix_runs(limit, owner_user_id=owner_user_id),
         }
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Unable to load Matrix runs: {exc}") from exc
