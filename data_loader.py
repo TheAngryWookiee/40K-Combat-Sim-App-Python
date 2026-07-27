@@ -10,6 +10,10 @@ DATA_DIR = Path(__file__).parent
 SPACE_MARINE_PARENT_FACTION = "Adeptus Astartes"
 SPACE_MARINE_HEADING = "Imperium - Space Marines"
 GAME_HEADING = "Warhammer 40,000"
+NON_CHAPTER_INHERITANCE_KEYWORDS = {
+    "adeptus astartes",
+    "imperium",
+}
 
 
 def parse_plus_value(value: Any) -> int:
@@ -74,7 +78,31 @@ def resolve_unit_model_count(
 
 
 def normalize_wargear_name(value: Any) -> str:
-    return re.sub(r"\s+", " ", str(value).strip().lower())
+    normalized = str(value).replace("\u00e2\u20ac\u201c", "-")
+    normalized = re.sub(r"[\u2010-\u2015\u2212]", "-", normalized)
+    return re.sub(r"\s+", " ", normalized.strip().lower())
+
+
+def get_wargear_quantity_and_name(value: Any, available_weapon_names: set[str]) -> tuple[int, str]:
+    raw_name = str(value).strip()
+    quantity = 1
+    quantity_match = re.match(r"^(\d+)\s+(.+)$", raw_name)
+    if quantity_match:
+        quantity = int(quantity_match.group(1))
+        raw_name = quantity_match.group(2).strip()
+
+    normalized_name = normalize_wargear_name(raw_name)
+    available_by_normalized = {
+        normalize_wargear_name(weapon_name): weapon_name
+        for weapon_name in available_weapon_names
+    }
+    if normalized_name in available_by_normalized:
+        return quantity, available_by_normalized[normalized_name]
+    if normalized_name.endswith("s"):
+        singular_name = normalized_name[:-1]
+        if singular_name in available_by_normalized:
+            return quantity, available_by_normalized[singular_name]
+    return quantity, raw_name
 
 
 def get_display_model_name(value: Any) -> str:
@@ -172,6 +200,10 @@ def resolve_weapon_bearer_counts(
     model_counts_by_name: dict[str, int],
 ) -> dict[str, int]:
     bearer_counts: dict[str, int] = {}
+    available_weapon_names = {
+        str(weapon_name)
+        for weapon_name in unit_data.get("weapons", {})
+    }
 
     for model in unit_data.get("models_data", []):
         model_name = str(model.get("name", "")).strip()
@@ -180,10 +212,16 @@ def resolve_weapon_bearer_counts(
             continue
 
         for wargear_item in model.get("default_wargear", []):
-            normalized_name = normalize_wargear_name(wargear_item)
+            quantity, wargear_name = get_wargear_quantity_and_name(
+                wargear_item,
+                available_weapon_names,
+            )
+            normalized_name = normalize_wargear_name(wargear_name)
             if not normalized_name:
                 continue
-            bearer_counts[normalized_name] = bearer_counts.get(normalized_name, 0) + model_count
+            bearer_counts[normalized_name] = bearer_counts.get(normalized_name, 0) + (
+                model_count * quantity
+            )
 
     return bearer_counts
 
@@ -204,7 +242,7 @@ def build_target_profiles(
         if model_count <= 0:
             continue
 
-        stats_override = model.get("stats_override", {})
+        stats_override = model.get("stats_override", model.get("stats", {}))
         profile_stats = dict(base_stats)
         profile_stats.update(stats_override)
         if stats_override and "invulnerable_save" not in stats_override:
@@ -539,11 +577,30 @@ def apply_unit_loadout(
     resolved_unit["selected_loadout"] = selected_loadout
     resolved_unit["selected_model_count"] = selected_model_count
 
+    available_weapon_names = {
+        str(weapon_name)
+        for weapon_name in resolved_unit.get("weapons", {})
+    }
+    available_wargear_ability_names = {
+        str(ability.get("name", ""))
+        for ability in resolved_unit.get("wargear_abilities", [])
+    }
+    model_wargear_weapon_names = {
+        normalize_wargear_name(
+            get_wargear_quantity_and_name(wargear_item, available_weapon_names)[1]
+        )
+        for model in resolved_unit.get("models_data", [])
+        for wargear_item in model.get("default_wargear", [])
+        if get_wargear_quantity_and_name(wargear_item, available_weapon_names)[1] in available_weapon_names
+    }
     conditional_weapon_names: set[str] = set()
+    profile_conditional_weapon_names: set[str] = set()
     conditional_wargear_ability_names: set[str] = set()
     selected_weapon_names: set[str] = set()
     selected_wargear_ability_names: set[str] = set()
     selected_weapon_bearer_minimums: dict[str, int] = {}
+    selected_options_by_group_id: dict[str, dict[str, Any]] = {}
+    suppressed_group_ids: set[str] = set()
 
     for group in loadout_groups:
         for option in group.get("options", []):
@@ -551,10 +608,57 @@ def apply_unit_loadout(
                 str(weapon_name)
                 for weapon_name in option.get("enabled_weapons", [])
             )
+            profile_conditional_weapon_names.update(
+                str(weapon_name)
+                for weapon_name in option.get("enabled_weapons", [])
+            )
+            conditional_weapon_names.update(
+                str(wargear_item)
+                for wargear_item in option.get("remove_wargear", [])
+                if str(wargear_item) in available_weapon_names
+            )
+            conditional_weapon_names.update(
+                str(wargear_item)
+                for wargear_item in option.get("add_wargear", [])
+                if str(wargear_item) in available_weapon_names
+            )
+            model_wargear_weapon_names.update(
+                normalize_wargear_name(wargear_item)
+                for wargear_item in option.get("add_wargear", [])
+                if str(wargear_item) in available_weapon_names
+            )
             conditional_wargear_ability_names.update(
                 str(ability_name)
                 for ability_name in option.get("enabled_wargear_abilities", [])
             )
+            conditional_wargear_ability_names.update(
+                str(wargear_item)
+                for wargear_item in option.get("add_wargear", [])
+                if str(wargear_item) in available_wargear_ability_names
+            )
+
+    for group in loadout_groups:
+        group_id = str(group.get("id", "")).strip()
+        selection_type = str(group.get("selection_type", "")).strip().lower()
+        if not group_id or selection_type == "count":
+            continue
+        selected_option_id = selected_loadout.get(group_id, "")
+        selected_option = next(
+            (
+                option
+                for option in group.get("options", [])
+                if str(option.get("id", "")).strip() == selected_option_id
+            ),
+            None,
+        )
+        if selected_option is None:
+            continue
+        selected_options_by_group_id[group_id] = selected_option
+        suppressed_group_ids.update(
+            str(suppressed_group_id).strip()
+            for suppressed_group_id in selected_option.get("suppresses_groups", [])
+            if str(suppressed_group_id).strip()
+        )
 
     models_by_name = {
         str(model.get("name", "")).strip(): model
@@ -565,6 +669,8 @@ def apply_unit_loadout(
     for group in loadout_groups:
         group_id = str(group.get("id", "")).strip()
         selection_type = str(group.get("selection_type", "")).strip().lower()
+        if group_id in suppressed_group_ids:
+            continue
         if selection_type == "count":
             selected_option_counts = selected_loadout.get(group_id, {})
             if not isinstance(selected_option_counts, dict):
@@ -578,6 +684,11 @@ def apply_unit_loadout(
                     str(weapon_name)
                     for weapon_name in option.get("enabled_weapons", [])
                 )
+                selected_weapon_names.update(
+                    str(wargear_item)
+                    for wargear_item in option.get("add_wargear", [])
+                    if str(wargear_item) in available_weapon_names
+                )
                 if not option.get("weapon_bearer_changes"):
                     for weapon_name in option.get("enabled_weapons", []):
                         normalized_weapon_name = normalize_wargear_name(weapon_name)
@@ -589,17 +700,14 @@ def apply_unit_loadout(
                     str(ability_name)
                     for ability_name in option.get("enabled_wargear_abilities", [])
                 )
+                selected_wargear_ability_names.update(
+                    str(wargear_item)
+                    for wargear_item in option.get("add_wargear", [])
+                    if str(wargear_item) in available_wargear_ability_names
+                )
             continue
 
-        selected_option_id = selected_loadout.get(group_id, "")
-        selected_option = next(
-            (
-                option
-                for option in group.get("options", [])
-                if str(option.get("id", "")).strip() == selected_option_id
-            ),
-            None,
-        )
+        selected_option = selected_options_by_group_id.get(group_id)
         if selected_option is None:
             continue
 
@@ -607,10 +715,22 @@ def apply_unit_loadout(
             str(weapon_name)
             for weapon_name in selected_option.get("enabled_weapons", [])
         )
+        selected_weapon_names.update(
+            str(wargear_item)
+            for wargear_item in selected_option.get("add_wargear", [])
+            if str(wargear_item) in available_weapon_names
+        )
+        target_model_names = [
+            str(model_name).strip()
+            for model_name in group.get("target_models", [])
+            if str(model_name).strip()
+        ]
         target_model_name = str(group.get("target_model", "")).strip()
+        if target_model_name and not target_model_names:
+            target_model_names = [target_model_name]
         selected_bearer_count = (
-            int(model_counts_by_name.get(target_model_name, 0))
-            if target_model_name
+            sum(int(model_counts_by_name.get(model_name, 0)) for model_name in target_model_names)
+            if target_model_names
             else selected_model_count
         )
         for weapon_name in selected_option.get("enabled_weapons", []):
@@ -623,11 +743,16 @@ def apply_unit_loadout(
             str(ability_name)
             for ability_name in selected_option.get("enabled_wargear_abilities", [])
         )
+        selected_wargear_ability_names.update(
+            str(wargear_item)
+            for wargear_item in selected_option.get("add_wargear", [])
+            if str(wargear_item) in available_wargear_ability_names
+        )
 
         for stat_name, stat_value in selected_option.get("stat_overrides", {}).items():
             resolved_unit["stats"][stat_name] = stat_value
 
-        if target_model_name:
+        for target_model_name in target_model_names:
             model = models_by_name.get(target_model_name)
             if model is not None:
                 default_wargear = list(model.get("default_wargear", []))
@@ -663,6 +788,16 @@ def apply_unit_loadout(
         )
         if current_count <= 0 and minimum_count > 0:
             weapon_bearer_counts[base_weapon_name] = minimum_count
+    for group_id, selected_option in selected_options_by_group_id.items():
+        if group_id in suppressed_group_ids:
+            continue
+        for weapon_name, change in selected_option.get("weapon_bearer_changes", {}).items():
+            normalized_weapon_name = normalize_wargear_name(weapon_name)
+            current_count = weapon_bearer_counts.get(normalized_weapon_name, 0)
+            weapon_bearer_counts[normalized_weapon_name] = max(
+                0,
+                current_count + int(change),
+            )
     for group in loadout_groups:
         if str(group.get("selection_type", "")).strip().lower() != "count":
             continue
@@ -681,6 +816,14 @@ def apply_unit_loadout(
                     0,
                     current_count + (int(change) * selected_count),
                 )
+    model_wargear_weapon_names = {
+        normalize_wargear_name(
+            get_wargear_quantity_and_name(wargear_item, available_weapon_names)[1]
+        )
+        for model in resolved_unit.get("models_data", [])
+        for wargear_item in model.get("default_wargear", [])
+        if get_wargear_quantity_and_name(wargear_item, available_weapon_names)[1] in available_weapon_names
+    }
     resolved_unit["weapon_bearer_counts"] = weapon_bearer_counts
     resolved_unit["target_profiles"] = build_target_profiles(
         resolved_unit,
@@ -692,15 +835,21 @@ def apply_unit_loadout(
         weapon_name: weapon
         for weapon_name, weapon in resolved_unit.get("weapons", {}).items()
         if (
-            (weapon_name not in conditional_weapon_names or weapon_name in selected_weapon_names)
-            and max(
+            max(
                 weapon_bearer_counts.get(normalize_wargear_name(weapon_name), 0),
                 weapon_bearer_counts.get(normalize_wargear_name(weapon_name).split(" - ", 1)[0], 0),
             ) > 0
+            and (
+                weapon_name not in profile_conditional_weapon_names
+                or weapon_name in selected_weapon_names
+            )
+            or weapon_name in selected_weapon_names
             or (
                 weapon_name not in conditional_weapon_names
                 and normalize_wargear_name(weapon_name) not in weapon_bearer_counts
                 and normalize_wargear_name(weapon_name).split(" - ", 1)[0] not in weapon_bearer_counts
+                and normalize_wargear_name(weapon_name) not in model_wargear_weapon_names
+                and normalize_wargear_name(weapon_name).split(" - ", 1)[0] not in model_wargear_weapon_names
             )
         )
     }
@@ -731,7 +880,14 @@ def normalize_unit(unit_data: dict[str, Any], faction_name: str) -> dict[str, An
         weapon["name"]: normalize_weapon(weapon)
         for weapon in unit_data.get("weapons", [])
     }
-    stats = unit_data.get("stats", {})
+    stats = unit_data.get("stats") or next(
+        (
+            model.get("stats_override") or model.get("stats")
+            for model in unit_data.get("models", [])
+            if model.get("stats_override") or model.get("stats")
+        ),
+        {},
+    )
     unit_composition = unit_data.get("unit_composition", {})
     invulnerable_save = stats.get("invulnerable_save", "")
     target_keywords = [
@@ -810,8 +966,21 @@ def load_factions(data_dir: Path = DATA_DIR, parent_faction: str | None = None) 
 
     for faction_entry in factions.values():
         faction_entry["own_units"] = dict(faction_entry["units"])
+        faction_entry["own_detachments"] = list(faction_entry.get("detachments", []))
 
     resolved_unit_maps: dict[str, dict[str, Any]] = {}
+    resolved_detachment_maps: dict[str, list[dict[str, Any]]] = {}
+
+    def unit_can_be_inherited_by_faction(unit: dict[str, Any], faction_name: str) -> bool:
+        inherited_faction_keywords = {
+            str(keyword).strip().lower()
+            for keyword in unit.get("faction_keywords", [])
+            if str(keyword).strip()
+        }
+        chapter_keywords = inherited_faction_keywords - NON_CHAPTER_INHERITANCE_KEYWORDS
+        if not chapter_keywords:
+            return True
+        return faction_name.lower() in chapter_keywords
 
     def resolve_faction_units(faction_name: str, stack: tuple[str, ...] = ()) -> dict[str, Any]:
         if faction_name in resolved_unit_maps:
@@ -834,7 +1003,11 @@ def load_factions(data_dir: Path = DATA_DIR, parent_faction: str | None = None) 
                 raise ValueError(
                     f"Faction '{faction_name}' references unknown parent faction '{parent_name}'"
                 )
-            inherited_units = resolve_faction_units(parent_name, (*stack, faction_name))
+            inherited_units = {
+                unit_name: unit
+                for unit_name, unit in resolve_faction_units(parent_name, (*stack, faction_name)).items()
+                if unit_can_be_inherited_by_faction(unit, faction_name)
+            }
 
         resolved_units = {
             **inherited_units,
@@ -843,8 +1016,48 @@ def load_factions(data_dir: Path = DATA_DIR, parent_faction: str | None = None) 
         resolved_unit_maps[faction_name] = resolved_units
         return resolved_units
 
+    def resolve_faction_detachments(faction_name: str, stack: tuple[str, ...] = ()) -> list[dict[str, Any]]:
+        if faction_name in resolved_detachment_maps:
+            return resolved_detachment_maps[faction_name]
+
+        if faction_name in stack:
+            raise ValueError(
+                "Circular parent faction reference detected: "
+                + " -> ".join([*stack, faction_name])
+            )
+
+        faction_entry = factions.get(faction_name)
+        if faction_entry is None:
+            raise ValueError(f"Unknown parent faction: {faction_name}")
+
+        parent_name = faction_entry.get("parent_faction", "")
+        inherited_detachments: list[dict[str, Any]] = []
+        if parent_name and parent_name != faction_name:
+            if parent_name not in factions:
+                raise ValueError(
+                    f"Faction '{faction_name}' references unknown parent faction '{parent_name}'"
+                )
+            inherited_detachments = resolve_faction_detachments(parent_name, (*stack, faction_name))
+
+        own_detachments = faction_entry.get("own_detachments", [])
+        own_detachment_names = {
+            str(detachment.get("name", ""))
+            for detachment in own_detachments
+        }
+        resolved_detachments = [
+            deepcopy(detachment)
+            for detachment in inherited_detachments
+            if str(detachment.get("name", "")) not in own_detachment_names
+        ] + [
+            deepcopy(detachment)
+            for detachment in own_detachments
+        ]
+        resolved_detachment_maps[faction_name] = resolved_detachments
+        return resolved_detachments
+
     for faction_name, faction_entry in factions.items():
         faction_entry["units"] = resolve_faction_units(faction_name)
+        faction_entry["detachments"] = resolve_faction_detachments(faction_name)
 
     if parent_faction:
         factions = {

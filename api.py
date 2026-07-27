@@ -128,6 +128,7 @@ class SimulationOptions(BaseModel):
     hazardous_overwatch_charge_phase: bool = False
     hazardous_bearer_current_wounds: int | None = Field(default=None, ge=0)
     hazardous_bearer_feel_no_pain: int | None = Field(default=None, ge=2, le=6)
+    attacker_combat_doctrine: str | None = None
     attacker_fire_discipline_active: bool = False
     attacker_marked_for_destruction_active: bool = False
     attacker_unforgiven_fury_active: bool = False
@@ -136,12 +137,16 @@ class SimulationOptions(BaseModel):
     attacker_weapons_of_the_first_legion_active: bool = False
     attacker_pennant_of_remembrance_active: bool = False
     attacker_below_starting_strength: bool = False
+    attacker_below_half_strength: bool = False
     attacker_battleshocked: bool = False
+    attacker_extremis_level_threat_active: bool = False
+    attacker_imperiums_sword_active: bool = False
     attacker_saga_completed: bool = False
     attacker_elders_guidance_active: bool = False
     attacker_boast_achieved: bool = False
     attacker_hordeslayer_outnumbered: bool = False
     attacker_heroes_all_reroll_type: str | None = None
+    attacker_armoured_wrath_reroll_type: str | None = None
     attacker_active_ability_names: list[str] = Field(default_factory=list)
     defender_active_ability_names: list[str] = Field(default_factory=list)
     attacker_unbridled_ferocity_active: bool = False
@@ -149,6 +154,9 @@ class SimulationOptions(BaseModel):
     defender_waaagh_active: bool = False
     attacker_prey_active: bool = False
     attacker_target_within_9: bool = False
+    attacker_target_within_12: bool = False
+    attacker_target_closest_eligible_within_6: bool = False
+    attacker_disembarked_from_transport: bool = False
     attacker_counts_as_ten_plus_models: bool = False
     defender_counts_as_ten_plus_models: bool = False
     target_below_starting_strength: bool = False
@@ -169,10 +177,26 @@ class SimulationOptions(BaseModel):
     attacker_dakka_dakka_dakka_pushed: bool = False
     attacker_bigger_shells_active: bool = False
     attacker_bigger_shells_pushed: bool = False
+    attacker_honour_the_chapter_active: bool = False
+    attacker_storm_of_fire_active: bool = False
+    attacker_no_threat_too_great_active: bool = False
+    attacker_battle_drill_recall_active: bool = False
+    attacker_mercy_is_weakness_active: bool = False
+    attacker_ancient_fury_active: bool = False
+    attacker_crucible_of_battle_active: bool = False
+    attacker_immolation_protocols_active: bool = False
+    attacker_onslaught_of_fire_active: bool = False
+    attacker_blitzing_fusillade_active: bool = False
+    attacker_shock_assault_active: bool = False
+    attacker_strike_from_the_shadows_active: bool = False
+    attacker_heroes_of_the_chapter_active: bool = False
+    attacker_surgical_strikes_active: bool = False
     defender_extra_gubbinz_active: bool = False
+    defender_ride_hard_ride_fast_active: bool = False
     attacker_competitive_streak_active: bool = False
     attacker_armed_to_da_teef_active: bool = False
     defender_hulking_brutes_active: bool = False
+    defender_legendary_fortitude_active: bool = False
     defender_armour_of_contempt_active: bool = False
     defender_overwhelming_onslaught_active: bool = False
     defender_unbreakable_lines_active: bool = False
@@ -457,6 +481,20 @@ ATTACKER_STRATAGEM_OPTION_KEYS = {
     "attacker_dakka_dakka_dakka_pushed",
     "attacker_bigger_shells_active",
     "attacker_bigger_shells_pushed",
+    "attacker_honour_the_chapter_active",
+    "attacker_storm_of_fire_active",
+    "attacker_no_threat_too_great_active",
+    "attacker_battle_drill_recall_active",
+    "attacker_mercy_is_weakness_active",
+    "attacker_ancient_fury_active",
+    "attacker_crucible_of_battle_active",
+    "attacker_immolation_protocols_active",
+    "attacker_onslaught_of_fire_active",
+    "attacker_blitzing_fusillade_active",
+    "attacker_shock_assault_active",
+    "attacker_strike_from_the_shadows_active",
+    "attacker_heroes_of_the_chapter_active",
+    "attacker_surgical_strikes_active",
     "attacker_competitive_streak_active",
     "attacker_armed_to_da_teef_active",
 }
@@ -466,7 +504,9 @@ DEFENDER_STRATAGEM_OPTION_KEYS = {
     "defender_stalkin_taktiks_active",
     "defender_speediest_freeks_active",
     "defender_extra_gubbinz_active",
+    "defender_ride_hard_ride_fast_active",
     "defender_hulking_brutes_active",
+    "defender_legendary_fortitude_active",
     "defender_armour_of_contempt_active",
     "defender_overwhelming_onslaught_active",
     "defender_unbreakable_lines_active",
@@ -597,6 +637,19 @@ def apply_feel_no_pain_to_unit(unit: dict[str, Any], value: int) -> None:
         )
 
 
+def apply_armor_save_to_unit(unit: dict[str, Any], value: int) -> None:
+    current_save = int(unit.get("armor_save", value) or value)
+    unit["armor_save"] = min(current_save, value)
+
+    stats = unit.get("stats")
+    if isinstance(stats, dict):
+        stats["save"] = f"{min(int(str(stats.get('save', value)).rstrip('+') or value), value)}+"
+
+    for profile in unit.get("target_profiles", []):
+        current_profile_save = int(profile.get("armor_save", value) or value)
+        profile["armor_save"] = min(current_profile_save, value)
+
+
 def apply_bonus_wounds_to_unit(unit: dict[str, Any], bonus_wounds: int) -> None:
     unit["wounds"] = int(unit.get("wounds", 0)) + bonus_wounds
     unit["current_wounds"] = int(unit.get("current_wounds", unit["wounds"])) + bonus_wounds
@@ -616,6 +669,15 @@ def apply_simulation_enhancement_modifiers(unit: dict[str, Any], enhancement_nam
 
     if enhancement_name == "Supa-Cybork Body":
         apply_feel_no_pain_to_unit(unit, 4)
+        return
+
+    if enhancement_name == "The Flesh Is Weak":
+        apply_feel_no_pain_to_unit(unit, 4)
+        return
+
+    if enhancement_name == "Artificer Armour":
+        apply_armor_save_to_unit(unit, 2)
+        apply_feel_no_pain_to_unit(unit, 5)
         return
 
     if enhancement_name == "Da Biggest Boss":

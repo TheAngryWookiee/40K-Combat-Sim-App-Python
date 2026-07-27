@@ -53,6 +53,7 @@ const initialOptions = {
   attached_character_name: '',
   hazardous_overwatch_charge_phase: false,
   hazardous_bearer_current_wounds: '',
+  attacker_combat_doctrine: '',
   attacker_fire_discipline_active: false,
   attacker_marked_for_destruction_active: false,
   attacker_unforgiven_fury_active: false,
@@ -61,17 +62,24 @@ const initialOptions = {
   attacker_weapons_of_the_first_legion_active: false,
   attacker_pennant_of_remembrance_active: false,
   attacker_below_starting_strength: false,
+  attacker_below_half_strength: false,
   attacker_battleshocked: false,
+  attacker_extremis_level_threat_active: false,
+  attacker_imperiums_sword_active: false,
   attacker_saga_completed: false,
   attacker_elders_guidance_active: false,
   attacker_boast_achieved: false,
   attacker_hordeslayer_outnumbered: false,
   attacker_heroes_all_reroll_type: '',
+  attacker_armoured_wrath_reroll_type: '',
   attacker_unbridled_ferocity_active: false,
   attacker_waaagh_active: false,
   defender_waaagh_active: false,
   attacker_prey_active: false,
   attacker_target_within_9: false,
+  attacker_target_within_12: false,
+  attacker_target_closest_eligible_within_6: false,
+  attacker_disembarked_from_transport: false,
   attacker_counts_as_ten_plus_models: false,
   defender_counts_as_ten_plus_models: false,
   target_below_starting_strength: false,
@@ -92,10 +100,25 @@ const initialOptions = {
   attacker_dakka_dakka_dakka_pushed: false,
   attacker_bigger_shells_active: false,
   attacker_bigger_shells_pushed: false,
+  attacker_honour_the_chapter_active: false,
+  attacker_storm_of_fire_active: false,
+  attacker_no_threat_too_great_active: false,
+  attacker_battle_drill_recall_active: false,
+  attacker_mercy_is_weakness_active: false,
+  attacker_ancient_fury_active: false,
+  attacker_crucible_of_battle_active: false,
+  attacker_immolation_protocols_active: false,
+  attacker_onslaught_of_fire_active: false,
+  attacker_blitzing_fusillade_active: false,
+  attacker_shock_assault_active: false,
+  attacker_strike_from_the_shadows_active: false,
+  attacker_heroes_of_the_chapter_active: false,
   defender_extra_gubbinz_active: false,
+  defender_ride_hard_ride_fast_active: false,
   attacker_competitive_streak_active: false,
   attacker_armed_to_da_teef_active: false,
   defender_hulking_brutes_active: false,
+  defender_legendary_fortitude_active: false,
   defender_armour_of_contempt_active: false,
   defender_overwhelming_onslaught_active: false,
   defender_unbreakable_lines_active: false,
@@ -1138,6 +1161,19 @@ const UNIT_BASE_DIAMETERS_MM = {
   'Logan Grimnar': 80,
   'Grey Hunters': 32,
 }
+const GLADIUS_TASK_FORCE = 'Gladius Task Force'
+const ANVIL_SIEGE_FORCE = 'Anvil Siege Force'
+const IRONSTORM_SPEARHEAD = 'Ironstorm Spearhead'
+const FIRESTORM_ASSAULT_FORCE = 'Firestorm Assault Force'
+const STORMLANCE_TASK_FORCE = 'Stormlance Task Force'
+const VANGUARD_SPEARHEAD = 'Vanguard Spearhead'
+const FIRST_COMPANY_TASK_FORCE = '1st Company Task Force'
+const COMBAT_DOCTRINE_OPTIONS = [
+  { id: '', label: 'No active doctrine' },
+  { id: 'devastator', label: 'Devastator Doctrine' },
+  { id: 'tactical', label: 'Tactical Doctrine' },
+  { id: 'assault', label: 'Assault Doctrine' },
+]
 
 function getDetachmentByName(factionDetails, detachmentName) {
   return factionDetails?.detachments?.find((detachment) => detachment.name === detachmentName) || null
@@ -1187,6 +1223,68 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
       }
       return false
     })
+  }
+
+  if (detachment.name === GLADIUS_TASK_FORCE) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (enhancement.name === 'Artificer Armour') {
+        return true
+      }
+      if (enhancement.name === 'The Honour Vehement') {
+        return selectedWeapon?.range === 'Melee'
+      }
+      return (
+        enhancement.name === 'Fire Discipline'
+        && selectedWeapon?.range !== 'Melee'
+        && enhancementBearerUnit !== attackerUnit
+      )
+    })
+  }
+
+  if (detachment.name === ANVIL_SIEGE_FORCE) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (enhancement.name === 'Architect of War') {
+        return selectedWeapon?.range !== 'Melee' && enhancementBearerUnit !== attackerUnit
+      }
+      return false
+    })
+  }
+
+  if (detachment.name === IRONSTORM_SPEARHEAD) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (enhancement.name === 'The Flesh Is Weak') {
+        return true
+      }
+      return (
+        enhancement.name === 'Target Augury Web'
+        && unitHasKeyword(attackerUnit, 'vehicle')
+        && enhancementBearerUnit !== attackerUnit
+      )
+    })
+  }
+
+  if (detachment.name === FIRESTORM_ASSAULT_FORCE) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (enhancement.name === 'War-tempered Artifice') {
+        return selectedWeapon?.range === 'Melee' && unitHasKeyword(enhancementBearerUnit, 'infantry')
+      }
+      return false
+    })
+  }
+
+  if (detachment.name === STORMLANCE_TASK_FORCE) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Fury of the Storm'
+      && selectedWeapon?.range === 'Melee'
+      && unitHasKeyword(enhancementBearerUnit, 'mounted')
+    ))
+  }
+
+  if (detachment.name === FIRST_COMPANY_TASK_FORCE) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === "The Imperium's Sword"
+      && selectedWeapon?.range === 'Melee'
+    ))
   }
 
   if (detachment.name === SAGA_OF_THE_HUNTER) {
@@ -1283,6 +1381,33 @@ function getDefenderEnhancementOptions(detachment, enhancementBearerUnit) {
     )
   }
 
+  if (detachment.name === GLADIUS_TASK_FORCE) {
+    return (detachment.enhancements || []).filter(
+      (enhancement) => enhancement.name === 'Artificer Armour',
+    )
+  }
+
+  if (detachment.name === ANVIL_SIEGE_FORCE) {
+    return (detachment.enhancements || []).filter(
+      (enhancement) => enhancement.name === 'Stoic Defender',
+    )
+  }
+
+  if (detachment.name === IRONSTORM_SPEARHEAD) {
+    return []
+  }
+
+  if (detachment.name === FIRESTORM_ASSAULT_FORCE) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Adamantine Mantle'
+      && Number(enhancementBearerUnit?.model_count ?? 1) === 1
+    ))
+  }
+
+  if (detachment.name === STORMLANCE_TASK_FORCE) {
+    return []
+  }
+
   if (detachment.name === SAGA_OF_THE_HUNTER) {
     return (detachment.enhancements || []).filter((enhancement) => (
       enhancement.name === 'Fenrisian Grit' && Number(enhancementBearerUnit?.model_count ?? 1) === 1
@@ -1353,6 +1478,59 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       return stratagem.name === 'Unforgiven Fury'
     }
 
+    if (detachment.name === GLADIUS_TASK_FORCE) {
+      if (stratagem.name === 'Storm of Fire') {
+        return isRangedWeapon
+      }
+      return stratagem.name === 'Honour the Chapter' && !isRangedWeapon
+    }
+
+    if (detachment.name === ANVIL_SIEGE_FORCE) {
+      if (stratagem.name === 'No Threat Too Great') {
+        return isRangedWeapon
+      }
+      return stratagem.name === 'Battle Drill Recall' && isRangedWeapon
+    }
+
+    if (detachment.name === IRONSTORM_SPEARHEAD) {
+      if (stratagem.name === 'Mercy Is Weakness') {
+        return true
+      }
+      return stratagem.name === 'Ancient Fury' && unitHasKeyword(unit, 'walker')
+    }
+
+    if (detachment.name === FIRESTORM_ASSAULT_FORCE) {
+      if (stratagem.name === 'Crucible of Battle') {
+        return unitHasKeyword(unit, 'infantry')
+      }
+      if (stratagem.name === 'Immolation Protocols') {
+        return isRangedWeapon
+      }
+      return stratagem.name === 'Onslaught of Fire' && isRangedWeapon
+    }
+
+    if (detachment.name === STORMLANCE_TASK_FORCE) {
+      if (stratagem.name === 'Blitzing Fusillade') {
+        return isRangedWeapon
+      }
+      return stratagem.name === 'Shock Assault' && !isRangedWeapon && unitHasKeyword(unit, 'mounted')
+    }
+
+    if (detachment.name === VANGUARD_SPEARHEAD) {
+      return (
+        stratagem.name === 'Strike from the Shadows'
+        && isRangedWeapon
+        && unitHasKeyword(unit, 'infantry')
+      )
+    }
+
+    if (detachment.name === FIRST_COMPANY_TASK_FORCE) {
+      return (
+        stratagem.name === 'Heroes of the Chapter'
+        && unitIsFirstCompanyVeteranTarget(unit)
+      )
+    }
+
     if (detachment.name === SAGA_OF_THE_HUNTER) {
       return (
         stratagem.name === 'Marked for Destruction'
@@ -1401,7 +1579,7 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
   })
 }
 
-function getDefenderStratagemOptions(detachment, selectedWeapon) {
+function getDefenderStratagemOptions(detachment, selectedWeapon, unit) {
   if (!detachment) {
     return []
   }
@@ -1412,6 +1590,41 @@ function getDefenderStratagemOptions(detachment, selectedWeapon) {
         return Number(selectedWeapon?.ap || 0) > 0
       }
       return stratagem.name === 'Unbreakable Lines'
+    }
+
+    if (detachment.name === GLADIUS_TASK_FORCE) {
+      return stratagem.name === 'Armour of Contempt'
+    }
+
+    if (detachment.name === ANVIL_SIEGE_FORCE) {
+      return stratagem.name === 'Armour of Contempt'
+    }
+
+    if (detachment.name === IRONSTORM_SPEARHEAD) {
+      return stratagem.name === 'Armour of Contempt'
+    }
+
+    if (detachment.name === FIRESTORM_ASSAULT_FORCE) {
+      return stratagem.name === 'Armour of Contempt'
+    }
+
+    if (detachment.name === STORMLANCE_TASK_FORCE) {
+      return stratagem.name === 'Armour of Contempt' || (
+        stratagem.name === 'Ride Hard, Ride Fast'
+        && selectedWeapon?.range !== 'Melee'
+      )
+    }
+
+    if (detachment.name === VANGUARD_SPEARHEAD) {
+      return stratagem.name === 'Armour of Contempt'
+    }
+
+    if (detachment.name === FIRST_COMPANY_TASK_FORCE) {
+      return stratagem.name === 'Armour of Contempt' || (
+        stratagem.name === 'Legendary Fortitude'
+        && selectedWeapon?.range === 'Melee'
+        && unitIsFirstCompanyVeteranTarget(unit)
+      )
     }
 
     if (detachment.name === SAGA_OF_THE_HUNTER) {
@@ -1584,6 +1797,7 @@ function buildSimulationPayload(state) {
     indirect_target_visible: state.indirectTargetVisible,
     plunging_fire_active: state.plungingFireActive,
     hazardous_overwatch_charge_phase: state.hazardousOverwatchChargePhase,
+    attacker_combat_doctrine: state.attackerCombatDoctrine || null,
     attacker_marked_for_destruction_active: state.attackerMarkedForDestructionActive,
     attacker_fire_discipline_active: state.attackerFireDisciplineActive,
     attacker_unforgiven_fury_active: state.attackerUnforgivenFuryActive,
@@ -1592,12 +1806,16 @@ function buildSimulationPayload(state) {
     attacker_weapons_of_the_first_legion_active: state.attackerWeaponsOfTheFirstLegionActive,
     attacker_pennant_of_remembrance_active: state.attackerPennantOfRemembranceActive,
     attacker_below_starting_strength: state.attackerBelowStartingStrength,
+    attacker_below_half_strength: state.attackerBelowHalfStrength,
     attacker_battleshocked: state.attackerBattleshocked,
+    attacker_extremis_level_threat_active: state.attackerExtremisLevelThreatActive,
+    attacker_imperiums_sword_active: state.attackerImperiumsSwordActive,
     attacker_saga_completed: state.attackerSagaCompleted,
     attacker_elders_guidance_active: state.attackerEldersGuidanceActive,
     attacker_boast_achieved: state.attackerBoastAchieved,
     attacker_hordeslayer_outnumbered: state.attackerHordeslayerOutnumbered,
     attacker_heroes_all_reroll_type: state.attackerHeroesAllRerollType || null,
+    attacker_armoured_wrath_reroll_type: state.attackerArmouredWrathRerollType || null,
     attacker_active_ability_names: state.attackerActiveAbilityNames || [],
     defender_active_ability_names: state.defenderActiveAbilityNames || [],
     attacker_unbridled_ferocity_active: state.attackerUnbridledFerocityActive,
@@ -1605,6 +1823,9 @@ function buildSimulationPayload(state) {
     defender_waaagh_active: state.defenderWaaaghActive,
     attacker_prey_active: state.attackerPreyActive,
     attacker_target_within_9: state.attackerTargetWithinNine,
+    attacker_target_within_12: state.attackerTargetWithinTwelve,
+    attacker_target_closest_eligible_within_6: state.attackerTargetClosestEligibleWithinSix,
+    attacker_disembarked_from_transport: state.attackerDisembarkedFromTransport,
     attacker_counts_as_ten_plus_models: state.attackerCountsAsTenPlusModels,
     defender_counts_as_ten_plus_models: state.defenderCountsAsTenPlusModels,
     target_below_starting_strength: state.targetBelowStartingStrength,
@@ -1625,10 +1846,25 @@ function buildSimulationPayload(state) {
     attacker_dakka_dakka_dakka_pushed: state.attackerDakkaDakkaDakkaPushed,
     attacker_bigger_shells_active: state.attackerBiggerShellsActive,
     attacker_bigger_shells_pushed: state.attackerBiggerShellsPushed,
+    attacker_honour_the_chapter_active: state.attackerHonourTheChapterActive,
+    attacker_storm_of_fire_active: state.attackerStormOfFireActive,
+    attacker_no_threat_too_great_active: state.attackerNoThreatTooGreatActive,
+    attacker_battle_drill_recall_active: state.attackerBattleDrillRecallActive,
+    attacker_mercy_is_weakness_active: state.attackerMercyIsWeaknessActive,
+    attacker_ancient_fury_active: state.attackerAncientFuryActive,
+    attacker_crucible_of_battle_active: state.attackerCrucibleOfBattleActive,
+    attacker_immolation_protocols_active: state.attackerImmolationProtocolsActive,
+    attacker_onslaught_of_fire_active: state.attackerOnslaughtOfFireActive,
+    attacker_blitzing_fusillade_active: state.attackerBlitzingFusilladeActive,
+    attacker_shock_assault_active: state.attackerShockAssaultActive,
+    attacker_strike_from_the_shadows_active: state.attackerStrikeFromTheShadowsActive,
+    attacker_heroes_of_the_chapter_active: state.attackerHeroesOfTheChapterActive,
     defender_extra_gubbinz_active: state.defenderExtraGubbinzActive,
+    defender_ride_hard_ride_fast_active: state.defenderRideHardRideFastActive,
     attacker_competitive_streak_active: state.attackerCompetitiveStreakActive,
     attacker_armed_to_da_teef_active: state.attackerArmedToDaTeefActive,
     defender_hulking_brutes_active: state.defenderHulkingBrutesActive,
+    defender_legendary_fortitude_active: state.defenderLegendaryFortitudeActive,
     defender_armour_of_contempt_active: state.defenderArmourOfContemptActive,
     defender_overwhelming_onslaught_active: state.defenderOverwhelmingOnslaughtActive,
     defender_unbreakable_lines_active: state.defenderUnbreakableLinesActive,
@@ -3339,6 +3575,16 @@ function unitHasKeyword(unit, keyword) {
     .some((entry) => String(entry).toLowerCase() === normalizedKeyword)
 }
 
+function unitIsFirstCompanyVeteranTarget(unit) {
+  const unitName = String(unit?.name || '').toLowerCase()
+  return (
+    unitHasKeyword(unit, 'terminator')
+    || unitName.includes('bladeguard veteran squad')
+    || unitName.includes('sternguard veteran squad')
+    || unitName.includes('vanguard veteran squad')
+  )
+}
+
 function unitCanOverlapFriendlyModels(unit) {
   return unitHasKeyword(unit, 'fly') || unitHasKeyword(unit, 'aircraft')
 }
@@ -4694,6 +4940,7 @@ function canUseChargedThisTurnOption({
   selectedWeapons = [],
   selectedEntries = null,
   attackerEnhancementName = '',
+  activeLanceStratagem = false,
 }) {
   const hasSelectedMeleeWeapon = selectedEntries?.length
     ? selectedEntries.some((entry) => entry.weapon?.range === 'Melee')
@@ -4703,6 +4950,7 @@ function canUseChargedThisTurnOption({
   }
   return (
     selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Lance'))
+    || activeLanceStratagem
     || unitListHasAnyAbility(units, CHARGE_DEPENDENT_COMBAT_ABILITIES)
     || attackerEnhancementName === 'Feral Rage'
   )
@@ -4848,19 +5096,40 @@ function buildAttackerActiveRules({
   oathOfMomentActive,
   attackerDetachment,
   attackerEnhancementName,
+  attackerCombatDoctrine,
   attackerSagaCompleted,
   attackerEldersGuidanceActive,
   attackerBoastAchieved,
   attackerHordeslayerOutnumbered,
   attackerHeroesAllRerollType,
+  attackerArmouredWrathRerollType,
   attackerMarkedForDestructionActive,
   attackerFireDisciplineActive,
+  attackerHonourTheChapterActive,
+  attackerStormOfFireActive,
+  attackerNoThreatTooGreatActive,
+  attackerBattleDrillRecallActive,
+  attackerMercyIsWeaknessActive,
+  attackerAncientFuryActive,
+  attackerCrucibleOfBattleActive,
+  attackerImmolationProtocolsActive,
+  attackerOnslaughtOfFireActive,
+  attackerBlitzingFusilladeActive,
+  attackerShockAssaultActive,
+  attackerStrikeFromTheShadowsActive,
+  attackerTargetWithinTwelve,
+  attackerTargetClosestEligibleWithinSix,
+  attackerDisembarkedFromTransport,
   attackerUnforgivenFuryActive,
   attackerUnbridledFerocityActive,
   attackerStubbornTenacityActive,
   attackerWeaponsOfTheFirstLegionActive,
   attackerPennantOfRemembranceActive,
   attackerBelowStartingStrength,
+  attackerBelowHalfStrength,
+  attackerExtremisLevelThreatActive,
+  attackerImperiumsSwordActive,
+  attackerHeroesOfTheChapterActive,
   attackerActiveAbilityNames,
   attackerWaaaghActive,
   inHalfRange,
@@ -4917,10 +5186,12 @@ function buildAttackerActiveRules({
       attackerSagaCompleted
       || attackerPackageIsCharacterUnit
     )
+  const armouredWrathActive = attackerDetachment?.name === IRONSTORM_SPEARHEAD && attackerArmouredWrathRerollType
   const wolfMasterActive = attackerEnhancementName === 'Wolf Master'
     && selectedAttackWeapons.some((weapon) => (
       ['teeth and claws', 'tyrnak and fenrir'].includes(String(weapon.name).toLowerCase())
     ))
+  const activeCombatDoctrine = COMBAT_DOCTRINE_OPTIONS.find((option) => option.id === attackerCombatDoctrine)
 
   if (oathOfMomentActive && unitHasOathOfMoment(attackerUnitDetails)) {
     const woundBonusText = unitGetsOathWoundBonus(attackerUnitDetails)
@@ -4962,6 +5233,141 @@ function buildAttackerActiveRules({
     })
   }
 
+  if (armouredWrathActive) {
+    rules.push({
+      name: 'Armoured Wrath',
+      source: `${attackerDetachment.name} Rule`,
+      text: `This unit can re-roll one ${attackerArmouredWrathRerollType} roll while resolving this attack sequence.`,
+    })
+  }
+
+  if (attackerDetachment?.name === GLADIUS_TASK_FORCE && activeCombatDoctrine?.id) {
+    const detachmentRule = getDetachmentEntry(attackerDetachment, 'rule', 'Combat Doctrines')
+    rules.push({
+      name: activeCombatDoctrine.label,
+      source: `${attackerDetachment.name} Rule`,
+      text: detachmentRule?.rules_text || `${activeCombatDoctrine.label} is active for this attack.`,
+    })
+  }
+
+  if (attackerExtremisLevelThreatActive) {
+    const detachmentRule = getDetachmentEntry(attackerDetachment, 'rule', 'Extremis-level Threat')
+    if (detachmentRule) {
+      rules.push({
+        name: detachmentRule.name,
+        source: `${attackerDetachment.name} Rule`,
+        text: detachmentRule.rules_text,
+      })
+    }
+  }
+
+  if (attackerDetachment?.name === ANVIL_SIEGE_FORCE && selectedWeapon?.range !== 'Melee') {
+    const detachmentRule = getDetachmentEntry(attackerDetachment, 'rule', 'Shield of the Imperium')
+    rules.push({
+      name: 'Shield of the Imperium',
+      source: `${attackerDetachment.name} Rule`,
+      text: remainedStationary
+        ? detachmentRule?.rules_text || 'Ranged weapons gain Heavy; native Heavy weapons also add 1 to Wound while stationary.'
+        : 'Ranged weapons gain Heavy. Native Heavy weapons add 1 to Wound while stationary.',
+    })
+  }
+
+  if (attackerDetachment?.name === FIRESTORM_ASSAULT_FORCE && selectedWeapon?.range !== 'Melee') {
+    const detachmentRule = getDetachmentEntry(attackerDetachment, 'rule', 'Close-range Eradication')
+    rules.push({
+      name: 'Close-range Eradication',
+      source: `${attackerDetachment.name} Rule`,
+      text: attackerTargetWithinTwelve
+        ? detachmentRule?.rules_text || 'Ranged weapons gain Assault and +1 Strength within 12".'
+        : 'Ranged weapons gain Assault. They gain +1 Strength when the target is within 12".',
+    })
+  }
+
+  if (attackerEnhancementName === 'The Honour Vehement' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'The Honour Vehement')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: attackerCombatDoctrine === 'assault'
+          ? 'The bearer gets +2 Attacks and +2 Strength on melee weapons because Assault Doctrine is active.'
+          : 'The bearer gets +1 Attack and +1 Strength on melee weapons.',
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Fire Discipline' && selectedWeapon?.range !== 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Fire Discipline')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: attackerCombatDoctrine === 'devastator'
+          ? 'The bearer\'s unit gains Sustained Hits 1 on ranged weapons, and unmodified Hit rolls of 5+ score Critical Hits because Devastator Doctrine is active.'
+          : 'The bearer\'s unit gains Sustained Hits 1 on ranged weapons.',
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Architect of War' && selectedWeapon?.range !== 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Architect of War')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Target Augury Web' && unitHasKeyword(attackerUnitDetails, 'vehicle')) {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Target Augury Web')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'War-tempered Artifice' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'War-tempered Artifice')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Fury of the Storm' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Fury of the Storm')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: chargedThisTurn
+          ? 'The bearer gets +2 Strength and improves AP by 2 for melee weapons because it charged.'
+          : 'The bearer gets +1 Strength and improves AP by 1 for melee weapons.',
+      })
+    }
+  }
+
+  if (attackerEnhancementName === "The Imperium's Sword" && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', "The Imperium's Sword")
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: attackerImperiumsSwordActive
+          ? 'The bearer and the bearer\'s unit get +1 Attack on melee weapons for this phase.'
+          : 'The bearer gets +1 Attack on melee weapons.',
+      })
+    }
+  }
+
   if (attackerFireDisciplineActive) {
     const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Fire Discipline')
     if (stratagem) {
@@ -4969,6 +5375,155 @@ function buildAttackerActiveRules({
         name: stratagem.name,
         source: `${attackerDetachment.name} Stratagem`,
         text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerHonourTheChapterActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Honour the Chapter')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerStormOfFireActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Storm of Fire')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerNoThreatTooGreatActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'No Threat Too Great')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerBattleDrillRecallActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Battle Drill Recall')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerMercyIsWeaknessActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Mercy Is Weakness')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerAncientFuryActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Ancient Fury')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerCrucibleOfBattleActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Crucible of Battle')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerImmolationProtocolsActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Immolation Protocols')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerOnslaughtOfFireActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Onslaught of Fire')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: attackerDisembarkedFromTransport && attackerTargetWithinTwelve
+          ? stratagem.effect
+          : `${stratagem.effect} Set both disembarked and target-within-12 conditions to apply its Hit modifier.`,
+      })
+    }
+  }
+
+  if (attackerBlitzingFusilladeActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Blitzing Fusillade')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerShockAssaultActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Shock Assault')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerStrikeFromTheShadowsActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Strike from the Shadows')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: attackerTargetWithinTwelve
+          ? `${stratagem.effect} The BS/AP bonus only applies against targets more than 12" away.`
+          : stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerHeroesOfTheChapterActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Heroes of the Chapter')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: attackerBelowHalfStrength
+          ? stratagem.effect
+          : `${stratagem.effect} Set the unit below Half-strength to apply the Wound modifier.`,
       })
     }
   }
@@ -5160,7 +5715,11 @@ function buildAttackerActiveRules({
   }
 
   if (selectedWeapon && remainedStationary) {
-    const hasHeavyRule = weaponHasRawKeyword(selectedWeapon, 'Heavy') || attackerFireDisciplineActive
+    const hasHeavyRule = (
+      weaponHasRawKeyword(selectedWeapon, 'Heavy')
+      || attackerFireDisciplineActive
+      || (attackerDetachment?.name === ANVIL_SIEGE_FORCE && selectedWeapon.range !== 'Melee')
+    )
     if (hasHeavyRule && selectedWeapon.range !== 'Melee') {
       rules.push({
         name: 'Heavy',
@@ -5263,7 +5822,10 @@ function buildDefenderActiveRules({
   defenderOverwhelmingOnslaughtActive,
   defenderUnbreakableLinesActive,
   defenderPennantOfRemembranceActive,
+  defenderRideHardRideFastActive,
+  defenderLegendaryFortitudeActive,
   targetHasCover,
+  attackerTargetWithinTwelve,
   indirectTargetVisible,
   attackerFireDisciplineActive,
   defenderOnObjective,
@@ -5352,6 +5914,61 @@ function buildDefenderActiveRules({
 
   if (defenderEnhancementName === 'Helm of the Beastslayer') {
     const enhancement = getDetachmentEntry(defenderDetachment, 'enhancements', 'Helm of the Beastslayer')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${defenderDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (defenderRideHardRideFastActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Ride Hard, Ride Fast')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${defenderDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (defenderLegendaryFortitudeActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Legendary Fortitude')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${defenderDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (defenderDetachment?.name === VANGUARD_SPEARHEAD && selectedWeapon?.range !== 'Melee') {
+    const detachmentRule = getDetachmentEntry(defenderDetachment, 'rule', 'Shadow Masters')
+    rules.push({
+      name: 'Shadow Masters',
+      source: `${defenderDetachment.name} Rule`,
+      text: attackerTargetWithinTwelve
+        ? 'This ranged attack is within 12", so Shadow Masters does not apply.'
+        : detachmentRule?.rules_text || 'Ranged attacks from more than 12" away take -1 to Hit and the target has the Benefit of Cover.',
+    })
+  }
+
+  if (defenderEnhancementName === 'Stoic Defender' && defenderOnObjective) {
+    const enhancement = getDetachmentEntry(defenderDetachment, 'enhancements', 'Stoic Defender')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${defenderDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (defenderEnhancementName === 'Adamantine Mantle') {
+    const enhancement = getDetachmentEntry(defenderDetachment, 'enhancements', 'Adamantine Mantle')
     if (enhancement) {
       rules.push({
         name: enhancement.name,
@@ -5893,6 +6510,7 @@ function App() {
   const [plungingFireActive, setPlungingFireActive] = useState(initialOptions.plunging_fire_active)
   const [hazardousOverwatchChargePhase, setHazardousOverwatchChargePhase] = useState(initialOptions.hazardous_overwatch_charge_phase)
   const [hazardousBearerCurrentWounds, setHazardousBearerCurrentWounds] = useState(initialOptions.hazardous_bearer_current_wounds)
+  const [attackerCombatDoctrine, setAttackerCombatDoctrine] = useState(initialOptions.attacker_combat_doctrine)
   const [attackerFireDisciplineActive, setAttackerFireDisciplineActive] = useState(initialOptions.attacker_fire_discipline_active)
   const [attackerMarkedForDestructionActive, setAttackerMarkedForDestructionActive] = useState(initialOptions.attacker_marked_for_destruction_active)
   const [attackerUnforgivenFuryActive, setAttackerUnforgivenFuryActive] = useState(initialOptions.attacker_unforgiven_fury_active)
@@ -5901,17 +6519,24 @@ function App() {
   const [attackerWeaponsOfTheFirstLegionActive, setAttackerWeaponsOfTheFirstLegionActive] = useState(initialOptions.attacker_weapons_of_the_first_legion_active)
   const [attackerPennantOfRemembranceActive, setAttackerPennantOfRemembranceActive] = useState(initialOptions.attacker_pennant_of_remembrance_active)
   const [attackerBelowStartingStrength, setAttackerBelowStartingStrength] = useState(initialOptions.attacker_below_starting_strength)
+  const [attackerBelowHalfStrength, setAttackerBelowHalfStrength] = useState(initialOptions.attacker_below_half_strength)
   const [attackerBattleshocked, setAttackerBattleshocked] = useState(initialOptions.attacker_battleshocked)
+  const [attackerExtremisLevelThreatActive, setAttackerExtremisLevelThreatActive] = useState(initialOptions.attacker_extremis_level_threat_active)
+  const [attackerImperiumsSwordActive, setAttackerImperiumsSwordActive] = useState(initialOptions.attacker_imperiums_sword_active)
   const [attackerSagaCompleted, setAttackerSagaCompleted] = useState(initialOptions.attacker_saga_completed)
   const [attackerEldersGuidanceActive, setAttackerEldersGuidanceActive] = useState(initialOptions.attacker_elders_guidance_active)
   const [attackerBoastAchieved, setAttackerBoastAchieved] = useState(initialOptions.attacker_boast_achieved)
   const [attackerHordeslayerOutnumbered, setAttackerHordeslayerOutnumbered] = useState(initialOptions.attacker_hordeslayer_outnumbered)
   const [attackerHeroesAllRerollType, setAttackerHeroesAllRerollType] = useState(initialOptions.attacker_heroes_all_reroll_type)
+  const [attackerArmouredWrathRerollType, setAttackerArmouredWrathRerollType] = useState(initialOptions.attacker_armoured_wrath_reroll_type)
   const [attackerUnbridledFerocityActive, setAttackerUnbridledFerocityActive] = useState(initialOptions.attacker_unbridled_ferocity_active)
   const [attackerWaaaghActive, setAttackerWaaaghActive] = useState(initialOptions.attacker_waaagh_active)
   const [defenderWaaaghActive, setDefenderWaaaghActive] = useState(initialOptions.defender_waaagh_active)
   const [attackerPreyActive, setAttackerPreyActive] = useState(initialOptions.attacker_prey_active)
   const [attackerTargetWithinNine, setAttackerTargetWithinNine] = useState(initialOptions.attacker_target_within_9)
+  const [attackerTargetWithinTwelve, setAttackerTargetWithinTwelve] = useState(initialOptions.attacker_target_within_12)
+  const [attackerTargetClosestEligibleWithinSix, setAttackerTargetClosestEligibleWithinSix] = useState(initialOptions.attacker_target_closest_eligible_within_6)
+  const [attackerDisembarkedFromTransport, setAttackerDisembarkedFromTransport] = useState(initialOptions.attacker_disembarked_from_transport)
   const [attackerCountsAsTenPlusModels, setAttackerCountsAsTenPlusModels] = useState(initialOptions.attacker_counts_as_ten_plus_models)
   const [defenderCountsAsTenPlusModels, setDefenderCountsAsTenPlusModels] = useState(initialOptions.defender_counts_as_ten_plus_models)
   const [targetBelowStartingStrength, setTargetBelowStartingStrength] = useState(initialOptions.target_below_starting_strength)
@@ -5932,10 +6557,25 @@ function App() {
   const [attackerDakkaDakkaDakkaPushed, setAttackerDakkaDakkaDakkaPushed] = useState(initialOptions.attacker_dakka_dakka_dakka_pushed)
   const [attackerBiggerShellsActive, setAttackerBiggerShellsActive] = useState(initialOptions.attacker_bigger_shells_active)
   const [attackerBiggerShellsPushed, setAttackerBiggerShellsPushed] = useState(initialOptions.attacker_bigger_shells_pushed)
+  const [attackerHonourTheChapterActive, setAttackerHonourTheChapterActive] = useState(initialOptions.attacker_honour_the_chapter_active)
+  const [attackerStormOfFireActive, setAttackerStormOfFireActive] = useState(initialOptions.attacker_storm_of_fire_active)
+  const [attackerNoThreatTooGreatActive, setAttackerNoThreatTooGreatActive] = useState(initialOptions.attacker_no_threat_too_great_active)
+  const [attackerBattleDrillRecallActive, setAttackerBattleDrillRecallActive] = useState(initialOptions.attacker_battle_drill_recall_active)
+  const [attackerMercyIsWeaknessActive, setAttackerMercyIsWeaknessActive] = useState(initialOptions.attacker_mercy_is_weakness_active)
+  const [attackerAncientFuryActive, setAttackerAncientFuryActive] = useState(initialOptions.attacker_ancient_fury_active)
+  const [attackerCrucibleOfBattleActive, setAttackerCrucibleOfBattleActive] = useState(initialOptions.attacker_crucible_of_battle_active)
+  const [attackerImmolationProtocolsActive, setAttackerImmolationProtocolsActive] = useState(initialOptions.attacker_immolation_protocols_active)
+  const [attackerOnslaughtOfFireActive, setAttackerOnslaughtOfFireActive] = useState(initialOptions.attacker_onslaught_of_fire_active)
+  const [attackerBlitzingFusilladeActive, setAttackerBlitzingFusilladeActive] = useState(initialOptions.attacker_blitzing_fusillade_active)
+  const [attackerShockAssaultActive, setAttackerShockAssaultActive] = useState(initialOptions.attacker_shock_assault_active)
+  const [attackerStrikeFromTheShadowsActive, setAttackerStrikeFromTheShadowsActive] = useState(initialOptions.attacker_strike_from_the_shadows_active)
+  const [attackerHeroesOfTheChapterActive, setAttackerHeroesOfTheChapterActive] = useState(initialOptions.attacker_heroes_of_the_chapter_active)
   const [defenderExtraGubbinzActive, setDefenderExtraGubbinzActive] = useState(initialOptions.defender_extra_gubbinz_active)
+  const [defenderRideHardRideFastActive, setDefenderRideHardRideFastActive] = useState(initialOptions.defender_ride_hard_ride_fast_active)
   const [attackerCompetitiveStreakActive, setAttackerCompetitiveStreakActive] = useState(initialOptions.attacker_competitive_streak_active)
   const [attackerArmedToDaTeefActive, setAttackerArmedToDaTeefActive] = useState(initialOptions.attacker_armed_to_da_teef_active)
   const [defenderHulkingBrutesActive, setDefenderHulkingBrutesActive] = useState(initialOptions.defender_hulking_brutes_active)
+  const [defenderLegendaryFortitudeActive, setDefenderLegendaryFortitudeActive] = useState(initialOptions.defender_legendary_fortitude_active)
   const [defenderArmourOfContemptActive, setDefenderArmourOfContemptActive] = useState(initialOptions.defender_armour_of_contempt_active)
   const [defenderOverwhelmingOnslaughtActive, setDefenderOverwhelmingOnslaughtActive] = useState(initialOptions.defender_overwhelming_onslaught_active)
   const [defenderUnbreakableLinesActive, setDefenderUnbreakableLinesActive] = useState(initialOptions.defender_unbreakable_lines_active)
@@ -7109,6 +7749,7 @@ function App() {
     selectedWeapons: selectedAttackWeapons,
     selectedEntries: selectedAttackEntries,
     attackerEnhancementName,
+    activeLanceStratagem: attackerHonourTheChapterActive || attackerShockAssaultActive,
   })
 
   useEffect(() => {
@@ -7404,8 +8045,8 @@ function App() {
     [selectedAttackerDetachment, attackerUnitDetails, isRangedWeapon],
   )
   const defenderStratagemOptions = useMemo(
-    () => getDefenderStratagemOptions(selectedDefenderDetachment, selectedWeapon),
-    [selectedDefenderDetachment, selectedWeapon],
+    () => getDefenderStratagemOptions(selectedDefenderDetachment, selectedWeapon, defenderUnitDetails),
+    [selectedDefenderDetachment, selectedWeapon, defenderUnitDetails],
   )
 
   const attackerCanBeTargetedByStratagems = !attackerBattleshocked
@@ -7422,6 +8063,19 @@ function App() {
   const canUseAttackerKlankinKlaws = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === "Klankin' Klaws")
   const canUseAttackerDakkaDakkaDakka = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Dakka! Dakka! Dakka!')
   const canUseAttackerBiggerShells = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Bigger Shells for Bigger Gitz')
+  const canUseAttackerHonourTheChapter = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Honour the Chapter')
+  const canUseAttackerStormOfFire = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Storm of Fire')
+  const canUseAttackerNoThreatTooGreat = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'No Threat Too Great')
+  const canUseAttackerBattleDrillRecall = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Battle Drill Recall')
+  const canUseAttackerMercyIsWeakness = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Mercy Is Weakness')
+  const canUseAttackerAncientFury = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Ancient Fury')
+  const canUseAttackerCrucibleOfBattle = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Crucible of Battle')
+  const canUseAttackerImmolationProtocols = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Immolation Protocols')
+  const canUseAttackerOnslaughtOfFire = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Onslaught of Fire')
+  const canUseAttackerBlitzingFusillade = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Blitzing Fusillade')
+  const canUseAttackerShockAssault = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Shock Assault')
+  const canUseAttackerStrikeFromTheShadows = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Strike from the Shadows')
+  const canUseAttackerHeroesOfTheChapter = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Heroes of the Chapter')
   const canUseAttackerCompetitiveStreak = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Competitive Streak')
   const canUseAttackerArmedToDaTeef = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Armed to da Teef')
   const canUseDefenderArmourOfContempt = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Armour of Contempt')
@@ -7432,6 +8086,14 @@ function App() {
   const canUseDefenderSpeediestFreeks = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Speediest Freeks')
   const canUseDefenderExtraGubbinz = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Extra Gubbinz')
   const canUseDefenderHulkingBrutes = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Hulking Brutes')
+  const canUseDefenderLegendaryFortitude = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Legendary Fortitude')
+  const defenderIsRideHardTarget = unitHasKeyword(defenderUnitDetails, 'mounted') || (
+    unitHasKeyword(defenderUnitDetails, 'vehicle')
+    && unitHasKeyword(defenderUnitDetails, 'fly')
+  )
+  const canUseDefenderRideHardRideFast = defenderCanBeTargetedByStratagems
+    && defenderIsRideHardTarget
+    && defenderStratagemOptions.some((item) => item.name === 'Ride Hard, Ride Fast')
   const canUseAttackerWaaagh = (
     unitHasWaaagh(attackerUnitDetails)
     || unitHasWaaagh(attackerAttachedLeaderUnitDetails)
@@ -7443,8 +8105,16 @@ function App() {
     || unitHasWaaagh(attachedSupportUnitDetails)
   )
   const canUseAttackerPrey = selectedAttackerDetachment?.name === DA_BIG_HUNT
+  const canUseAttackerCombatDoctrine = selectedAttackerDetachment?.name === GLADIUS_TASK_FORCE
   const canUseTargetWithinNine = selectedAttackerDetachment?.name === KULT_OF_SPEED && (canUseAttackerBlitzaFire || canUseAttackerDakkastorm)
-  const canUseTargetBelowStartingStrength = attackerEnhancementName === "'Eadstompa"
+  const canUseTargetWithinTwelve = isRangedWeapon && (
+    selectedAttackerDetachment?.name === FIRESTORM_ASSAULT_FORCE
+    || selectedDefenderDetachment?.name === VANGUARD_SPEARHEAD
+    || canUseAttackerStrikeFromTheShadows
+  )
+  const canUseTargetClosestEligibleWithinSix = canUseAttackerCrucibleOfBattle
+  const canUseAttackerDisembarkedFromTransport = canUseAttackerOnslaughtOfFire
+  const canUseTargetBelowStartingStrength = attackerEnhancementName === "'Eadstompa" || canUseAttackerMercyIsWeakness
   const canUseTargetBelowHalfStrength = attackerEnhancementName === "'Eadstompa"
   const canUseAttackerCountsAsTenPlus = selectedAttackerDetachment?.name === GREEN_TIDE && attackerPackageModelCount < 10
   const canUseDefenderCountsAsTenPlus = selectedDefenderDetachment?.name === GREEN_TIDE && defenderPackageModelCount < 10
@@ -7466,6 +8136,7 @@ function App() {
   const canUseDefenderOnObjective = (
     unitListHasObjectiveSelfRule(defenderObjectiveRuleUnits)
     || unitListHasTargetObjectiveRule(attackerObjectiveRuleUnits)
+    || defenderEnhancementName === 'Stoic Defender'
   )
   const canUseTryDatButton = selectedAttackerDetachment?.name === DREAD_MOB && (
     unitHasKeyword(attackerUnitDetails, 'mek')
@@ -7478,6 +8149,10 @@ function App() {
   const effectiveAttackerSagaCompleted = attackerSagaCompleted || Boolean(battleAchievements.attacker?.sagaCompleted)
   const canUseSagaCompleted = SAGA_DETACHMENT_NAMES.includes(selectedAttackerDetachment?.name || '')
   const canUseHeroesAllRerollType = selectedAttackerDetachment?.name === SAGA_OF_THE_BOLD && !effectiveAttackerSagaCompleted && attackerPackageIsCharacterUnit
+  const canUseArmouredWrathRerollType = selectedAttackerDetachment?.name === IRONSTORM_SPEARHEAD
+  const canUseExtremisLevelThreat = selectedAttackerDetachment?.name === FIRST_COMPANY_TASK_FORCE && hasOathOfMoment && oathOfMomentActive
+  const canUseImperiumsSwordPulse = attackerEnhancementName === "The Imperium's Sword" && isMeleeWeapon
+  const canUseAttackerBelowHalfStrength = canUseAttackerHeroesOfTheChapter
   const canUseEldersGuidance = attackerEnhancementName === "Elder's Guidance" && isMeleeWeapon && attackerUnitDetails?.name === 'Blood Claws'
   const canUseBoastAchieved = attackerEnhancementName === "Braggart's Steel" || attackerEnhancementName === 'Hordeslayer'
   const canUseHordeslayerOutnumbered = attackerEnhancementName === 'Hordeslayer'
@@ -7538,6 +8213,58 @@ function App() {
     () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Bigger Shells for Bigger Gitz'),
     [selectedAttackerDetachment],
   )
+  const honourTheChapterEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Honour the Chapter'),
+    [selectedAttackerDetachment],
+  )
+  const stormOfFireEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Storm of Fire'),
+    [selectedAttackerDetachment],
+  )
+  const noThreatTooGreatEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'No Threat Too Great'),
+    [selectedAttackerDetachment],
+  )
+  const battleDrillRecallEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Battle Drill Recall'),
+    [selectedAttackerDetachment],
+  )
+  const mercyIsWeaknessEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Mercy Is Weakness'),
+    [selectedAttackerDetachment],
+  )
+  const ancientFuryEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Ancient Fury'),
+    [selectedAttackerDetachment],
+  )
+  const crucibleOfBattleEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Crucible of Battle'),
+    [selectedAttackerDetachment],
+  )
+  const immolationProtocolsEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Immolation Protocols'),
+    [selectedAttackerDetachment],
+  )
+  const onslaughtOfFireEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Onslaught of Fire'),
+    [selectedAttackerDetachment],
+  )
+  const blitzingFusilladeEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Blitzing Fusillade'),
+    [selectedAttackerDetachment],
+  )
+  const shockAssaultEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Shock Assault'),
+    [selectedAttackerDetachment],
+  )
+  const strikeFromTheShadowsEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Strike from the Shadows'),
+    [selectedAttackerDetachment],
+  )
+  const heroesOfTheChapterEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Heroes of the Chapter'),
+    [selectedAttackerDetachment],
+  )
   const competitiveStreakEntry = useMemo(
     () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Competitive Streak'),
     [selectedAttackerDetachment],
@@ -7578,6 +8305,14 @@ function App() {
     () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Hulking Brutes'),
     [selectedDefenderDetachment],
   )
+  const legendaryFortitudeEntry = useMemo(
+    () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Legendary Fortitude'),
+    [selectedDefenderDetachment],
+  )
+  const rideHardRideFastEntry = useMemo(
+    () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Ride Hard, Ride Fast'),
+    [selectedDefenderDetachment],
+  )
   const oathAbility = useMemo(
     () => getUnitAbility(attackerUnitDetails, (ability) => {
       const name = String(ability.name || '').toLowerCase()
@@ -7610,6 +8345,19 @@ function App() {
   const klankinKlawsTooltip = formatStratagemTooltip(klankinKlawsEntry)
   const dakkaDakkaDakkaTooltip = formatStratagemTooltip(dakkaDakkaDakkaEntry)
   const biggerShellsTooltip = formatStratagemTooltip(biggerShellsEntry)
+  const honourTheChapterTooltip = formatStratagemTooltip(honourTheChapterEntry)
+  const stormOfFireTooltip = formatStratagemTooltip(stormOfFireEntry)
+  const noThreatTooGreatTooltip = formatStratagemTooltip(noThreatTooGreatEntry)
+  const battleDrillRecallTooltip = formatStratagemTooltip(battleDrillRecallEntry)
+  const mercyIsWeaknessTooltip = formatStratagemTooltip(mercyIsWeaknessEntry)
+  const ancientFuryTooltip = formatStratagemTooltip(ancientFuryEntry)
+  const crucibleOfBattleTooltip = formatStratagemTooltip(crucibleOfBattleEntry)
+  const immolationProtocolsTooltip = formatStratagemTooltip(immolationProtocolsEntry)
+  const onslaughtOfFireTooltip = formatStratagemTooltip(onslaughtOfFireEntry)
+  const blitzingFusilladeTooltip = formatStratagemTooltip(blitzingFusilladeEntry)
+  const shockAssaultTooltip = formatStratagemTooltip(shockAssaultEntry)
+  const strikeFromTheShadowsTooltip = formatStratagemTooltip(strikeFromTheShadowsEntry)
+  const heroesOfTheChapterTooltip = formatStratagemTooltip(heroesOfTheChapterEntry)
   const competitiveStreakTooltip = formatStratagemTooltip(competitiveStreakEntry)
   const armedToDaTeefTooltip = formatStratagemTooltip(armedToDaTeefEntry)
   const armourOfContemptTooltip = formatStratagemTooltip(armourOfContemptEntry)
@@ -7620,6 +8368,8 @@ function App() {
   const speediestFreeksTooltip = formatStratagemTooltip(speediestFreeksEntry)
   const extraGubbinzTooltip = formatStratagemTooltip(extraGubbinzEntry)
   const hulkingBrutesTooltip = formatStratagemTooltip(hulkingBrutesEntry)
+  const legendaryFortitudeTooltip = formatStratagemTooltip(legendaryFortitudeEntry)
+  const rideHardRideFastTooltip = formatStratagemTooltip(rideHardRideFastEntry)
   const oathTooltip = buildTooltip(
     OATH_OF_MOMENT_RULE_TEXT,
     unitGetsOathWoundBonus(attackerUnitDetails)
@@ -8015,6 +8765,7 @@ function App() {
       : '',
   )
   const attackerPreyTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Da Hunt Is On')?.rules_text || ''
+  const attackerCombatDoctrineTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Combat Doctrines')?.rules_text || ''
   const attackerTargetWithinNineTooltip = buildTooltip(
     blitzaFireTooltip,
     dakkastormTooltip,
@@ -8031,6 +8782,7 @@ function App() {
   const targetBelowHalfStrengthTooltip = attackerEnhancementTooltip
   const tryDatButtonTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Try Dat Button!')?.rules_text || ''
   const heroesAllRerollTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Heroes All')?.rules_text || ''
+  const armouredWrathRerollTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Armoured Wrath')?.rules_text || ''
   const defenderBattleshockedTooltip = buildTooltip(
     'Battle-shocked units have OC -, cannot be targeted with stratagems, cannot start actions, and cannot complete actions they started.',
     defenderEnhancementTooltip,
@@ -8054,19 +8806,40 @@ function App() {
       oathOfMomentActive,
       attackerDetachment: selectedAttackerDetachment,
       attackerEnhancementName,
+      attackerCombatDoctrine,
       attackerSagaCompleted: effectiveAttackerSagaCompleted,
       attackerEldersGuidanceActive,
       attackerBoastAchieved,
       attackerHordeslayerOutnumbered,
       attackerHeroesAllRerollType,
+      attackerArmouredWrathRerollType,
       attackerMarkedForDestructionActive,
       attackerFireDisciplineActive,
+      attackerHonourTheChapterActive,
+      attackerStormOfFireActive,
+      attackerNoThreatTooGreatActive,
+      attackerBattleDrillRecallActive,
+      attackerMercyIsWeaknessActive,
+      attackerAncientFuryActive,
+      attackerCrucibleOfBattleActive,
+      attackerImmolationProtocolsActive,
+      attackerOnslaughtOfFireActive,
+      attackerBlitzingFusilladeActive,
+      attackerShockAssaultActive,
+      attackerStrikeFromTheShadowsActive,
+      attackerTargetWithinTwelve,
+      attackerTargetClosestEligibleWithinSix,
+      attackerDisembarkedFromTransport,
       attackerUnforgivenFuryActive,
       attackerUnbridledFerocityActive,
       attackerStubbornTenacityActive,
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
       attackerBelowStartingStrength,
+      attackerBelowHalfStrength,
+      attackerExtremisLevelThreatActive,
+      attackerImperiumsSwordActive,
+      attackerHeroesOfTheChapterActive,
       attackerActiveAbilityNames,
       attackerWaaaghActive,
       inHalfRange,
@@ -8092,19 +8865,40 @@ function App() {
       oathOfMomentActive,
       selectedAttackerDetachment,
       attackerEnhancementName,
+      attackerCombatDoctrine,
       effectiveAttackerSagaCompleted,
       attackerEldersGuidanceActive,
       attackerBoastAchieved,
       attackerHordeslayerOutnumbered,
       attackerHeroesAllRerollType,
+      attackerArmouredWrathRerollType,
       attackerMarkedForDestructionActive,
       attackerFireDisciplineActive,
+      attackerHonourTheChapterActive,
+      attackerStormOfFireActive,
+      attackerNoThreatTooGreatActive,
+      attackerBattleDrillRecallActive,
+      attackerMercyIsWeaknessActive,
+      attackerAncientFuryActive,
+      attackerCrucibleOfBattleActive,
+      attackerImmolationProtocolsActive,
+      attackerOnslaughtOfFireActive,
+      attackerBlitzingFusilladeActive,
+      attackerShockAssaultActive,
+      attackerStrikeFromTheShadowsActive,
+      attackerTargetWithinTwelve,
+      attackerTargetClosestEligibleWithinSix,
+      attackerDisembarkedFromTransport,
       attackerUnforgivenFuryActive,
       attackerUnbridledFerocityActive,
       attackerStubbornTenacityActive,
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
       attackerBelowStartingStrength,
+      attackerBelowHalfStrength,
+      attackerExtremisLevelThreatActive,
+      attackerImperiumsSwordActive,
+      attackerHeroesOfTheChapterActive,
       attackerActiveAbilityNames,
       attackerWaaaghActive,
       inHalfRange,
@@ -8131,7 +8925,10 @@ function App() {
       defenderOverwhelmingOnslaughtActive,
       defenderUnbreakableLinesActive,
       defenderPennantOfRemembranceActive,
+      defenderRideHardRideFastActive,
+      defenderLegendaryFortitudeActive,
       targetHasCover,
+      attackerTargetWithinTwelve,
       indirectTargetVisible,
       attackerFireDisciplineActive,
       defenderOnObjective,
@@ -8148,7 +8945,10 @@ function App() {
       defenderOverwhelmingOnslaughtActive,
       defenderUnbreakableLinesActive,
       defenderPennantOfRemembranceActive,
+      defenderRideHardRideFastActive,
+      defenderLegendaryFortitudeActive,
       targetHasCover,
+      attackerTargetWithinTwelve,
       indirectTargetVisible,
       attackerFireDisciplineActive,
       defenderOnObjective,
@@ -9715,6 +10515,12 @@ function App() {
   }, [hasOathOfMoment, oathOfMomentActive])
 
   useEffect(() => {
+    if (!canUseChargedThisTurn && chargedThisTurn) {
+      setChargedThisTurn(false)
+    }
+  }, [canUseChargedThisTurn, chargedThisTurn])
+
+  useEffect(() => {
     if (!attackerEnhancementOptions.some((item) => item.name === attackerEnhancementName)) {
       setAttackerEnhancementName('')
     }
@@ -9807,6 +10613,9 @@ function App() {
     if (!canUseAttackerPrey && attackerPreyActive) {
       setAttackerPreyActive(false)
     }
+    if (!canUseAttackerCombatDoctrine && attackerCombatDoctrine) {
+      setAttackerCombatDoctrine('')
+    }
     if (!canUseTargetWithinNine && attackerTargetWithinNine) {
       setAttackerTargetWithinNine(false)
     }
@@ -9821,6 +10630,15 @@ function App() {
     }
     if (!canUseTargetBelowHalfStrength && targetBelowHalfStrength) {
       setTargetBelowHalfStrength(false)
+    }
+    if (!canUseAttackerBelowHalfStrength && attackerBelowHalfStrength) {
+      setAttackerBelowHalfStrength(false)
+    }
+    if (!canUseExtremisLevelThreat && attackerExtremisLevelThreatActive) {
+      setAttackerExtremisLevelThreatActive(false)
+    }
+    if (!canUseImperiumsSwordPulse && attackerImperiumsSwordActive) {
+      setAttackerImperiumsSwordActive(false)
     }
     if (!canUseTryDatButton) {
       if (attackerTryDatButtonEffects.length) {
@@ -9884,6 +10702,54 @@ function App() {
     } else if (!attackerBiggerShellsActive && attackerBiggerShellsPushed) {
       setAttackerBiggerShellsPushed(false)
     }
+    if (!canUseAttackerHonourTheChapter && attackerHonourTheChapterActive) {
+      setAttackerHonourTheChapterActive(false)
+    }
+    if (!canUseAttackerStormOfFire && attackerStormOfFireActive) {
+      setAttackerStormOfFireActive(false)
+    }
+    if (!canUseAttackerNoThreatTooGreat && attackerNoThreatTooGreatActive) {
+      setAttackerNoThreatTooGreatActive(false)
+    }
+    if (!canUseAttackerBattleDrillRecall && attackerBattleDrillRecallActive) {
+      setAttackerBattleDrillRecallActive(false)
+    }
+    if (!canUseAttackerMercyIsWeakness && attackerMercyIsWeaknessActive) {
+      setAttackerMercyIsWeaknessActive(false)
+    }
+    if (!canUseAttackerAncientFury && attackerAncientFuryActive) {
+      setAttackerAncientFuryActive(false)
+    }
+    if (!canUseAttackerCrucibleOfBattle && attackerCrucibleOfBattleActive) {
+      setAttackerCrucibleOfBattleActive(false)
+    }
+    if (!canUseAttackerImmolationProtocols && attackerImmolationProtocolsActive) {
+      setAttackerImmolationProtocolsActive(false)
+    }
+    if (!canUseAttackerOnslaughtOfFire && attackerOnslaughtOfFireActive) {
+      setAttackerOnslaughtOfFireActive(false)
+    }
+    if (!canUseAttackerBlitzingFusillade && attackerBlitzingFusilladeActive) {
+      setAttackerBlitzingFusilladeActive(false)
+    }
+    if (!canUseAttackerShockAssault && attackerShockAssaultActive) {
+      setAttackerShockAssaultActive(false)
+    }
+    if (!canUseAttackerStrikeFromTheShadows && attackerStrikeFromTheShadowsActive) {
+      setAttackerStrikeFromTheShadowsActive(false)
+    }
+    if (!canUseAttackerHeroesOfTheChapter && attackerHeroesOfTheChapterActive) {
+      setAttackerHeroesOfTheChapterActive(false)
+    }
+    if (!canUseTargetWithinTwelve && attackerTargetWithinTwelve) {
+      setAttackerTargetWithinTwelve(false)
+    }
+    if (!canUseTargetClosestEligibleWithinSix && attackerTargetClosestEligibleWithinSix) {
+      setAttackerTargetClosestEligibleWithinSix(false)
+    }
+    if (!canUseAttackerDisembarkedFromTransport && attackerDisembarkedFromTransport) {
+      setAttackerDisembarkedFromTransport(false)
+    }
     if (!canUseDefenderExtraGubbinz && defenderExtraGubbinzActive) {
       setDefenderExtraGubbinzActive(false)
     }
@@ -9896,55 +10762,105 @@ function App() {
     if (!canUseDefenderHulkingBrutes && defenderHulkingBrutesActive) {
       setDefenderHulkingBrutesActive(false)
     }
+    if (!canUseDefenderRideHardRideFast && defenderRideHardRideFastActive) {
+      setDefenderRideHardRideFastActive(false)
+    }
+    if (!canUseDefenderLegendaryFortitude && defenderLegendaryFortitudeActive) {
+      setDefenderLegendaryFortitudeActive(false)
+    }
   }, [
     attackerArmedToDaTeefActive,
     attackerBiggerShellsActive,
+    attackerAncientFuryActive,
+    attackerBlitzingFusilladeActive,
     attackerBiggerShellsPushed,
+    attackerBelowHalfStrength,
+    attackerBattleDrillRecallActive,
     attackerBlitzaFireActive,
+    attackerCombatDoctrine,
     attackerCompetitiveStreakActive,
     attackerCountsAsTenPlusModels,
+    attackerCrucibleOfBattleActive,
     attackerDakkastormActive,
     attackerDakkaDakkaDakkaActive,
     attackerDakkaDakkaDakkaPushed,
+    attackerDisembarkedFromTransport,
     attackerDragItDownActive,
     attackerFullThrottleActive,
+    attackerHonourTheChapterActive,
+    attackerExtremisLevelThreatActive,
+    attackerHeroesOfTheChapterActive,
+    attackerImperiumsSwordActive,
+    attackerImmolationProtocolsActive,
     attackerKlankinKlawsActive,
     attackerKlankinKlawsPushed,
+    attackerMercyIsWeaknessActive,
+    attackerNoThreatTooGreatActive,
+    attackerOnslaughtOfFireActive,
     attackerPreyActive,
+    attackerShockAssaultActive,
+    attackerStrikeFromTheShadowsActive,
+    attackerStormOfFireActive,
+    attackerTargetClosestEligibleWithinSix,
     attackerTargetWithinNine,
+    attackerTargetWithinTwelve,
     attackerTryDatButtonEffects,
     attackerTryDatButtonHazardous,
     attackerWaaaghControlledByGame,
     attackerUnbridledCarnageActive,
     attackerWaaaghActive,
     canUseAttackerArmedToDaTeef,
+    canUseAttackerAncientFury,
+    canUseAttackerCrucibleOfBattle,
+    canUseAttackerDisembarkedFromTransport,
     canUseAttackerBiggerShells,
+    canUseAttackerBattleDrillRecall,
+    canUseAttackerBlitzingFusillade,
     canUseAttackerBlitzaFire,
+    canUseAttackerCombatDoctrine,
     canUseAttackerCompetitiveStreak,
     canUseAttackerCountsAsTenPlus,
     canUseAttackerDakkastorm,
     canUseAttackerDakkaDakkaDakka,
     canUseAttackerDragItDown,
     canUseAttackerFullThrottle,
+    canUseAttackerHonourTheChapter,
+    canUseAttackerBelowHalfStrength,
+    canUseAttackerHeroesOfTheChapter,
+    canUseAttackerImmolationProtocols,
     canUseAttackerKlankinKlaws,
+    canUseAttackerMercyIsWeakness,
+    canUseAttackerNoThreatTooGreat,
+    canUseAttackerOnslaughtOfFire,
     canUseAttackerPrey,
+    canUseAttackerShockAssault,
+    canUseAttackerStrikeFromTheShadows,
+    canUseAttackerStormOfFire,
     canUseAttackerUnbridledCarnage,
     canUseAttackerWaaagh,
     canUseDefenderArdAsNails,
     canUseDefenderCountsAsTenPlus,
     canUseDefenderExtraGubbinz,
     canUseDefenderHulkingBrutes,
+    canUseDefenderRideHardRideFast,
+    canUseDefenderLegendaryFortitude,
     canUseDefenderSpeediestFreeks,
     canUseDefenderStalkinTaktiks,
     canUseDefenderWaaagh,
     canUseTargetBelowHalfStrength,
     canUseTargetBelowStartingStrength,
+    canUseTargetClosestEligibleWithinSix,
     canUseTargetWithinNine,
+    canUseTargetWithinTwelve,
     canUseTryDatButton,
+    canUseExtremisLevelThreat,
+    canUseImperiumsSwordPulse,
     defenderArdAsNailsActive,
     defenderCountsAsTenPlusModels,
     defenderExtraGubbinzActive,
     defenderHulkingBrutesActive,
+    defenderLegendaryFortitudeActive,
+    defenderRideHardRideFastActive,
     defenderSpeediestFreeksActive,
     defenderStalkinTaktiksActive,
     defenderWaaaghControlledByGame,
@@ -10004,6 +10920,12 @@ function App() {
       setAttackerHeroesAllRerollType('')
     }
   }, [canUseHeroesAllRerollType, attackerHeroesAllRerollType])
+
+  useEffect(() => {
+    if (!canUseArmouredWrathRerollType && attackerArmouredWrathRerollType) {
+      setAttackerArmouredWrathRerollType('')
+    }
+  }, [canUseArmouredWrathRerollType, attackerArmouredWrathRerollType])
 
   useEffect(() => {
     const active = defenderEnhancementName === 'Pennant of Remembrance'
@@ -10881,6 +11803,7 @@ function App() {
       attachedCharacterName,
       hazardousOverwatchChargePhase,
       hazardousBearerCurrentWounds,
+      attackerCombatDoctrine,
       attackerFireDisciplineActive,
       attackerMarkedForDestructionActive,
       attackerUnforgivenFuryActive,
@@ -10889,17 +11812,39 @@ function App() {
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
       attackerBelowStartingStrength,
+      attackerBelowHalfStrength,
       attackerBattleshocked,
+      attackerExtremisLevelThreatActive,
+      attackerImperiumsSwordActive,
       attackerSagaCompleted: effectiveAttackerSagaCompleted,
       attackerEldersGuidanceActive,
       attackerBoastAchieved,
       attackerHordeslayerOutnumbered,
       attackerHeroesAllRerollType,
+      attackerArmouredWrathRerollType,
       attackerActiveAbilityNames,
       attackerUnbridledFerocityActive,
+      attackerHonourTheChapterActive,
+      attackerStormOfFireActive,
+      attackerNoThreatTooGreatActive,
+      attackerBattleDrillRecallActive,
+      attackerMercyIsWeaknessActive,
+      attackerAncientFuryActive,
+      attackerCrucibleOfBattleActive,
+      attackerImmolationProtocolsActive,
+      attackerOnslaughtOfFireActive,
+      attackerBlitzingFusilladeActive,
+      attackerShockAssaultActive,
+      attackerStrikeFromTheShadowsActive,
+      attackerHeroesOfTheChapterActive,
+      attackerTargetWithinTwelve,
+      attackerTargetClosestEligibleWithinSix,
+      attackerDisembarkedFromTransport,
       defenderArmourOfContemptActive,
       defenderOverwhelmingOnslaughtActive,
       defenderUnbreakableLinesActive,
+      defenderRideHardRideFastActive,
+      defenderLegendaryFortitudeActive,
       defenderPennantOfRemembranceActive,
       defenderBattleshocked,
     })
@@ -11004,6 +11949,29 @@ function App() {
         defender_charged_this_turn: battlefieldCombatDefenderWasCharged,
         remained_stationary: battlefieldCombatAttackerRemainedStationary,
         attacker_eligible_model_count: selectedBattlefieldEligibleAttackerModelCount,
+        attacker_combat_doctrine: battlefieldAttackerSide === 'attacker' ? attackerCombatDoctrine || null : null,
+        attacker_honour_the_chapter_active: battlefieldAttackerSide === 'attacker' && attackerHonourTheChapterActive,
+        attacker_storm_of_fire_active: battlefieldAttackerSide === 'attacker' && attackerStormOfFireActive,
+        attacker_no_threat_too_great_active: battlefieldAttackerSide === 'attacker' && attackerNoThreatTooGreatActive,
+        attacker_battle_drill_recall_active: battlefieldAttackerSide === 'attacker' && attackerBattleDrillRecallActive,
+        attacker_extremis_level_threat_active: battlefieldAttackerSide === 'attacker' && attackerExtremisLevelThreatActive,
+        attacker_imperiums_sword_active: battlefieldAttackerSide === 'attacker' && attackerImperiumsSwordActive,
+        attacker_armoured_wrath_reroll_type: battlefieldAttackerSide === 'attacker' ? attackerArmouredWrathRerollType || null : null,
+        attacker_mercy_is_weakness_active: battlefieldAttackerSide === 'attacker' && attackerMercyIsWeaknessActive,
+        attacker_ancient_fury_active: battlefieldAttackerSide === 'attacker' && attackerAncientFuryActive,
+        attacker_crucible_of_battle_active: battlefieldAttackerSide === 'attacker' && attackerCrucibleOfBattleActive,
+        attacker_immolation_protocols_active: battlefieldAttackerSide === 'attacker' && attackerImmolationProtocolsActive,
+        attacker_onslaught_of_fire_active: battlefieldAttackerSide === 'attacker' && attackerOnslaughtOfFireActive,
+        attacker_blitzing_fusillade_active: battlefieldAttackerSide === 'attacker' && attackerBlitzingFusilladeActive,
+        attacker_shock_assault_active: battlefieldAttackerSide === 'attacker' && attackerShockAssaultActive,
+        attacker_strike_from_the_shadows_active: battlefieldAttackerSide === 'attacker' && attackerStrikeFromTheShadowsActive,
+        attacker_heroes_of_the_chapter_active: battlefieldAttackerSide === 'attacker' && attackerHeroesOfTheChapterActive,
+        attacker_below_half_strength: battlefieldAttackerSide === 'attacker' && attackerBelowHalfStrength,
+        attacker_target_within_12: battlefieldAttackerSide === 'attacker' && attackerTargetWithinTwelve,
+        attacker_target_closest_eligible_within_6: battlefieldAttackerSide === 'attacker' && attackerTargetClosestEligibleWithinSix,
+        attacker_disembarked_from_transport: battlefieldAttackerSide === 'attacker' && attackerDisembarkedFromTransport,
+        defender_ride_hard_ride_fast_active: battlefieldDefenderSide === 'defender' && defenderRideHardRideFastActive,
+        defender_legendary_fortitude_active: battlefieldDefenderSide === 'defender' && defenderLegendaryFortitudeActive,
         attacker_saga_completed: Boolean(battleAchievements[battlefieldAttackerSide]?.sagaCompleted),
         attacker_active_ability_names: battlefieldActiveAbilityNames,
         attacker_waaagh_active: battlefieldAttackerWaaaghActive,
@@ -12923,6 +13891,7 @@ function App() {
     setDefenderAllocationOrder(initialOptions.defender_allocation_order)
     setHazardousOverwatchChargePhase(initialOptions.hazardous_overwatch_charge_phase)
     setHazardousBearerCurrentWounds(initialOptions.hazardous_bearer_current_wounds)
+    setAttackerCombatDoctrine(initialOptions.attacker_combat_doctrine)
     setAttackerFireDisciplineActive(initialOptions.attacker_fire_discipline_active)
     setAttackerMarkedForDestructionActive(initialOptions.attacker_marked_for_destruction_active)
     setAttackerUnforgivenFuryActive(initialOptions.attacker_unforgiven_fury_active)
@@ -12931,17 +13900,39 @@ function App() {
     setAttackerWeaponsOfTheFirstLegionActive(initialOptions.attacker_weapons_of_the_first_legion_active)
     setAttackerPennantOfRemembranceActive(initialOptions.attacker_pennant_of_remembrance_active)
     setAttackerBelowStartingStrength(initialOptions.attacker_below_starting_strength)
+    setAttackerBelowHalfStrength(initialOptions.attacker_below_half_strength)
     setAttackerBattleshocked(initialOptions.attacker_battleshocked)
+    setAttackerExtremisLevelThreatActive(initialOptions.attacker_extremis_level_threat_active)
+    setAttackerImperiumsSwordActive(initialOptions.attacker_imperiums_sword_active)
     setAttackerSagaCompleted(initialOptions.attacker_saga_completed)
     setBattleAchievements(createBattleAchievementState())
     setAttackerEldersGuidanceActive(initialOptions.attacker_elders_guidance_active)
     setAttackerBoastAchieved(initialOptions.attacker_boast_achieved)
     setAttackerHordeslayerOutnumbered(initialOptions.attacker_hordeslayer_outnumbered)
     setAttackerHeroesAllRerollType(initialOptions.attacker_heroes_all_reroll_type)
+    setAttackerArmouredWrathRerollType(initialOptions.attacker_armoured_wrath_reroll_type)
     setAttackerUnbridledFerocityActive(initialOptions.attacker_unbridled_ferocity_active)
+    setAttackerHonourTheChapterActive(initialOptions.attacker_honour_the_chapter_active)
+    setAttackerStormOfFireActive(initialOptions.attacker_storm_of_fire_active)
+    setAttackerNoThreatTooGreatActive(initialOptions.attacker_no_threat_too_great_active)
+    setAttackerBattleDrillRecallActive(initialOptions.attacker_battle_drill_recall_active)
+    setAttackerMercyIsWeaknessActive(initialOptions.attacker_mercy_is_weakness_active)
+    setAttackerAncientFuryActive(initialOptions.attacker_ancient_fury_active)
+    setAttackerCrucibleOfBattleActive(initialOptions.attacker_crucible_of_battle_active)
+    setAttackerImmolationProtocolsActive(initialOptions.attacker_immolation_protocols_active)
+    setAttackerOnslaughtOfFireActive(initialOptions.attacker_onslaught_of_fire_active)
+    setAttackerBlitzingFusilladeActive(initialOptions.attacker_blitzing_fusillade_active)
+    setAttackerShockAssaultActive(initialOptions.attacker_shock_assault_active)
+    setAttackerStrikeFromTheShadowsActive(initialOptions.attacker_strike_from_the_shadows_active)
+    setAttackerHeroesOfTheChapterActive(initialOptions.attacker_heroes_of_the_chapter_active)
+    setAttackerTargetWithinTwelve(initialOptions.attacker_target_within_12)
+    setAttackerTargetClosestEligibleWithinSix(initialOptions.attacker_target_closest_eligible_within_6)
+    setAttackerDisembarkedFromTransport(initialOptions.attacker_disembarked_from_transport)
     setDefenderArmourOfContemptActive(initialOptions.defender_armour_of_contempt_active)
     setDefenderOverwhelmingOnslaughtActive(initialOptions.defender_overwhelming_onslaught_active)
     setDefenderUnbreakableLinesActive(initialOptions.defender_unbreakable_lines_active)
+    setDefenderRideHardRideFastActive(initialOptions.defender_ride_hard_ride_fast_active)
+    setDefenderLegendaryFortitudeActive(initialOptions.defender_legendary_fortitude_active)
     setDefenderPennantOfRemembranceActive(initialOptions.defender_pennant_of_remembrance_active)
     setDefenderBattleshocked(initialOptions.defender_battleshocked)
     setAttackerEnhancementName('')
@@ -13647,6 +14638,23 @@ function App() {
                 </label>
               ) : null}
 
+              {canUseAttackerCombatDoctrine ? (
+                <label className="combat-option-attacker" title={attackerCombatDoctrineTooltip}>
+                  <span>Attacker Combat Doctrine</span>
+                  <select
+                    title={attackerCombatDoctrineTooltip}
+                    value={attackerCombatDoctrine}
+                    onChange={(event) => setAttackerCombatDoctrine(event.target.value)}
+                  >
+                    {COMBAT_DOCTRINE_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
               {canUseAttackerFireDiscipline ? (
                 <label className="checkbox-row" title={fireDisciplineTooltip}>
                   <input
@@ -13655,6 +14663,160 @@ function App() {
                     onChange={(event) => setAttackerFireDisciplineActive(event.target.checked)}
                   />
                   <span>Use Fire Discipline</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerHonourTheChapter ? (
+                <label className="checkbox-row" title={honourTheChapterTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerHonourTheChapterActive}
+                    onChange={(event) => setAttackerHonourTheChapterActive(event.target.checked)}
+                  />
+                  <span>Use Honour the Chapter</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerStormOfFire ? (
+                <label className="checkbox-row" title={stormOfFireTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerStormOfFireActive}
+                    onChange={(event) => setAttackerStormOfFireActive(event.target.checked)}
+                  />
+                  <span>Use Storm of Fire</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerNoThreatTooGreat ? (
+                <label className="checkbox-row" title={noThreatTooGreatTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerNoThreatTooGreatActive}
+                    onChange={(event) => setAttackerNoThreatTooGreatActive(event.target.checked)}
+                  />
+                  <span>Use No Threat Too Great</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerBattleDrillRecall ? (
+                <label className="checkbox-row" title={battleDrillRecallTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerBattleDrillRecallActive}
+                    onChange={(event) => setAttackerBattleDrillRecallActive(event.target.checked)}
+                  />
+                  <span>Use Battle Drill Recall</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerMercyIsWeakness ? (
+                <label className="checkbox-row" title={mercyIsWeaknessTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerMercyIsWeaknessActive}
+                    onChange={(event) => setAttackerMercyIsWeaknessActive(event.target.checked)}
+                  />
+                  <span>Use Mercy Is Weakness</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerAncientFury ? (
+                <label className="checkbox-row" title={ancientFuryTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerAncientFuryActive}
+                    onChange={(event) => setAttackerAncientFuryActive(event.target.checked)}
+                  />
+                  <span>Use Ancient Fury</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerCrucibleOfBattle ? (
+                <label className="checkbox-row" title={crucibleOfBattleTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerCrucibleOfBattleActive}
+                    onChange={(event) => setAttackerCrucibleOfBattleActive(event.target.checked)}
+                  />
+                  <span>Use Crucible of Battle</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerImmolationProtocols ? (
+                <label className="checkbox-row" title={immolationProtocolsTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerImmolationProtocolsActive}
+                    onChange={(event) => setAttackerImmolationProtocolsActive(event.target.checked)}
+                  />
+                  <span>Use Immolation Protocols</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerOnslaughtOfFire ? (
+                <label className="checkbox-row" title={onslaughtOfFireTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerOnslaughtOfFireActive}
+                    onChange={(event) => setAttackerOnslaughtOfFireActive(event.target.checked)}
+                  />
+                  <span>Use Onslaught of Fire</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerBlitzingFusillade ? (
+                <label className="checkbox-row" title={blitzingFusilladeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerBlitzingFusilladeActive}
+                    onChange={(event) => setAttackerBlitzingFusilladeActive(event.target.checked)}
+                  />
+                  <span>Use Blitzing Fusillade</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerShockAssault ? (
+                <label className="checkbox-row" title={shockAssaultTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerShockAssaultActive}
+                    onChange={(event) => setAttackerShockAssaultActive(event.target.checked)}
+                  />
+                  <span>Use Shock Assault</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerStrikeFromTheShadows ? (
+                <label className="checkbox-row" title={strikeFromTheShadowsTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerStrikeFromTheShadowsActive}
+                    onChange={(event) => setAttackerStrikeFromTheShadowsActive(event.target.checked)}
+                  />
+                  <span>Use Strike from the Shadows</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerHeroesOfTheChapter ? (
+                <label className="checkbox-row" title={heroesOfTheChapterTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerHeroesOfTheChapterActive}
+                    onChange={(event) => setAttackerHeroesOfTheChapterActive(event.target.checked)}
+                  />
+                  <span>Use Heroes of the Chapter</span>
+                </label>
+              ) : null}
+
+              {canUseExtremisLevelThreat ? (
+                <label className="checkbox-row" title={getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Extremis-level Threat')?.rules_text || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerExtremisLevelThreatActive}
+                    onChange={(event) => setAttackerExtremisLevelThreatActive(event.target.checked)}
+                  />
+                  <span>Use Extremis-level Threat</span>
                 </label>
               ) : null}
 
@@ -13732,6 +14894,28 @@ function App() {
                     onChange={(event) => setDefenderUnbreakableLinesActive(event.target.checked)}
                   />
                   <span>Defender uses Unbreakable Lines</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderRideHardRideFast ? (
+                <label className="checkbox-row combat-option-defender" title={rideHardRideFastTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderRideHardRideFastActive}
+                    onChange={(event) => setDefenderRideHardRideFastActive(event.target.checked)}
+                  />
+                  <span>Defender uses Ride Hard, Ride Fast</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderLegendaryFortitude ? (
+                <label className="checkbox-row combat-option-defender" title={legendaryFortitudeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderLegendaryFortitudeActive}
+                    onChange={(event) => setDefenderLegendaryFortitudeActive(event.target.checked)}
+                  />
+                  <span>Defender uses Legendary Fortitude</span>
                 </label>
               ) : null}
 
@@ -13822,6 +15006,39 @@ function App() {
                     onChange={(event) => setAttackerTargetWithinNine(event.target.checked)}
                   />
                   <span>Defender is within 9"</span>
+                </label>
+              ) : null}
+
+              {canUseTargetWithinTwelve ? (
+                <label className="checkbox-row combat-option-defender" title={'Used by effects that change at 12", including Firestorm Assault Force and Vanguard Spearhead rules.'}>
+                  <input
+                    type="checkbox"
+                    checked={attackerTargetWithinTwelve}
+                    onChange={(event) => setAttackerTargetWithinTwelve(event.target.checked)}
+                  />
+                  <span>Defender is within 12"</span>
+                </label>
+              ) : null}
+
+              {canUseTargetClosestEligibleWithinSix ? (
+                <label className="checkbox-row combat-option-defender" title={crucibleOfBattleTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerTargetClosestEligibleWithinSix}
+                    onChange={(event) => setAttackerTargetClosestEligibleWithinSix(event.target.checked)}
+                  />
+                  <span>Defender is closest eligible target within 6"</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerDisembarkedFromTransport ? (
+                <label className="checkbox-row combat-option-attacker" title={onslaughtOfFireTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerDisembarkedFromTransport}
+                    onChange={(event) => setAttackerDisembarkedFromTransport(event.target.checked)}
+                  />
+                  <span>Attacker disembarked from a Transport this turn</span>
                 </label>
               ) : null}
 
@@ -14278,6 +15495,22 @@ function App() {
                 </label>
               ) : null}
 
+              {canUseArmouredWrathRerollType ? (
+                <label title={armouredWrathRerollTooltip}>
+                  <span>Armoured Wrath Reroll</span>
+                  <select
+                    title={armouredWrathRerollTooltip}
+                    value={attackerArmouredWrathRerollType}
+                    onChange={(event) => setAttackerArmouredWrathRerollType(event.target.value)}
+                  >
+                    <option value="">Select reroll</option>
+                    <option value="hit">Hit roll</option>
+                    <option value="wound">Wound roll</option>
+                    <option value="damage">Damage roll</option>
+                  </select>
+                </label>
+              ) : null}
+
               {attackerEnhancementName === 'Stubborn Tenacity' ? (
                 <label className="checkbox-row" title={attackerBelowStartingStrengthTooltip}>
                   <input
@@ -14286,6 +15519,28 @@ function App() {
                     onChange={(event) => setAttackerBelowStartingStrength(event.target.checked)}
                   />
                   <span>Attacker is below Starting Strength</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerBelowHalfStrength ? (
+                <label className="checkbox-row" title={heroesOfTheChapterTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerBelowHalfStrength}
+                    onChange={(event) => setAttackerBelowHalfStrength(event.target.checked)}
+                  />
+                  <span>Attacker is below Half-strength</span>
+                </label>
+              ) : null}
+
+              {canUseImperiumsSwordPulse ? (
+                <label className="checkbox-row" title={attackerEnhancementTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerImperiumsSwordActive}
+                    onChange={(event) => setAttackerImperiumsSwordActive(event.target.checked)}
+                  />
+                  <span>Use The Imperium's Sword unit bonus</span>
                 </label>
               ) : null}
 

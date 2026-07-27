@@ -1808,6 +1808,15 @@ class CombatSimulator:
         normalized_keyword = keyword.lower()
         return any(str(unit_keyword).lower() == normalized_keyword for unit_keyword in unit.get("keywords", []))
 
+    def unit_is_first_company_veteran_target(self, unit: dict[str, Any]) -> bool:
+        unit_name = str(unit.get("name", "")).lower()
+        return (
+            self.unit_has_keyword(unit, "terminator")
+            or "bladeguard veteran squad" in unit_name
+            or "sternguard veteran squad" in unit_name
+            or "vanguard veteran squad" in unit_name
+        )
+
     @staticmethod
     def get_roll_bounds(value: int | str) -> tuple[int, int]:
         if isinstance(value, int):
@@ -2685,6 +2694,7 @@ class CombatSimulator:
         hit_roll = self.die_roll()
         self.log(f"{unit_name} rolls a {hit_roll} to hit")
         hit_modifier = self.get_hit_roll_modifier(weapon, attack_context)
+        hit_required = max(2, weapon["skill"] - int(attack_context.get("attacker_skill_modifier", 0)))
         modified_hit_roll = hit_roll + hit_modifier
         if hit_modifier != 0:
             self.log(f"Hit roll modifier applied: {hit_modifier:+d}")
@@ -2699,7 +2709,7 @@ class CombatSimulator:
             return 0, 0
 
         if (
-            modified_hit_roll < weapon["skill"]
+            modified_hit_roll < hit_required
             and attack_context.get("reroll_all_hit_rolls", False)
         ):
             self.stats["hit_rerolls_used"] += 1
@@ -2707,11 +2717,11 @@ class CombatSimulator:
             self.log(f"{unit_name} re-rolls the failed hit into a {reroll_hit}")
             hit_roll = reroll_hit
             modified_hit_roll = hit_roll + hit_modifier
-            if modified_hit_roll >= weapon["skill"]:
+            if modified_hit_roll >= hit_required:
                 self.stats["hit_reroll_successes"] += 1
 
         if (
-            modified_hit_roll < weapon["skill"]
+            modified_hit_roll < hit_required
             and hit_roll == 1
             and attack_context.get("reroll_hit_rolls_of_1", False)
         ):
@@ -2720,10 +2730,10 @@ class CombatSimulator:
             self.log(f"{unit_name} re-rolls the hit roll of 1 into a {reroll_hit}")
             hit_roll = reroll_hit
             modified_hit_roll = hit_roll + hit_modifier
-            if modified_hit_roll >= weapon["skill"]:
+            if modified_hit_roll >= hit_required:
                 self.stats["hit_reroll_successes"] += 1
 
-        if modified_hit_roll < weapon["skill"] and attack_context.get("oath_of_moment_active", False):
+        if modified_hit_roll < hit_required and attack_context.get("oath_of_moment_active", False):
             self.stats["hit_rerolls_used"] += 1
             reroll_hit = self.die_roll()
             self.log(f"{unit_name} re-rolls the failed hit with Oath of Moment into a {reroll_hit}")
@@ -2737,10 +2747,10 @@ class CombatSimulator:
                 self.stats["failed_hit_attacks"] += 1
                 self.log(f"{unit_name} fails to hit because Indirect Fire with no visibility fails on 1-3")
                 return 0, 0
-            if modified_hit_roll >= weapon["skill"]:
+            if modified_hit_roll >= hit_required:
                 self.stats["hit_reroll_successes"] += 1
 
-        if modified_hit_roll < weapon["skill"]:
+        if modified_hit_roll < hit_required:
             sequence_state = attack_context.get("sequence_state", {})
             remaining_hit_rerolls = int(sequence_state.get("remaining_hit_rerolls", 0))
             if remaining_hit_rerolls > 0:
@@ -2750,10 +2760,10 @@ class CombatSimulator:
                 self.log(f"{unit_name} uses Heroes All to re-roll the failed hit into a {reroll_hit}")
                 hit_roll = reroll_hit
                 modified_hit_roll = hit_roll + hit_modifier
-                if modified_hit_roll >= weapon["skill"]:
+                if modified_hit_roll >= hit_required:
                     self.stats["hit_reroll_successes"] += 1
 
-        if modified_hit_roll < weapon["skill"]:
+        if modified_hit_roll < hit_required:
             self.stats["failed_hit_attacks"] += 1
             self.log(f"{unit_name} failed to hit")
             return 0, 0
@@ -2957,6 +2967,9 @@ class CombatSimulator:
         damage_modifier = attack_context.get("target_damage_modifier", 0)
         if damage_modifier != 0 and damage > 0:
             damage = max(1, damage + damage_modifier)
+        target_damage_max = attack_context.get("target_damage_max")
+        if target_damage_max is not None and damage > int(target_damage_max):
+            damage = int(target_damage_max)
         return damage, melta_bonus
 
     def apply_temporary_target_modifiers(
@@ -3436,7 +3449,10 @@ class CombatSimulator:
             self.log("Oath of Moment adds +1 to wound for this attack")
         if attack_context.get("critical_hit_threshold", 6) < 6:
             self.log(f"Critical hits are scored on {attack_context['critical_hit_threshold']}+ for this attack")
-        self.log(f"Needs {weapon['skill']}+ to hit")
+        hit_required = max(2, weapon["skill"] - int(attack_context.get("attacker_skill_modifier", 0)))
+        if attack_context.get("attacker_skill_modifier", 0) > 0:
+            self.log(f"Active skill improvement: +{attack_context['attacker_skill_modifier']}")
+        self.log(f"Needs {hit_required}+ to hit")
         self.log(f"Needs {to_wound}+ to wound")
         active_hit_modifier = self.get_hit_roll_modifier(weapon, attack_context)
         if active_hit_modifier != 0:
@@ -3783,6 +3799,14 @@ class CombatSimulator:
         options: dict[str, Any],
     ) -> dict[str, int]:
         attacker_detachment_name = str(options.get("attacker_detachment_name", "") or "")
+        if attacker_detachment_name == "Ironstorm Spearhead":
+            reroll_type = str(options.get("attacker_armoured_wrath_reroll_type", "") or "").lower()
+            return {
+                "remaining_hit_rerolls": 1 if reroll_type == "hit" else 0,
+                "remaining_wound_rerolls": 1 if reroll_type == "wound" else 0,
+                "remaining_damage_rerolls": 1 if reroll_type == "damage" else 0,
+            }
+
         if attacker_detachment_name != "Saga of the Bold":
             return {
                 "remaining_hit_rerolls": 0,
@@ -3826,6 +3850,19 @@ class CombatSimulator:
         attacker_enhancement_name = str(options.get("attacker_enhancement_name", "") or "")
         defender_enhancement_name = str(options.get("defender_enhancement_name", "") or "")
         attacker_enhancement_bearer_name = str(options.get("attacker_enhancement_bearer_name", "") or "")
+        attacker_combat_doctrine = str(options.get("attacker_combat_doctrine", "") or "").lower()
+        attacker_devastator_doctrine_active = (
+            attacker_detachment_name == "Gladius Task Force"
+            and attacker_combat_doctrine == "devastator"
+        )
+        attacker_assault_doctrine_active = (
+            attacker_detachment_name == "Gladius Task Force"
+            and attacker_combat_doctrine == "assault"
+        )
+        attacker_anvil_siege_force_active = attacker_detachment_name == "Anvil Siege Force"
+        attacker_firestorm_assault_force_active = attacker_detachment_name == "Firestorm Assault Force"
+        defender_vanguard_spearhead_active = defender_detachment_name == "Vanguard Spearhead"
+        original_weapon_has_heavy = self.weapon_has_keyword(weapon, "Heavy")
         attacker_has_attached_character = bool(options.get("attacker_has_attached_character", False))
         defender_has_attached_character = bool(options.get("defender_has_attached_character", False))
         attacker_package_model_count = int(options.get("attacker_package_model_count", attacker_unit.get("models", 0)))
@@ -3863,6 +3900,90 @@ class CombatSimulator:
             add_keywords_to_matching_weapons(
                 {"Heavy", "Ignores Cover", "Assault"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if attacker_anvil_siege_force_active:
+            add_keywords_to_matching_weapons(
+                {"Heavy"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if attacker_firestorm_assault_force_active:
+            add_keywords_to_matching_weapons(
+                {"Assault"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if bool(options.get("attacker_blitzing_fusillade_active", False)):
+            add_keywords_to_matching_weapons(
+                {"Assault"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+            add_keywords_to_matching_weapons(
+                {"SH1"},
+                lambda candidate_weapon: (
+                    candidate_weapon["range"].lower() != "melee"
+                    and self.weapon_has_keyword(candidate_weapon, "Assault")
+                ),
+            )
+        if (
+            attacker_enhancement_name == "Fire Discipline"
+            and attacker_has_attached_character
+        ):
+            add_keywords_to_matching_weapons(
+                {"SH1"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if bool(options.get("attacker_storm_of_fire_active", False)):
+            add_keywords_to_matching_weapons(
+                {"Ignores Cover"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if (
+            attacker_enhancement_name == "Architect of War"
+            and attacker_has_attached_character
+        ):
+            add_keywords_to_matching_weapons(
+                {"Ignores Cover"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if (
+            attacker_enhancement_name == "Target Augury Web"
+            and self.unit_has_keyword(attacker_unit, "vehicle")
+        ):
+            temporary_weapon_keywords.add("LH")
+        if bool(options.get("attacker_honour_the_chapter_active", False)):
+            add_keywords_to_matching_weapons(
+                {"Lance"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if bool(options.get("attacker_battle_drill_recall_active", False)):
+            add_keywords_to_matching_weapons(
+                {"SH1"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if bool(options.get("attacker_immolation_protocols_active", False)):
+            add_keywords_to_matching_weapons(
+                {"DW"},
+                lambda candidate_weapon: self.weapon_has_keyword(candidate_weapon, "Torrent"),
+            )
+        if (
+            bool(options.get("attacker_mercy_is_weakness_active", False))
+            and bool(options.get("target_below_starting_strength", False))
+        ):
+            temporary_weapon_keywords.add("SH1")
+        if (
+            bool(options.get("attacker_shock_assault_active", False))
+            and self.unit_has_keyword(attacker_unit, "mounted")
+        ):
+            add_keywords_to_matching_weapons(
+                {"Lance"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if (
+            bool(options.get("attacker_surgical_strikes_active", False))
+            and self.unit_is_first_company_veteran_target(attacker_unit)
+        ):
+            add_keywords_to_matching_weapons(
+                {"Precision"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
             )
         if bool(options.get("attacker_unforgiven_fury_active", False)):
             temporary_weapon_keywords.add("LH")
@@ -4032,6 +4153,26 @@ class CombatSimulator:
             attacker_hit_modifier -= 1
         if bool(options.get("defender_stalkin_taktiks_active", False)) and weapon["range"].lower() != "melee" and self.unit_has_keyword(target_state, "infantry"):
             attacker_hit_modifier -= 1
+        defender_ride_hard_ride_fast_applies = (
+            bool(options.get("defender_ride_hard_ride_fast_active", False))
+            and weapon["range"].lower() != "melee"
+            and (
+                self.unit_has_keyword(target_state, "mounted")
+                or (
+                    self.unit_has_keyword(target_state, "vehicle")
+                    and self.unit_has_keyword(target_state, "fly")
+                )
+            )
+        )
+        if defender_ride_hard_ride_fast_applies:
+            attacker_hit_modifier -= 1
+        defender_shadow_masters_applies = (
+            defender_vanguard_spearhead_active
+            and weapon["range"].lower() != "melee"
+            and not bool(options.get("attacker_target_within_12", False))
+        )
+        if defender_shadow_masters_applies:
+            attacker_hit_modifier -= 1
         if (
             bool(options.get("plunging_fire_active", False))
             and weapon["range"].lower() != "melee"
@@ -4039,6 +4180,51 @@ class CombatSimulator:
             and not self.unit_has_keyword(target_state, "aircraft")
         ):
             attacker_hit_modifier += 1
+        if (
+            bool(options.get("attacker_ancient_fury_active", False))
+            and self.unit_has_keyword(attacker_unit, "walker")
+        ):
+            attacker_hit_modifier += 1
+        if (
+            bool(options.get("attacker_onslaught_of_fire_active", False))
+            and bool(options.get("attacker_disembarked_from_transport", False))
+            and bool(options.get("attacker_target_within_12", False))
+            and weapon["range"].lower() != "melee"
+        ):
+            attacker_hit_modifier += 1
+        if (
+            bool(options.get("attacker_heroes_of_the_chapter_active", False))
+            and self.unit_is_first_company_veteran_target(attacker_unit)
+        ):
+            attacker_hit_modifier += 1
+        attacker_skill_modifier = 0
+        if (
+            bool(options.get("attacker_strike_from_the_shadows_active", False))
+            and weapon["range"].lower() != "melee"
+            and self.unit_has_keyword(attacker_unit, "infantry")
+            and not bool(options.get("attacker_target_within_12", False))
+        ):
+            attacker_skill_modifier += 1
+            attacker_ap_modifier += 1
+        if (
+            bool(options.get("attacker_heroes_of_the_chapter_active", False))
+            and bool(options.get("attacker_below_half_strength", False))
+            and self.unit_is_first_company_veteran_target(attacker_unit)
+        ):
+            attacker_outgoing_wound_modifier += 1
+        if (
+            attacker_anvil_siege_force_active
+            and original_weapon_has_heavy
+            and bool(options.get("remained_stationary", False))
+            and weapon["range"].lower() != "melee"
+        ):
+            attacker_outgoing_wound_modifier += 1
+        if (
+            bool(options.get("attacker_crucible_of_battle_active", False))
+            and bool(options.get("attacker_target_closest_eligible_within_6", False))
+            and self.unit_has_keyword(attacker_unit, "infantry")
+        ):
+            attacker_outgoing_wound_modifier += 1
         if bool(options.get("attacker_unbridled_ferocity_active", False)) and weapon["range"].lower() == "melee":
             attacker_outgoing_wound_modifier += 1
         if bool(options.get("attacker_full_throttle_active", False)) and weapon["range"].lower() == "melee":
@@ -4079,6 +4265,21 @@ class CombatSimulator:
                 reroll_all_hit_rolls = True
             else:
                 reroll_hit_rolls_of_1 = True
+        if (
+            bool(options.get("attacker_no_threat_too_great_active", False))
+            and weapon["range"].lower() != "melee"
+            and (
+                self.unit_has_keyword(target_state, "monster")
+                or self.unit_has_keyword(target_state, "vehicle")
+            )
+        ):
+            reroll_all_wound_rolls = True
+        if (
+            bool(options.get("attacker_extremis_level_threat_active", False))
+            and bool(options.get("oath_of_moment_active", False))
+            and self.unit_has_oath_of_moment(attacker_unit)
+        ):
+            reroll_all_wound_rolls = True
         if (
             attacker_enhancement_name == "'Eadstompa"
             and attacker_unit["name"] == attacker_enhancement_bearer_name
@@ -4121,6 +4322,42 @@ class CombatSimulator:
             melee_attack_bonus += weapons_of_the_first_legion_bonus
             melee_strength_bonus += weapons_of_the_first_legion_bonus
             melee_damage_bonus += weapons_of_the_first_legion_bonus
+        if (
+            attacker_enhancement_name == "The Honour Vehement"
+            and weapon["range"].lower() == "melee"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+        ):
+            honour_vehement_bonus = 2 if attacker_assault_doctrine_active else 1
+            melee_attack_bonus += honour_vehement_bonus
+            melee_strength_bonus += honour_vehement_bonus
+        if (
+            attacker_enhancement_name == "War-tempered Artifice"
+            and weapon["range"].lower() == "melee"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+        ):
+            melee_strength_bonus += 3
+        if (
+            attacker_enhancement_name == "Fury of the Storm"
+            and weapon["range"].lower() == "melee"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+        ):
+            fury_bonus = 2 if bool(options.get("charged_this_turn", False)) else 1
+            melee_strength_bonus += fury_bonus
+            attacker_ap_modifier += fury_bonus
+        if (
+            attacker_enhancement_name == "The Imperium's Sword"
+            and weapon["range"].lower() == "melee"
+        ):
+            if bool(options.get("attacker_imperiums_sword_active", False)):
+                melee_attack_bonus += 1
+            elif attacker_unit["name"] == attacker_enhancement_bearer_name:
+                melee_attack_bonus += 1
+        if (
+            attacker_firestorm_assault_force_active
+            and bool(options.get("attacker_target_within_12", False))
+            and weapon["range"].lower() != "melee"
+        ):
+            ranged_strength_bonus += 1
         if bool(options.get("attacker_waaagh_active", False)) and self.unit_has_waaagh(attacker_unit):
             melee_attack_bonus += 1
             melee_strength_bonus += 1
@@ -4211,6 +4448,18 @@ class CombatSimulator:
             and self.unit_has_multiple_melee_weapons(attacker_unit)
         ):
             temporary_weapon_keywords.add("Twin-linked")
+        if (
+            bool(options.get("attacker_honour_the_chapter_active", False))
+            and attacker_assault_doctrine_active
+            and weapon["range"].lower() == "melee"
+        ):
+            attacker_ap_modifier += 1
+        if (
+            bool(options.get("attacker_storm_of_fire_active", False))
+            and attacker_devastator_doctrine_active
+            and weapon["range"].lower() != "melee"
+        ):
+            attacker_ap_modifier += 1
 
         attacker_feel_no_pain = 0
         if bool(options.get("attacker_pennant_of_remembrance_active", False)):
@@ -4225,6 +4474,8 @@ class CombatSimulator:
         if bool(options.get("defender_unbreakable_lines_active", False)):
             target_incoming_wound_modifier -= 1
         if bool(options.get("defender_ard_as_nails_active", False)):
+            target_incoming_wound_modifier -= 1
+        if defender_ride_hard_ride_fast_applies:
             target_incoming_wound_modifier -= 1
         if self.target_state_has_ability(target_state, "the emperor's shield"):
             target_incoming_wound_modifier -= 1
@@ -4270,6 +4521,12 @@ class CombatSimulator:
         ):
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 4)
         if (
+            defender_enhancement_name == "Stoic Defender"
+            and defender_has_attached_character
+            and bool(options.get("defender_on_objective", False))
+        ):
+            target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 6)
+        if (
             self.target_state_has_ability(target_state, "Psychic Hood")
             and self.weapon_has_keyword(weapon, "Psychic")
         ):
@@ -4301,6 +4558,22 @@ class CombatSimulator:
         )
 
         target_damage_modifier = -1 if bool(options.get("defender_extra_gubbinz_active", False)) else 0
+        if (
+            bool(options.get("defender_legendary_fortitude_active", False))
+            and weapon["range"].lower() == "melee"
+            and self.unit_is_first_company_veteran_target(target_state)
+        ):
+            target_damage_modifier -= 1
+        target_damage_max = None
+        if (
+            defender_enhancement_name == "Adamantine Mantle"
+            and bool(options.get("defender_enhancement_bearer_is_single_model_unit", False))
+            and not defender_has_attached_character
+        ):
+            if self.weapon_has_keyword(weapon, "Melta") or self.weapon_has_keyword(weapon, "Torrent"):
+                target_damage_max = 1
+            else:
+                target_damage_modifier -= 1
         critical_wound_ap_modifier = 0
         if (
             attacker_detachment_name == "Dread Mob"
@@ -4391,6 +4664,16 @@ class CombatSimulator:
                         and bool(options.get("attacker_prey_active", False)) else 6,
                         5 if bool(options.get("attacker_blitza_fire_active", False))
                         and bool(options.get("attacker_target_within_9", False)) else 6,
+                        5 if attacker_enhancement_name == "Fire Discipline"
+                        and attacker_devastator_doctrine_active
+                        and attacker_has_attached_character
+                        and weapon["range"].lower() != "melee" else 6,
+                        5 if bool(options.get("attacker_battle_drill_recall_active", False))
+                        and bool(options.get("remained_stationary", False))
+                        and weapon["range"].lower() != "melee" else 6,
+                        5 if bool(options.get("attacker_mercy_is_weakness_active", False))
+                        and bool(options.get("target_below_starting_strength", False))
+                        and self.unit_has_keyword(attacker_unit, "vehicle") else 6,
                         5 if self.ability_names_include(attacker_or_attached_ability_names, "prophet of da great waaagh")
                         and bool(options.get("attacker_waaagh_active", False))
                         and weapon["range"].lower() == "melee" else 6,
@@ -4398,6 +4681,7 @@ class CombatSimulator:
                 ],
             ),
             "attacker_hit_modifier": attacker_hit_modifier,
+            "attacker_skill_modifier": attacker_skill_modifier,
             "attacker_outgoing_wound_modifier": attacker_outgoing_wound_modifier,
             "attacker_ap_modifier": attacker_ap_modifier,
             "melee_attack_bonus": melee_attack_bonus,
@@ -4410,9 +4694,16 @@ class CombatSimulator:
             "target_ap_modifier": target_ap_modifier,
             "target_invulnerable_save": target_invulnerable_save,
             "target_feel_no_pain": target_feel_no_pain,
-            "target_has_bonus_cover": bool(options.get("defender_stalkin_taktiks_active", False)) and weapon["range"].lower() != "melee",
+            "target_has_bonus_cover": (
+                (
+                    bool(options.get("defender_stalkin_taktiks_active", False))
+                    or defender_shadow_masters_applies
+                )
+                and weapon["range"].lower() != "melee"
+            ),
             "target_has_stealth": target_has_stealth,
             "target_damage_modifier": target_damage_modifier,
+            "target_damage_max": target_damage_max,
             "critical_wound_ap_modifier": critical_wound_ap_modifier,
             "hazardous_fail_threshold": hazardous_fail_threshold,
             "attacker_active_ability_names": attacker_active_ability_names,
