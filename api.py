@@ -152,6 +152,7 @@ class SimulationOptions(BaseModel):
     attacker_unbridled_ferocity_active: bool = False
     attacker_waaagh_active: bool = False
     defender_waaagh_active: bool = False
+    attacker_hyper_adaptation: str | None = None
     attacker_prey_active: bool = False
     attacker_target_within_9: bool = False
     attacker_target_within_12: bool = False
@@ -164,6 +165,12 @@ class SimulationOptions(BaseModel):
     attacker_try_dat_button_effects: list[str] = Field(default_factory=list)
     attacker_try_dat_button_hazardous: bool = False
     attacker_unbridled_carnage_active: bool = False
+    attacker_adrenal_surge_active: bool = False
+    attacker_rampaging_monstrosities_active: bool = False
+    attacker_swarm_guided_salvoes_active: bool = False
+    attacker_massive_impact_active: bool = False
+    defender_savage_roar_active: bool = False
+    defender_savage_roar_battleshock_failed: bool = False
     defender_ard_as_nails_active: bool = False
     attacker_drag_it_down_active: bool = False
     defender_stalkin_taktiks_active: bool = False
@@ -256,6 +263,7 @@ class UnitRulesRequest(BaseModel):
     loadout: dict[str, Any] = Field(default_factory=dict)
     model_count: int | None = Field(default=None, ge=1)
     model_counts: dict[str, int] = Field(default_factory=dict)
+    battle_shock_dice_count: int = Field(default=2, ge=1, le=6)
     seed: int | None = None
 
 
@@ -315,6 +323,7 @@ class CommandPhaseRequest(BaseModel):
     active_player_cp: int = Field(default=0, ge=0)
     opponent_cp: int = Field(default=0, ge=0)
     resolve_battle_shock: bool = False
+    battle_shock_dice_count: int = Field(default=2, ge=1, le=6)
     seed: int | None = None
 
 
@@ -1429,6 +1438,7 @@ def resolve_command_phase(request: CommandPhaseRequest) -> dict[str, object]:
             active_player_cp=request.active_player_cp,
             opponent_cp=request.opponent_cp,
             make_battle_shock_roll=request.resolve_battle_shock,
+            battle_shock_dice_count=request.battle_shock_dice_count,
         )
     except CombatSimulationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -1508,7 +1518,7 @@ def make_leadership_roll(request: UnitRulesRequest) -> dict[str, object]:
     unit = load_requested_unit(request)
     simulator = CombatSimulator(seed=request.seed)
     try:
-        return simulator.make_leadership_roll(unit)
+        return simulator.make_leadership_roll(unit, dice_count=request.battle_shock_dice_count)
     except CombatSimulationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -1518,7 +1528,7 @@ def make_battle_shock_roll(request: UnitRulesRequest) -> dict[str, object]:
     unit = load_requested_unit(request)
     simulator = CombatSimulator(seed=request.seed)
     try:
-        roll_result = simulator.make_battle_shock_roll(unit)
+        roll_result = simulator.make_battle_shock_roll(unit, dice_count=request.battle_shock_dice_count)
     except CombatSimulationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

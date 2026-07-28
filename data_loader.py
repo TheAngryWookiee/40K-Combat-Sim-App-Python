@@ -80,6 +80,7 @@ def resolve_unit_model_count(
 def normalize_wargear_name(value: Any) -> str:
     normalized = str(value).replace("\u00e2\u20ac\u201c", "-")
     normalized = re.sub(r"[\u2010-\u2015\u2212]", "-", normalized)
+    normalized = re.sub(r"\s+\?\s+", " - ", normalized)
     return re.sub(r"\s+", " ", normalized.strip().lower())
 
 
@@ -329,11 +330,43 @@ def normalize_weapon(weapon_data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def apply_dead_choppy_weapon_counts(
+    weapons: dict[str, Any],
+    weapon_bearer_counts: dict[str, int],
+) -> None:
+    for weapon_name, weapon in weapons.items():
+        raw_keywords = {
+            str(keyword).strip().lower()
+            for keyword in weapon.get("raw_keywords", [])
+        }
+        if "dead choppy" not in raw_keywords:
+            continue
+
+        normalized_weapon_name = normalize_wargear_name(weapon_name)
+        bearer_count = int(weapon_bearer_counts.get(normalized_weapon_name, 0))
+        if bearer_count <= 1:
+            continue
+
+        weapon["attacks"] = parse_roll_profile(weapon.get("attacks", 0)) + (bearer_count - 1)
+        weapon["dead_choppy_weapon_count"] = bearer_count
+        weapon_bearer_counts[normalized_weapon_name] = 1
+
+
 
 def extract_unit_effects(unit_data: dict[str, Any]) -> list[dict[str, Any]]:
     effects: list[dict[str, Any]] = []
     for ability in unit_data.get("abilities", []):
         effects.extend(ability.get("effects", []))
+        feel_no_pain_match = re.search(
+            r"feel\s+no\s+pain\s+(\d+)\+",
+            f"{ability.get('name', '')} {ability.get('rules_text', '')}",
+            re.IGNORECASE,
+        )
+        if feel_no_pain_match:
+            effects.append({
+                "type": "feel_no_pain",
+                "value": int(feel_no_pain_match.group(1)),
+            })
     for ability in unit_data.get("wargear_abilities", []):
         effects.extend(ability.get("effects", []))
     return effects
@@ -824,6 +857,10 @@ def apply_unit_loadout(
         for wargear_item in model.get("default_wargear", [])
         if get_wargear_quantity_and_name(wargear_item, available_weapon_names)[1] in available_weapon_names
     }
+    apply_dead_choppy_weapon_counts(
+        resolved_unit.get("weapons", {}),
+        weapon_bearer_counts,
+    )
     resolved_unit["weapon_bearer_counts"] = weapon_bearer_counts
     resolved_unit["target_profiles"] = build_target_profiles(
         resolved_unit,

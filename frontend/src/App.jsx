@@ -75,6 +75,7 @@ const initialOptions = {
   attacker_unbridled_ferocity_active: false,
   attacker_waaagh_active: false,
   defender_waaagh_active: false,
+  attacker_hyper_adaptation: 'swarming_instincts',
   attacker_prey_active: false,
   attacker_target_within_9: false,
   attacker_target_within_12: false,
@@ -87,6 +88,12 @@ const initialOptions = {
   attacker_try_dat_button_effects: [],
   attacker_try_dat_button_hazardous: false,
   attacker_unbridled_carnage_active: false,
+  attacker_adrenal_surge_active: false,
+  attacker_rampaging_monstrosities_active: false,
+  attacker_swarm_guided_salvoes_active: false,
+  attacker_massive_impact_active: false,
+  defender_savage_roar_active: false,
+  defender_savage_roar_battleshock_failed: false,
   defender_ard_as_nails_active: false,
   attacker_drag_it_down_active: false,
   defender_stalkin_taktiks_active: false,
@@ -161,6 +168,13 @@ const KULT_OF_SPEED = 'Kult of Speed'
 const DREAD_MOB = 'Dread Mob'
 const GREEN_TIDE = 'Green Tide'
 const BULLY_BOYZ = 'Bully Boyz'
+const INVASION_FLEET = 'Invasion Fleet'
+const CRUSHER_STAMPEDE = 'Crusher Stampede'
+const HYPER_ADAPTATION_OPTIONS = [
+  { id: 'swarming_instincts', label: 'Swarming Instincts' },
+  { id: 'hyper_aggression', label: 'Hyper-aggression' },
+  { id: 'hive_predators', label: 'Hive Predators' },
+]
 const AUTH_VERIFY_EMAIL_PATH = 'verify-email'
 const MATRIX_VIEW_GLOBAL = 'global'
 const MATRIX_VIEW_MINE = 'mine'
@@ -1367,6 +1381,24 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
     ))
   }
 
+  if (detachment.name === INVASION_FLEET) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Perfectly Adapted'
+      || enhancement.name === 'Adaptive Biology'
+      || enhancement.name === 'Synaptic Linchpin'
+    ))
+  }
+
+  if (detachment.name === CRUSHER_STAMPEDE) {
+    if (!unitHasKeyword(enhancementBearerUnit, 'monster')) {
+      return []
+    }
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Monstrous Nemesis'
+      || enhancement.name === 'Null Nodules'
+    ))
+  }
+
   return []
 }
 
@@ -1460,6 +1492,22 @@ function getDefenderEnhancementOptions(detachment, enhancementBearerUnit) {
     return (detachment.enhancements || []).filter(
       (enhancement) => enhancement.name === 'Da Biggest Boss',
     )
+  }
+
+  if (detachment.name === INVASION_FLEET) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Adaptive Biology'
+      || enhancement.name === 'Synaptic Linchpin'
+    ))
+  }
+
+  if (detachment.name === CRUSHER_STAMPEDE) {
+    if (!unitHasKeyword(enhancementBearerUnit, 'monster')) {
+      return []
+    }
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Null Nodules'
+    ))
   }
 
   return []
@@ -1575,6 +1623,20 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       return stratagem.name === 'Armed to da Teef'
     }
 
+    if (detachment.name === INVASION_FLEET) {
+      return stratagem.name === 'Adrenal Surge' && !isRangedWeapon
+    }
+
+    if (detachment.name === CRUSHER_STAMPEDE) {
+      if (!unitHasKeyword(unit, 'monster')) {
+        return false
+      }
+      if (stratagem.name === 'Rampaging Monstrosities' || stratagem.name === 'Massive Impact') {
+        return !isRangedWeapon
+      }
+      return stratagem.name === 'Swarm-guided Salvoes' && isRangedWeapon
+    }
+
     return false
   })
 }
@@ -1649,6 +1711,14 @@ function getDefenderStratagemOptions(detachment, selectedWeapon, unit) {
 
     if (detachment.name === BULLY_BOYZ) {
       return stratagem.name === 'Hulking Brutes'
+    }
+
+    if (detachment.name === CRUSHER_STAMPEDE) {
+      return (
+        stratagem.name === 'Savage Roar'
+        && selectedWeapon?.range === 'Melee'
+        && unitHasKeyword(unit, 'monster')
+      )
     }
 
     return false
@@ -1821,6 +1891,7 @@ function buildSimulationPayload(state) {
     attacker_unbridled_ferocity_active: state.attackerUnbridledFerocityActive,
     attacker_waaagh_active: state.attackerWaaaghActive,
     defender_waaagh_active: state.defenderWaaaghActive,
+    attacker_hyper_adaptation: state.attackerHyperAdaptation || null,
     attacker_prey_active: state.attackerPreyActive,
     attacker_target_within_9: state.attackerTargetWithinNine,
     attacker_target_within_12: state.attackerTargetWithinTwelve,
@@ -1833,6 +1904,12 @@ function buildSimulationPayload(state) {
     attacker_try_dat_button_effects: state.attackerTryDatButtonEffects || [],
     attacker_try_dat_button_hazardous: state.attackerTryDatButtonHazardous,
     attacker_unbridled_carnage_active: state.attackerUnbridledCarnageActive,
+    attacker_adrenal_surge_active: state.attackerAdrenalSurgeActive,
+    attacker_rampaging_monstrosities_active: state.attackerRampagingMonstrositiesActive,
+    attacker_swarm_guided_salvoes_active: state.attackerSwarmGuidedSalvoesActive,
+    attacker_massive_impact_active: state.attackerMassiveImpactActive,
+    defender_savage_roar_active: state.defenderSavageRoarActive,
+    defender_savage_roar_battleshock_failed: state.defenderSavageRoarBattleshockFailed,
     defender_ard_as_nails_active: state.defenderArdAsNailsActive,
     attacker_drag_it_down_active: state.attackerDragItDownActive,
     defender_stalkin_taktiks_active: state.defenderStalkinTaktiksActive,
@@ -2281,6 +2358,23 @@ function unitHasWaaagh(unit) {
     const name = String(ability.name || '').toLowerCase()
     const rulesText = String(ability.rules_text || '').toLowerCase()
     return name.includes('waaagh!') || rulesText.includes('waaagh!')
+  })
+}
+
+function unitHasSynapse(unit) {
+  return unitHasKeyword(unit, 'synapse')
+    || [...(unit?.abilities || []), ...(unit?.wargear_abilities || [])].some((ability) => {
+      const name = String(ability.name || '').toLowerCase()
+      const rulesText = String(ability.rules_text || '').toLowerCase()
+      return name.includes('synapse') || rulesText.includes('synapse')
+    })
+}
+
+function unitHasShadowInTheWarp(unit) {
+  return [...(unit?.abilities || []), ...(unit?.wargear_abilities || [])].some((ability) => {
+    const name = String(ability.name || '').toLowerCase()
+    const rulesText = String(ability.rules_text || '').toLowerCase()
+    return name.includes('shadow in the warp') || rulesText.includes('shadow in the warp')
   })
 }
 
@@ -4836,6 +4930,24 @@ function selectedWeaponsIncludeProfileGroup(selectedWeapons, profileGroupName) {
 }
 
 const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
+  'catechism of fire': ({ phaseId, selectedWeapons, targetWithinTwelve }) => (
+    phaseId === 'shooting'
+    && targetWithinTwelve
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'close-quarters firepower': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'deeds of heroism': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'forgefather': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => (
+      weaponHasRawKeyword(weapon, 'Torrent')
+      || weaponHasRawKeyword(weapon, 'Melta')
+    ))
+  ),
   'hail of bullets': ({ phaseId, selectedWeapons }) => (
     phaseId === 'shooting' && selectedWeaponsIncludeProfileGroup(selectedWeapons, 'bolt rifle')
   ),
@@ -4865,28 +4977,138 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
     && selectedWeapons.some((weapon) => weapon.range === 'Melee')
   ),
   'headhunters': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'oath of rynn': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'ammo runt': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'mekaniak': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'shooty power trip - strength': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'shooty power trip - attacks': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'on da hunt': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeaponsIncludeProfileGroup(selectedWeapons, 'butcha boyz')
+  ),
+  'spirit of gork': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'spirit of gork - lethal': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'bomb squig': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'bomb squigs': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'boom bomb': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'burna bomb': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'deff from above': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'drill through': ({ allowOutOfPhaseAbilities, selectedWeapons, chargedThisTurn }) => (
+    allowOutOfPhaseAbilities && chargedThisTurn && selectedWeapons.length > 0
+  ),
+  'squig mine': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
 }
 
 const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
+  'ammo runt',
+  'angel\'s wrath',
+  'annihilator protocols',
+  'armoured resilience',
+  'ballistus strike',
   'battle-lust',
+  'beastboss',
+  'big an\' shooty',
+  'big an\' stompy',
+  'billowing fumes',
+  'blastajet force field',
+  'blastajet attack run',
   'champion of the kingsguard',
+  'command squad',
   'cunning hunters',
+  'da bigger dey iz',
+  'dakkastorm',
+  'dat\'s our loot',
+  'decimator protocols',
+  'destructor',
+  'distraction grot',
+  'dok\'s toolz',
   "dok's sawy arrgh",
+  'drive-by dakka',
+  'duty eternal',
+  'executioner',
+  'ferocious rage',
+  'feel no pain',
+  'for the khan',
+  'fury of the first',
+  'gun-crazy show-offs',
+  'helix gauntlet',
+  'hold still and say',
+  'hood of hellfire',
+  'icon of obstinacy',
+  'interceptor',
+  'krumpin\' time',
+  'kustom force field',
   'litany of hate',
+  'mark the target',
+  'master of prescience',
+  'monster hunters',
+  'more dakka',
+  'mental fortress',
   'might is right',
   'oathbound',
   'prophet of da great waaagh!',
+  'pyromaniaks',
+  'psychic hood',
+  'priority target acquisition',
+  'ramshackle but rugged',
+  'reaping tally',
+  'rites of tempering',
+  'shield dome',
+  'shrouding',
+  'signum array',
+  'siege captain',
+  'signum',
+  'splat',
+  'speedboss',
+  'strafing run',
+  'super runts',
+  'sternguard focus',
+  'surgical precision',
+  'targeted intercession',
+  'targeter optics',
+  'tactical precision',
+  'tank hunters',
   'tempered ferocity',
   "the emperor's shield",
   'thunderous charge',
+  'total obliteration',
+  'to the last',
+  'unto the anvil',
+  'unstable oracle',
   'vanguard assault',
+  'veil of time',
   'violent fury',
   'waaagh! energy',
   'war howl',
 ])
 
 const CHARGE_DEPENDENT_COMBAT_ABILITIES = new Set([
+  'angel\'s wrath',
   'battle-lust',
+  'ferocious rage',
+  'drill through',
+  'for the khan',
   'thunderous charge',
   'vanguard assault',
 ])
@@ -4966,7 +5188,11 @@ function getPassiveCombatAbilityRules(units) {
   ])
     .filter(({ ability }) => {
       const normalizedName = String(ability.name || '').toLowerCase()
-      return Array.from(SUPPORTED_PASSIVE_COMBAT_ABILITIES).some((supportedName) => normalizedName.includes(supportedName))
+      const normalizedRuleText = `${ability.name || ''} ${ability.rules_text || ''}`.toLowerCase()
+      return Array.from(SUPPORTED_PASSIVE_COMBAT_ABILITIES).some((supportedName) => (
+        normalizedName.includes(supportedName)
+        || normalizedRuleText.includes(supportedName)
+      ))
     })
     .filter(({ ability }) => {
       const normalizedName = String(ability.name || '').toLowerCase()
@@ -5045,6 +5271,8 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
     targetUnit = null,
     waaaghActive = false,
     chargedThisTurn = false,
+    targetWithinTwelve = false,
+    allowOutOfPhaseAbilities = false,
     selectedEntries = null,
   } = context
   const collections = unitList.flatMap((unit) => [
@@ -5064,8 +5292,10 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
         selectedWeapons,
         selectedEntries,
         targetUnit,
+        targetWithinTwelve,
         waaaghActive,
         chargedThisTurn,
+        allowOutOfPhaseAbilities,
       }))
     })
     .filter(({ ability }) => {
@@ -5097,6 +5327,7 @@ function buildAttackerActiveRules({
   attackerDetachment,
   attackerEnhancementName,
   attackerCombatDoctrine,
+  attackerHyperAdaptation,
   attackerSagaCompleted,
   attackerEldersGuidanceActive,
   attackerBoastAchieved,
@@ -5118,10 +5349,13 @@ function buildAttackerActiveRules({
   attackerShockAssaultActive,
   attackerStrikeFromTheShadowsActive,
   attackerTargetWithinTwelve,
-  attackerTargetClosestEligibleWithinSix,
   attackerDisembarkedFromTransport,
   attackerUnforgivenFuryActive,
   attackerUnbridledFerocityActive,
+  attackerAdrenalSurgeActive,
+  attackerRampagingMonstrositiesActive,
+  attackerSwarmGuidedSalvoesActive,
+  attackerMassiveImpactActive,
   attackerStubbornTenacityActive,
   attackerWeaponsOfTheFirstLegionActive,
   attackerPennantOfRemembranceActive,
@@ -5159,6 +5393,7 @@ function buildAttackerActiveRules({
     selectedAttackWeapons,
     {
       targetUnit: defenderUnitDetails,
+      targetWithinTwelve: attackerTargetWithinTwelve,
       waaaghActive: attackerWaaaghActive,
       chargedThisTurn,
     },
@@ -5248,6 +5483,46 @@ function buildAttackerActiveRules({
       source: `${attackerDetachment.name} Rule`,
       text: detachmentRule?.rules_text || `${activeCombatDoctrine.label} is active for this attack.`,
     })
+  }
+
+  if (attackerDetachment?.name === INVASION_FLEET && attackerHyperAdaptation) {
+    const adaptation = HYPER_ADAPTATION_OPTIONS.find((option) => option.id === attackerHyperAdaptation)
+    const targetKeywords = new Set((defenderUnitDetails?.keywords || []).map((keyword) => String(keyword).toLowerCase()))
+    const activeTextByAdaptation = {
+      swarming_instincts: targetKeywords.has('infantry') || targetKeywords.has('swarm')
+        ? 'This attack has Sustained Hits 1 because the target is Infantry or Swarm.'
+        : 'This adaptation is selected, but the target is not Infantry or Swarm.',
+      hyper_aggression: targetKeywords.has('monster') || targetKeywords.has('vehicle')
+        ? 'This attack has Lethal Hits because the target is a Monster or Vehicle.'
+        : 'This adaptation is selected, but the target is not a Monster or Vehicle.',
+      hive_predators: targetKeywords.has('character')
+        ? 'Critical Hits with this attack have Precision because the target is a Character.'
+        : 'This adaptation is selected, but the target is not a Character.',
+    }
+    rules.push({
+      name: adaptation?.label || 'Hyper-adaptations',
+      source: `${attackerDetachment.name} Rule`,
+      text: activeTextByAdaptation[attackerHyperAdaptation] || getDetachmentEntry(attackerDetachment, 'rule', 'Hyper-adaptations')?.rules_text || '',
+    })
+  }
+
+  if (attackerDetachment?.name === CRUSHER_STAMPEDE && unitHasKeyword(attackerUnitDetails, 'monster')) {
+    const detachmentRule = getDetachmentEntry(attackerDetachment, 'rule', 'Enraged Behemoths')
+    if (attackerBelowStartingStrength || attackerBelowHalfStrength) {
+      rules.push({
+        name: 'Enraged Behemoths',
+        source: `${attackerDetachment.name} Rule`,
+        text: attackerBelowHalfStrength
+          ? 'This Tyranids Monster gets +1 to Hit and +1 to Wound because it is below Half-strength.'
+          : 'This Tyranids Monster gets +1 to Hit because it is below Starting Strength.',
+      })
+    } else if (detachmentRule) {
+      rules.push({
+        name: detachmentRule.name,
+        source: `${attackerDetachment.name} Rule`,
+        text: 'This rule is selected, but the unit must be below Starting Strength to apply its Hit modifier.',
+      })
+    }
   }
 
   if (attackerExtremisLevelThreatActive) {
@@ -5364,6 +5639,31 @@ function buildAttackerActiveRules({
         text: attackerImperiumsSwordActive
           ? 'The bearer and the bearer\'s unit get +1 Attack on melee weapons for this phase.'
           : 'The bearer gets +1 Attack on melee weapons.',
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Monstrous Nemesis' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Monstrous Nemesis')
+    if (enhancement) {
+      const targetQualifies = unitHasKeyword(defenderUnitDetails, 'monster') || unitHasKeyword(defenderUnitDetails, 'vehicle')
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: targetQualifies
+          ? 'The bearer gets +1 to Wound because this melee attack targets a Monster or Vehicle.'
+          : 'This enhancement is selected, but the target is not a Monster or Vehicle.',
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Null Nodules') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Null Nodules')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
       })
     }
   }
@@ -5541,6 +5841,50 @@ function buildAttackerActiveRules({
 
   if (attackerUnbridledFerocityActive) {
     const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Unbridled Ferocity')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerAdrenalSurgeActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Adrenal Surge')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerRampagingMonstrositiesActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Rampaging Monstrosities')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerSwarmGuidedSalvoesActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Swarm-guided Salvoes')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerMassiveImpactActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Massive Impact')
     if (stratagem) {
       rules.push({
         name: stratagem.name,
@@ -5824,6 +6168,8 @@ function buildDefenderActiveRules({
   defenderPennantOfRemembranceActive,
   defenderRideHardRideFastActive,
   defenderLegendaryFortitudeActive,
+  defenderSavageRoarActive,
+  defenderSavageRoarBattleshockFailed,
   targetHasCover,
   attackerTargetWithinTwelve,
   indirectTargetVisible,
@@ -5923,6 +6269,17 @@ function buildDefenderActiveRules({
     }
   }
 
+  if (defenderEnhancementName === 'Null Nodules' && psychicWeaponSelected) {
+    const enhancement = getDetachmentEntry(defenderDetachment, 'enhancements', 'Null Nodules')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${defenderDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
   if (defenderRideHardRideFastActive) {
     const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Ride Hard, Ride Fast')
     if (stratagem) {
@@ -5941,6 +6298,19 @@ function buildDefenderActiveRules({
         name: stratagem.name,
         source: `${defenderDetachment.name} Stratagem`,
         text: stratagem.effect,
+      })
+    }
+  }
+
+  if (defenderSavageRoarActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Savage Roar')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${defenderDetachment.name} Stratagem`,
+        text: defenderSavageRoarBattleshockFailed
+          ? `${stratagem.effect} The Battle-shock test failed, so this attack also subtracts 1 from the Wound roll.`
+          : `${stratagem.effect} Set the Battle-shock failed option to apply the Wound modifier.`,
       })
     }
   }
@@ -6261,6 +6631,10 @@ function App() {
     attacker: null,
     defender: null,
   })
+  const [battlefieldShadowInTheWarpUsed, setBattlefieldShadowInTheWarpUsed] = useState({
+    attacker: false,
+    defender: false,
+  })
   const [gameNotes, setGameNotes] = useState('')
   const [battlefieldDeploymentComplete, setBattlefieldDeploymentComplete] = useState(false)
   const [battlefieldCommandPoints, setBattlefieldCommandPoints] = useState({
@@ -6532,6 +6906,7 @@ function App() {
   const [attackerUnbridledFerocityActive, setAttackerUnbridledFerocityActive] = useState(initialOptions.attacker_unbridled_ferocity_active)
   const [attackerWaaaghActive, setAttackerWaaaghActive] = useState(initialOptions.attacker_waaagh_active)
   const [defenderWaaaghActive, setDefenderWaaaghActive] = useState(initialOptions.defender_waaagh_active)
+  const [attackerHyperAdaptation, setAttackerHyperAdaptation] = useState(initialOptions.attacker_hyper_adaptation)
   const [attackerPreyActive, setAttackerPreyActive] = useState(initialOptions.attacker_prey_active)
   const [attackerTargetWithinNine, setAttackerTargetWithinNine] = useState(initialOptions.attacker_target_within_9)
   const [attackerTargetWithinTwelve, setAttackerTargetWithinTwelve] = useState(initialOptions.attacker_target_within_12)
@@ -6544,6 +6919,12 @@ function App() {
   const [attackerTryDatButtonEffects, setAttackerTryDatButtonEffects] = useState(initialOptions.attacker_try_dat_button_effects)
   const [attackerTryDatButtonHazardous, setAttackerTryDatButtonHazardous] = useState(initialOptions.attacker_try_dat_button_hazardous)
   const [attackerUnbridledCarnageActive, setAttackerUnbridledCarnageActive] = useState(initialOptions.attacker_unbridled_carnage_active)
+  const [attackerAdrenalSurgeActive, setAttackerAdrenalSurgeActive] = useState(initialOptions.attacker_adrenal_surge_active)
+  const [attackerRampagingMonstrositiesActive, setAttackerRampagingMonstrositiesActive] = useState(initialOptions.attacker_rampaging_monstrosities_active)
+  const [attackerSwarmGuidedSalvoesActive, setAttackerSwarmGuidedSalvoesActive] = useState(initialOptions.attacker_swarm_guided_salvoes_active)
+  const [attackerMassiveImpactActive, setAttackerMassiveImpactActive] = useState(initialOptions.attacker_massive_impact_active)
+  const [defenderSavageRoarActive, setDefenderSavageRoarActive] = useState(initialOptions.defender_savage_roar_active)
+  const [defenderSavageRoarBattleshockFailed, setDefenderSavageRoarBattleshockFailed] = useState(initialOptions.defender_savage_roar_battleshock_failed)
   const [defenderArdAsNailsActive, setDefenderArdAsNailsActive] = useState(initialOptions.defender_ard_as_nails_active)
   const [attackerDragItDownActive, setAttackerDragItDownActive] = useState(initialOptions.attacker_drag_it_down_active)
   const [defenderStalkinTaktiksActive, setDefenderStalkinTaktiksActive] = useState(initialOptions.defender_stalkin_taktiks_active)
@@ -7666,8 +8047,10 @@ function App() {
   const attackerCombatActivatedAbilityOptions = useMemo(
     () => getCombatActivatedAbilities([attackerUnitDetails, attackerAttachedLeaderUnitDetails, attackerAttachedSupportUnitDetails], selectedCombatPhaseId, selectedAttackWeapons, {
       targetUnit: defenderUnitDetails,
+      targetWithinTwelve: attackerTargetWithinTwelve,
       waaaghActive: attackerWaaaghActive,
       chargedThisTurn,
+      allowOutOfPhaseAbilities: true,
       selectedEntries: selectedAttackEntries,
     }),
     [
@@ -8056,6 +8439,10 @@ function App() {
   const canUseAttackerUnforgivenFury = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Unforgiven Fury')
   const canUseAttackerUnbridledFerocity = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Unbridled Ferocity')
   const canUseAttackerUnbridledCarnage = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Unbridled Carnage')
+  const canUseAttackerAdrenalSurge = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Adrenal Surge')
+  const canUseAttackerRampagingMonstrosities = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Rampaging Monstrosities')
+  const canUseAttackerSwarmGuidedSalvoes = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Swarm-guided Salvoes')
+  const canUseAttackerMassiveImpact = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Massive Impact')
   const canUseAttackerDragItDown = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Drag It Down')
   const canUseAttackerBlitzaFire = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Blitza Fire')
   const canUseAttackerDakkastorm = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Dakkastorm')
@@ -8086,6 +8473,7 @@ function App() {
   const canUseDefenderSpeediestFreeks = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Speediest Freeks')
   const canUseDefenderExtraGubbinz = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Extra Gubbinz')
   const canUseDefenderHulkingBrutes = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Hulking Brutes')
+  const canUseDefenderSavageRoar = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Savage Roar')
   const canUseDefenderLegendaryFortitude = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Legendary Fortitude')
   const defenderIsRideHardTarget = unitHasKeyword(defenderUnitDetails, 'mounted') || (
     unitHasKeyword(defenderUnitDetails, 'vehicle')
@@ -8106,6 +8494,7 @@ function App() {
   )
   const canUseAttackerPrey = selectedAttackerDetachment?.name === DA_BIG_HUNT
   const canUseAttackerCombatDoctrine = selectedAttackerDetachment?.name === GLADIUS_TASK_FORCE
+  const canUseAttackerHyperAdaptation = selectedAttackerDetachment?.name === INVASION_FLEET
   const canUseTargetWithinNine = selectedAttackerDetachment?.name === KULT_OF_SPEED && (canUseAttackerBlitzaFire || canUseAttackerDakkastorm)
   const canUseTargetWithinTwelve = isRangedWeapon && (
     selectedAttackerDetachment?.name === FIRESTORM_ASSAULT_FORCE
@@ -8114,7 +8503,11 @@ function App() {
   )
   const canUseTargetClosestEligibleWithinSix = canUseAttackerCrucibleOfBattle
   const canUseAttackerDisembarkedFromTransport = canUseAttackerOnslaughtOfFire
-  const canUseTargetBelowStartingStrength = attackerEnhancementName === "'Eadstompa" || canUseAttackerMercyIsWeakness
+  const canUseTargetBelowStartingStrength = (
+    attackerEnhancementName === "'Eadstompa"
+    || defenderEnhancementName === 'Adaptive Biology'
+    || canUseAttackerMercyIsWeakness
+  )
   const canUseTargetBelowHalfStrength = attackerEnhancementName === "'Eadstompa"
   const canUseAttackerCountsAsTenPlus = selectedAttackerDetachment?.name === GREEN_TIDE && attackerPackageModelCount < 10
   const canUseDefenderCountsAsTenPlus = selectedDefenderDetachment?.name === GREEN_TIDE && defenderPackageModelCount < 10
@@ -8152,7 +8545,9 @@ function App() {
   const canUseArmouredWrathRerollType = selectedAttackerDetachment?.name === IRONSTORM_SPEARHEAD
   const canUseExtremisLevelThreat = selectedAttackerDetachment?.name === FIRST_COMPANY_TASK_FORCE && hasOathOfMoment && oathOfMomentActive
   const canUseImperiumsSwordPulse = attackerEnhancementName === "The Imperium's Sword" && isMeleeWeapon
-  const canUseAttackerBelowHalfStrength = canUseAttackerHeroesOfTheChapter
+  const attackerCrusherMonsterActive = selectedAttackerDetachment?.name === CRUSHER_STAMPEDE && unitHasKeyword(attackerUnitDetails, 'monster')
+  const canUseAttackerBelowStartingStrength = attackerEnhancementName === 'Stubborn Tenacity' || attackerEnhancementName === 'Adaptive Biology' || attackerCrusherMonsterActive
+  const canUseAttackerBelowHalfStrength = canUseAttackerHeroesOfTheChapter || attackerCrusherMonsterActive
   const canUseEldersGuidance = attackerEnhancementName === "Elder's Guidance" && isMeleeWeapon && attackerUnitDetails?.name === 'Blood Claws'
   const canUseBoastAchieved = attackerEnhancementName === "Braggart's Steel" || attackerEnhancementName === 'Hordeslayer'
   const canUseHordeslayerOutnumbered = attackerEnhancementName === 'Hordeslayer'
@@ -8273,6 +8668,22 @@ function App() {
     () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Armed to da Teef'),
     [selectedAttackerDetachment],
   )
+  const adrenalSurgeEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Adrenal Surge'),
+    [selectedAttackerDetachment],
+  )
+  const rampagingMonstrositiesEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Rampaging Monstrosities'),
+    [selectedAttackerDetachment],
+  )
+  const swarmGuidedSalvoesEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Swarm-guided Salvoes'),
+    [selectedAttackerDetachment],
+  )
+  const massiveImpactEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Massive Impact'),
+    [selectedAttackerDetachment],
+  )
   const armourOfContemptEntry = useMemo(
     () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Armour of Contempt'),
     [selectedDefenderDetachment],
@@ -8303,6 +8714,10 @@ function App() {
   )
   const hulkingBrutesEntry = useMemo(
     () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Hulking Brutes'),
+    [selectedDefenderDetachment],
+  )
+  const savageRoarEntry = useMemo(
+    () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Savage Roar'),
     [selectedDefenderDetachment],
   )
   const legendaryFortitudeEntry = useMemo(
@@ -8338,6 +8753,10 @@ function App() {
   const unforgivenFuryTooltip = formatStratagemTooltip(unforgivenFuryEntry)
   const unbridledFerocityTooltip = formatStratagemTooltip(unbridledFerocityEntry)
   const unbridledCarnageTooltip = formatStratagemTooltip(unbridledCarnageEntry)
+  const adrenalSurgeTooltip = formatStratagemTooltip(adrenalSurgeEntry)
+  const rampagingMonstrositiesTooltip = formatStratagemTooltip(rampagingMonstrositiesEntry)
+  const swarmGuidedSalvoesTooltip = formatStratagemTooltip(swarmGuidedSalvoesEntry)
+  const massiveImpactTooltip = formatStratagemTooltip(massiveImpactEntry)
   const dragItDownTooltip = formatStratagemTooltip(dragItDownEntry)
   const blitzaFireTooltip = formatStratagemTooltip(blitzaFireEntry)
   const dakkastormTooltip = formatStratagemTooltip(dakkastormEntry)
@@ -8368,6 +8787,7 @@ function App() {
   const speediestFreeksTooltip = formatStratagemTooltip(speediestFreeksEntry)
   const extraGubbinzTooltip = formatStratagemTooltip(extraGubbinzEntry)
   const hulkingBrutesTooltip = formatStratagemTooltip(hulkingBrutesEntry)
+  const savageRoarTooltip = formatStratagemTooltip(savageRoarEntry)
   const legendaryFortitudeTooltip = formatStratagemTooltip(legendaryFortitudeEntry)
   const rideHardRideFastTooltip = formatStratagemTooltip(rideHardRideFastEntry)
   const oathTooltip = buildTooltip(
@@ -8748,8 +9168,12 @@ function App() {
   const attackerHordeslayerOutnumberedTooltip = attackerEnhancementTooltip
   const attackerArmyIsOrks = String(battlefieldAddAttackerFaction || attackerFactionDetails?.name || '').toLowerCase() === 'orks'
   const defenderArmyIsOrks = String(battlefieldAddDefenderFaction || defenderFactionDetails?.name || '').toLowerCase() === 'orks'
+  const attackerArmyIsTyranids = String(battlefieldAddAttackerFaction || attackerFactionDetails?.name || '').toLowerCase() === 'tyranids'
+  const defenderArmyIsTyranids = String(battlefieldAddDefenderFaction || defenderFactionDetails?.name || '').toLowerCase() === 'tyranids'
   const attackerWaaaghTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Waaagh!')?.rules_text || ''
   const defenderWaaaghTooltip = defenderFactionDetails?.army_rules?.find((rule) => rule.name === 'Waaagh!')?.rules_text || ''
+  const attackerShadowInTheWarpTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Shadow in the Warp')?.rules_text || ''
+  const defenderShadowInTheWarpTooltip = defenderFactionDetails?.army_rules?.find((rule) => rule.name === 'Shadow in the Warp')?.rules_text || ''
   const attackerWaaaghControlledByGame = battlefieldDeploymentComplete && attackerArmyIsOrks
   const defenderWaaaghControlledByGame = battlefieldDeploymentComplete && defenderArmyIsOrks
   const attackerWaaaghControlTooltip = buildTooltip(
@@ -8807,6 +9231,7 @@ function App() {
       attackerDetachment: selectedAttackerDetachment,
       attackerEnhancementName,
       attackerCombatDoctrine,
+      attackerHyperAdaptation,
       attackerSagaCompleted: effectiveAttackerSagaCompleted,
       attackerEldersGuidanceActive,
       attackerBoastAchieved,
@@ -8832,6 +9257,10 @@ function App() {
       attackerDisembarkedFromTransport,
       attackerUnforgivenFuryActive,
       attackerUnbridledFerocityActive,
+      attackerAdrenalSurgeActive,
+      attackerRampagingMonstrositiesActive,
+      attackerSwarmGuidedSalvoesActive,
+      attackerMassiveImpactActive,
       attackerStubbornTenacityActive,
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
@@ -8866,6 +9295,7 @@ function App() {
       selectedAttackerDetachment,
       attackerEnhancementName,
       attackerCombatDoctrine,
+      attackerHyperAdaptation,
       effectiveAttackerSagaCompleted,
       attackerEldersGuidanceActive,
       attackerBoastAchieved,
@@ -8891,6 +9321,10 @@ function App() {
       attackerDisembarkedFromTransport,
       attackerUnforgivenFuryActive,
       attackerUnbridledFerocityActive,
+      attackerAdrenalSurgeActive,
+      attackerRampagingMonstrositiesActive,
+      attackerSwarmGuidedSalvoesActive,
+      attackerMassiveImpactActive,
       attackerStubbornTenacityActive,
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
@@ -8927,6 +9361,8 @@ function App() {
       defenderPennantOfRemembranceActive,
       defenderRideHardRideFastActive,
       defenderLegendaryFortitudeActive,
+      defenderSavageRoarActive,
+      defenderSavageRoarBattleshockFailed,
       targetHasCover,
       attackerTargetWithinTwelve,
       indirectTargetVisible,
@@ -8947,6 +9383,8 @@ function App() {
       defenderPennantOfRemembranceActive,
       defenderRideHardRideFastActive,
       defenderLegendaryFortitudeActive,
+      defenderSavageRoarActive,
+      defenderSavageRoarBattleshockFailed,
       targetHasCover,
       attackerTargetWithinTwelve,
       indirectTargetVisible,
@@ -9436,6 +9874,34 @@ function App() {
     () => Object.fromEntries(battlefieldUnits.map((unit) => [unit.id, unit])),
     [battlefieldUnits],
   )
+  const battlefieldShadowInTheWarpStatusBySide = {
+    attacker: {
+      armyIsTyranids: attackerArmyIsTyranids,
+      used: battlefieldShadowInTheWarpUsed.attacker,
+      hasEligibleUnit: battlefieldUnits.some((unit) => unit.side === 'attacker' && (
+        unitHasShadowInTheWarp(unit.unitDetails || unit)
+        || unit.faction === 'Tyranids'
+      )),
+    },
+    defender: {
+      armyIsTyranids: defenderArmyIsTyranids,
+      used: battlefieldShadowInTheWarpUsed.defender,
+      hasEligibleUnit: battlefieldUnits.some((unit) => unit.side === 'defender' && (
+        unitHasShadowInTheWarp(unit.unitDetails || unit)
+        || unit.faction === 'Tyranids'
+      )),
+    },
+  }
+  battlefieldShadowInTheWarpStatusBySide.attacker.canDeclare = battlefieldDeploymentComplete
+    && activeGamePhase?.id === 'command'
+    && battlefieldShadowInTheWarpStatusBySide.attacker.armyIsTyranids
+    && battlefieldShadowInTheWarpStatusBySide.attacker.hasEligibleUnit
+    && !battlefieldShadowInTheWarpStatusBySide.attacker.used
+  battlefieldShadowInTheWarpStatusBySide.defender.canDeclare = battlefieldDeploymentComplete
+    && activeGamePhase?.id === 'command'
+    && battlefieldShadowInTheWarpStatusBySide.defender.armyIsTyranids
+    && battlefieldShadowInTheWarpStatusBySide.defender.hasEligibleUnit
+    && !battlefieldShadowInTheWarpStatusBySide.defender.used
   const getBattlefieldSourceSide = useCallback((unitOrId) => {
     const unit = typeof unitOrId === 'string' ? battlefieldUnitMap[unitOrId] : unitOrId
     return unit?.sourceSide || unit?.id || 'attacker'
@@ -9444,6 +9910,32 @@ function App() {
     const unit = typeof unitOrId === 'string' ? battlefieldUnitMap[unitOrId] : unitOrId
     return unit?.unitDetails || (getBattlefieldSourceSide(unitOrId) === 'attacker' ? attackerUnitDetails : defenderUnitDetails)
   }, [attackerUnitDetails, battlefieldUnitMap, defenderUnitDetails, getBattlefieldSourceSide])
+  const battlefieldSideIsTyranids = useCallback((side) => (
+    side === 'attacker' ? attackerArmyIsTyranids : defenderArmyIsTyranids
+  ), [attackerArmyIsTyranids, defenderArmyIsTyranids])
+  const battlefieldUnitIsWithinSynapseRange = useCallback((unit) => {
+    if (!unit || !battlefieldSideIsTyranids(unit.side)) {
+      return false
+    }
+    return battlefieldUnits.some((otherUnit) => (
+      otherUnit.id !== unit.id
+      && otherUnit.side === unit.side
+      && (
+        (
+          unitHasSynapse(otherUnit.unitDetails || otherUnit)
+          && getModelHorizontalGapInches(unit, otherUnit) <= 6 + 0.001
+        )
+        || (
+          (otherUnit.id === otherUnit.side)
+          && (otherUnit.side === 'attacker' ? attackerEnhancementName : defenderEnhancementName) === 'Synaptic Linchpin'
+          && getModelHorizontalGapInches(unit, otherUnit) <= 9 + 0.001
+        )
+      )
+    ))
+  }, [attackerEnhancementName, battlefieldSideIsTyranids, battlefieldUnits, defenderEnhancementName])
+  const getBattlefieldBattleShockDice = useCallback((unit) => (
+    battlefieldUnitIsWithinSynapseRange(unit) ? 3 : 2
+  ), [battlefieldUnitIsWithinSynapseRange])
   const getBattlefieldLoadoutSelections = useCallback((unitOrId) => {
     const unit = typeof unitOrId === 'string' ? battlefieldUnitMap[unitOrId] : unitOrId
     if (unit && !['attacker', 'defender'].includes(unit.id)) {
@@ -10010,8 +10502,10 @@ function App() {
       selectedBattlefieldCombatWeapons,
       {
         targetUnit: selectedBattlefieldCombatant?.defenderDetails,
+        targetWithinTwelve: attackerTargetWithinTwelve,
         waaaghActive: battlefieldAttackerWaaaghActive,
         chargedThisTurn: battlefieldCombatAttackerCharged,
+        allowOutOfPhaseAbilities: true,
       },
     ),
     [
@@ -10580,12 +11074,12 @@ function App() {
   }, [canUseDefenderUnbreakableLines, defenderUnbreakableLinesActive])
 
   useEffect(() => {
-    const active = attackerEnhancementName === 'Stubborn Tenacity'
-    setAttackerStubbornTenacityActive(active)
-    if (!active && attackerBelowStartingStrength) {
+    const stubbornTenacityActive = attackerEnhancementName === 'Stubborn Tenacity'
+    setAttackerStubbornTenacityActive(stubbornTenacityActive)
+    if (!canUseAttackerBelowStartingStrength && attackerBelowStartingStrength) {
       setAttackerBelowStartingStrength(false)
     }
-  }, [attackerEnhancementName, attackerBelowStartingStrength])
+  }, [attackerEnhancementName, attackerBelowStartingStrength, canUseAttackerBelowStartingStrength])
 
   useEffect(() => {
     const active = attackerEnhancementName === 'Weapons of the First Legion'
@@ -10615,6 +11109,27 @@ function App() {
     }
     if (!canUseAttackerCombatDoctrine && attackerCombatDoctrine) {
       setAttackerCombatDoctrine('')
+    }
+    if (canUseAttackerHyperAdaptation && !attackerHyperAdaptation) {
+      setAttackerHyperAdaptation(initialOptions.attacker_hyper_adaptation)
+    } else if (!canUseAttackerHyperAdaptation && attackerHyperAdaptation !== initialOptions.attacker_hyper_adaptation) {
+      setAttackerHyperAdaptation(initialOptions.attacker_hyper_adaptation)
+    }
+    if (!canUseAttackerAdrenalSurge && attackerAdrenalSurgeActive) {
+      setAttackerAdrenalSurgeActive(false)
+    }
+    if (!canUseAttackerRampagingMonstrosities && attackerRampagingMonstrositiesActive) {
+      setAttackerRampagingMonstrositiesActive(false)
+    }
+    if (!canUseAttackerSwarmGuidedSalvoes && attackerSwarmGuidedSalvoesActive) {
+      setAttackerSwarmGuidedSalvoesActive(false)
+    }
+    if (!canUseAttackerMassiveImpact && attackerMassiveImpactActive) {
+      setAttackerMassiveImpactActive(false)
+    }
+    if (!canUseDefenderSavageRoar && defenderSavageRoarActive) {
+      setDefenderSavageRoarActive(false)
+      setDefenderSavageRoarBattleshockFailed(false)
     }
     if (!canUseTargetWithinNine && attackerTargetWithinNine) {
       setAttackerTargetWithinNine(false)
@@ -10770,6 +11285,10 @@ function App() {
     }
   }, [
     attackerArmedToDaTeefActive,
+    attackerAdrenalSurgeActive,
+    attackerRampagingMonstrositiesActive,
+    attackerSwarmGuidedSalvoesActive,
+    attackerMassiveImpactActive,
     attackerBiggerShellsActive,
     attackerAncientFuryActive,
     attackerBlitzingFusilladeActive,
@@ -10778,6 +11297,7 @@ function App() {
     attackerBattleDrillRecallActive,
     attackerBlitzaFireActive,
     attackerCombatDoctrine,
+    attackerHyperAdaptation,
     attackerCompetitiveStreakActive,
     attackerCountsAsTenPlusModels,
     attackerCrucibleOfBattleActive,
@@ -10810,6 +11330,10 @@ function App() {
     attackerUnbridledCarnageActive,
     attackerWaaaghActive,
     canUseAttackerArmedToDaTeef,
+    canUseAttackerAdrenalSurge,
+    canUseAttackerRampagingMonstrosities,
+    canUseAttackerSwarmGuidedSalvoes,
+    canUseAttackerMassiveImpact,
     canUseAttackerAncientFury,
     canUseAttackerCrucibleOfBattle,
     canUseAttackerDisembarkedFromTransport,
@@ -10818,6 +11342,7 @@ function App() {
     canUseAttackerBlitzingFusillade,
     canUseAttackerBlitzaFire,
     canUseAttackerCombatDoctrine,
+    canUseAttackerHyperAdaptation,
     canUseAttackerCompetitiveStreak,
     canUseAttackerCountsAsTenPlus,
     canUseAttackerDakkastorm,
@@ -10842,6 +11367,7 @@ function App() {
     canUseDefenderCountsAsTenPlus,
     canUseDefenderExtraGubbinz,
     canUseDefenderHulkingBrutes,
+    canUseDefenderSavageRoar,
     canUseDefenderRideHardRideFast,
     canUseDefenderLegendaryFortitude,
     canUseDefenderSpeediestFreeks,
@@ -10859,6 +11385,7 @@ function App() {
     defenderCountsAsTenPlusModels,
     defenderExtraGubbinzActive,
     defenderHulkingBrutesActive,
+    defenderSavageRoarActive,
     defenderLegendaryFortitudeActive,
     defenderRideHardRideFastActive,
     defenderSpeediestFreeksActive,
@@ -10896,6 +11423,12 @@ function App() {
       setTargetBelowStartingStrength(true)
     }
   }, [targetBelowHalfStrength, targetBelowStartingStrength])
+
+  useEffect(() => {
+    if (attackerBelowHalfStrength && !attackerBelowStartingStrength) {
+      setAttackerBelowStartingStrength(true)
+    }
+  }, [attackerBelowHalfStrength, attackerBelowStartingStrength])
 
   useEffect(() => {
     if (!canUseEldersGuidance && attackerEldersGuidanceActive) {
@@ -11824,6 +12357,13 @@ function App() {
       attackerArmouredWrathRerollType,
       attackerActiveAbilityNames,
       attackerUnbridledFerocityActive,
+      attackerAdrenalSurgeActive,
+      attackerRampagingMonstrositiesActive,
+      attackerSwarmGuidedSalvoesActive,
+      attackerMassiveImpactActive,
+      defenderSavageRoarActive,
+      defenderSavageRoarBattleshockFailed,
+      attackerHyperAdaptation,
       attackerHonourTheChapterActive,
       attackerStormOfFireActive,
       attackerNoThreatTooGreatActive,
@@ -11950,6 +12490,7 @@ function App() {
         remained_stationary: battlefieldCombatAttackerRemainedStationary,
         attacker_eligible_model_count: selectedBattlefieldEligibleAttackerModelCount,
         attacker_combat_doctrine: battlefieldAttackerSide === 'attacker' ? attackerCombatDoctrine || null : null,
+        attacker_hyper_adaptation: battlefieldAttackerSide === 'attacker' ? attackerHyperAdaptation || null : null,
         attacker_honour_the_chapter_active: battlefieldAttackerSide === 'attacker' && attackerHonourTheChapterActive,
         attacker_storm_of_fire_active: battlefieldAttackerSide === 'attacker' && attackerStormOfFireActive,
         attacker_no_threat_too_great_active: battlefieldAttackerSide === 'attacker' && attackerNoThreatTooGreatActive,
@@ -11970,6 +12511,12 @@ function App() {
         attacker_target_within_12: battlefieldAttackerSide === 'attacker' && attackerTargetWithinTwelve,
         attacker_target_closest_eligible_within_6: battlefieldAttackerSide === 'attacker' && attackerTargetClosestEligibleWithinSix,
         attacker_disembarked_from_transport: battlefieldAttackerSide === 'attacker' && attackerDisembarkedFromTransport,
+        attacker_adrenal_surge_active: battlefieldAttackerSide === 'attacker' && attackerAdrenalSurgeActive,
+        attacker_rampaging_monstrosities_active: battlefieldAttackerSide === 'attacker' && attackerRampagingMonstrositiesActive,
+        attacker_swarm_guided_salvoes_active: battlefieldAttackerSide === 'attacker' && attackerSwarmGuidedSalvoesActive,
+        attacker_massive_impact_active: battlefieldAttackerSide === 'attacker' && attackerMassiveImpactActive,
+        defender_savage_roar_active: battlefieldDefenderSide === 'defender' && defenderSavageRoarActive,
+        defender_savage_roar_battleshock_failed: battlefieldDefenderSide === 'defender' && defenderSavageRoarBattleshockFailed,
         defender_ride_hard_ride_fast_active: battlefieldDefenderSide === 'defender' && defenderRideHardRideFastActive,
         defender_legendary_fortitude_active: battlefieldDefenderSide === 'defender' && defenderLegendaryFortitudeActive,
         attacker_saga_completed: Boolean(battleAchievements[battlefieldAttackerSide]?.sagaCompleted),
@@ -13345,6 +13892,54 @@ function App() {
     )
   }
 
+  function unleashBattlefieldShadowInTheWarp(side) {
+    const status = battlefieldShadowInTheWarpStatusBySide[side]
+    if (!status?.canDeclare) {
+      return
+    }
+
+    const targetSide = side === 'attacker' ? 'defender' : 'attacker'
+    const targetUnits = battlefieldUnits.filter((unit) => unit.side === targetSide)
+    if (!targetUnits.length) {
+      appendGameLog(`${formatBattlefieldSideLabel(side)} unleashed Shadow in the Warp, but there were no enemy units on the battlefield.`)
+      return
+    }
+
+    const battleShockUpdates = {}
+    targetUnits.forEach((targetUnit) => {
+      const targetUnitDetails = battlefieldUnitDetailsMap[targetUnit.id] || targetUnit.unitDetails
+      if (!targetUnitDetails) {
+        return
+      }
+
+      const attachedDetails = targetUnit.sourceSide === 'attacker' ? attackerAttachedLeaderUnitDetails : null
+      const diceCount = getBattlefieldBattleShockDice(targetUnit)
+      const dice = Array.from({ length: diceCount }, () => Math.floor(Math.random() * 6) + 1)
+      const total = dice.reduce((sum, die) => sum + die, 0)
+      const leadershipValues = getUnitLeadershipValues(targetUnitDetails, attachedDetails)
+      const succeeded = leadershipValues.some((leadership) => total >= leadership)
+
+      battleShockUpdates[targetUnit.id] = !succeeded
+      if (!succeeded) {
+        failBattlefieldActionsForUnit(targetUnit.id, 'unit failed a Shadow in the Warp Battle-shock test')
+      }
+
+      appendGameLog(
+        `${targetUnit.name} made a Shadow in the Warp Battle-shock test${diceCount === 3 ? ' within Synapse Range' : ''}: ${dice.join(' + ')} = ${total} vs Ld ${leadershipValues.join('/')}; ${succeeded ? 'passed and is not battle-shocked' : 'failed and is battle-shocked'}.`,
+      )
+    })
+
+    setBattlefieldBattleShockedUnits((current) => ({
+      ...current,
+      ...battleShockUpdates,
+    }))
+    setBattlefieldShadowInTheWarpUsed((current) => ({
+      ...current,
+      [side]: true,
+    }))
+    appendGameLog(`${formatBattlefieldSideLabel(side)} unleashed Shadow in the Warp during the Command phase.`)
+  }
+
   function getDefaultBattlefieldPosition(sourceSide) {
     return sourceSide === 'attacker' ? { x: 20, y: 50 } : { x: 80, y: 50 }
   }
@@ -13612,11 +14207,9 @@ function App() {
       }
 
       rollsMade += 1
-      const dice = [
-        Math.floor(Math.random() * 6) + 1,
-        Math.floor(Math.random() * 6) + 1,
-      ]
-      const total = dice[0] + dice[1]
+      const diceCount = getBattlefieldBattleShockDice(activeUnit)
+      const dice = Array.from({ length: diceCount }, () => Math.floor(Math.random() * 6) + 1)
+      const total = dice.reduce((sum, die) => sum + die, 0)
       const leadershipValues = getUnitLeadershipValues(activeUnitDetails, activeAttachedDetails)
       const succeeded = leadershipValues.some((leadership) => total >= leadership)
 
@@ -13627,7 +14220,7 @@ function App() {
       }
 
       appendGameLog(
-        `${activeUnit.name} made a battle-shock roll: ${dice[0]} + ${dice[1]} = ${total} vs Ld ${leadershipValues.join('/')}; ${succeeded ? 'passed and is not battle-shocked' : 'failed and is battle-shocked'}.`,
+        `${activeUnit.name} made a battle-shock roll${diceCount === 3 ? ' within Synapse Range' : ''}: ${dice.join(' + ')} = ${total} vs Ld ${leadershipValues.join('/')}; ${succeeded ? 'passed and is not battle-shocked' : 'failed and is battle-shocked'}.`,
       )
     })
 
@@ -13717,6 +14310,7 @@ function App() {
     setGameNotes('')
     setBattleAchievements(createBattleAchievementState())
     setBattlefieldWaaaghBattleRounds({ attacker: null, defender: null })
+    setBattlefieldShadowInTheWarpUsed({ attacker: false, defender: false })
     setBattlefieldCommandPoints({ attacker: 0, defender: 0 })
     setBattlefieldUsedStratagems([])
     setBattlefieldActions([])
@@ -13892,6 +14486,7 @@ function App() {
     setHazardousOverwatchChargePhase(initialOptions.hazardous_overwatch_charge_phase)
     setHazardousBearerCurrentWounds(initialOptions.hazardous_bearer_current_wounds)
     setAttackerCombatDoctrine(initialOptions.attacker_combat_doctrine)
+    setAttackerHyperAdaptation(initialOptions.attacker_hyper_adaptation)
     setAttackerFireDisciplineActive(initialOptions.attacker_fire_discipline_active)
     setAttackerMarkedForDestructionActive(initialOptions.attacker_marked_for_destruction_active)
     setAttackerUnforgivenFuryActive(initialOptions.attacker_unforgiven_fury_active)
@@ -13912,6 +14507,12 @@ function App() {
     setAttackerHeroesAllRerollType(initialOptions.attacker_heroes_all_reroll_type)
     setAttackerArmouredWrathRerollType(initialOptions.attacker_armoured_wrath_reroll_type)
     setAttackerUnbridledFerocityActive(initialOptions.attacker_unbridled_ferocity_active)
+    setAttackerAdrenalSurgeActive(initialOptions.attacker_adrenal_surge_active)
+    setAttackerRampagingMonstrositiesActive(initialOptions.attacker_rampaging_monstrosities_active)
+    setAttackerSwarmGuidedSalvoesActive(initialOptions.attacker_swarm_guided_salvoes_active)
+    setAttackerMassiveImpactActive(initialOptions.attacker_massive_impact_active)
+    setDefenderSavageRoarActive(initialOptions.defender_savage_roar_active)
+    setDefenderSavageRoarBattleshockFailed(initialOptions.defender_savage_roar_battleshock_failed)
     setAttackerHonourTheChapterActive(initialOptions.attacker_honour_the_chapter_active)
     setAttackerStormOfFireActive(initialOptions.attacker_storm_of_fire_active)
     setAttackerNoThreatTooGreatActive(initialOptions.attacker_no_threat_too_great_active)
@@ -14655,6 +15256,23 @@ function App() {
                 </label>
               ) : null}
 
+              {canUseAttackerHyperAdaptation ? (
+                <label className="combat-option-attacker" title={getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Hyper-adaptations')?.rules_text || ''}>
+                  <span>Attacker Hyper-adaptation</span>
+                  <select
+                    title={getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Hyper-adaptations')?.rules_text || ''}
+                    value={attackerHyperAdaptation}
+                    onChange={(event) => setAttackerHyperAdaptation(event.target.value)}
+                  >
+                    {HYPER_ADAPTATION_OPTIONS.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
               {canUseAttackerFireDiscipline ? (
                 <label className="checkbox-row" title={fireDisciplineTooltip}>
                   <input
@@ -15255,6 +15873,50 @@ function App() {
                 </label>
               ) : null}
 
+              {canUseAttackerAdrenalSurge ? (
+                <label className="checkbox-row" title={adrenalSurgeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerAdrenalSurgeActive}
+                    onChange={(event) => setAttackerAdrenalSurgeActive(event.target.checked)}
+                  />
+                  <span>Use Adrenal Surge</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerRampagingMonstrosities ? (
+                <label className="checkbox-row" title={rampagingMonstrositiesTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerRampagingMonstrositiesActive}
+                    onChange={(event) => setAttackerRampagingMonstrositiesActive(event.target.checked)}
+                  />
+                  <span>Use Rampaging Monstrosities</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerSwarmGuidedSalvoes ? (
+                <label className="checkbox-row" title={swarmGuidedSalvoesTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerSwarmGuidedSalvoesActive}
+                    onChange={(event) => setAttackerSwarmGuidedSalvoesActive(event.target.checked)}
+                  />
+                  <span>Use Swarm-guided Salvoes</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerMassiveImpact ? (
+                <label className="checkbox-row" title={massiveImpactTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerMassiveImpactActive}
+                    onChange={(event) => setAttackerMassiveImpactActive(event.target.checked)}
+                  />
+                  <span>Use Massive Impact</span>
+                </label>
+              ) : null}
+
               {canUseDefenderArdAsNails ? (
                 <label className="checkbox-row combat-option-defender" title={ardAsNailsTooltip}>
                   <input
@@ -15264,6 +15926,34 @@ function App() {
                   />
                   <span>Defender uses 'Ard as Nails</span>
                 </label>
+              ) : null}
+
+              {canUseDefenderSavageRoar ? (
+                <>
+                  <label className="checkbox-row combat-option-defender" title={savageRoarTooltip}>
+                    <input
+                      type="checkbox"
+                      checked={defenderSavageRoarActive}
+                      onChange={(event) => {
+                        setDefenderSavageRoarActive(event.target.checked)
+                        if (!event.target.checked) {
+                          setDefenderSavageRoarBattleshockFailed(false)
+                        }
+                      }}
+                    />
+                    <span>Defender uses Savage Roar</span>
+                  </label>
+                  {defenderSavageRoarActive ? (
+                    <label className="checkbox-row combat-option-defender" title={savageRoarTooltip}>
+                      <input
+                        type="checkbox"
+                        checked={defenderSavageRoarBattleshockFailed}
+                        onChange={(event) => setDefenderSavageRoarBattleshockFailed(event.target.checked)}
+                      />
+                      <span>Savage Roar Battle-shock failed</span>
+                    </label>
+                  ) : null}
+                </>
               ) : null}
 
               {canUseAttackerDragItDown ? (
@@ -15511,7 +16201,7 @@ function App() {
                 </label>
               ) : null}
 
-              {attackerEnhancementName === 'Stubborn Tenacity' ? (
+              {canUseAttackerBelowStartingStrength ? (
                 <label className="checkbox-row" title={attackerBelowStartingStrengthTooltip}>
                   <input
                     type="checkbox"
@@ -17437,6 +18127,44 @@ function App() {
                     <p><strong>On Complete Step:</strong> both players gain 1 CP.</p>
                     <p><strong>Battle-shock:</strong> the active player&apos;s unit rolls if it is already battle-shocked or at/below Half-strength.</p>
                     <p><strong>Active unit:</strong> {gameActivePlayer === 'Player 1' ? battlefieldUnitMap.attacker?.name : battlefieldUnitMap.defender?.name}.</p>
+                  </div>
+                ) : null}
+                {activeGamePhase?.id === 'command' && (attackerArmyIsTyranids || defenderArmyIsTyranids) ? (
+                  <div className="phase-inline-controls">
+                    <p className="kicker">Command Ability</p>
+                    <h3>Shadow in the Warp</h3>
+                    <p>Once per battle, either Command phase. Each enemy unit on the battlefield takes a Battle-shock test.</p>
+                    <div className="battlefield-action-summary">
+                      {['attacker', 'defender'].map((side) => {
+                        const status = battlefieldShadowInTheWarpStatusBySide[side]
+                        if (!status.armyIsTyranids) {
+                          return null
+                        }
+                        return (
+                          <div key={side} className="waaagh-declaration-row">
+                            <div className="waaagh-declaration-copy">
+                              <p className="battlefield-action-key"><strong>{formatBattlefieldSideLabel(side)} Shadow in the Warp</strong></p>
+                              <p>
+                                {status.used
+                                  ? 'Already unleashed this battle.'
+                                  : status.hasEligibleUnit
+                                    ? 'Available in this Command phase.'
+                                    : 'Requires a Tyranids unit with this ability on the battlefield.'}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              className="secondary-button compact-action-button"
+                              title={side === 'attacker' ? attackerShadowInTheWarpTooltip : defenderShadowInTheWarpTooltip}
+                              disabled={!status.canDeclare}
+                              onClick={() => unleashBattlefieldShadowInTheWarp(side)}
+                            >
+                              Unleash
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
                 ) : null}
                 {activeGamePhase?.id === 'start_of_turn' && (attackerArmyIsOrks || defenderArmyIsOrks) ? (
