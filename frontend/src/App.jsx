@@ -76,6 +76,10 @@ const initialOptions = {
   attacker_waaagh_active: false,
   defender_waaagh_active: false,
   attacker_hyper_adaptation: 'swarming_instincts',
+  attacker_synaptic_imperative: '',
+  defender_synaptic_imperative: '',
+  attacker_within_synapse_range: false,
+  defender_within_synapse_range: false,
   attacker_prey_active: false,
   attacker_target_within_9: false,
   attacker_target_within_12: false,
@@ -92,12 +96,20 @@ const initialOptions = {
   attacker_rampaging_monstrosities_active: false,
   attacker_swarm_guided_salvoes_active: false,
   attacker_massive_impact_active: false,
+  attacker_broodguard_impulse_active: false,
+  attacker_secure_biomass_active: false,
+  attacker_surprise_assault_active: false,
+  attacker_assassin_beasts_active: false,
+  attacker_irresistible_will_active: false,
+  attacker_parasitic_biomorphology_fed_active: false,
   defender_savage_roar_active: false,
   defender_savage_roar_battleshock_failed: false,
+  defender_ablative_carapace_active: false,
   defender_ard_as_nails_active: false,
   attacker_drag_it_down_active: false,
   defender_stalkin_taktiks_active: false,
   defender_speediest_freeks_active: false,
+  defender_reinforced_hive_node_active: false,
   attacker_blitza_fire_active: false,
   attacker_dakkastorm_active: false,
   attacker_full_throttle_active: false,
@@ -170,10 +182,19 @@ const GREEN_TIDE = 'Green Tide'
 const BULLY_BOYZ = 'Bully Boyz'
 const INVASION_FLEET = 'Invasion Fleet'
 const CRUSHER_STAMPEDE = 'Crusher Stampede'
+const ASSIMILATION_SWARM = 'Assimilation Swarm'
+const VANGUARD_ONSLAUGHT = 'Vanguard Onslaught'
+const SYNAPTIC_NEXUS = 'Synaptic Nexus'
 const HYPER_ADAPTATION_OPTIONS = [
   { id: 'swarming_instincts', label: 'Swarming Instincts' },
   { id: 'hyper_aggression', label: 'Hyper-aggression' },
   { id: 'hive_predators', label: 'Hive Predators' },
+]
+const SYNAPTIC_IMPERATIVE_OPTIONS = [
+  { id: '', label: 'No imperative selected' },
+  { id: 'synaptic_augmentation', label: 'Synaptic Augmentation' },
+  { id: 'surging_vitality', label: 'Surging Vitality' },
+  { id: 'goaded_to_slaughter', label: 'Goaded to Slaughter' },
 ]
 const AUTH_VERIFY_EMAIL_PATH = 'verify-email'
 const MATRIX_VIEW_GLOBAL = 'global'
@@ -1399,6 +1420,31 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
     ))
   }
 
+  if (detachment.name === ASSIMILATION_SWARM) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Parasitic Biomorphology' && selectedWeapon?.range === 'Melee'
+    ))
+  }
+
+  if (detachment.name === VANGUARD_ONSLAUGHT) {
+    if (!unitHasKeyword(enhancementBearerUnit, 'vanguard invader')) {
+      return []
+    }
+    return (detachment.enhancements || []).filter(
+      (enhancement) => enhancement.name === 'Stalker',
+    )
+  }
+
+  if (detachment.name === SYNAPTIC_NEXUS) {
+    if (!unitHasKeyword(enhancementBearerUnit, 'psyker')) {
+      return []
+    }
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Power of the Hive Mind'
+        && weaponHasRawKeyword(selectedWeapon, 'Psychic')
+    ))
+  }
+
   return []
 }
 
@@ -1508,6 +1554,24 @@ function getDefenderEnhancementOptions(detachment, enhancementBearerUnit) {
     return (detachment.enhancements || []).filter((enhancement) => (
       enhancement.name === 'Null Nodules'
     ))
+  }
+
+  if (detachment.name === VANGUARD_ONSLAUGHT) {
+    if (!unitHasKeyword(enhancementBearerUnit, 'vanguard invader')) {
+      return []
+    }
+    return (detachment.enhancements || []).filter(
+      (enhancement) => enhancement.name === 'Chameleonic',
+    )
+  }
+
+  if (detachment.name === SYNAPTIC_NEXUS) {
+    if (!unitHasKeyword(enhancementBearerUnit, 'synapse')) {
+      return []
+    }
+    return (detachment.enhancements || []).filter(
+      (enhancement) => enhancement.name === 'Synaptic Control',
+    )
   }
 
   return []
@@ -1637,6 +1701,31 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       return stratagem.name === 'Swarm-guided Salvoes' && isRangedWeapon
     }
 
+    if (detachment.name === ASSIMILATION_SWARM) {
+      if (stratagem.name === 'Broodguard Impulse') {
+        return true
+      }
+      return stratagem.name === 'Secure Biomass' && !isRangedWeapon
+    }
+
+    if (detachment.name === VANGUARD_ONSLAUGHT) {
+      if (!unitHasKeyword(unit, 'vanguard invader')) {
+        return false
+      }
+      if (stratagem.name === 'Surprise Assault') {
+        return true
+      }
+      return (
+        stratagem.name === 'Assassin Beasts'
+        && !isRangedWeapon
+        && unitHasKeyword(unit, 'infantry')
+      )
+    }
+
+    if (detachment.name === SYNAPTIC_NEXUS) {
+      return stratagem.name === 'Irresistible Will'
+    }
+
     return false
   })
 }
@@ -1719,6 +1808,14 @@ function getDefenderStratagemOptions(detachment, selectedWeapon, unit) {
         && selectedWeapon?.range === 'Melee'
         && unitHasKeyword(unit, 'monster')
       )
+    }
+
+    if (detachment.name === ASSIMILATION_SWARM) {
+      return stratagem.name === 'Ablative Carapace' && unitHasKeyword(unit, 'harvester')
+    }
+
+    if (detachment.name === SYNAPTIC_NEXUS) {
+      return stratagem.name === 'Reinforced Hive Node'
     }
 
     return false
@@ -1892,6 +1989,10 @@ function buildSimulationPayload(state) {
     attacker_waaagh_active: state.attackerWaaaghActive,
     defender_waaagh_active: state.defenderWaaaghActive,
     attacker_hyper_adaptation: state.attackerHyperAdaptation || null,
+    attacker_synaptic_imperative: state.attackerSynapticImperative || null,
+    defender_synaptic_imperative: state.defenderSynapticImperative || null,
+    attacker_within_synapse_range: state.attackerWithinSynapseRange,
+    defender_within_synapse_range: state.defenderWithinSynapseRange,
     attacker_prey_active: state.attackerPreyActive,
     attacker_target_within_9: state.attackerTargetWithinNine,
     attacker_target_within_12: state.attackerTargetWithinTwelve,
@@ -1908,12 +2009,20 @@ function buildSimulationPayload(state) {
     attacker_rampaging_monstrosities_active: state.attackerRampagingMonstrositiesActive,
     attacker_swarm_guided_salvoes_active: state.attackerSwarmGuidedSalvoesActive,
     attacker_massive_impact_active: state.attackerMassiveImpactActive,
+    attacker_broodguard_impulse_active: state.attackerBroodguardImpulseActive,
+    attacker_secure_biomass_active: state.attackerSecureBiomassActive,
+    attacker_surprise_assault_active: state.attackerSurpriseAssaultActive,
+    attacker_assassin_beasts_active: state.attackerAssassinBeastsActive,
+    attacker_irresistible_will_active: state.attackerIrresistibleWillActive,
+    attacker_parasitic_biomorphology_fed_active: state.attackerParasiticBiomorphologyFedActive,
     defender_savage_roar_active: state.defenderSavageRoarActive,
     defender_savage_roar_battleshock_failed: state.defenderSavageRoarBattleshockFailed,
+    defender_ablative_carapace_active: state.defenderAblativeCarapaceActive,
     defender_ard_as_nails_active: state.defenderArdAsNailsActive,
     attacker_drag_it_down_active: state.attackerDragItDownActive,
     defender_stalkin_taktiks_active: state.defenderStalkinTaktiksActive,
     defender_speediest_freeks_active: state.defenderSpeediestFreeksActive,
+    defender_reinforced_hive_node_active: state.defenderReinforcedHiveNodeActive,
     attacker_blitza_fire_active: state.attackerBlitzaFireActive,
     attacker_dakkastorm_active: state.attackerDakkastormActive,
     attacker_full_throttle_active: state.attackerFullThrottleActive,
@@ -5328,6 +5437,8 @@ function buildAttackerActiveRules({
   attackerEnhancementName,
   attackerCombatDoctrine,
   attackerHyperAdaptation,
+  attackerSynapticImperative,
+  attackerWithinSynapseRange,
   attackerSagaCompleted,
   attackerEldersGuidanceActive,
   attackerBoastAchieved,
@@ -5349,6 +5460,7 @@ function buildAttackerActiveRules({
   attackerShockAssaultActive,
   attackerStrikeFromTheShadowsActive,
   attackerTargetWithinTwelve,
+  attackerTargetClosestEligibleWithinSix,
   attackerDisembarkedFromTransport,
   attackerUnforgivenFuryActive,
   attackerUnbridledFerocityActive,
@@ -5356,6 +5468,12 @@ function buildAttackerActiveRules({
   attackerRampagingMonstrositiesActive,
   attackerSwarmGuidedSalvoesActive,
   attackerMassiveImpactActive,
+  attackerBroodguardImpulseActive,
+  attackerSecureBiomassActive,
+  attackerSurpriseAssaultActive,
+  attackerAssassinBeastsActive,
+  attackerIrresistibleWillActive,
+  attackerParasiticBiomorphologyFedActive,
   attackerStubbornTenacityActive,
   attackerWeaponsOfTheFirstLegionActive,
   attackerPennantOfRemembranceActive,
@@ -5374,6 +5492,7 @@ function buildAttackerActiveRules({
   attackerInEngagementRange,
   targetInEngagementRangeOfAllies,
   defenderOnObjective,
+  defenderBattleshocked,
   hasHazardous,
 }) {
   const rules = [
@@ -5503,6 +5622,26 @@ function buildAttackerActiveRules({
       name: adaptation?.label || 'Hyper-adaptations',
       source: `${attackerDetachment.name} Rule`,
       text: activeTextByAdaptation[attackerHyperAdaptation] || getDetachmentEntry(attackerDetachment, 'rule', 'Hyper-adaptations')?.rules_text || '',
+    })
+  }
+
+  if (attackerDetachment?.name === SYNAPTIC_NEXUS && attackerSynapticImperative) {
+    const imperative = SYNAPTIC_IMPERATIVE_OPTIONS.find((option) => option.id === attackerSynapticImperative)
+    const textByImperative = {
+      synaptic_augmentation: attackerWithinSynapseRange
+        ? 'This unit is within Synapse Range, so its models have a 5+ invulnerable save.'
+        : 'This imperative is selected, but the unit must be within Synapse Range for it to apply.',
+      surging_vitality: attackerWithinSynapseRange
+        ? 'This unit is within Synapse Range, so it adds 1 to Advance and Charge rolls.'
+        : 'This imperative is selected, but the unit must be within Synapse Range for it to apply.',
+      goaded_to_slaughter: attackerWithinSynapseRange
+        ? 'This unit is within Synapse Range, so its melee attacks get +1 to Hit.'
+        : 'This imperative is selected, but the unit must be within Synapse Range for it to apply.',
+    }
+    rules.push({
+      name: imperative?.label || 'Synaptic Imperatives',
+      source: `${attackerDetachment.name} Rule`,
+      text: textByImperative[attackerSynapticImperative] || getDetachmentEntry(attackerDetachment, 'rule', 'Synaptic Imperatives')?.rules_text || '',
     })
   }
 
@@ -5653,6 +5792,41 @@ function buildAttackerActiveRules({
         text: targetQualifies
           ? 'The bearer gets +1 to Wound because this melee attack targets a Monster or Vehicle.'
           : 'This enhancement is selected, but the target is not a Monster or Vehicle.',
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Parasitic Biomorphology' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Parasitic Biomorphology')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: attackerParasiticBiomorphologyFedActive
+          ? 'The bearer’s unit gets +1 Strength and +1 Attack on melee weapons because Parasitic Biomorphology has already fed this battle.'
+          : 'The bearer’s unit gets +1 Strength on melee weapons. Toggle the fed state once the bonus Attack is unlocked.',
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Stalker') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Stalker')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: 'The bearer gets +1 to Hit and +1 to Wound against its selected prey unit.',
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Power of the Hive Mind' && weaponHasRawKeyword(selectedWeapon, 'Psychic')) {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Power of the Hive Mind')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: 'The bearer’s psychic weapon improves Strength by 1 and AP by 1.',
       })
     }
   }
@@ -5890,6 +6064,65 @@ function buildAttackerActiveRules({
         name: stratagem.name,
         source: `${attackerDetachment.name} Stratagem`,
         text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerBroodguardImpulseActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Broodguard Impulse')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerSecureBiomassActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Secure Biomass')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerSurpriseAssaultActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Surprise Assault')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: defenderBattleshocked
+          ? `${stratagem.effect} The target is Battle-shocked, so the Wound bonus is active too.`
+          : `${stratagem.effect} Set the defender as Battle-shocked if the test failed to apply the Wound bonus.`,
+      })
+    }
+  }
+
+  if (attackerAssassinBeastsActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Assassin Beasts')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerIrresistibleWillActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Irresistible Will')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: attackerWithinSynapseRange
+          ? stratagem.effect
+          : `${stratagem.effect} Mark the attacker as within Synapse Range / 6" of the selected SYNAPSE unit to apply the re-rolls.`,
       })
     }
   }
@@ -6162,6 +6395,8 @@ function buildDefenderActiveRules({
   selectedAttackWeapons,
   defenderDetachment,
   defenderEnhancementName,
+  defenderSynapticImperative,
+  defenderWithinSynapseRange,
   defenderArmourOfContemptActive,
   defenderOverwhelmingOnslaughtActive,
   defenderUnbreakableLinesActive,
@@ -6170,6 +6405,9 @@ function buildDefenderActiveRules({
   defenderLegendaryFortitudeActive,
   defenderSavageRoarActive,
   defenderSavageRoarBattleshockFailed,
+  defenderAblativeCarapaceActive,
+  defenderReinforcedHiveNodeActive,
+  defenderAllocationOrder,
   targetHasCover,
   attackerTargetWithinTwelve,
   indirectTargetVisible,
@@ -6190,6 +6428,17 @@ function buildDefenderActiveRules({
 
   if (defenderArmourOfContemptActive) {
     const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Armour of Contempt')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${defenderDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (defenderReinforcedHiveNodeActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Reinforced Hive Node')
     if (stratagem) {
       rules.push({
         name: stratagem.name,
@@ -6228,6 +6477,17 @@ function buildDefenderActiveRules({
         name: enhancement.name,
         source: `${defenderDetachment.name} Enhancement`,
         text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (defenderAblativeCarapaceActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Ablative Carapace')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${defenderDetachment.name} Stratagem`,
+        text: stratagem.effect,
       })
     }
   }
@@ -6280,6 +6540,33 @@ function buildDefenderActiveRules({
     }
   }
 
+  if (defenderEnhancementName === 'Chameleonic' && selectedWeapon?.range !== 'Melee') {
+    const enhancement = getDetachmentEntry(defenderDetachment, 'enhancements', 'Chameleonic')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${defenderDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (defenderEnhancementName === 'Synaptic Control') {
+    const enhancement = getDetachmentEntry(defenderDetachment, 'enhancements', 'Synaptic Control')
+    const allocationLabel = Array.isArray(defenderAllocationOrder) && defenderAllocationOrder.length
+      ? defenderAllocationOrder[0]
+      : ''
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${defenderDetachment.name} Enhancement`,
+        text: allocationLabel
+          ? `${enhancement.rules_text} Current front allocation: ${allocationLabel}.`
+          : enhancement.rules_text,
+      })
+    }
+  }
+
   if (defenderRideHardRideFastActive) {
     const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Ride Hard, Ride Fast')
     if (stratagem) {
@@ -6323,6 +6610,26 @@ function buildDefenderActiveRules({
       text: attackerTargetWithinTwelve
         ? 'This ranged attack is within 12", so Shadow Masters does not apply.'
         : detachmentRule?.rules_text || 'Ranged attacks from more than 12" away take -1 to Hit and the target has the Benefit of Cover.',
+    })
+  }
+
+  if (defenderDetachment?.name === SYNAPTIC_NEXUS && defenderSynapticImperative) {
+    const imperative = SYNAPTIC_IMPERATIVE_OPTIONS.find((option) => option.id === defenderSynapticImperative)
+    const textByImperative = {
+      synaptic_augmentation: defenderWithinSynapseRange
+        ? 'This unit is within Synapse Range, so its models have a 5+ invulnerable save.'
+        : 'This imperative is selected, but the unit must be within Synapse Range for it to apply.',
+      surging_vitality: defenderWithinSynapseRange
+        ? 'This unit is within Synapse Range, so it adds 1 to Advance and Charge rolls.'
+        : 'This imperative is selected, but the unit must be within Synapse Range for it to apply.',
+      goaded_to_slaughter: defenderWithinSynapseRange
+        ? 'This unit is within Synapse Range, so its melee attacks get +1 to Hit when it fights.'
+        : 'This imperative is selected, but the unit must be within Synapse Range for it to apply.',
+    }
+    rules.push({
+      name: imperative?.label || 'Synaptic Imperatives',
+      source: `${defenderDetachment.name} Rule`,
+      text: textByImperative[defenderSynapticImperative] || getDetachmentEntry(defenderDetachment, 'rule', 'Synaptic Imperatives')?.rules_text || '',
     })
   }
 
@@ -6907,6 +7214,10 @@ function App() {
   const [attackerWaaaghActive, setAttackerWaaaghActive] = useState(initialOptions.attacker_waaagh_active)
   const [defenderWaaaghActive, setDefenderWaaaghActive] = useState(initialOptions.defender_waaagh_active)
   const [attackerHyperAdaptation, setAttackerHyperAdaptation] = useState(initialOptions.attacker_hyper_adaptation)
+  const [attackerSynapticImperative, setAttackerSynapticImperative] = useState(initialOptions.attacker_synaptic_imperative)
+  const [defenderSynapticImperative, setDefenderSynapticImperative] = useState(initialOptions.defender_synaptic_imperative)
+  const [attackerWithinSynapseRange, setAttackerWithinSynapseRange] = useState(initialOptions.attacker_within_synapse_range)
+  const [defenderWithinSynapseRange, setDefenderWithinSynapseRange] = useState(initialOptions.defender_within_synapse_range)
   const [attackerPreyActive, setAttackerPreyActive] = useState(initialOptions.attacker_prey_active)
   const [attackerTargetWithinNine, setAttackerTargetWithinNine] = useState(initialOptions.attacker_target_within_9)
   const [attackerTargetWithinTwelve, setAttackerTargetWithinTwelve] = useState(initialOptions.attacker_target_within_12)
@@ -6923,12 +7234,20 @@ function App() {
   const [attackerRampagingMonstrositiesActive, setAttackerRampagingMonstrositiesActive] = useState(initialOptions.attacker_rampaging_monstrosities_active)
   const [attackerSwarmGuidedSalvoesActive, setAttackerSwarmGuidedSalvoesActive] = useState(initialOptions.attacker_swarm_guided_salvoes_active)
   const [attackerMassiveImpactActive, setAttackerMassiveImpactActive] = useState(initialOptions.attacker_massive_impact_active)
+  const [attackerBroodguardImpulseActive, setAttackerBroodguardImpulseActive] = useState(initialOptions.attacker_broodguard_impulse_active)
+  const [attackerSecureBiomassActive, setAttackerSecureBiomassActive] = useState(initialOptions.attacker_secure_biomass_active)
+  const [attackerSurpriseAssaultActive, setAttackerSurpriseAssaultActive] = useState(initialOptions.attacker_surprise_assault_active)
+  const [attackerAssassinBeastsActive, setAttackerAssassinBeastsActive] = useState(initialOptions.attacker_assassin_beasts_active)
+  const [attackerIrresistibleWillActive, setAttackerIrresistibleWillActive] = useState(initialOptions.attacker_irresistible_will_active)
+  const [attackerParasiticBiomorphologyFedActive, setAttackerParasiticBiomorphologyFedActive] = useState(initialOptions.attacker_parasitic_biomorphology_fed_active)
   const [defenderSavageRoarActive, setDefenderSavageRoarActive] = useState(initialOptions.defender_savage_roar_active)
   const [defenderSavageRoarBattleshockFailed, setDefenderSavageRoarBattleshockFailed] = useState(initialOptions.defender_savage_roar_battleshock_failed)
+  const [defenderAblativeCarapaceActive, setDefenderAblativeCarapaceActive] = useState(initialOptions.defender_ablative_carapace_active)
   const [defenderArdAsNailsActive, setDefenderArdAsNailsActive] = useState(initialOptions.defender_ard_as_nails_active)
   const [attackerDragItDownActive, setAttackerDragItDownActive] = useState(initialOptions.attacker_drag_it_down_active)
   const [defenderStalkinTaktiksActive, setDefenderStalkinTaktiksActive] = useState(initialOptions.defender_stalkin_taktiks_active)
   const [defenderSpeediestFreeksActive, setDefenderSpeediestFreeksActive] = useState(initialOptions.defender_speediest_freeks_active)
+  const [defenderReinforcedHiveNodeActive, setDefenderReinforcedHiveNodeActive] = useState(initialOptions.defender_reinforced_hive_node_active)
   const [attackerBlitzaFireActive, setAttackerBlitzaFireActive] = useState(initialOptions.attacker_blitza_fire_active)
   const [attackerDakkastormActive, setAttackerDakkastormActive] = useState(initialOptions.attacker_dakkastorm_active)
   const [attackerFullThrottleActive, setAttackerFullThrottleActive] = useState(initialOptions.attacker_full_throttle_active)
@@ -8465,12 +8784,19 @@ function App() {
   const canUseAttackerHeroesOfTheChapter = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Heroes of the Chapter')
   const canUseAttackerCompetitiveStreak = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Competitive Streak')
   const canUseAttackerArmedToDaTeef = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Armed to da Teef')
+  const canUseAttackerBroodguardImpulse = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Broodguard Impulse')
+  const canUseAttackerSecureBiomass = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Secure Biomass')
+  const canUseAttackerSurpriseAssault = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Surprise Assault')
+  const canUseAttackerAssassinBeasts = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Assassin Beasts')
+  const canUseAttackerIrresistibleWill = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Irresistible Will')
   const canUseDefenderArmourOfContempt = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Armour of Contempt')
   const canUseDefenderOverwhelmingOnslaught = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Overwhelming Onslaught')
   const canUseDefenderUnbreakableLines = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Unbreakable Lines')
   const canUseDefenderArdAsNails = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === "'Ard as Nails")
+  const canUseDefenderAblativeCarapace = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Ablative Carapace')
   const canUseDefenderStalkinTaktiks = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === "Stalkin' Taktiks")
   const canUseDefenderSpeediestFreeks = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Speediest Freeks')
+  const canUseDefenderReinforcedHiveNode = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Reinforced Hive Node')
   const canUseDefenderExtraGubbinz = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Extra Gubbinz')
   const canUseDefenderHulkingBrutes = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Hulking Brutes')
   const canUseDefenderSavageRoar = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Savage Roar')
@@ -8495,6 +8821,10 @@ function App() {
   const canUseAttackerPrey = selectedAttackerDetachment?.name === DA_BIG_HUNT
   const canUseAttackerCombatDoctrine = selectedAttackerDetachment?.name === GLADIUS_TASK_FORCE
   const canUseAttackerHyperAdaptation = selectedAttackerDetachment?.name === INVASION_FLEET
+  const canUseAttackerSynapticImperative = selectedAttackerDetachment?.name === SYNAPTIC_NEXUS
+  const canUseDefenderSynapticImperative = selectedDefenderDetachment?.name === SYNAPTIC_NEXUS
+  const canUseAttackerWithinSynapseRange = canUseAttackerSynapticImperative || canUseAttackerIrresistibleWill
+  const canUseDefenderWithinSynapseRange = canUseDefenderSynapticImperative
   const canUseTargetWithinNine = selectedAttackerDetachment?.name === KULT_OF_SPEED && (canUseAttackerBlitzaFire || canUseAttackerDakkastorm)
   const canUseTargetWithinTwelve = isRangedWeapon && (
     selectedAttackerDetachment?.name === FIRESTORM_ASSAULT_FORCE
@@ -8509,6 +8839,7 @@ function App() {
     || canUseAttackerMercyIsWeakness
   )
   const canUseTargetBelowHalfStrength = attackerEnhancementName === "'Eadstompa"
+  const canUseParasiticBiomorphologyFed = attackerEnhancementName === 'Parasitic Biomorphology' && isMeleeWeapon
   const canUseAttackerCountsAsTenPlus = selectedAttackerDetachment?.name === GREEN_TIDE && attackerPackageModelCount < 10
   const canUseDefenderCountsAsTenPlus = selectedDefenderDetachment?.name === GREEN_TIDE && defenderPackageModelCount < 10
   const attackerObjectiveRuleUnits = [
@@ -8684,6 +9015,26 @@ function App() {
     () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Massive Impact'),
     [selectedAttackerDetachment],
   )
+  const broodguardImpulseEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Broodguard Impulse'),
+    [selectedAttackerDetachment],
+  )
+  const secureBiomassEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Secure Biomass'),
+    [selectedAttackerDetachment],
+  )
+  const surpriseAssaultEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Surprise Assault'),
+    [selectedAttackerDetachment],
+  )
+  const assassinBeastsEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Assassin Beasts'),
+    [selectedAttackerDetachment],
+  )
+  const irresistibleWillEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Irresistible Will'),
+    [selectedAttackerDetachment],
+  )
   const armourOfContemptEntry = useMemo(
     () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Armour of Contempt'),
     [selectedDefenderDetachment],
@@ -8728,6 +9079,14 @@ function App() {
     () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Ride Hard, Ride Fast'),
     [selectedDefenderDetachment],
   )
+  const ablativeCarapaceEntry = useMemo(
+    () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Ablative Carapace'),
+    [selectedDefenderDetachment],
+  )
+  const reinforcedHiveNodeEntry = useMemo(
+    () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Reinforced Hive Node'),
+    [selectedDefenderDetachment],
+  )
   const oathAbility = useMemo(
     () => getUnitAbility(attackerUnitDetails, (ability) => {
       const name = String(ability.name || '').toLowerCase()
@@ -8757,6 +9116,11 @@ function App() {
   const rampagingMonstrositiesTooltip = formatStratagemTooltip(rampagingMonstrositiesEntry)
   const swarmGuidedSalvoesTooltip = formatStratagemTooltip(swarmGuidedSalvoesEntry)
   const massiveImpactTooltip = formatStratagemTooltip(massiveImpactEntry)
+  const broodguardImpulseTooltip = formatStratagemTooltip(broodguardImpulseEntry)
+  const secureBiomassTooltip = formatStratagemTooltip(secureBiomassEntry)
+  const surpriseAssaultTooltip = formatStratagemTooltip(surpriseAssaultEntry)
+  const assassinBeastsTooltip = formatStratagemTooltip(assassinBeastsEntry)
+  const irresistibleWillTooltip = formatStratagemTooltip(irresistibleWillEntry)
   const dragItDownTooltip = formatStratagemTooltip(dragItDownEntry)
   const blitzaFireTooltip = formatStratagemTooltip(blitzaFireEntry)
   const dakkastormTooltip = formatStratagemTooltip(dakkastormEntry)
@@ -8790,6 +9154,8 @@ function App() {
   const savageRoarTooltip = formatStratagemTooltip(savageRoarEntry)
   const legendaryFortitudeTooltip = formatStratagemTooltip(legendaryFortitudeEntry)
   const rideHardRideFastTooltip = formatStratagemTooltip(rideHardRideFastEntry)
+  const ablativeCarapaceTooltip = formatStratagemTooltip(ablativeCarapaceEntry)
+  const reinforcedHiveNodeTooltip = formatStratagemTooltip(reinforcedHiveNodeEntry)
   const oathTooltip = buildTooltip(
     OATH_OF_MOMENT_RULE_TEXT,
     unitGetsOathWoundBonus(attackerUnitDetails)
@@ -9190,6 +9556,9 @@ function App() {
   )
   const attackerPreyTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Da Hunt Is On')?.rules_text || ''
   const attackerCombatDoctrineTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Combat Doctrines')?.rules_text || ''
+  const attackerSynapticImperativeTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Synaptic Imperatives')?.rules_text || ''
+  const defenderSynapticImperativeTooltip = getDetachmentEntry(selectedDefenderDetachment, 'rule', 'Synaptic Imperatives')?.rules_text || ''
+  const synapseRangeTooltip = 'Mark this when the unit is within Synapse Range of your army. Synaptic Nexus imperatives only apply while this is true, and Irresistible Will also expects the attacking unit to be within 6" of the selected SYNAPSE unit.'
   const attackerTargetWithinNineTooltip = buildTooltip(
     blitzaFireTooltip,
     dakkastormTooltip,
@@ -9232,6 +9601,8 @@ function App() {
       attackerEnhancementName,
       attackerCombatDoctrine,
       attackerHyperAdaptation,
+      attackerSynapticImperative,
+      attackerWithinSynapseRange,
       attackerSagaCompleted: effectiveAttackerSagaCompleted,
       attackerEldersGuidanceActive,
       attackerBoastAchieved,
@@ -9261,6 +9632,12 @@ function App() {
       attackerRampagingMonstrositiesActive,
       attackerSwarmGuidedSalvoesActive,
       attackerMassiveImpactActive,
+      attackerBroodguardImpulseActive,
+      attackerSecureBiomassActive,
+      attackerSurpriseAssaultActive,
+      attackerAssassinBeastsActive,
+      attackerIrresistibleWillActive,
+      attackerParasiticBiomorphologyFedActive,
       attackerStubbornTenacityActive,
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
@@ -9279,6 +9656,7 @@ function App() {
       attackerInEngagementRange,
       targetInEngagementRangeOfAllies,
       defenderOnObjective,
+      defenderBattleshocked,
       hasHazardous,
     }),
     [
@@ -9296,6 +9674,8 @@ function App() {
       attackerEnhancementName,
       attackerCombatDoctrine,
       attackerHyperAdaptation,
+      attackerSynapticImperative,
+      attackerWithinSynapseRange,
       effectiveAttackerSagaCompleted,
       attackerEldersGuidanceActive,
       attackerBoastAchieved,
@@ -9325,6 +9705,12 @@ function App() {
       attackerRampagingMonstrositiesActive,
       attackerSwarmGuidedSalvoesActive,
       attackerMassiveImpactActive,
+      attackerBroodguardImpulseActive,
+      attackerSecureBiomassActive,
+      attackerSurpriseAssaultActive,
+      attackerAssassinBeastsActive,
+      attackerIrresistibleWillActive,
+      attackerParasiticBiomorphologyFedActive,
       attackerStubbornTenacityActive,
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
@@ -9343,6 +9729,7 @@ function App() {
       attackerInEngagementRange,
       targetInEngagementRangeOfAllies,
       defenderOnObjective,
+      defenderBattleshocked,
       hasHazardous,
     ],
   )
@@ -9355,6 +9742,8 @@ function App() {
       selectedAttackWeapons,
       defenderDetachment: selectedDefenderDetachment,
       defenderEnhancementName,
+      defenderSynapticImperative,
+      defenderWithinSynapseRange,
       defenderArmourOfContemptActive,
       defenderOverwhelmingOnslaughtActive,
       defenderUnbreakableLinesActive,
@@ -9363,6 +9752,9 @@ function App() {
       defenderLegendaryFortitudeActive,
       defenderSavageRoarActive,
       defenderSavageRoarBattleshockFailed,
+      defenderAblativeCarapaceActive,
+      defenderReinforcedHiveNodeActive,
+      defenderAllocationOrder,
       targetHasCover,
       attackerTargetWithinTwelve,
       indirectTargetVisible,
@@ -9377,6 +9769,8 @@ function App() {
       selectedAttackWeapons,
       selectedDefenderDetachment,
       defenderEnhancementName,
+      defenderSynapticImperative,
+      defenderWithinSynapseRange,
       defenderArmourOfContemptActive,
       defenderOverwhelmingOnslaughtActive,
       defenderUnbreakableLinesActive,
@@ -9385,6 +9779,9 @@ function App() {
       defenderLegendaryFortitudeActive,
       defenderSavageRoarActive,
       defenderSavageRoarBattleshockFailed,
+      defenderAblativeCarapaceActive,
+      defenderReinforcedHiveNodeActive,
+      defenderAllocationOrder,
       targetHasCover,
       attackerTargetWithinTwelve,
       indirectTargetVisible,
@@ -11115,6 +11512,18 @@ function App() {
     } else if (!canUseAttackerHyperAdaptation && attackerHyperAdaptation !== initialOptions.attacker_hyper_adaptation) {
       setAttackerHyperAdaptation(initialOptions.attacker_hyper_adaptation)
     }
+    if (!canUseAttackerSynapticImperative && attackerSynapticImperative) {
+      setAttackerSynapticImperative(initialOptions.attacker_synaptic_imperative)
+    }
+    if (!canUseDefenderSynapticImperative && defenderSynapticImperative) {
+      setDefenderSynapticImperative(initialOptions.defender_synaptic_imperative)
+    }
+    if (!canUseAttackerWithinSynapseRange && attackerWithinSynapseRange) {
+      setAttackerWithinSynapseRange(false)
+    }
+    if (!canUseDefenderWithinSynapseRange && defenderWithinSynapseRange) {
+      setDefenderWithinSynapseRange(false)
+    }
     if (!canUseAttackerAdrenalSurge && attackerAdrenalSurgeActive) {
       setAttackerAdrenalSurgeActive(false)
     }
@@ -11127,9 +11536,27 @@ function App() {
     if (!canUseAttackerMassiveImpact && attackerMassiveImpactActive) {
       setAttackerMassiveImpactActive(false)
     }
+    if (!canUseAttackerBroodguardImpulse && attackerBroodguardImpulseActive) {
+      setAttackerBroodguardImpulseActive(false)
+    }
+    if (!canUseAttackerSecureBiomass && attackerSecureBiomassActive) {
+      setAttackerSecureBiomassActive(false)
+    }
+    if (!canUseAttackerSurpriseAssault && attackerSurpriseAssaultActive) {
+      setAttackerSurpriseAssaultActive(false)
+    }
+    if (!canUseAttackerAssassinBeasts && attackerAssassinBeastsActive) {
+      setAttackerAssassinBeastsActive(false)
+    }
+    if (!canUseAttackerIrresistibleWill && attackerIrresistibleWillActive) {
+      setAttackerIrresistibleWillActive(false)
+    }
     if (!canUseDefenderSavageRoar && defenderSavageRoarActive) {
       setDefenderSavageRoarActive(false)
       setDefenderSavageRoarBattleshockFailed(false)
+    }
+    if (!canUseDefenderAblativeCarapace && defenderAblativeCarapaceActive) {
+      setDefenderAblativeCarapaceActive(false)
     }
     if (!canUseTargetWithinNine && attackerTargetWithinNine) {
       setAttackerTargetWithinNine(false)
@@ -11145,6 +11572,9 @@ function App() {
     }
     if (!canUseTargetBelowHalfStrength && targetBelowHalfStrength) {
       setTargetBelowHalfStrength(false)
+    }
+    if (!canUseParasiticBiomorphologyFed && attackerParasiticBiomorphologyFedActive) {
+      setAttackerParasiticBiomorphologyFedActive(false)
     }
     if (!canUseAttackerBelowHalfStrength && attackerBelowHalfStrength) {
       setAttackerBelowHalfStrength(false)
@@ -11283,13 +11713,18 @@ function App() {
     if (!canUseDefenderLegendaryFortitude && defenderLegendaryFortitudeActive) {
       setDefenderLegendaryFortitudeActive(false)
     }
+    if (!canUseDefenderReinforcedHiveNode && defenderReinforcedHiveNodeActive) {
+      setDefenderReinforcedHiveNodeActive(false)
+    }
   }, [
     attackerArmedToDaTeefActive,
     attackerAdrenalSurgeActive,
+    attackerAssassinBeastsActive,
     attackerRampagingMonstrositiesActive,
     attackerSwarmGuidedSalvoesActive,
     attackerMassiveImpactActive,
     attackerBiggerShellsActive,
+    attackerBroodguardImpulseActive,
     attackerAncientFuryActive,
     attackerBlitzingFusilladeActive,
     attackerBiggerShellsPushed,
@@ -11298,6 +11733,7 @@ function App() {
     attackerBlitzaFireActive,
     attackerCombatDoctrine,
     attackerHyperAdaptation,
+    attackerSynapticImperative,
     attackerCompetitiveStreakActive,
     attackerCountsAsTenPlusModels,
     attackerCrucibleOfBattleActive,
@@ -11312,25 +11748,32 @@ function App() {
     attackerHeroesOfTheChapterActive,
     attackerImperiumsSwordActive,
     attackerImmolationProtocolsActive,
+    attackerIrresistibleWillActive,
     attackerKlankinKlawsActive,
     attackerKlankinKlawsPushed,
     attackerMercyIsWeaknessActive,
     attackerNoThreatTooGreatActive,
     attackerOnslaughtOfFireActive,
+    attackerParasiticBiomorphologyFedActive,
     attackerPreyActive,
+    attackerSecureBiomassActive,
     attackerShockAssaultActive,
     attackerStrikeFromTheShadowsActive,
     attackerStormOfFireActive,
+    attackerSurpriseAssaultActive,
     attackerTargetClosestEligibleWithinSix,
     attackerTargetWithinNine,
     attackerTargetWithinTwelve,
     attackerTryDatButtonEffects,
     attackerTryDatButtonHazardous,
+    attackerWithinSynapseRange,
     attackerWaaaghControlledByGame,
     attackerUnbridledCarnageActive,
     attackerWaaaghActive,
     canUseAttackerArmedToDaTeef,
     canUseAttackerAdrenalSurge,
+    canUseAttackerAssassinBeasts,
+    canUseAttackerBroodguardImpulse,
     canUseAttackerRampagingMonstrosities,
     canUseAttackerSwarmGuidedSalvoes,
     canUseAttackerMassiveImpact,
@@ -11343,6 +11786,7 @@ function App() {
     canUseAttackerBlitzaFire,
     canUseAttackerCombatDoctrine,
     canUseAttackerHyperAdaptation,
+    canUseAttackerSynapticImperative,
     canUseAttackerCompetitiveStreak,
     canUseAttackerCountsAsTenPlus,
     canUseAttackerDakkastorm,
@@ -11353,26 +11797,35 @@ function App() {
     canUseAttackerBelowHalfStrength,
     canUseAttackerHeroesOfTheChapter,
     canUseAttackerImmolationProtocols,
+    canUseAttackerIrresistibleWill,
     canUseAttackerKlankinKlaws,
     canUseAttackerMercyIsWeakness,
     canUseAttackerNoThreatTooGreat,
     canUseAttackerOnslaughtOfFire,
+    canUseAttackerSecureBiomass,
     canUseAttackerPrey,
     canUseAttackerShockAssault,
     canUseAttackerStrikeFromTheShadows,
     canUseAttackerStormOfFire,
+    canUseAttackerSurpriseAssault,
     canUseAttackerUnbridledCarnage,
+    canUseAttackerWithinSynapseRange,
     canUseAttackerWaaagh,
     canUseDefenderArdAsNails,
+    canUseDefenderAblativeCarapace,
     canUseDefenderCountsAsTenPlus,
     canUseDefenderExtraGubbinz,
     canUseDefenderHulkingBrutes,
+    canUseDefenderReinforcedHiveNode,
     canUseDefenderSavageRoar,
     canUseDefenderRideHardRideFast,
     canUseDefenderLegendaryFortitude,
     canUseDefenderSpeediestFreeks,
     canUseDefenderStalkinTaktiks,
+    canUseDefenderSynapticImperative,
+    canUseDefenderWithinSynapseRange,
     canUseDefenderWaaagh,
+    canUseParasiticBiomorphologyFed,
     canUseTargetBelowHalfStrength,
     canUseTargetBelowStartingStrength,
     canUseTargetClosestEligibleWithinSix,
@@ -11382,14 +11835,18 @@ function App() {
     canUseExtremisLevelThreat,
     canUseImperiumsSwordPulse,
     defenderArdAsNailsActive,
+    defenderAblativeCarapaceActive,
     defenderCountsAsTenPlusModels,
     defenderExtraGubbinzActive,
     defenderHulkingBrutesActive,
+    defenderReinforcedHiveNodeActive,
     defenderSavageRoarActive,
     defenderLegendaryFortitudeActive,
     defenderRideHardRideFastActive,
     defenderSpeediestFreeksActive,
     defenderStalkinTaktiksActive,
+    defenderSynapticImperative,
+    defenderWithinSynapseRange,
     defenderWaaaghControlledByGame,
     defenderWaaaghActive,
     targetBelowHalfStrength,
@@ -12361,9 +12818,20 @@ function App() {
       attackerRampagingMonstrositiesActive,
       attackerSwarmGuidedSalvoesActive,
       attackerMassiveImpactActive,
+      attackerBroodguardImpulseActive,
+      attackerSecureBiomassActive,
+      attackerSurpriseAssaultActive,
+      attackerAssassinBeastsActive,
+      attackerIrresistibleWillActive,
+      attackerParasiticBiomorphologyFedActive,
       defenderSavageRoarActive,
       defenderSavageRoarBattleshockFailed,
+      defenderAblativeCarapaceActive,
       attackerHyperAdaptation,
+      attackerSynapticImperative,
+      defenderSynapticImperative,
+      attackerWithinSynapseRange,
+      defenderWithinSynapseRange,
       attackerHonourTheChapterActive,
       attackerStormOfFireActive,
       attackerNoThreatTooGreatActive,
@@ -12385,6 +12853,7 @@ function App() {
       defenderUnbreakableLinesActive,
       defenderRideHardRideFastActive,
       defenderLegendaryFortitudeActive,
+      defenderReinforcedHiveNodeActive,
       defenderPennantOfRemembranceActive,
       defenderBattleshocked,
     })
@@ -12491,6 +12960,10 @@ function App() {
         attacker_eligible_model_count: selectedBattlefieldEligibleAttackerModelCount,
         attacker_combat_doctrine: battlefieldAttackerSide === 'attacker' ? attackerCombatDoctrine || null : null,
         attacker_hyper_adaptation: battlefieldAttackerSide === 'attacker' ? attackerHyperAdaptation || null : null,
+        attacker_synaptic_imperative: battlefieldAttackerSide === 'attacker' ? attackerSynapticImperative || null : null,
+        defender_synaptic_imperative: battlefieldDefenderSide === 'defender' ? defenderSynapticImperative || null : null,
+        attacker_within_synapse_range: battlefieldAttackerSide === 'attacker' && attackerWithinSynapseRange,
+        defender_within_synapse_range: battlefieldDefenderSide === 'defender' && defenderWithinSynapseRange,
         attacker_honour_the_chapter_active: battlefieldAttackerSide === 'attacker' && attackerHonourTheChapterActive,
         attacker_storm_of_fire_active: battlefieldAttackerSide === 'attacker' && attackerStormOfFireActive,
         attacker_no_threat_too_great_active: battlefieldAttackerSide === 'attacker' && attackerNoThreatTooGreatActive,
@@ -12515,10 +12988,18 @@ function App() {
         attacker_rampaging_monstrosities_active: battlefieldAttackerSide === 'attacker' && attackerRampagingMonstrositiesActive,
         attacker_swarm_guided_salvoes_active: battlefieldAttackerSide === 'attacker' && attackerSwarmGuidedSalvoesActive,
         attacker_massive_impact_active: battlefieldAttackerSide === 'attacker' && attackerMassiveImpactActive,
+        attacker_broodguard_impulse_active: battlefieldAttackerSide === 'attacker' && attackerBroodguardImpulseActive,
+        attacker_secure_biomass_active: battlefieldAttackerSide === 'attacker' && attackerSecureBiomassActive,
+        attacker_surprise_assault_active: battlefieldAttackerSide === 'attacker' && attackerSurpriseAssaultActive,
+        attacker_assassin_beasts_active: battlefieldAttackerSide === 'attacker' && attackerAssassinBeastsActive,
+        attacker_irresistible_will_active: battlefieldAttackerSide === 'attacker' && attackerIrresistibleWillActive,
+        attacker_parasitic_biomorphology_fed_active: battlefieldAttackerSide === 'attacker' && attackerParasiticBiomorphologyFedActive,
         defender_savage_roar_active: battlefieldDefenderSide === 'defender' && defenderSavageRoarActive,
         defender_savage_roar_battleshock_failed: battlefieldDefenderSide === 'defender' && defenderSavageRoarBattleshockFailed,
+        defender_ablative_carapace_active: battlefieldDefenderSide === 'defender' && defenderAblativeCarapaceActive,
         defender_ride_hard_ride_fast_active: battlefieldDefenderSide === 'defender' && defenderRideHardRideFastActive,
         defender_legendary_fortitude_active: battlefieldDefenderSide === 'defender' && defenderLegendaryFortitudeActive,
+        defender_reinforced_hive_node_active: battlefieldDefenderSide === 'defender' && defenderReinforcedHiveNodeActive,
         attacker_saga_completed: Boolean(battleAchievements[battlefieldAttackerSide]?.sagaCompleted),
         attacker_active_ability_names: battlefieldActiveAbilityNames,
         attacker_waaagh_active: battlefieldAttackerWaaaghActive,
@@ -14511,8 +14992,15 @@ function App() {
     setAttackerRampagingMonstrositiesActive(initialOptions.attacker_rampaging_monstrosities_active)
     setAttackerSwarmGuidedSalvoesActive(initialOptions.attacker_swarm_guided_salvoes_active)
     setAttackerMassiveImpactActive(initialOptions.attacker_massive_impact_active)
+    setAttackerBroodguardImpulseActive(initialOptions.attacker_broodguard_impulse_active)
+    setAttackerSecureBiomassActive(initialOptions.attacker_secure_biomass_active)
+    setAttackerSurpriseAssaultActive(initialOptions.attacker_surprise_assault_active)
+    setAttackerAssassinBeastsActive(initialOptions.attacker_assassin_beasts_active)
+    setAttackerIrresistibleWillActive(initialOptions.attacker_irresistible_will_active)
+    setAttackerParasiticBiomorphologyFedActive(initialOptions.attacker_parasitic_biomorphology_fed_active)
     setDefenderSavageRoarActive(initialOptions.defender_savage_roar_active)
     setDefenderSavageRoarBattleshockFailed(initialOptions.defender_savage_roar_battleshock_failed)
+    setDefenderAblativeCarapaceActive(initialOptions.defender_ablative_carapace_active)
     setAttackerHonourTheChapterActive(initialOptions.attacker_honour_the_chapter_active)
     setAttackerStormOfFireActive(initialOptions.attacker_storm_of_fire_active)
     setAttackerNoThreatTooGreatActive(initialOptions.attacker_no_threat_too_great_active)
@@ -14529,11 +15017,16 @@ function App() {
     setAttackerTargetWithinTwelve(initialOptions.attacker_target_within_12)
     setAttackerTargetClosestEligibleWithinSix(initialOptions.attacker_target_closest_eligible_within_6)
     setAttackerDisembarkedFromTransport(initialOptions.attacker_disembarked_from_transport)
+    setAttackerSynapticImperative(initialOptions.attacker_synaptic_imperative)
+    setDefenderSynapticImperative(initialOptions.defender_synaptic_imperative)
+    setAttackerWithinSynapseRange(initialOptions.attacker_within_synapse_range)
+    setDefenderWithinSynapseRange(initialOptions.defender_within_synapse_range)
     setDefenderArmourOfContemptActive(initialOptions.defender_armour_of_contempt_active)
     setDefenderOverwhelmingOnslaughtActive(initialOptions.defender_overwhelming_onslaught_active)
     setDefenderUnbreakableLinesActive(initialOptions.defender_unbreakable_lines_active)
     setDefenderRideHardRideFastActive(initialOptions.defender_ride_hard_ride_fast_active)
     setDefenderLegendaryFortitudeActive(initialOptions.defender_legendary_fortitude_active)
+    setDefenderReinforcedHiveNodeActive(initialOptions.defender_reinforced_hive_node_active)
     setDefenderPennantOfRemembranceActive(initialOptions.defender_pennant_of_remembrance_active)
     setDefenderBattleshocked(initialOptions.defender_battleshocked)
     setAttackerEnhancementName('')
@@ -15273,6 +15766,62 @@ function App() {
                 </label>
               ) : null}
 
+              {canUseAttackerSynapticImperative ? (
+                <label className="combat-option-attacker" title={attackerSynapticImperativeTooltip}>
+                  <span>Attacker Synaptic Imperative</span>
+                  <select
+                    title={attackerSynapticImperativeTooltip}
+                    value={attackerSynapticImperative}
+                    onChange={(event) => setAttackerSynapticImperative(event.target.value)}
+                  >
+                    {SYNAPTIC_IMPERATIVE_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseDefenderSynapticImperative ? (
+                <label className="combat-option-defender" title={defenderSynapticImperativeTooltip}>
+                  <span>Defender Synaptic Imperative</span>
+                  <select
+                    title={defenderSynapticImperativeTooltip}
+                    value={defenderSynapticImperative}
+                    onChange={(event) => setDefenderSynapticImperative(event.target.value)}
+                  >
+                    {SYNAPTIC_IMPERATIVE_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerWithinSynapseRange ? (
+                <label className="checkbox-row" title={synapseRangeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerWithinSynapseRange}
+                    onChange={(event) => setAttackerWithinSynapseRange(event.target.checked)}
+                  />
+                  <span>Attacker is within Synapse Range</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderWithinSynapseRange ? (
+                <label className="checkbox-row combat-option-defender" title={synapseRangeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderWithinSynapseRange}
+                    onChange={(event) => setDefenderWithinSynapseRange(event.target.checked)}
+                  />
+                  <span>Defender is within Synapse Range</span>
+                </label>
+              ) : null}
+
               {canUseAttackerFireDiscipline ? (
                 <label className="checkbox-row" title={fireDisciplineTooltip}>
                   <input
@@ -15917,6 +16466,72 @@ function App() {
                 </label>
               ) : null}
 
+              {canUseAttackerBroodguardImpulse ? (
+                <label className="checkbox-row" title={broodguardImpulseTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerBroodguardImpulseActive}
+                    onChange={(event) => setAttackerBroodguardImpulseActive(event.target.checked)}
+                  />
+                  <span>Use Broodguard Impulse</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerSecureBiomass ? (
+                <label className="checkbox-row" title={secureBiomassTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerSecureBiomassActive}
+                    onChange={(event) => setAttackerSecureBiomassActive(event.target.checked)}
+                  />
+                  <span>Use Secure Biomass</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerSurpriseAssault ? (
+                <label className="checkbox-row" title={surpriseAssaultTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerSurpriseAssaultActive}
+                    onChange={(event) => setAttackerSurpriseAssaultActive(event.target.checked)}
+                  />
+                  <span>Use Surprise Assault</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerAssassinBeasts ? (
+                <label className="checkbox-row" title={assassinBeastsTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerAssassinBeastsActive}
+                    onChange={(event) => setAttackerAssassinBeastsActive(event.target.checked)}
+                  />
+                  <span>Use Assassin Beasts</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerIrresistibleWill ? (
+                <label className="checkbox-row" title={irresistibleWillTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerIrresistibleWillActive}
+                    onChange={(event) => setAttackerIrresistibleWillActive(event.target.checked)}
+                  />
+                  <span>Use Irresistible Will</span>
+                </label>
+              ) : null}
+
+              {canUseParasiticBiomorphologyFed ? (
+                <label className="checkbox-row" title={attackerEnhancementTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerParasiticBiomorphologyFedActive}
+                    onChange={(event) => setAttackerParasiticBiomorphologyFedActive(event.target.checked)}
+                  />
+                  <span>Parasitic Biomorphology has fed</span>
+                </label>
+              ) : null}
+
               {canUseDefenderArdAsNails ? (
                 <label className="checkbox-row combat-option-defender" title={ardAsNailsTooltip}>
                   <input
@@ -15954,6 +16569,28 @@ function App() {
                     </label>
                   ) : null}
                 </>
+              ) : null}
+
+              {canUseDefenderAblativeCarapace ? (
+                <label className="checkbox-row combat-option-defender" title={ablativeCarapaceTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderAblativeCarapaceActive}
+                    onChange={(event) => setDefenderAblativeCarapaceActive(event.target.checked)}
+                  />
+                  <span>Defender uses Ablative Carapace</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderReinforcedHiveNode ? (
+                <label className="checkbox-row combat-option-defender" title={reinforcedHiveNodeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderReinforcedHiveNodeActive}
+                    onChange={(event) => setDefenderReinforcedHiveNodeActive(event.target.checked)}
+                  />
+                  <span>Defender uses Reinforced Hive Node</span>
+                </label>
               ) : null}
 
               {canUseAttackerDragItDown ? (
@@ -19197,9 +19834,9 @@ function App() {
                         }}
                       />
                       <span>Unit is battle-shocked</span>
-                    </label>
-                  </>
-                ) : null}
+                  </label>
+                </>
+              ) : null}
                 {unitHasKeyword(selectedBattlefieldUnitDetails, 'fly') ? (
                   <label className="checkbox-row">
                     <input

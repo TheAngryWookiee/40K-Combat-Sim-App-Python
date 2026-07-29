@@ -253,6 +253,361 @@
             "implemented": true
           }
         ]
+      },
+      {
+        "name": "Assimilation Swarm",
+        "rule": {
+          "name": "Feed the Swarm",
+          "rules_text": "In your Command phase, each HARVESTER unit from your army that is within range of an objective marker you control can Regenerate one friendly TYRANIDS unit that is within 6\" of it. A unit can only be regenerated once per phase. Each time a unit regenerates, do one of the following:\n\nOne model in that unit regains up to D3 lost wounds.\nOne destroyed INFANTRY model (excluding CHARACTERS) is returned to that unit with its full wounds remaining. If that unit is an ENDLESS MULTITUDE unit, up to 3 destroyed models are returned instead.",
+          "implemented": false
+        },
+        "restrictions": [],
+        "enhancements": [
+          {
+            "name": "Regenerating Monstrosity",
+            "rules_text": "TYRANIDS model only (excluding MONSTERS models). The bearer's unit can be regenerated up to twice per phase, instead of once.",
+            "restrictions": [
+              "TYRANIDS model only (excluding MONSTERS models)."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Instinctive Defence",
+            "rules_text": "TYRANIDS model only. While the bearer is within 6\" of one or more friendly HARVESTER units, you can target the bearer's unit with the Heroic Intervention Stratagem for 0CP. In addition, while the bearer is within 6\" of one or more friendly HARVESTER units, models in the bearer's unit have the Fights First ability.",
+            "restrictions": [
+              "TYRANIDS model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Biophagic Flow (Aura)",
+            "rules_text": "TYRANIDS model only. While a friendly HARVESTER model is within 12\" of the bearer, when using the Feed the Swarm ability, that HARVESTER model can Regenerate one friendly TYRANIDS unit that is within 9\" of it, instead of one within 6\".",
+            "restrictions": [
+              "TYRANIDS model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Parasitic Biomorphology",
+            "rules_text": "TYRANIDS model only. Add 1 to the Strength characteristic of melee weapons equipped by models in the bearer's unit. The first time the bearer's unit destroys an enemy unit in the Fight phase while the bearer is within 6\" of one or more friendly HARVESTER units, until the end of the battle, add 1 to the Attacks characteristic of melee weapons equipped by models in the bearer's unit.",
+            "restrictions": [
+              "TYRANIDS model only."
+            ],
+            "implemented": false
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Broodguard Impulse",
+            "type": "Epic Deed",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Any phase.",
+            "target": "One HARVESTER unit from your army that was just destroyed. You can use this Stratagem on that unit even though it was just destroyed.",
+            "effect": "Until the end of the battle, each time a friendly TYRANIDS model makes an attack that targets the enemy unit that just destroyed your HARVESTER unit, add 1 to the Wound roll.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Reclaim Biomass",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Any phase, when a TYRANIDS unit from your army is destroyed, before the last model in it is removed from play.",
+            "target": "One HARVESTER unit from your army that is within 6\" of that destroyed unit.",
+            "effect": "Regenerate one friendly TYRANIDS unit within 6\" of your HARVESTER unit (see Feed the Swarm).",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Tyrannoformed",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Command phase.",
+            "target": "One HARVESTER unit from your army that is within range of an objective marker you control.",
+            "effect": "That objective marker remains under your control, even if you have no models within range of it, until your opponent controls it at the start or end of any turn.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Ablative Carapace",
+            "type": "Epic Deed",
+            "cp_cost": 2,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Your opponent's Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One HARVESTER unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Until the end of the phase, models in your unit have the Feel No Pain 5+ ability. If your unit is within range of an objective marker you control, until the end of the phase models in your unit have the Feel No Pain 4+ ability instead.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Secure Biomass",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Fight phase.",
+            "target": "One TYRANIDS unit from your army that has not been selected to fight this phase.",
+            "effect": "Until the end of the phase, melee weapons equipped by models in your unit have the [LETHAL HITS] ability. If your unit is a HARVESTER unit, each time a model in that unit makes a melee attack, a successful unmodified Hit roll of 5+ scores a Critical Hit as well.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Rapacious Hunger",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Fight phase.",
+            "target": "One TYRANIDS unit from your army that just destroyed an enemy unit.",
+            "effect": "Your unit immediately Regenerates (see Feed the Swarm). When doing so, if your unit is a HARVESTER unit and you choose for one model to regain up to D3 lost wounds, that model regains up to 3 lost wounds instead.",
+            "restrictions": [],
+            "implemented": false
+          }
+        ]
+      },
+      {
+        "name": "Vanguard Onslaught",
+        "rule": {
+          "name": "Questing Tendrils",
+          "rules_text": "TYRANIDS units with this ability are eligible to charge in a turn in which they Fell Back. VANGUARD INVADER units with this ability are eligible to charge in a turn in which they Advanced.\n\nDEATHLEAPER loses the Hunter Organism rule and can be your WARLORD.",
+          "implemented": false
+        },
+        "restrictions": [],
+        "enhancements": [
+          {
+            "name": "Hunting Grounds",
+            "rules_text": "TYRANIDS model only. While the bearer is on the battlefield, each time your opponent sets up a Reserves unit on the battlefield, roll one D6: on a 2+, that unit must take a Battle-shock test.",
+            "restrictions": [
+              "TYRANIDS model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Chameleonic",
+            "rules_text": "VANGUARD INVADER model only. The bearer has the Stealth ability and each time a ranged attack targets the bearer's unit, models in that unit have the Benefit of Cover against that attack.",
+            "restrictions": [
+              "VANGUARD INVADER model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Stalker",
+            "rules_text": "VANGUARD INVADER model only. At the start of the battle, select one enemy unit. Each time the bearer makes an attack that targets that enemy unit, add 1 to the Hit roll and add 1 to the Wound roll.",
+            "restrictions": [
+              "VANGUARD INVADER model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Neuronode",
+            "rules_text": "TYRANIDS model only. After both players have deployed their armies and determined who has the first turn, you can select up to three VANGUARD INVADER units from your army and redeploy all of those units. When doing so, any of those units can be placed into Strategic Reserves, regardless of how many units are already in Strategic Reserves.",
+            "restrictions": [
+              "TYRANIDS model only."
+            ],
+            "implemented": false
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Surprise Assault",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase or the Fight phase.",
+            "target": "One VANGUARD INVADER unit from your army that has not been selected to shoot or fight this phase, and one enemy unit.",
+            "effect": "That enemy unit must take a Battle-shock test. Until the end of the phase, each time a model in your unit makes an attack that targets that enemy unit, add 1 to the Hit roll. If the Battle-shock test was failed, add 1 to the Wound roll as well.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Assassin Beasts",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Fight phase.",
+            "target": "One VANGUARD INVADER INFANTRY unit from your army that has not been selected to fight this phase.",
+            "effect": "Until the end of the phase, melee weapons equipped by models in your unit have the [PRECISION] ability.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Seeded Broods",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase.",
+            "target": "One TYRANIDS unit from your army that is in Reserves, or up to two VANGUARD INVADER units from your army that are in Reserves.",
+            "effect": "Until the end of the phase, for the purposes of setting up those selected units on the battlefield, treat the current battle round number as being one higher than it actually is.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Hypersensory Scillia",
+            "type": "Strategic Ploy",
+            "cp_cost": 2,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Movement phase, just after an enemy unit ends a Normal, Advance or Fall Back move.",
+            "target": "Up to two VANGUARD INVADER units from your army that are within 9\" of that enemy unit, or one other TYRANIDS INFANTRY unit from your army that is within 9\" of that enemy unit.",
+            "effect": "Those selected units can each make a Normal move of up to 6\".",
+            "restrictions": [
+              "You cannot target units that are within Engagement Range of one or more enemy units."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Unseen Lurkers",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Shooting phase, just after an enemy unit has selected its targets.",
+            "target": "One VANGUARD INVADER unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Until the end of the phase, your unit can only be selected as the target of a ranged attack if the attacking model is within 12\" or, if your unit has the Lone Operative ability, if the attacking model is within 6\". Your opponent can select new targets for the attacking unit's attacks.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Invisible Hunter",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "End of your opponent's Fight phase.",
+            "target": "Up to two VANGUARD INVADER units from your army, or one TYRANIDS INFANTRY unit from your army.",
+            "effect": "Remove the targeted units from the battlefield and place them into Strategic Reserves.",
+            "restrictions": [
+              "The targeted units must be more than 3\" away from all enemy units."
+            ],
+            "implemented": false
+          }
+        ]
+      },
+      {
+        "name": "Synaptic Nexus",
+        "rule": {
+          "name": "Synaptic Imperatives",
+          "rules_text": "At the start of the battle round, you can select one of the Synaptic Imperatives shown below. Until the end of the battle round, that Synaptic Imperative is active for your army and while a TYRANIDS unit from your army is within Synapse Range of your army, it will benefit from it. Each Synaptic Imperative can only be selected once per battle.\n\nSynaptic Augmentation: While this unit is within Synapse Range of your army, models in this unit have a 5+ invulnerable save.\nSurging Vitality: While this unit is within Synapse Range of your army, add 1 to Advance and Charge rolls made for this unit.\nGoaded to Slaughter: While this unit is within Synapse Range of your army, each time a model in this unit makes a melee attack, add 1 to the Hit roll.",
+          "implemented": false
+        },
+        "restrictions": [],
+        "enhancements": [
+          {
+            "name": "Power of the Hive Mind",
+            "rules_text": "TYRANIDS PSYKER model only. Improve the Strength and Armour Penetration characteristics of psychic weapons equipped by the bearer by 1.",
+            "restrictions": [
+              "TYRANIDS PSYKER model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Psychostatic Disruption",
+            "rules_text": "TYRANIDS SYNAPSE model only. Enemy units that arrive on the battlefield from Reserves cannot be set up within 12\" of the bearer. In addition, once per battle, during the first or second battle round, when your opponent declares that a unit will arrive on the battlefield from Strategic Reserves, the bearer can use this Enhancement. If it does, roll one D6: on a 4+, that enemy unit cannot arrive on the battlefield this turn.",
+            "restrictions": [
+              "TYRANIDS SYNAPSE model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Synaptic Control",
+            "rules_text": "TYRANIDS SYNAPSE model only. Each time an attack is allocated to the bearer, subtract 1 from the Damage characteristic of that attack.",
+            "restrictions": [
+              "TYRANIDS SYNAPSE model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "The Dirgeheart of Kharis (Aura)",
+            "rules_text": "TYRANIDS SYNAPSE model only. While an enemy unit is within 9\" of the bearer, worsen that unit's Leadership characteristic by 1.",
+            "restrictions": [
+              "TYRANIDS SYNAPSE model only."
+            ],
+            "implemented": false
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "The Smothering Shadow",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Any phase, just after an enemy unit fails a Battle-shock test.",
+            "target": "One SYNAPSE unit from your army within 12\" of that enemy unit.",
+            "effect": "Roll six D6: for each 3+, that enemy unit suffers 1 mortal wound.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Synaptic Channelling",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Command phase.",
+            "target": "One SYNAPSE unit from your army.",
+            "effect": "Until the end of the turn, while a friendly TYRANIDS unit is within 9\" of the selected unit, that unit is within Synapse Range of your army.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Irresistible Will",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Your Shooting phase or the Fight phase.",
+            "target": "One SYNAPSE unit from your army that has not been selected to shoot or fight this phase, and one enemy unit within 24\" of and visible to the SYNAPSE unit.",
+            "effect": "Until the end of the phase, each time a friendly TYRANIDS model makes an attack that targets that enemy unit, if the attacking model's unit is within 6\" of your SYNAPSE unit, re-roll a Hit roll of 1 and re-roll a Wound roll of 1.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Reinforced Hive Node",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Your opponent's Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One SYNAPSE unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Until the end of the phase, each time an attack targets your unit, worsen the Armour Penetration characteristic of that attack by 1.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Imperative Dominance",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Command phase.",
+            "target": "One TYRANIDS unit from your army that is within Synapse Range of your army.",
+            "effect": "Select one Synaptic Imperative, even if you have already selected that Imperative this battle. Until the start of your next Command phase, that Synaptic Imperative is active for your unit instead of any other Synaptic Imperative that is active for your army.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Override Instincts",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase.",
+            "target": "One TYRANIDS unit from your army that is within Synapse Range of your army and made a Fall Back move this phase.",
+            "effect": "Your unit is eligible to shoot and declare a charge this turn.",
+            "restrictions": [],
+            "implemented": false
+          }
+        ]
       }
     ]
   },

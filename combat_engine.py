@@ -4037,6 +4037,14 @@ class CombatSimulator:
         attacker_enhancement_name = str(options.get("attacker_enhancement_name", "") or "")
         defender_enhancement_name = str(options.get("defender_enhancement_name", "") or "")
         attacker_enhancement_bearer_name = str(options.get("attacker_enhancement_bearer_name", "") or "")
+        defender_enhancement_bearer_role = str(options.get("defender_enhancement_bearer_role", "") or "bodyguard")
+        defender_allocation_order = [
+            str(label)
+            for label in options.get("defender_allocation_order", [])
+            if str(label)
+        ]
+        attacker_synaptic_imperative = str(options.get("attacker_synaptic_imperative", "") or "").lower()
+        defender_synaptic_imperative = str(options.get("defender_synaptic_imperative", "") or "").lower()
         attacker_combat_doctrine = str(options.get("attacker_combat_doctrine", "") or "").lower()
         attacker_devastator_doctrine_active = (
             attacker_detachment_name == "Gladius Task Force"
@@ -4149,6 +4157,16 @@ class CombatSimulator:
                 and self.unit_has_keyword(target_state, "character")
             ):
                 temporary_weapon_keywords.add("Precision")
+        if bool(options.get("attacker_secure_biomass_active", False)):
+            add_keywords_to_matching_weapons(
+                {"LH"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if bool(options.get("attacker_assassin_beasts_active", False)):
+            add_keywords_to_matching_weapons(
+                {"Precision"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
         if bool(options.get("attacker_storm_of_fire_active", False)):
             add_keywords_to_matching_weapons(
                 {"Ignores Cover"},
@@ -4402,6 +4420,16 @@ class CombatSimulator:
             attacker_hit_modifier += 1
             if bool(options.get("attacker_battleshocked", False)):
                 attacker_outgoing_wound_modifier += 1
+        if bool(options.get("attacker_surprise_assault_active", False)):
+            attacker_hit_modifier += 1
+            if bool(options.get("defender_battleshocked", False)):
+                attacker_outgoing_wound_modifier += 1
+        if (
+            attacker_enhancement_name == "Stalker"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+        ):
+            attacker_hit_modifier += 1
+            attacker_outgoing_wound_modifier += 1
         if weapon["range"].lower() == "melee":
             if (
                 self.ability_names_include(attacker_or_attached_ability_names, "beastboss")
@@ -4458,6 +4486,12 @@ class CombatSimulator:
             and self.unit_has_keyword(attacker_unit, "monster")
         ):
             reroll_all_hit_rolls = True
+        if (
+            bool(options.get("attacker_irresistible_will_active", False))
+            and bool(options.get("attacker_within_synapse_range", False))
+        ):
+            reroll_hit_rolls_of_1 = True
+            reroll_wound_rolls_of_1 = True
         if (
             self.ability_names_include(attacker_ability_names, "dat's our loot")
             and weapon["range"].lower() != "melee"
@@ -4576,12 +4610,21 @@ class CombatSimulator:
                 reroll_wound_rolls_of_1 = True
         if bool(options.get("attacker_unbridled_ferocity_active", False)) and weapon["range"].lower() == "melee":
             attacker_outgoing_wound_modifier += 1
+        if bool(options.get("attacker_broodguard_impulse_active", False)):
+            attacker_outgoing_wound_modifier += 1
         if (
             attacker_detachment_name == "Crusher Stampede"
             and self.unit_has_keyword(attacker_unit, "monster")
             and bool(options.get("attacker_below_half_strength", False))
         ):
             attacker_outgoing_wound_modifier += 1
+        if (
+            attacker_detachment_name == "Synaptic Nexus"
+            and attacker_synaptic_imperative == "goaded_to_slaughter"
+            and bool(options.get("attacker_within_synapse_range", False))
+            and weapon["range"].lower() == "melee"
+        ):
+            attacker_hit_modifier += 1
         if (
             attacker_enhancement_name == "Monstrous Nemesis"
             and weapon["range"].lower() == "melee"
@@ -4898,6 +4941,23 @@ class CombatSimulator:
             elif attacker_unit["name"] == attacker_enhancement_bearer_name:
                 melee_attack_bonus += 1
         if (
+            attacker_enhancement_name == "Parasitic Biomorphology"
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_strength_bonus += 1
+            if bool(options.get("attacker_parasitic_biomorphology_fed_active", False)):
+                melee_attack_bonus += 1
+        if (
+            attacker_enhancement_name == "Power of the Hive Mind"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+            and self.weapon_has_keyword(weapon, "Psychic")
+        ):
+            if weapon["range"].lower() == "melee":
+                melee_strength_bonus += 1
+            else:
+                ranged_strength_bonus += 1
+            attacker_ap_modifier += 1
+        if (
             attacker_firestorm_assault_force_active
             and bool(options.get("attacker_target_within_12", False))
             and weapon["range"].lower() != "melee"
@@ -5113,6 +5173,8 @@ class CombatSimulator:
         ):
             attacker_ap_modifier += 1
         target_ap_modifier = -1 if bool(options.get("defender_armour_of_contempt_active", False)) else 0
+        if bool(options.get("defender_reinforced_hive_node_active", False)):
+            target_ap_modifier -= 1
         if bool(options.get("defender_hulking_brutes_active", False)):
             target_ap_modifier -= 1
         if self.target_state_has_ability(target_state, "Ramshackle but Rugged"):
@@ -5128,6 +5190,11 @@ class CombatSimulator:
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 4)
         if bool(options.get("defender_pennant_of_remembrance_active", False)):
             target_feel_no_pain = 4 if bool(options.get("defender_battleshocked", False)) else 6
+        if bool(options.get("defender_ablative_carapace_active", False)):
+            target_feel_no_pain = self.combine_feel_no_pain_values(
+                target_feel_no_pain,
+                4 if bool(options.get("defender_on_objective", False)) else 5,
+            )
         if (
             defender_enhancement_name == "Fenrisian Grit"
             and bool(options.get("defender_enhancement_bearer_is_single_model_unit", False))
@@ -5183,6 +5250,12 @@ class CombatSimulator:
         if bool(options.get("defender_waaagh_active", False)):
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 5)
         if (
+            defender_detachment_name == "Synaptic Nexus"
+            and defender_synaptic_imperative == "synaptic_augmentation"
+            and bool(options.get("defender_within_synapse_range", False))
+        ):
+            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 5)
+        if (
             defender_detachment_name == "Green Tide"
             and self.unit_has_keyword(target_state, "boyz")
         ):
@@ -5215,10 +5288,32 @@ class CombatSimulator:
         )
 
         target_damage_modifier = -1 if bool(options.get("defender_extra_gubbinz_active", False)) else 0
+        synaptic_control_allocation_matches = (
+            bool(defender_allocation_order)
+            and (
+                (
+                    defender_enhancement_bearer_role == "attached_character"
+                    and defender_allocation_order[0].startswith("Attached Character - ")
+                )
+                or (
+                    defender_enhancement_bearer_role == "attached_support"
+                    and defender_allocation_order[0].startswith("Attached Support - ")
+                )
+                or (
+                    defender_enhancement_bearer_role == "bodyguard"
+                    and defender_allocation_order[0].startswith("Bodyguard - ")
+                )
+            )
+        )
         if (
             bool(options.get("defender_legendary_fortitude_active", False))
             and weapon["range"].lower() == "melee"
             and self.unit_is_first_company_veteran_target(target_state)
+        ):
+            target_damage_modifier -= 1
+        if (
+            defender_enhancement_name == "Synaptic Control"
+            and synaptic_control_allocation_matches
         ):
             target_damage_modifier -= 1
         if self.target_state_has_ability(target_state, "Duty Eternal"):
@@ -5249,6 +5344,8 @@ class CombatSimulator:
         if bool(options.get("defender_stalkin_taktiks_active", False)) and weapon["range"].lower() != "melee":
             target_has_stealth = self.unit_has_keyword(target_state, "infantry")
         if defender_enhancement_name == "Smoky Gubbinz" and weapon["range"].lower() != "melee":
+            target_has_stealth = True
+        if defender_enhancement_name == "Chameleonic" and weapon["range"].lower() != "melee":
             target_has_stealth = True
         if (
             self.target_state_has_ability(target_state, "Billowing Fumes")
@@ -5331,6 +5428,9 @@ class CombatSimulator:
                         5 if bool(options.get("attacker_unbridled_carnage_active", False)) else 6,
                         5 if bool(options.get("attacker_adrenal_surge_active", False))
                         and weapon["range"].lower() == "melee" else 6,
+                        5 if bool(options.get("attacker_secure_biomass_active", False))
+                        and weapon["range"].lower() == "melee"
+                        and self.unit_has_keyword(attacker_unit, "harvester") else 6,
                         5 if bool(options.get("attacker_drag_it_down_active", False))
                         and bool(options.get("attacker_prey_active", False)) else 6,
                         5 if bool(options.get("attacker_blitza_fire_active", False))
@@ -5377,6 +5477,7 @@ class CombatSimulator:
             "target_has_bonus_cover": (
                 (
                     bool(options.get("defender_stalkin_taktiks_active", False))
+                    or defender_enhancement_name == "Chameleonic"
                     or defender_shadow_masters_applies
                 )
                 and weapon["range"].lower() != "melee"

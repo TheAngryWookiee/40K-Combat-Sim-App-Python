@@ -153,6 +153,10 @@ class SimulationOptions(BaseModel):
     attacker_waaagh_active: bool = False
     defender_waaagh_active: bool = False
     attacker_hyper_adaptation: str | None = None
+    attacker_synaptic_imperative: str | None = None
+    defender_synaptic_imperative: str | None = None
+    attacker_within_synapse_range: bool = False
+    defender_within_synapse_range: bool = False
     attacker_prey_active: bool = False
     attacker_target_within_9: bool = False
     attacker_target_within_12: bool = False
@@ -169,12 +173,20 @@ class SimulationOptions(BaseModel):
     attacker_rampaging_monstrosities_active: bool = False
     attacker_swarm_guided_salvoes_active: bool = False
     attacker_massive_impact_active: bool = False
+    attacker_broodguard_impulse_active: bool = False
+    attacker_secure_biomass_active: bool = False
+    attacker_surprise_assault_active: bool = False
+    attacker_assassin_beasts_active: bool = False
+    attacker_irresistible_will_active: bool = False
+    attacker_parasitic_biomorphology_fed_active: bool = False
     defender_savage_roar_active: bool = False
     defender_savage_roar_battleshock_failed: bool = False
+    defender_ablative_carapace_active: bool = False
     defender_ard_as_nails_active: bool = False
     attacker_drag_it_down_active: bool = False
     defender_stalkin_taktiks_active: bool = False
     defender_speediest_freeks_active: bool = False
+    defender_reinforced_hive_node_active: bool = False
     attacker_blitza_fire_active: bool = False
     attacker_dakkastorm_active: bool = False
     attacker_full_throttle_active: bool = False
@@ -506,10 +518,16 @@ ATTACKER_STRATAGEM_OPTION_KEYS = {
     "attacker_surgical_strikes_active",
     "attacker_competitive_streak_active",
     "attacker_armed_to_da_teef_active",
+    "attacker_broodguard_impulse_active",
+    "attacker_secure_biomass_active",
+    "attacker_surprise_assault_active",
+    "attacker_assassin_beasts_active",
+    "attacker_irresistible_will_active",
 }
 
 DEFENDER_STRATAGEM_OPTION_KEYS = {
     "defender_ard_as_nails_active",
+    "defender_ablative_carapace_active",
     "defender_stalkin_taktiks_active",
     "defender_speediest_freeks_active",
     "defender_extra_gubbinz_active",
@@ -518,6 +536,7 @@ DEFENDER_STRATAGEM_OPTION_KEYS = {
     "defender_legendary_fortitude_active",
     "defender_armour_of_contempt_active",
     "defender_overwhelming_onslaught_active",
+    "defender_reinforced_hive_node_active",
     "defender_unbreakable_lines_active",
 }
 
@@ -1993,6 +2012,13 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
         "defender_enhancement_name": request.defender_enhancement_name,
         "defender_enhancement_bearer_name": (
             defender_enhancement_bearer_unit["name"]
+        ),
+        "defender_enhancement_bearer_role": (
+            "attached_character"
+            if attached_character_unit is not None
+            else "attached_support"
+            if attached_support_unit is not None
+            else "bodyguard"
         ),
         "defender_package_model_count": (
             int(defender_unit.get("models", 0))
