@@ -5127,6 +5127,35 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'squig mine': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
     allowOutOfPhaseAbilities && selectedWeapons.length > 0
   ),
+  'singular purpose': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'burning spray': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'hypnotic gaze (psychic)': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'paroxysm (psychic)': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'harpoon barbs': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'spore mine cysts': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'terror from the deep': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'floating death': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'hypertyoxic miasma (aura)': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'hypertoxic miasma (aura)': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'resilient organism': ({ selectedWeapons }) => selectedWeapons.length > 0,
 }
 
 const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
@@ -5210,6 +5239,18 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'violent fury',
   'waaagh! energy',
   'war howl',
+  'airborne predator',
+  'alpha leader',
+  'alpha warrior',
+  'brood progenitor',
+  'feeding frenzy',
+  'foul spores',
+  'node lash',
+  'psychological saboteur',
+  'symbiotic targeting',
+  'vanguard predator',
+  'vicious insight',
+  'warp field',
 ])
 
 const CHARGE_DEPENDENT_COMBAT_ABILITIES = new Set([
@@ -5460,7 +5501,6 @@ function buildAttackerActiveRules({
   attackerShockAssaultActive,
   attackerStrikeFromTheShadowsActive,
   attackerTargetWithinTwelve,
-  attackerTargetClosestEligibleWithinSix,
   attackerDisembarkedFromTransport,
   attackerUnforgivenFuryActive,
   attackerUnbridledFerocityActive,

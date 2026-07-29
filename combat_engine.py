@@ -3437,6 +3437,104 @@ class CombatSimulator:
             "D6",
         )
 
+        resolve_out_of_phase_mortal_ability(
+            "Harpoon Barbs",
+            "once per turn, when an enemy unit within Engagement Range Falls Back",
+            "D6",
+            2,
+            "D6",
+        )
+
+        if should_resolve_pre_attack_ability("Spore Mine Cysts") and target_state["models"] > 0:
+            ability_name = "Spore Mine Cysts"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Out-of-phase ability resolved before attacks for simulation convenience. "
+                "Actual timing: Movement phase, after this model ends a Normal move over the target."
+            )
+            rolls = [self.die_roll() for _ in range(6)]
+            mortal_wounds = sum(1 for roll in rolls if roll >= 3)
+            self.log(f"{ability_name} rolls: {rolls}")
+            if mortal_wounds > 0:
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wounds")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
+        if should_resolve_pre_attack_ability("Terror From The Deep") and target_state["models"] > 0:
+            ability_name = "Terror From The Deep"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Out-of-phase ability resolved before attacks for simulation convenience. "
+                "Actual timing: when this model is set up using Deep Strike, against each enemy unit within 12 inches."
+            )
+            roll = self.die_roll()
+            self.log(f"{ability_name} roll: {roll}")
+            if roll >= 5:
+                mortal_wounds = 3
+            elif roll >= 2:
+                mortal_wounds = self.roll_value("D3")
+            else:
+                mortal_wounds = 0
+            if mortal_wounds > 0:
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wounds")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
+        if should_resolve_pre_attack_ability("Floating Death") and target_state["models"] > 0:
+            ability_name = "Floating Death"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Out-of-phase ability resolved before attacks for simulation convenience. "
+                "Actual timing: when this unit or an enemy unit ends a move within 3 inches."
+            )
+            attacker_models = max(0, int(attacker_unit.get("models", 0)))
+            rolls = [self.die_roll() for _ in range(attacker_models)]
+            mortal_wounds = 0
+            for roll in rolls:
+                if roll == 6:
+                    mortal_wounds += self.roll_value("D6")
+                elif roll >= 2:
+                    mortal_wounds += self.roll_value("D3")
+            self.log(f"{ability_name} rolls against {attacker_models} model{'' if attacker_models == 1 else 's'}: {rolls}")
+            if mortal_wounds > 0:
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wounds")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
+        if should_resolve_pre_attack_ability("Hypertoxic Miasma (Aura)") and target_state["models"] > 0:
+            ability_name = "Hypertoxic Miasma (Aura)"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Out-of-phase ability resolved before attacks for simulation convenience. "
+                "Actual timing: end of your Movement phase, against each enemy unit within 6 inches."
+            )
+            roll = self.die_roll()
+            self.log(f"{ability_name} roll: {roll}")
+            if roll == 6:
+                mortal_wounds = self.roll_value("D6")
+            elif roll >= 4:
+                mortal_wounds = self.roll_value("D3")
+            elif roll >= 2:
+                mortal_wounds = 1
+            else:
+                mortal_wounds = 0
+            if mortal_wounds > 0:
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wounds")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
         if (
             reference_weapon["range"].lower() == "melee"
             and should_resolve_pre_attack_ability("Exhortation of Rage")
@@ -3588,6 +3686,7 @@ class CombatSimulator:
         blast_bonus = self.get_blast_bonus(weapon, target_state, attack_context) * weapon_bearer_count
         cleave_bonus = self.get_cleave_bonus(weapon, target_state, attack_context) * weapon_bearer_count
         attacks_remaining += rapid_fire_bonus + blast_bonus + cleave_bonus
+        attacks_remaining = max(0, attacks_remaining)
         effective_strength = weapon["strength"]
         if weapon["range"].lower() == "melee":
             effective_strength += attack_context.get("melee_strength_bonus", 0)
@@ -4068,6 +4167,15 @@ class CombatSimulator:
             str(name).lower()
             for name in options.get("attacker_active_ability_names", [])
         }
+        defender_active_ability_names = {
+            str(name).lower()
+            for name in options.get("defender_active_ability_names", [])
+        }
+        if "burning spray" in attacker_active_ability_names:
+            target_has_cover = False
+            target_state["has_cover"] = False
+            for profile in target_state.get("profiles", []):
+                profile["has_cover"] = False
         attacker_attached_ability_names = {
             str(name).lower()
             for name in options.get("attacker_attached_ability_names", [])
@@ -4167,6 +4275,16 @@ class CombatSimulator:
                 {"Precision"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
             )
+        if self.ability_names_include(attacker_or_attached_ability_names, "vicious insight"):
+            temporary_weapon_keywords.add("DW")
+        if self.ability_names_include(attacker_or_attached_ability_names, "alpha warrior"):
+            temporary_weapon_keywords.add("SH1")
+        if (
+            self.ability_names_include(attacker_or_attached_ability_names, "brood progenitor")
+            and self.unit_has_keyword(attacker_unit, "termagants")
+            and weapon["range"].lower() != "melee"
+        ):
+            temporary_weapon_keywords.add("LH")
         if bool(options.get("attacker_storm_of_fire_active", False)):
             add_keywords_to_matching_weapons(
                 {"Ignores Cover"},
@@ -4479,6 +4597,17 @@ class CombatSimulator:
             )
         ):
             reroll_all_hit_rolls = True
+        if self.ability_names_include(attacker_or_attached_ability_names, "alpha leader"):
+            reroll_all_hit_rolls = True
+        if self.ability_names_include(attacker_ability_names, "vanguard predator"):
+            reroll_hit_rolls_of_1 = True
+            if bool(options.get("defender_on_objective", False)):
+                reroll_wound_rolls_of_1 = True
+        if "singular purpose" in attacker_active_ability_names:
+            reroll_all_hit_rolls = True
+            reroll_all_wound_rolls = True
+        if "symbiotic targeting" in attacker_active_ability_names:
+            reroll_hit_rolls_of_1 = True
         if (
             attacker_detachment_name == "Crusher Stampede"
             and bool(options.get("attacker_rampaging_monstrosities_active", False))
@@ -4517,6 +4646,20 @@ class CombatSimulator:
         if bool(options.get("defender_overwhelming_onslaught_active", False)) and weapon["range"].lower() == "melee":
             attacker_hit_modifier -= 1
         if bool(options.get("defender_savage_roar_active", False)) and weapon["range"].lower() == "melee":
+            attacker_hit_modifier -= 1
+        if (
+            weapon["range"].lower() == "melee"
+            and (
+                "hypnotic gaze (psychic)" in defender_active_ability_names
+                or "hypnotic gaze" in defender_active_ability_names
+            )
+        ):
+            attacker_hit_modifier -= 1
+        if (
+            self.target_state_has_ability(target_state, "Psychological Saboteur")
+            and bool(options.get("attacker_battleshocked", False))
+            and bool(options.get("attacker_target_within_12", False))
+        ):
             attacker_hit_modifier -= 1
         if bool(options.get("defender_stalkin_taktiks_active", False)) and weapon["range"].lower() != "melee" and self.unit_has_keyword(target_state, "infantry"):
             attacker_hit_modifier -= 1
@@ -4616,6 +4759,17 @@ class CombatSimulator:
             attacker_detachment_name == "Crusher Stampede"
             and self.unit_has_keyword(attacker_unit, "monster")
             and bool(options.get("attacker_below_half_strength", False))
+        ):
+            attacker_outgoing_wound_modifier += 1
+        if (
+            self.ability_names_include(attacker_or_attached_ability_names, "node lash")
+            and bool(options.get("defender_battleshocked", False))
+        ):
+            attacker_outgoing_wound_modifier += 1
+        if (
+            self.ability_names_include(attacker_or_attached_ability_names, "psychological saboteur")
+            and bool(options.get("defender_battleshocked", False))
+            and bool(options.get("attacker_target_within_12", False))
         ):
             attacker_outgoing_wound_modifier += 1
         if (
@@ -4739,6 +4893,22 @@ class CombatSimulator:
             and self.unit_has_keyword(target_state, "fly")
         ):
             attacker_hit_modifier += 1
+        if (
+            self.ability_names_include(attacker_ability_names, "airborne predator")
+            and weapon["range"].lower() != "melee"
+            and self.unit_has_keyword(target_state, "fly")
+        ):
+            attacker_hit_modifier += 1
+        if self.ability_names_include(attacker_or_attached_ability_names, "node lash"):
+            attacker_hit_modifier += 1
+        if (
+            self.ability_names_include(attacker_ability_names, "feeding frenzy")
+            and weapon["range"].lower() == "melee"
+            and bool(options.get("target_below_starting_strength", False))
+        ):
+            attacker_hit_modifier += 1
+            if bool(options.get("target_below_half_strength", False)):
+                attacker_outgoing_wound_modifier += 1
         if (
             self.ability_names_include(attacker_ability_names, "strafing run")
             and weapon["range"].lower() != "melee"
@@ -4882,6 +5052,14 @@ class CombatSimulator:
             and self.unit_has_keyword(attacker_unit, "vehicle")
         ):
             attacker_hit_modifier += 1
+        if (
+            (
+                "paroxysm (psychic)" in defender_active_ability_names
+                or "paroxysm" in defender_active_ability_names
+            )
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_attack_bonus -= 1
         if (
             self.ability_names_include(attacker_ability_names, "gun-crazy show-offs")
             and weapon_base_name == "snazzgun"
@@ -5196,6 +5374,11 @@ class CombatSimulator:
                 4 if bool(options.get("defender_on_objective", False)) else 5,
             )
         if (
+            "singular purpose" in defender_active_ability_names
+            and bool(options.get("defender_on_objective", False))
+        ):
+            target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 5)
+        if (
             defender_enhancement_name == "Fenrisian Grit"
             and bool(options.get("defender_enhancement_bearer_is_single_model_unit", False))
         ):
@@ -5230,9 +5413,15 @@ class CombatSimulator:
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 4)
         if self.target_state_has_ability(target_state, "Helix Gauntlet"):
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 6)
-        if self.target_state_has_ability(target_state, "Rites of Tempering"):
+        if (
+            self.target_state_has_ability(target_state, "Rites of Tempering")
+            and defender_has_attached_character
+        ):
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 5)
-        if self.target_state_has_ability(target_state, "Dok's Toolz"):
+        if (
+            self.target_state_has_ability(target_state, "Dok's Toolz")
+            and defender_has_attached_character
+        ):
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 5)
         if (
             self.target_state_has_ability(target_state, "Krumpin' Time")
@@ -5281,6 +5470,8 @@ class CombatSimulator:
             and weapon["range"].lower() != "melee"
         ):
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 5)
+        if self.target_state_has_ability(target_state, "Warp Field"):
+            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 6)
 
         reroll_save_rolls_of_1 = (
             defender_detachment_name == "Green Tide"
@@ -5321,6 +5512,8 @@ class CombatSimulator:
         if self.target_state_has_ability(target_state, "Armoured Resilience"):
             target_damage_modifier -= 1
         target_damage_max = None
+        if "resilient organism" in defender_active_ability_names:
+            target_damage_max = 0
         if (
             defender_enhancement_name == "Adamantine Mantle"
             and bool(options.get("defender_enhancement_bearer_is_single_model_unit", False))
@@ -5347,6 +5540,21 @@ class CombatSimulator:
             target_has_stealth = True
         if defender_enhancement_name == "Chameleonic" and weapon["range"].lower() != "melee":
             target_has_stealth = True
+        if (
+            self.target_state_has_ability(target_state, "Stealth")
+            and weapon["range"].lower() != "melee"
+        ):
+            target_has_stealth = True
+        if (
+            self.target_state_has_ability(target_state, "Foul Spores")
+            and weapon["range"].lower() != "melee"
+            and not self.unit_has_keyword(target_state, "monster")
+        ):
+            target_has_stealth = True
+            target_has_cover = True
+            target_state["has_cover"] = True
+            for profile in target_state.get("profiles", []):
+                profile["has_cover"] = True
         if (
             self.target_state_has_ability(target_state, "Billowing Fumes")
             and not self.unit_has_keyword(attacker_unit, "monster")
@@ -5608,7 +5816,7 @@ class CombatSimulator:
                 "remained_stationary": attack_context.get("remained_stationary", False),
                 "indirect_no_visibility": attack_context.get("indirect_no_visibility", False),
                 "attacker_in_engagement_range": attack_context.get("attacker_in_engagement_range", False),
-                "target_has_cover": target_has_cover,
+                "target_has_cover": target_state.get("has_cover", target_has_cover),
             },
         }
         return result

@@ -611,5 +611,4481 @@
       }
     ]
   },
-  "units": []
+  "units": [
+    {
+      "name": "Broodlord",
+      "faction": "Tyranids",
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Psyker",
+        "Great Devourer",
+        "Vanguard Invader",
+        "Broodlord"
+      ],
+      "stats": {
+        "toughness": 5,
+        "save": "4+",
+        "wounds": 6,
+        "leadership": "7+",
+        "objective_control": 1,
+        "movement": 8,
+        "invulnerable_save": "4+"
+      },
+      "abilities": [
+        {
+          "name": "Leader",
+          "rules_text": "Can lead Genestealers."
+        },
+        {
+          "name": "Scouts 8\"",
+          "rules_text": "Core ability."
+        },
+        {
+          "name": "Vicious Insight",
+          "rules_text": "While leading a unit, weapons equipped by models in that unit have [DEVASTATING WOUNDS]."
+        },
+        {
+          "name": "Hypnotic Gaze (Psychic)",
+          "rules_text": "At the start of the Fight phase, select one enemy unit within Engagement Range; subtract 1 from its Hit rolls until end of phase."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Broodlord claws and talons",
+          "range": "Melee",
+          "attacks": 5,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 6,
+          "damage": 2,
+          "armor_piercing": -2,
+          "keywords": [
+            "DEVASTATING WOUNDS",
+            "TWIN-LINKED"
+          ]
+        }
+      ],
+      "wargear_options": [],
+      "leader": {
+        "can_lead": [
+          "Genestealers"
+        ]
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "implemented": true,
+      "models": [
+        {
+          "name": "Broodlord",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Broodlord claws and talons"
+          ]
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": []
+    },
+    {
+      "name": "Gargoyles",
+      "faction": "Tyranids",
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Battleline",
+        "Fly",
+        "Great Devourer",
+        "Endless Multitude",
+        "Vanguard Invader",
+        "Gargoyles"
+      ],
+      "stats": {
+        "toughness": 3,
+        "save": "6+",
+        "wounds": 1,
+        "leadership": "8+",
+        "objective_control": 2,
+        "movement": 12
+      },
+      "abilities": [
+        {
+          "name": "Deep Strike",
+          "rules_text": "Core ability."
+        },
+        {
+          "name": "Winged Swarm",
+          "rules_text": "After this unit shoots, if not within Engagement Range, it can make a Normal move up to 6\"; if it does, it cannot charge this turn."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Fleshborer",
+          "range": "18\"",
+          "attacks": 1,
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 5,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": [
+            "ASSAULT"
+          ]
+        },
+        {
+          "name": "Blinding venom",
+          "range": "Melee",
+          "attacks": 1,
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 3,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": []
+        }
+      ],
+      "wargear_options": [],
+      "leader": {
+        "can_lead": []
+      },
+      "unit_composition": {
+        "min_models": 10,
+        "max_models": 20
+      },
+      "implemented": true,
+      "models": [
+        {
+          "name": "Gargoyles",
+          "count": {
+            "min": 10,
+            "max": 20
+          },
+          "default_wargear": [
+            "Fleshborer",
+            "Blinding venom"
+          ]
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": []
+    },
+    {
+      "name": "Hive Tyrant",
+      "faction": "Tyranids",
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Character",
+        "Psyker",
+        "Great Devourer",
+        "Synapse",
+        "Hive Tyrant"
+      ],
+      "stats": {
+        "toughness": 10,
+        "save": "2+",
+        "wounds": 10,
+        "leadership": "7+",
+        "objective_control": 3,
+        "movement": 8,
+        "invulnerable_save": "4+"
+      },
+      "abilities": [
+        {
+          "name": "Deadly Demise D3",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers D3 mortal wounds."
+        },
+        {
+          "name": "Leader",
+          "rules_text": "Can lead Tyrant Guard."
+        },
+        {
+          "name": "Shadow in the Warp",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Will of the Hive Mind",
+          "rules_text": "Once per turn, one friendly TYRANIDS unit within 12\" can be targeted with a Stratagem for 0CP, even if another unit has already been targeted with that Stratagem this phase."
+        },
+        {
+          "name": "Onslaught (Aura, Psychic)",
+          "rules_text": "Friendly TYRANIDS units within 6\" have [ASSAULT] on their ranged weapons."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Heavy venom cannon",
+          "range": "36\"",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": 9,
+          "damage": 3,
+          "armor_piercing": -2,
+          "keywords": [
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Stranglethorn cannon",
+          "range": "36\"",
+          "attacks": "D6+1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": 7,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": [
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Monstrous bonesword and lash whip",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 9,
+          "damage": 3,
+          "armor_piercing": -2,
+          "keywords": [
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Monstrous scything talons",
+          "range": "Melee",
+          "attacks": 4,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 7,
+          "damage": 2,
+          "armor_piercing": -2,
+          "keywords": [
+            "EXTRA ATTACKS"
+          ]
+        }
+      ],
+      "wargear_options": [
+        "Monstrous bonesword and lash whip can be replaced with 1 heavy venom cannon, 1 stranglethorn cannon or 1 monstrous scything talons.",
+        "Monstrous scything talons can be replaced with 1 heavy venom cannon or 1 stranglethorn cannon.",
+        "Cannot have both cannon types, more than 1 heavy venom cannon, or more than 1 stranglethorn cannon."
+      ],
+      "leader": {
+        "can_lead": [
+          "Tyrant Guard"
+        ]
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "implemented": true,
+      "models": [
+        {
+          "name": "Hive Tyrant",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Monstrous bonesword and lash whip",
+            "Monstrous scything talons"
+          ]
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": []
+    },
+    {
+      "name": "Neurolictor",
+      "faction": "Tyranids",
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Great Devourer",
+        "Vanguard Invader",
+        "Neurolictor"
+      ],
+      "stats": {
+        "toughness": 5,
+        "save": "4+",
+        "wounds": 7,
+        "leadership": "7+",
+        "objective_control": 1,
+        "movement": 8,
+        "invulnerable_save": "4+"
+      },
+      "abilities": [
+        {
+          "name": "Infiltrators",
+          "rules_text": "Core ability."
+        },
+        {
+          "name": "Lone Operative",
+          "rules_text": "Core ability."
+        },
+        {
+          "name": "Stealth",
+          "rules_text": "Core ability."
+        },
+        {
+          "name": "Shadow in the Warp",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Feeder Tendrils",
+          "rules_text": "Each time this model destroys an enemy CHARACTER model, gain 1CP."
+        },
+        {
+          "name": "Neural Disruption",
+          "rules_text": "In your Command phase, select one enemy unit within 12\"; it must take a Battle-shock test."
+        },
+        {
+          "name": "Psychological Saboteur (Aura)",
+          "rules_text": "While a Battle-shocked enemy unit is within 12\", subtract 1 from its Hit rolls, and friendly TYRANIDS attacks against it add 1 to Wound rolls."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Piercing claws and talons",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 6,
+          "damage": 1,
+          "armor_piercing": -2,
+          "keywords": [
+            "PRECISION"
+          ]
+        }
+      ],
+      "wargear_options": [],
+      "leader": {
+        "can_lead": []
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "implemented": true,
+      "models": [
+        {
+          "name": "Neurolictor",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Piercing claws and talons"
+          ]
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": []
+    },
+    {
+      "name": "Neurotyrant",
+      "faction": "Tyranids",
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Character",
+        "Fly",
+        "Psyker",
+        "Great Devourer",
+        "Synapse",
+        "Neurotyrant"
+      ],
+      "stats": {
+        "toughness": 8,
+        "save": "4+",
+        "wounds": 9,
+        "leadership": "7+",
+        "objective_control": 3,
+        "movement": 6,
+        "invulnerable_save": "4+"
+      },
+      "abilities": [
+        {
+          "name": "Leader",
+          "rules_text": "Can lead Neurogaunts or Tyrant Guard."
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Shadow in the Warp",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Node Lash (Psychic)",
+          "rules_text": "While leading a unit, add 1 to Hit rolls; if target is Battle-shocked, add 1 to Wound rolls too."
+        },
+        {
+          "name": "Psychic Terror (Psychic)",
+          "rules_text": "When Shadow in the Warp is unleashed, subtract 1 from each enemy Battle-shock test if one or more models with this ability are on the battlefield."
+        },
+        {
+          "name": "Neuroids",
+          "rules_text": "In your Command phase, select up to two friendly TYRANIDS units within 18\"; until your next Command phase, they are always within Synapse Range."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Psychic Scream",
+          "range": "18\"",
+          "attacks": "2D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": 5,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": [
+            "IGNORES COVER",
+            "PSYCHIC",
+            "TORRENT"
+          ]
+        },
+        {
+          "name": "Neurotyrant claws and lashes",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": []
+        }
+      ],
+      "wargear_options": [],
+      "leader": {
+        "can_lead": [
+          "Neurogaunts",
+          "Tyrant Guard"
+        ]
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "implemented": true,
+      "models": [
+        {
+          "name": "Neurotyrant",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Psychic Scream",
+            "Neurotyrant claws and lashes"
+          ]
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": []
+    },
+    {
+      "name": "Norn Assimilator",
+      "faction": "Tyranids",
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Great Devourer",
+        "Synapse",
+        "Norn Assimilator"
+      ],
+      "stats": {
+        "toughness": 11,
+        "save": "2+",
+        "wounds": 16,
+        "leadership": "7+",
+        "objective_control": 5,
+        "movement": 10
+      },
+      "abilities": [
+        {
+          "name": "Deadly Demise D6",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers D6 mortal wounds."
+        },
+        {
+          "name": "Shadow in the Warp",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Singular Purpose",
+          "rules_text": "At the start of the first battle round, select one enemy unit or objective marker. Against the selected unit, re-roll Hit and Wound rolls for the battle. While within range of the selected objective, gain Feel No Pain 5+ and OC 15."
+        },
+        {
+          "name": "Harpoon Barbs",
+          "rules_text": "Once per turn, when an enemy unit within Engagement Range falls back, roll D6; on 2+, it suffers D6 mortal wounds."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Toxinjector harpoon",
+          "range": "12\"",
+          "attacks": 2,
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": 12,
+          "damage": "D6+1",
+          "armor_piercing": -3,
+          "keywords": [
+            "HARPOONED"
+          ]
+        },
+        {
+          "name": "Monstrous scything talons",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 9,
+          "damage": 3,
+          "armor_piercing": -2,
+          "keywords": []
+        },
+        {
+          "name": "Toxinjector harpoon",
+          "range": "Melee",
+          "attacks": 4,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 12,
+          "damage": "D6+1",
+          "armor_piercing": -3,
+          "keywords": [
+            "EXTRA ATTACKS"
+          ]
+        }
+      ],
+      "wargear_options": [],
+      "leader": {
+        "can_lead": []
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "implemented": true,
+      "models": [
+        {
+          "name": "Norn Assimilator",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Toxinjector harpoon",
+            "Monstrous scything talons"
+          ]
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": []
+    },
+    {
+      "name": "Norn Emissary",
+      "faction": "Tyranids",
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Psyker",
+        "Great Devourer",
+        "Synapse",
+        "Norn Emissary"
+      ],
+      "stats": {
+        "toughness": 11,
+        "save": "2+",
+        "wounds": 16,
+        "leadership": "7+",
+        "objective_control": 5,
+        "movement": 10,
+        "invulnerable_save": "4+"
+      },
+      "abilities": [
+        {
+          "name": "Deadly Demise D6",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers D6 mortal wounds."
+        },
+        {
+          "name": "Shadow in the Warp",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Singular Purpose",
+          "rules_text": "At the start of the first battle round, select one enemy unit or objective marker. Against the selected unit, re-roll Hit and Wound rolls for the battle. While within range of the selected objective, gain Feel No Pain 5+ and OC 15."
+        },
+        {
+          "name": "Unnatural Resilience",
+          "rules_text": "Feel No Pain 4+ against mortal wounds."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Psychic Tendril - neuroparasite",
+          "range": "18\"",
+          "attacks": 2,
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": 8,
+          "damage": "D3",
+          "armor_piercing": -2,
+          "keywords": [
+            "PRECISION",
+            "PSYCHIC"
+          ]
+        },
+        {
+          "name": "Psychic Tendril - neuroblast",
+          "range": "18\"",
+          "attacks": "2D6",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": 6,
+          "damage": 1,
+          "armor_piercing": -2,
+          "keywords": [
+            "BLAST",
+            "PSYCHIC"
+          ]
+        },
+        {
+          "name": "Psychic Tendril - neurolance",
+          "range": "18\"",
+          "attacks": 2,
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": 12,
+          "damage": "D6",
+          "armor_piercing": -3,
+          "keywords": [
+            "MELTA 2",
+            "PSYCHIC"
+          ]
+        },
+        {
+          "name": "Monstrous scything talons",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 9,
+          "damage": 3,
+          "armor_piercing": -2,
+          "keywords": []
+        },
+        {
+          "name": "Monstrous rending claws",
+          "range": "Melee",
+          "attacks": 4,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 7,
+          "damage": 2,
+          "armor_piercing": -2,
+          "keywords": [
+            "EXTRA ATTACKS"
+          ]
+        }
+      ],
+      "wargear_options": [],
+      "leader": {
+        "can_lead": []
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "implemented": true,
+      "models": [
+        {
+          "name": "Norn Emissary",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Psychic Tendril",
+            "Monstrous scything talons",
+            "Monstrous rending claws"
+          ]
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": []
+    },
+    {
+      "name": "Old One Eye",
+      "faction": "Tyranids",
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Character",
+        "Epic Hero",
+        "Great Devourer",
+        "Old One Eye"
+      ],
+      "stats": {
+        "toughness": 9,
+        "save": "2+",
+        "wounds": 9,
+        "leadership": "8+",
+        "objective_control": 3,
+        "movement": 8
+      },
+      "abilities": [
+        {
+          "name": "Feel No Pain 5+",
+          "rules_text": "Core ability."
+        },
+        {
+          "name": "Leader",
+          "rules_text": "Can lead Carnifexes."
+        },
+        {
+          "name": "Alpha Leader",
+          "rules_text": "While leading a unit, re-roll Hit rolls for attacks made by models in that unit."
+        },
+        {
+          "name": "Unstoppable Monster",
+          "rules_text": "At the start of each player's Command phase, regain up to D3 lost wounds."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Old One Eye's claws and talons - strike",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 14,
+          "damage": "D6+1",
+          "armor_piercing": -3,
+          "keywords": []
+        },
+        {
+          "name": "Old One Eye's claws and talons - sweep",
+          "range": "Melee",
+          "attacks": 12,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 6,
+          "damage": 1,
+          "armor_piercing": -1,
+          "keywords": []
+        }
+      ],
+      "wargear_options": [],
+      "leader": {
+        "can_lead": [
+          "Carnifexes"
+        ]
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "implemented": true,
+      "models": [
+        {
+          "name": "Old One Eye - Epic Hero",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Old One Eye's claws and talons"
+          ]
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": []
+    },
+    {
+      "name": "Parasite of Mortrex",
+      "faction": "Tyranids",
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Fly",
+        "Great Devourer",
+        "Vanguard Invader",
+        "Parasite Of Mortrex"
+      ],
+      "stats": {
+        "toughness": 5,
+        "save": "4+",
+        "wounds": 5,
+        "leadership": "8+",
+        "objective_control": 1,
+        "movement": 12
+      },
+      "abilities": [
+        {
+          "name": "Deep Strike",
+          "rules_text": "Core ability."
+        },
+        {
+          "name": "Lone Operative",
+          "rules_text": "Core ability."
+        },
+        {
+          "name": "Stealth",
+          "rules_text": "Core ability."
+        },
+        {
+          "name": "Parasitic Infection",
+          "rules_text": "Each time an enemy INFANTRY model is destroyed by the barbed ovipositor, after this model finishes attacking, you can add a new RIPPER SWARMS unit of D3 models within 3\" and outside Engagement Range."
+        },
+        {
+          "name": "It Itches!",
+          "rules_text": "At the start of the Fight phase, select one enemy unit within Engagement Range; it must take a Battle-shock test."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Barbed ovipositor",
+          "range": "Melee",
+          "attacks": 1,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 3,
+          "damage": 3,
+          "armor_piercing": -2,
+          "keywords": [
+            "ANTI-INFANTRY 3+",
+            "EXTRA ATTACKS"
+          ]
+        },
+        {
+          "name": "Clawed limbs",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 5,
+          "damage": 1,
+          "armor_piercing": -1,
+          "keywords": []
+        }
+      ],
+      "wargear_options": [],
+      "leader": {
+        "can_lead": []
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "implemented": true,
+      "models": [
+        {
+          "name": "Parasite of Mortrex",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Barbed ovipositor",
+            "Clawed limbs"
+          ]
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": []
+    },
+    {
+      "name": "The Swarmlord",
+      "faction": "Tyranids",
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Character",
+        "Epic Hero",
+        "Psyker",
+        "Great Devourer",
+        "Synapse",
+        "Hive Tyrant",
+        "The Swarmlord"
+      ],
+      "stats": {
+        "toughness": 10,
+        "save": "2+",
+        "wounds": 10,
+        "leadership": "7+",
+        "objective_control": 3,
+        "movement": 8,
+        "invulnerable_save": "4+"
+      },
+      "abilities": [
+        {
+          "name": "Deadly Demise D3",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers D3 mortal wounds."
+        },
+        {
+          "name": "Leader",
+          "rules_text": "Can lead Tyrant Guard."
+        },
+        {
+          "name": "Shadow in the Warp",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Hive Commander",
+          "rules_text": "At the start of your Command phase, if this model is on the battlefield, gain 1CP."
+        },
+        {
+          "name": "Malign Presence",
+          "rules_text": "Once per battle, after your opponent uses a Stratagem, if this model is your WARLORD and on the battlefield, increase that Stratagem's cost to your opponent by 1CP for the rest of the battle."
+        },
+        {
+          "name": "Domination of the Hive Mind (Aura)",
+          "rules_text": "Friendly TYRANIDS units within 9\" are within Synapse Range."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Synaptic pulse",
+          "range": "18\"",
+          "attacks": "D6+3",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": 5,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": [
+            "PSYCHIC",
+            "TORRENT"
+          ]
+        },
+        {
+          "name": "Bone sabres",
+          "range": "Melee",
+          "attacks": 8,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 9,
+          "damage": 3,
+          "armor_piercing": -2,
+          "keywords": [
+            "TWIN-LINKED"
+          ]
+        }
+      ],
+      "wargear_options": [],
+      "leader": {
+        "can_lead": [
+          "Tyrant Guard"
+        ]
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "implemented": true,
+      "models": [
+        {
+          "name": "The Swarmlord - Epic Hero",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Synaptic pulse",
+            "Bone sabres"
+          ]
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": []
+    },
+    {
+      "name": "Winged Hive Tyrant",
+      "faction": "Tyranids",
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Character",
+        "Psyker",
+        "Fly",
+        "Great Devourer",
+        "Synapse",
+        "Vanguard Invader",
+        "Hive Tyrant",
+        "Winged Hive Tyrant"
+      ],
+      "stats": {
+        "toughness": 9,
+        "save": "2+",
+        "wounds": 10,
+        "leadership": "7+",
+        "objective_control": 3,
+        "movement": 12,
+        "invulnerable_save": "4+"
+      },
+      "abilities": [
+        {
+          "name": "Deadly Demise D3",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers D3 mortal wounds."
+        },
+        {
+          "name": "Deep Strike",
+          "rules_text": "Core ability."
+        },
+        {
+          "name": "Shadow in the Warp",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Will of the Hive Mind",
+          "rules_text": "Once per turn, one friendly TYRANIDS unit within 12\" can be targeted with a Stratagem for 0CP."
+        },
+        {
+          "name": "Paroxysm (Psychic)",
+          "rules_text": "At the start of the Fight phase, select one visible enemy unit within 12\" and roll D6. On 1, this PSYKER suffers D3 mortal wounds; on 2+, subtract 1 from the Attacks characteristic of weapons equipped by models in that unit until end of phase."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Heavy venom cannon",
+          "range": "36\"",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": 9,
+          "damage": 3,
+          "armor_piercing": -2,
+          "keywords": [
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Stranglethorn cannon",
+          "range": "36\"",
+          "attacks": "D6+1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": 7,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": [
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Monstrous bonesword and lash whip",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 9,
+          "damage": 3,
+          "armor_piercing": -2,
+          "keywords": [
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Monstrous scything talons",
+          "range": "Melee",
+          "attacks": 4,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 7,
+          "damage": 2,
+          "armor_piercing": -2,
+          "keywords": [
+            "EXTRA ATTACKS"
+          ]
+        },
+        {
+          "name": "Tyrant talons",
+          "range": "Melee",
+          "attacks": 5,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 7,
+          "damage": 2,
+          "armor_piercing": -2,
+          "keywords": []
+        }
+      ],
+      "wargear_options": [
+        "Monstrous bonesword and lash whip can be replaced with 1 heavy venom cannon, 1 stranglethorn cannon or 1 monstrous scything talons."
+      ],
+      "leader": {
+        "can_lead": []
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "implemented": true,
+      "models": [
+        {
+          "name": "Winged Hive Tyrant",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Monstrous bonesword and lash whip",
+            "Tyrant talons"
+          ]
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": []
+    },
+    {
+      "name": "Winged Tyranid Prime",
+      "faction": "Tyranids",
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Fly",
+        "Great Devourer",
+        "Synapse",
+        "Vanguard Invader",
+        "Winged Tyranid Prime"
+      ],
+      "stats": {
+        "toughness": 5,
+        "save": "4+",
+        "wounds": 6,
+        "leadership": "7+",
+        "objective_control": 1,
+        "movement": 12
+      },
+      "abilities": [
+        {
+          "name": "Deep Strike",
+          "rules_text": "Core ability."
+        },
+        {
+          "name": "Leader",
+          "rules_text": "Can lead Gargoyles or Tyranid Warriors."
+        },
+        {
+          "name": "Shadow in the Warp",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Alpha Warrior",
+          "rules_text": "While leading a unit, weapons equipped by models in that unit have [SUSTAINED HITS 1]."
+        },
+        {
+          "name": "Death Blow",
+          "rules_text": "If destroyed by a melee attack before fighting, roll D6; on 4+, it fights after the attacking unit finishes, then is removed."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Prime talons",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 6,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": []
+        }
+      ],
+      "wargear_options": [],
+      "leader": {
+        "can_lead": [
+          "Gargoyles",
+          "Tyranid Warriors with Melee Bio-weapons",
+          "Tyranid Warriors with Ranged Bio-weapons"
+        ]
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "implemented": true,
+      "models": [
+        {
+          "name": "Winged Tyranid Prime",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Prime talons"
+          ]
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": []
+    },
+    {
+      "name": "Barbgaunts",
+      "unit_composition": {
+        "min_models": 5,
+        "max_models": 10
+      },
+      "models": [
+        {
+          "name": "Barbgaunts",
+          "count": {
+            "min": 5,
+            "max": 10
+          },
+          "default_wargear": [
+            "barblauncher",
+            "chitinous claws and teeth"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Great Devourer",
+        "Barbgaunts"
+      ],
+      "abilities": [
+        {
+          "name": "Disruption Bombardment",
+          "rules_text": "In your Shooting phase, after this unit has shot, select one enemy INFANTRY unit hit by one or more of those attacks. Until the end of your opponent's next turn, that enemy unit is disrupted. While a unit is disrupted, subtract 2 from its Move characteristic and subtract 2 from Advance and Charge rolls made for it.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "4+",
+        "wounds": 2,
+        "leadership": "8+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Barblauncher",
+          "range": "24\"",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 5,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": [
+            "BLAST",
+            "HEAVY"
+          ]
+        },
+        {
+          "name": "Chitinous claws and teeth",
+          "range": "Melee",
+          "attacks": "1",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 4,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Biovores",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 3
+      },
+      "models": [
+        {
+          "name": "Biovores",
+          "count": {
+            "min": 1,
+            "max": 3
+          },
+          "default_wargear": [
+            "Spore Mine launcher",
+            "chitin-barbed limbs"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Great Devourer",
+        "Biovores"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise 1",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Seed Spore Mines",
+          "rules_text": "Once per turn, in your Shooting phase, when selected to shoot, one unit with this ability can use it instead of making any attacks with its ranged weapons. If it does, you can add one new SPORE MINES unit to your army and set it up anywhere on the battlefield that is wholly within 48\" of this unit and more than 9\" horizontally away from all enemy units. That SPORE MINES unit contains 1 model for each model in this unit.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 5,
+        "toughness": 6,
+        "save": "3+",
+        "wounds": 5,
+        "leadership": "8+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Spore Mine launcher",
+          "range": "48\"",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 6,
+          "armor_piercing": -1,
+          "damage": "2",
+          "keywords": [
+            "BLAST",
+            "DEVASTATING WOUNDS",
+            "HEAVY",
+            "INDIRECT FIRE"
+          ]
+        },
+        {
+          "name": "Chitin-barbed limbs",
+          "range": "Melee",
+          "attacks": "2",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 5,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Carnifexes",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 2
+      },
+      "models": [
+        {
+          "name": "Carnifexes",
+          "count": {
+            "min": 1,
+            "max": 2
+          },
+          "default_wargear": [
+            "Carnifex scything talons",
+            "Carnifex extra scything talons",
+            "chitinous claws and teeth"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Great Devourer",
+        "Carnifexes"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise 1",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Blistering Assault",
+          "rules_text": "Each time an enemy unit is selected to shoot, after that unit has shot, if any models from this unit lost one or more wounds as a result of those attacks, this unit can make a Blistering Assault move. If it does, roll one D6, adding 2 to the result: each model in this unit can be moved a distance in inches up to the result, but this unit must finish that move as close as possible to the closest enemy unit. When doing so, those models can be moved within Engagement Range of that enemy unit. Each unit can only make one Blistering Assault move per phase.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [
+        "Any number of models can each have their Carnifex extra scything talons replaced with one of the following: 1 deathspitters with slimer maggots; 1 devourers with brainleech worms; 1 heavy venom cannon; 1 stranglethorn cannon; 1 Carnifex crushing claws.",
+        "Any number of models can each have their Carnifex scything talons replaced with one of the following: 1 deathspitters with slimer maggots; 1 devourers with brainleech worms; 1 Carnifex crushing claws.",
+        "Any number of models can each be equipped with 1 bio-plasma.",
+        "Any number of models can each be equipped with 1 spine banks."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "movement": 8,
+        "toughness": 9,
+        "save": "2+",
+        "wounds": 8,
+        "leadership": "8+",
+        "objective_control": 3
+      },
+      "weapons": [
+        {
+          "name": "Bio-plasma",
+          "range": "12\"",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 7,
+          "armor_piercing": -2,
+          "damage": "1",
+          "keywords": [
+            "ASSAULT",
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Deathspitters with slimer maggots",
+          "range": "24\"",
+          "attacks": "6",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 7,
+          "armor_piercing": -2,
+          "damage": "1",
+          "keywords": []
+        },
+        {
+          "name": "Devourers with brainleech worms",
+          "range": "18\"",
+          "attacks": "12",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 6,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": []
+        },
+        {
+          "name": "Heavy venom cannon",
+          "range": "36\"",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 9,
+          "armor_piercing": -2,
+          "damage": "3",
+          "keywords": [
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Spine banks",
+          "range": "6\"",
+          "attacks": "5",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 5,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": [
+            "ASSAULT"
+          ]
+        },
+        {
+          "name": "Stranglethorn cannon",
+          "range": "36\"",
+          "attacks": "D6+1",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 7,
+          "armor_piercing": -1,
+          "damage": "2",
+          "keywords": [
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Carnifex crushing claws",
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 12,
+          "armor_piercing": -3,
+          "damage": "D6+1",
+          "keywords": []
+        },
+        {
+          "name": "Carnifex extra scything talons",
+          "range": "Melee",
+          "attacks": "2",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 9,
+          "armor_piercing": -2,
+          "damage": "3",
+          "keywords": [
+            "EXTRA ATTACKS"
+          ]
+        },
+        {
+          "name": "Carnifex scything talons",
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 9,
+          "armor_piercing": -2,
+          "damage": "3",
+          "keywords": []
+        },
+        {
+          "name": "Chitinous claws and teeth",
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 6,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Deathleaper",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Deathleaper \u2014 EPIC HERO",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Lictor claws and talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Great Devourer",
+        "Vanguard Invader",
+        "Deathleaper"
+      ],
+      "abilities": [
+        {
+          "name": "Fights First",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Infiltrators",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Lone Operative",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Stealth",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Feeder Tendrils",
+          "rules_text": "Each time this model destroys an enemy CHARACTER model, you gain 1CP.",
+          "category": "datasheet",
+          "implemented": false
+        },
+        {
+          "name": "Fear of the Unseen (Aura)",
+          "rules_text": "While an enemy unit is within 6\" of this model, worsen the Leadership characteristic of models in that unit by 1. In addition, in the Battle-shock step of your opponent's Command phase, if such an enemy unit is below its Starting Strength, it must take a Battle-shock test.",
+          "category": "datasheet",
+          "implemented": false
+        },
+        {
+          "name": "Hunter Organism",
+          "rules_text": "This model cannot be your WARLORD."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 8,
+        "toughness": 6,
+        "save": "3+",
+        "wounds": 7,
+        "leadership": "7+",
+        "objective_control": 1,
+        "invulnerable_save": "4+"
+      },
+      "weapons": [
+        {
+          "name": "Lictor claws and talons",
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 7,
+          "armor_piercing": -2,
+          "damage": "2",
+          "keywords": [
+            "PRECISION"
+          ]
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Exocrine",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Exocrine",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "bio-plasmic cannon",
+            "powerful limbs"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Great Devourer",
+        "Exocrine"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise D3",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Symbiotic Targeting",
+          "rules_text": "In your Shooting phase, after this model has shot, select one enemy unit hit by one or more of those attacks. Until the end of the phase, each time a friendly TYRANIDS model makes an attack that targets that unit, re-roll a Hit roll of 1.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 8,
+        "toughness": 10,
+        "save": "3+",
+        "wounds": 14,
+        "leadership": "8+",
+        "objective_control": 4
+      },
+      "weapons": [
+        {
+          "name": "Bio-plasmic cannon",
+          "range": "36\"",
+          "attacks": "D6+3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 8,
+          "armor_piercing": -3,
+          "damage": "3",
+          "keywords": [
+            "BLAST",
+            "HEAVY"
+          ]
+        },
+        {
+          "name": "Powerful limbs",
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 7,
+          "armor_piercing": 0,
+          "damage": "2",
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Genestealers",
+      "unit_composition": {
+        "min_models": 5,
+        "max_models": 10
+      },
+      "models": [
+        {
+          "name": "Genestealers",
+          "count": {
+            "min": 5,
+            "max": 10
+          },
+          "default_wargear": [
+            "Genestealer claws and talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Great Devourer",
+        "Vanguard Invader",
+        "Genestealers"
+      ],
+      "abilities": [
+        {
+          "name": "Scouts 8\"",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Vanguard Predator",
+          "rules_text": "Each time a model in this unit makes an attack, re-roll a Hit roll of 1. If the target is within range of one or more objective markers, re-roll a Wound roll of 1 as well.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 8,
+        "toughness": 4,
+        "save": "5+",
+        "wounds": 2,
+        "leadership": "7+",
+        "objective_control": 1,
+        "invulnerable_save": "5+"
+      },
+      "weapons": [
+        {
+          "name": "Genestealer claws and talons",
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 4,
+          "armor_piercing": -2,
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Harpy",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Harpy",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "stinger salvoes",
+            "twin stranglethorn cannon",
+            "scything wings"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Fly",
+        "Aircraft",
+        "Great Devourer",
+        "Vanguard Invader",
+        "Harpy"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise D3",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Hover",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Spore Mine Cysts",
+          "rules_text": "Each time this model ends a Normal move, you can select one of the following:\n- Select one enemy unit it moved over during that move and roll six D6: for each 3+, that unit suffers 1 mortal wound.\n- Add one new SPORE MINES unit containing D3 models to your army and set it up anywhere on the battlefield that is wholly within 6\" of this model and more than 9\" horizontally away from all enemy units. You cannot select this option for more than one model per turn.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [
+        "This model's twin stranglethorn cannon can be replaced with 1 twin heavy venom cannon."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "movement": "20+",
+        "toughness": 9,
+        "save": "3+",
+        "wounds": 12,
+        "leadership": "8+",
+        "objective_control": 0
+      },
+      "weapons": [
+        {
+          "name": "Stinger salvoes",
+          "range": "24\"",
+          "attacks": "8",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": []
+        },
+        {
+          "name": "Twin heavy venom cannon",
+          "range": "36\"",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 9,
+          "armor_piercing": -2,
+          "damage": "3",
+          "keywords": [
+            "BLAST",
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Twin stranglethorn cannon",
+          "range": "36\"",
+          "attacks": "D6+1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": 7,
+          "armor_piercing": -1,
+          "damage": "2",
+          "keywords": [
+            "BLAST",
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Scything wings",
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 7,
+          "armor_piercing": -1,
+          "damage": "2",
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Hive Crone",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Hive Crone",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "drool cannon",
+            "stinger salvoes",
+            "tentaclids",
+            "scything wings",
+            "thorax spur"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Fly",
+        "Aircraft",
+        "Great Devourer",
+        "Vanguard Invader",
+        "Hive Crone"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise D3",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Hover",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Airborne Predator",
+          "rules_text": "Each time this model makes a ranged attack that targets a unit that can FLY, add 1 to the Hit roll.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": "20+",
+        "toughness": 9,
+        "save": "3+",
+        "wounds": 12,
+        "leadership": "8+",
+        "objective_control": 0
+      },
+      "weapons": [
+        {
+          "name": "Drool cannon",
+          "range": "12\"",
+          "attacks": "2D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": 6,
+          "armor_piercing": -1,
+          "damage": "1",
+          "keywords": [
+            "TORRENT"
+          ]
+        },
+        {
+          "name": "Stinger salvoes",
+          "range": "24\"",
+          "attacks": "8",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": []
+        },
+        {
+          "name": "Tentaclids",
+          "range": "36\"",
+          "attacks": "4",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 7,
+          "armor_piercing": 0,
+          "damage": "2",
+          "keywords": [
+            "ANTI-VEHICLE 4+",
+            "DEVASTATING WOUNDS"
+          ]
+        },
+        {
+          "name": "Scything wings",
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 7,
+          "armor_piercing": -1,
+          "damage": "2",
+          "keywords": []
+        },
+        {
+          "name": "Thorax spur",
+          "range": "Melee",
+          "attacks": "1",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 10,
+          "armor_piercing": -3,
+          "damage": "D6",
+          "keywords": [
+            "ANTI-FLY 2+",
+            "EXTRA ATTACKS"
+          ]
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Hormagaunts",
+      "unit_composition": {
+        "min_models": 10,
+        "max_models": 20
+      },
+      "models": [
+        {
+          "name": "Hormagaunts",
+          "count": {
+            "min": 10,
+            "max": 20
+          },
+          "default_wargear": [
+            "Hormagaunt talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Battleline",
+        "Great Devourer",
+        "Endless Multitude",
+        "Hormagaunts"
+      ],
+      "abilities": [
+        {
+          "name": "Bounding Leap",
+          "rules_text": "This unit is eligible to declare a charge in a turn in which it Advanced.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 10,
+        "toughness": 3,
+        "save": "5+",
+        "wounds": 1,
+        "leadership": "8+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Hormagaunt talons",
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 3,
+          "armor_piercing": -1,
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Neurogaunts",
+      "unit_composition": {
+        "min_models": 11,
+        "max_models": 22
+      },
+      "models": [
+        {
+          "name": "Neurogaunt Nodebeasts",
+          "count": {
+            "min": 1,
+            "max": 2
+          },
+          "default_wargear": [
+            "chitinous claws and teeth"
+          ]
+        },
+        {
+          "name": "Neurogaunts",
+          "count": {
+            "min": 10,
+            "max": 20
+          },
+          "default_wargear": [
+            "chitinous claws and teeth"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Great Devourer",
+        "Endless Multitude",
+        "Neurogaunts"
+      ],
+      "abilities": [
+        {
+          "name": "Neurocytes",
+          "rules_text": "While this unit is within Synapse Range of a friendly TYRANIDS unit (excluding NEUROGAUNT units), it has the SYNAPSE keyword.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 3,
+        "save": "6+",
+        "wounds": 1,
+        "leadership": "8+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Chitinous claws and teeth",
+          "range": "Melee",
+          "attacks": "1",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 3,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": true,
+      "composition_notes": [
+        "This unit can only contain 2 Neurogaunt Nodebeasts if it contains 20 Neurogaunts."
+      ]
+    },
+    {
+      "name": "Pyrovores",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 3
+      },
+      "models": [
+        {
+          "name": "Pyrovores",
+          "count": {
+            "min": 1,
+            "max": 3
+          },
+          "default_wargear": [
+            "flamespurt",
+            "chitin-barbed limbs"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Great Devourer",
+        "Harvester",
+        "Pyrovores"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise 1",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Burning Spray",
+          "rules_text": "In your Shooting phase, after this unit has shot, select one enemy unit hit by one or more of those attacks. Until the end of the phase, that enemy unit cannot have the Benefit of Cover.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 5,
+        "toughness": 6,
+        "save": "3+",
+        "wounds": 5,
+        "leadership": "8+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Flamespurt",
+          "range": "12\"",
+          "attacks": "D6+1",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": 6,
+          "armor_piercing": -1,
+          "damage": "1",
+          "keywords": [
+            "IGNORES COVER",
+            "TORRENT",
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Chitin-barbed limbs",
+          "range": "Melee",
+          "attacks": "2",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 5,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Raveners",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 6
+      },
+      "models": [
+        {
+          "name": "Raveners",
+          "count": {
+            "min": 3,
+            "max": 6
+          },
+          "default_wargear": [
+            "thoracic bio-weapon",
+            "Ravener claws and talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Great Devourer",
+        "Raveners"
+      ],
+      "abilities": [
+        {
+          "name": "Deep Strike",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Death From Below",
+          "rules_text": "At the end of your opponent's turn, if this unit is not within Engagement Range of one or more enemy units, you can remove it from the battlefield and place it into Strategic Reserves.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [
+        "All models in this unit can each have their thoracic bio-weapon replaced with 1 armoured thorax."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "movement": 10,
+        "toughness": 5,
+        "save": "5+",
+        "wounds": 3,
+        "leadership": "8+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Thoracic bio-weapon",
+          "range": "12\"",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 4,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": [
+            "ASSAULT"
+          ]
+        },
+        {
+          "name": "Ravener claws and talons",
+          "range": "Melee",
+          "attacks": "7",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "armor_piercing": -1,
+          "damage": "1",
+          "keywords": [
+            "TWIN-LINKED"
+          ]
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Termagants",
+      "unit_composition": {
+        "min_models": 10,
+        "max_models": 20
+      },
+      "models": [
+        {
+          "name": "Termagants",
+          "count": {
+            "min": 10,
+            "max": 20
+          },
+          "default_wargear": [
+            "fleshborer",
+            "chitinous claws and teeth"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Battleline",
+        "Great Devourer",
+        "Endless Multitude",
+        "Termagants"
+      ],
+      "abilities": [
+        {
+          "name": "Skulking Horrors",
+          "rules_text": "Once per turn, when an enemy unit ends a Normal, Advance or Fall Back move within 9\" of this unit, if this unit is not within Engagement Range of one or more enemy units, it can make a Normal move of up to D6\".",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [
+        "All models in this unit can each have their fleshborer replaced with 1 Termagant devourer.",
+        "All models in this unit can each have their fleshborer replaced with 1 Termagant spinefists.",
+        "For every 10 models in this unit, 1 model's ranged weapon can be replaced with 1 shardlauncher.",
+        "For every 10 models in this unit, 1 model's ranged weapon can be replaced with 1 spike rifle.",
+        "For every 10 models in this unit, 1 model's ranged weapon can be replaced with 1 strangleweb."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 3,
+        "save": "5+",
+        "wounds": 1,
+        "leadership": "8+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Fleshborer",
+          "range": "18\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 5,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": [
+            "ASSAULT"
+          ]
+        },
+        {
+          "name": "Shardlauncher",
+          "range": "18\"",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 5,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": [
+            "BLAST",
+            "HEAVY"
+          ]
+        },
+        {
+          "name": "Spike rifle",
+          "range": "24\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 4,
+          "armor_piercing": -1,
+          "damage": "1",
+          "keywords": [
+            "HEAVY"
+          ]
+        },
+        {
+          "name": "Strangleweb",
+          "range": "18\"",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": 2,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": [
+            "ASSAULT",
+            "DEVASTATING WOUNDS",
+            "TORRENT"
+          ]
+        },
+        {
+          "name": "Termagant devourer",
+          "range": "18\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 4,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": []
+        },
+        {
+          "name": "Termagant spinefists",
+          "range": "12\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 3,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": [
+            "ASSAULT",
+            "PISTOL",
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Chitinous claws and teeth",
+          "range": "Melee",
+          "attacks": "1",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 3,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Tyranid Warriors with Melee Bio-weapons",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 6
+      },
+      "models": [
+        {
+          "name": "Tyranid Prime",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Tyranid Warrior claws and talons"
+          ]
+        },
+        {
+          "name": "Tyranid Warriors",
+          "count": {
+            "min": 2,
+            "max": 5
+          },
+          "default_wargear": [
+            "Tyranid Warrior claws and talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Great Devourer",
+        "Synapse",
+        "Tyranid Warriors With Melee Bio-Weapons"
+      ],
+      "abilities": [
+        {
+          "name": "Shadow in the Warp",
+          "rules_text": "Faction ability.",
+          "category": "faction",
+          "implemented": false
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Faction ability.",
+          "category": "faction",
+          "implemented": false
+        },
+        {
+          "name": "Adaptive Instincts",
+          "rules_text": "At the start of the Fight phase, select one of the following:\n- Aggression Imperative: Until the end of the phase, each time a model in this unit makes an attack, re-roll a Hit roll of 1.\n- Bioregeneration: Until the end of the phase, each time a saving throw is made for a model in this unit, re-roll a saving throw of 1.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 5,
+        "save": "4+",
+        "wounds": 3,
+        "leadership": "7+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Tyranid Warrior claws and talons",
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "armor_piercing": -2,
+          "damage": "1",
+          "keywords": [
+            "TWIN-LINKED"
+          ]
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Tyranid Warriors with Ranged Bio-weapons",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 6
+      },
+      "models": [
+        {
+          "name": "Tyranid Prime",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "devourer",
+            "Tyranid Warrior claws and talons"
+          ]
+        },
+        {
+          "name": "Tyranid Warriors",
+          "count": {
+            "min": 2,
+            "max": 5
+          },
+          "default_wargear": [
+            "devourer",
+            "Tyranid Warrior claws and talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Great Devourer",
+        "Synapse",
+        "Tyranid Warriors With Ranged Bio-Weapons"
+      ],
+      "abilities": [
+        {
+          "name": "Shadow in the Warp",
+          "rules_text": "Faction ability.",
+          "category": "faction",
+          "implemented": false
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Faction ability.",
+          "category": "faction",
+          "implemented": false
+        },
+        {
+          "name": "Adaptable Predators",
+          "rules_text": "This unit is eligible to shoot and declare a charge in a turn in which it Fell Back.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [
+        "Any number of models can each have their devourer replaced with 1 deathspitter.",
+        "Any number of models can each have their devourer replaced with 1 spinefists.",
+        "For every 3 models in this unit, 1 model's devourer can be replaced with 1 barbed strangler.",
+        "For every 3 models in this unit, 1 model's devourer can be replaced with 1 venom cannon."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 5,
+        "save": "4+",
+        "wounds": 3,
+        "leadership": "7+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Barbed strangler",
+          "range": "36\"",
+          "attacks": "D6+1",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 6,
+          "armor_piercing": -1,
+          "damage": "1",
+          "keywords": [
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Deathspitter",
+          "range": "24\"",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 5,
+          "armor_piercing": -1,
+          "damage": "1",
+          "keywords": []
+        },
+        {
+          "name": "Devourer",
+          "range": "18\"",
+          "attacks": "5",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 4,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": []
+        },
+        {
+          "name": "Spinefists",
+          "range": "12\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 4,
+          "armor_piercing": 0,
+          "damage": "1",
+          "keywords": [
+            "ASSAULT",
+            "PISTOL",
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Venom cannon",
+          "range": "36\"",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 9,
+          "armor_piercing": -2,
+          "damage": "2",
+          "keywords": [
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Tyranid Warrior claws and talons",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "armor_piercing": -1,
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Von Ryan's Leapers",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 6
+      },
+      "models": [
+        {
+          "name": "Von Ryan's Leapers",
+          "count": {
+            "min": 3,
+            "max": 6
+          },
+          "default_wargear": [
+            "Leaper's talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Great Devourer",
+        "Vanguard Invader",
+        "Von Ryan'S Leapers"
+      ],
+      "abilities": [
+        {
+          "name": "Fights First",
+          "rules_text": "Models in this unit are eligible to fight before other eligible units in the Fight phase."
+        },
+        {
+          "name": "Infiltrators",
+          "rules_text": "During deployment, this unit can be set up anywhere on the battlefield more than 9\" horizontally away from the enemy deployment zone and all enemy models."
+        },
+        {
+          "name": "Stealth",
+          "rules_text": "Each time a ranged attack targets this unit, subtract 1 from the Hit roll."
+        },
+        {
+          "name": "Pouncing Leap",
+          "rules_text": "You can target this unit with the Heroic Intervention Stratagem for 0CP, and can do so even if you have already used that Stratagem on a different unit this phase."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 5,
+        "save": "4+",
+        "wounds": 3,
+        "leadership": "8+",
+        "objective_control": 1,
+        "movement": 10,
+        "invulnerable_save": "6+"
+      },
+      "weapons": [
+        {
+          "name": "Leaper's talons",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "damage": 1,
+          "armor_piercing": -1,
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Zoanthropes",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 6
+      },
+      "models": [
+        {
+          "name": "Neurothrope",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Warp Blast",
+            "Chitinous claws and teeth"
+          ]
+        },
+        {
+          "name": "Zoanthropes",
+          "count": {
+            "min": 2,
+            "max": 5
+          },
+          "default_wargear": [
+            "Warp Blast",
+            "Chitinous claws and teeth"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Psyker",
+        "Fly",
+        "Great Devourer",
+        "Synapse",
+        "Zoanthropes"
+      ],
+      "abilities": [
+        {
+          "name": "Shadow in the Warp",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Spirit Leech (Aura, Psychic)",
+          "rules_text": "While an enemy unit is within 6\" of this unit, if this unit contains a Neurothrope, each time that enemy unit fails a Battle-shock test, it suffers D3 mortal wounds and one model in this unit regains up to D3 lost wounds."
+        },
+        {
+          "name": "Warp Field (Aura, Psychic)",
+          "rules_text": "While a friendly TYRANIDS unit is within 6\" of this unit, models in that unit have a 6+ invulnerable save."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 5,
+        "save": "5+",
+        "wounds": 3,
+        "leadership": "7+",
+        "objective_control": 1,
+        "movement": 5,
+        "invulnerable_save": "4+"
+      },
+      "weapons": [
+        {
+          "name": "Warp Blast - witchfire",
+          "range": "24\"",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 7,
+          "damage": "D3",
+          "armor_piercing": -2,
+          "keywords": [
+            "BLAST",
+            "PSYCHIC"
+          ]
+        },
+        {
+          "name": "Warp Blast - focused witchfire",
+          "range": "24\"",
+          "attacks": 1,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 12,
+          "damage": "D6+1",
+          "armor_piercing": -3,
+          "keywords": [
+            "LETHAL HITS",
+            "PSYCHIC"
+          ]
+        },
+        {
+          "name": "Chitinous claws and teeth",
+          "range": "Melee",
+          "attacks": 2,
+          "skill": {
+            "type": "WS",
+            "value": "5+"
+          },
+          "strength": 3,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Mawloc",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Mawloc",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Distensible jaw",
+            "Mawloc scything talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Great Devourer",
+        "Mawloc"
+      ],
+      "abilities": [
+        {
+          "name": "Deep Strike",
+          "rules_text": "This unit can be set up in Reserves and deployed using the Deep Strike rules."
+        },
+        {
+          "name": "Terror From The Deep",
+          "rules_text": "Each time this model is set up on the battlefield using the Deep Strike ability, roll one D6 for each enemy unit within 12\" of this model: on a 2-4, that unit suffers D3 mortal wounds; on a 5+, that unit suffers 3 mortal wounds and must take a Battle-shock test."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 10,
+        "save": "3+",
+        "wounds": 14,
+        "leadership": "8+",
+        "objective_control": 4,
+        "movement": 10
+      },
+      "weapons": [
+        {
+          "name": "Distensible jaw",
+          "range": "Melee",
+          "attacks": 1,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "damage": 3,
+          "armor_piercing": 0,
+          "keywords": [
+            "ANTI-INFANTRY 4+",
+            "DEVASTATING WOUNDS",
+            "EXTRA ATTACKS"
+          ]
+        },
+        {
+          "name": "Mawloc scything talons",
+          "range": "Melee",
+          "attacks": 16,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 8,
+          "damage": 1,
+          "armor_piercing": -2,
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Mucolid Spores",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 2
+      },
+      "models": [
+        {
+          "name": "Mucolid Spores",
+          "count": {
+            "min": 1,
+            "max": 2
+          },
+          "default_wargear": []
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Beast",
+        "Fly",
+        "Great Devourer",
+        "Mucolid Spores"
+      ],
+      "abilities": [
+        {
+          "name": "Deep Strike",
+          "rules_text": "This unit can be set up in Reserves and deployed using the Deep Strike rules."
+        },
+        {
+          "name": "Bio-minefield",
+          "rules_text": "Enemy units cannot start or end an Advance move within 6\" of this unit."
+        },
+        {
+          "name": "Floating Death",
+          "rules_text": "Each time this unit or an enemy unit ends a move, for each model in this unit that is within 3\" of one or more enemy units, select one of those enemy units. That model in this unit is destroyed, then roll one D6: on a 2-5, that enemy unit suffers D3 mortal wounds; on a 6, that enemy unit suffers D6 mortal wounds."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 4,
+        "save": "7+",
+        "wounds": 3,
+        "leadership": "8+",
+        "objective_control": 0,
+        "movement": 4
+      },
+      "weapons": [],
+      "implemented": true
+    },
+    {
+      "name": "Psychophage",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Psychophage",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Psychoclastic torrent",
+            "Talons and betentacled maw"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Great Devourer",
+        "Harvester",
+        "Psychophage"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise 1",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers 1 mortal wound."
+        },
+        {
+          "name": "Feel No Pain 5+",
+          "rules_text": "Each time this model would lose a wound, roll one D6: on a 5+, that wound is not lost."
+        },
+        {
+          "name": "Bio-stimulus (Aura)",
+          "rules_text": "While a friendly TYRANIDS unit is within 6\" of this model, models in that unit have the Feel No Pain 6+ ability."
+        },
+        {
+          "name": "Feeding Frenzy",
+          "rules_text": "Each time this model makes a melee attack that targets a unit that is below its Starting Strength, add 1 to the Hit roll. If that target is also Below Half-strength, add 1 to the Wound roll as well."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 9,
+        "save": "3+",
+        "wounds": 10,
+        "leadership": "8+",
+        "objective_control": 3,
+        "movement": 8
+      },
+      "weapons": [
+        {
+          "name": "Psychoclastic torrent",
+          "range": "12\"",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": 6,
+          "damage": 1,
+          "armor_piercing": -1,
+          "keywords": [
+            "IGNORES COVER",
+            "TORRENT"
+          ]
+        },
+        {
+          "name": "Talons and betentacled maw",
+          "range": "Melee",
+          "attacks": "D6+1",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 6,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": [
+            "ANTI-PSYKER 4+",
+            "DEVASTATING WOUNDS"
+          ]
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Ripper Swarms",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 3
+      },
+      "models": [
+        {
+          "name": "Ripper Swarms",
+          "count": {
+            "min": 1,
+            "max": 3
+          },
+          "default_wargear": [
+            "Chitinous claws and teeth"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Swarm",
+        "Great Devourer",
+        "Harvester",
+        "Ripper Swarms"
+      ],
+      "abilities": [
+        {
+          "name": "Deep Strike",
+          "rules_text": "This unit can be set up in Reserves and deployed using the Deep Strike rules."
+        },
+        {
+          "name": "Chitinous Horrors (Aura)",
+          "rules_text": "While an enemy unit is within Engagement Range of this unit, halve the Objective Control characteristic of models in that enemy unit."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [
+        "All models in this unit can each be equipped with 1 spinemaws."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 2,
+        "save": "6+",
+        "wounds": 4,
+        "leadership": "8+",
+        "objective_control": 0,
+        "movement": 6
+      },
+      "weapons": [
+        {
+          "name": "Spinemaws",
+          "range": "6\"",
+          "attacks": 4,
+          "skill": {
+            "type": "BS",
+            "value": "5+"
+          },
+          "strength": 3,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": [
+            "PISTOL"
+          ]
+        },
+        {
+          "name": "Chitinous claws and teeth",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "5+"
+          },
+          "strength": 2,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": [
+            "SUSTAINED HITS 1"
+          ]
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Screamer-Killer",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Screamer-Killer",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Bio-plasmic scream",
+            "Screamer-Killer talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Great Devourer",
+        "Screamer-Killer"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise 1",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers 1 mortal wound."
+        },
+        {
+          "name": "Death Scream",
+          "rules_text": "In your Shooting phase, after this model has shot, select one enemy unit hit by one or more of those attacks. That unit must take a Battle-shock test, subtracting 1 from that test."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 9,
+        "save": "2+",
+        "wounds": 10,
+        "leadership": "8+",
+        "objective_control": 3,
+        "movement": 8
+      },
+      "weapons": [
+        {
+          "name": "Bio-plasmic scream",
+          "range": "18\"",
+          "attacks": "D6+3",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 8,
+          "damage": 1,
+          "armor_piercing": -2,
+          "keywords": [
+            "ASSAULT",
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Screamer-Killer talons",
+          "range": "Melee",
+          "attacks": 10,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 10,
+          "damage": 3,
+          "armor_piercing": -2,
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Spore Mines",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 6
+      },
+      "models": [
+        {
+          "name": "Spore Mines",
+          "count": {
+            "min": 3,
+            "max": 6
+          },
+          "default_wargear": []
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Beast",
+        "Fly",
+        "Great Devourer",
+        "Spore Mines"
+      ],
+      "abilities": [
+        {
+          "name": "Deep Strike",
+          "rules_text": "This unit can be set up in Reserves and deployed using the Deep Strike rules."
+        },
+        {
+          "name": "Bio-minefield",
+          "rules_text": "Enemy units cannot start or end an Advance move within 6\" of this unit."
+        },
+        {
+          "name": "Floating Death",
+          "rules_text": "Each time this unit or an enemy unit ends a move, for each model in this unit that is within 3\" of one or more enemy units, select one of those enemy units. That model in this unit is destroyed, then roll one D6: on a 2-5, that enemy unit suffers 1 mortal wound; on a 6, that enemy unit suffers D3 mortal wounds."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 1,
+        "save": "7+",
+        "wounds": 1,
+        "leadership": "8+",
+        "objective_control": 0,
+        "movement": 4
+      },
+      "weapons": [],
+      "implemented": true
+    },
+    {
+      "name": "Sporocyst",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Sporocyst",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Sporocyst bio-weapons",
+            "Flensing whips"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Great Devourer",
+        "Sporocyst"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise D3",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers D3 mortal wounds."
+        },
+        {
+          "name": "Seed Mucolids",
+          "rules_text": "Once per turn, in your Shooting phase, when selected to shoot, one unit with this ability can use it instead of making any attacks with its ranged weapons. If it does, add one new MUCOLID SPORES unit containing 1 model to your army and set it up wholly within 18\" of this model and more than 9\" horizontally away from all enemy units."
+        },
+        {
+          "name": "Hive Defences",
+          "rules_text": "You can target this model with the Fire Overwatch Stratagem for 0CP, and can do so even if you have already targeted a different unit with that Stratagem this turn. This model can only be targeted with that Stratagem once per turn."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 10,
+        "save": "3+",
+        "wounds": 10,
+        "leadership": "8+",
+        "objective_control": 0,
+        "movement": "-"
+      },
+      "weapons": [
+        {
+          "name": "Sporocyst bio-weapons",
+          "range": "24\"",
+          "attacks": 10,
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 5,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": []
+        },
+        {
+          "name": "Flensing whips",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 7,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Tervigon",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Tervigon",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Stinger salvos",
+            "Massive scything talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Character",
+        "Psyker",
+        "Great Devourer",
+        "Synapse",
+        "Tervigon"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise D6",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers D6 mortal wounds."
+        },
+        {
+          "name": "Shadow in the Warp",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Spawn Termagants",
+          "rules_text": "In your Command phase, select one friendly TERMAGANTS unit within 6\" of this model and return up to D3+3 destroyed models to that unit. A TERMAGANTS unit cannot be selected for this ability more than once per phase."
+        },
+        {
+          "name": "Brood Progenitor (Aura, Psychic)",
+          "rules_text": "While a friendly TERMAGANTS unit is within 6\" of this model, ranged weapons equipped by models in that unit have the [LETHAL HITS] ability."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [
+        "Massive scything talons can be replaced with 1 massive crushing claws."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 11,
+        "save": "2+",
+        "wounds": 16,
+        "leadership": "7+",
+        "objective_control": 5,
+        "movement": 8
+      },
+      "weapons": [
+        {
+          "name": "Stinger salvos",
+          "range": "24\"",
+          "attacks": 8,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": []
+        },
+        {
+          "name": "Massive crushing claws",
+          "range": "Melee",
+          "attacks": 4,
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 12,
+          "damage": "D6+1",
+          "armor_piercing": -3,
+          "keywords": []
+        },
+        {
+          "name": "Massive scything talons - strike",
+          "range": "Melee",
+          "attacks": 4,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 9,
+          "damage": "D6",
+          "armor_piercing": -2,
+          "keywords": []
+        },
+        {
+          "name": "Massive scything talons - sweep",
+          "range": "Melee",
+          "attacks": 8,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 7,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Toxicrene",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Toxicrene",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Massive toxic lashes"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Great Devourer",
+        "Toxicrene"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise D3",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers D3 mortal wounds."
+        },
+        {
+          "name": "Grasping Tendrils",
+          "rules_text": "Each time an enemy unit excluding TITANIC units within Engagement Range of one or more units from your army with this ability is selected to Fall Back, roll one D6: on a 3+, that enemy unit must Remain Stationary instead."
+        },
+        {
+          "name": "Hypertoxic Miasma (Aura)",
+          "rules_text": "At the end of your Movement phase, roll one D6 for each enemy unit within 6\" of this model: on a 2-3, that unit suffers 1 mortal wound; on a 4-5, that unit suffers D3 mortal wounds; on a 6, that unit suffers D6 mortal wounds."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 11,
+        "save": "3+",
+        "wounds": 14,
+        "leadership": "8+",
+        "objective_control": 4,
+        "movement": 8
+      },
+      "weapons": [
+        {
+          "name": "Massive toxic lashes",
+          "range": "9\"",
+          "attacks": "2D6",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 6,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": [
+            "ANTI-INFANTRY 2+"
+          ]
+        },
+        {
+          "name": "Massive toxic lashes",
+          "range": "Melee",
+          "attacks": 12,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 6,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": [
+            "ANTI-INFANTRY 2+"
+          ]
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Trygon",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Trygon",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Bio-electric pulse",
+            "Trygon scything talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Great Devourer",
+        "Trygon"
+      ],
+      "abilities": [
+        {
+          "name": "Deep Strike",
+          "rules_text": "This unit can be set up in Reserves and deployed using the Deep Strike rules."
+        },
+        {
+          "name": "Subterranean Tunnels",
+          "rules_text": "Each time this model is set up on the battlefield using the Deep Strike ability, it can be set up anywhere on the battlefield that is more than 3\" horizontally away from all enemy models. When doing so, if this model is set up within 9\" of one or more enemy units, until the end of the turn it is not eligible to declare a charge."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 10,
+        "save": "3+",
+        "wounds": 14,
+        "leadership": "8+",
+        "objective_control": 4,
+        "movement": 10
+      },
+      "weapons": [
+        {
+          "name": "Bio-electric pulse",
+          "range": "12\"",
+          "attacks": 6,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": [
+            "SUSTAINED HITS 2"
+          ]
+        },
+        {
+          "name": "Trygon scything talons",
+          "range": "Melee",
+          "attacks": 12,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 9,
+          "damage": 3,
+          "armor_piercing": -2,
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Tyrannocyte",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Tyrannocyte",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Tyrannocyte bio-weapons",
+            "Flensing whips"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Fly",
+        "Transport",
+        "Dedicated Transport",
+        "Great Devourer",
+        "Vanguard Invader",
+        "Tyrannocyte"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise D3",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers D3 mortal wounds."
+        },
+        {
+          "name": "Deep Strike",
+          "rules_text": "This unit can be set up in Reserves and deployed using the Deep Strike rules."
+        },
+        {
+          "name": "Aerial Seeding",
+          "rules_text": "This model must start the battle in Reserves, but neither it nor any units embarked within it are counted towards any limits placed on the maximum number of Reserves units you can start the battle with. This model can be set up in the Reinforcements step of your first, second or third Movement phase, regardless of any mission rules. Any units embarked within this model must immediately disembark after it has been set up on the battlefield, and must be set up more than 9\" away from all enemy models. After this model has been set up on the battlefield, no units can embark within it."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": "This model has a transport capacity of 20 TYRANIDS INFANTRY models, or 1 TYRANIDS MONSTER model with a Wounds characteristic of 12 or less. Each INFANTRY model with a Wounds characteristic of more than 1 takes up the space of 3 models.",
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 9,
+        "save": "3+",
+        "wounds": 10,
+        "leadership": "8+",
+        "objective_control": 2,
+        "movement": 8
+      },
+      "weapons": [
+        {
+          "name": "Tyrannocyte bio-weapons",
+          "range": "24\"",
+          "attacks": 5,
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": 5,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": []
+        },
+        {
+          "name": "Flensing whips",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 7,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Tyrannofex",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Tyrannofex",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Fleshborer hive",
+            "Stinger salvos",
+            "Powerful limbs"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Monster",
+        "Great Devourer",
+        "Tyrannofex"
+      ],
+      "abilities": [
+        {
+          "name": "Deadly Demise D6",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers D6 mortal wounds."
+        },
+        {
+          "name": "Resilient Organism",
+          "rules_text": "Once per battle, when an attack is allocated to this model, you can change the Damage characteristic of that attack to 0."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [
+        "Fleshborer hive can be replaced with 1 acid spray or 1 rupture cannon."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 12,
+        "save": "2+",
+        "wounds": 16,
+        "leadership": "8+",
+        "objective_control": 5,
+        "movement": 9
+      },
+      "weapons": [
+        {
+          "name": "Acid spray",
+          "range": "18\"",
+          "attacks": "D6+6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": 6,
+          "damage": 2,
+          "armor_piercing": -2,
+          "keywords": [
+            "TORRENT"
+          ]
+        },
+        {
+          "name": "Fleshborer hive",
+          "range": "24\"",
+          "attacks": 20,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": [
+            "HEAVY",
+            "SUSTAINED HITS 1",
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Rupture cannon",
+          "range": "48\"",
+          "attacks": 2,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 18,
+          "damage": "2D6",
+          "armor_piercing": -4,
+          "keywords": [
+            "HEAVY"
+          ]
+        },
+        {
+          "name": "Stinger salvos",
+          "range": "24\"",
+          "attacks": 8,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": []
+        },
+        {
+          "name": "Powerful limbs",
+          "range": "Melee",
+          "attacks": 4,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 8,
+          "damage": 2,
+          "armor_piercing": 0,
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Tyrant Guard",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 6
+      },
+      "models": [
+        {
+          "name": "Tyrant Guard",
+          "count": {
+            "min": 3,
+            "max": 6
+          },
+          "default_wargear": [
+            "Scything talons and rending claws"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Great Devourer",
+        "Tyrant Guard"
+      ],
+      "abilities": [
+        {
+          "name": "Guardian Organism",
+          "rules_text": "While a CHARACTER model is leading this unit, that CHARACTER model has the Feel No Pain 5+ ability."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [
+        "Any number of models can each have their scything talons and rending claws replaced with 1 bone cleaver, lash whip and rending claws, or 1 crushing claws and rending claws."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 8,
+        "save": "3+",
+        "wounds": 4,
+        "leadership": "8+",
+        "objective_control": 1,
+        "movement": 6
+      },
+      "weapons": [
+        {
+          "name": "Bone cleaver, lash whip and rending claws",
+          "range": "Melee",
+          "attacks": 3,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": []
+        },
+        {
+          "name": "Crushing claws and rending claws",
+          "range": "Melee",
+          "attacks": 2,
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 8,
+          "damage": 2,
+          "armor_piercing": -2,
+          "keywords": [
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Scything talons and rending claws",
+          "range": "Melee",
+          "attacks": 5,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "damage": 1,
+          "armor_piercing": -1,
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Venomthropes",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 6
+      },
+      "models": [
+        {
+          "name": "Venomthropes",
+          "count": {
+            "min": 3,
+            "max": 6
+          },
+          "default_wargear": [
+            "Toxic lashes"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Fly",
+        "Great Devourer",
+        "Venomthropes"
+      ],
+      "abilities": [
+        {
+          "name": "Stealth",
+          "rules_text": "Each time a ranged attack targets this unit, subtract 1 from the Hit roll."
+        },
+        {
+          "name": "Foul Spores (Aura)",
+          "rules_text": "While a friendly TYRANIDS unit is within 6\" of this unit, each time a ranged attack targets that unit, models in that unit have the Benefit of Cover against that attack. In addition, while a friendly TYRANIDS unit excluding MONSTERS is within 6\" of this unit, models in that unit have the Stealth ability."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": []
+      },
+      "support": {},
+      "transport": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 5,
+        "save": "4+",
+        "wounds": 3,
+        "leadership": "8+",
+        "objective_control": 1,
+        "movement": 6
+      },
+      "weapons": [
+        {
+          "name": "Toxic lashes",
+          "range": "Melee",
+          "attacks": 5,
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": 3,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": [
+            "ANTI-INFANTRY 2+"
+          ]
+        }
+      ],
+      "implemented": true
+    }
+  ]
 }

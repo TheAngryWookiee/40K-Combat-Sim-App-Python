@@ -83,7 +83,8 @@ $frontendJob = Start-Job -Name "40k-frontend" -ArgumentList $root, $frontendPort
     }
   }
 
-  & npm --workspace frontend exec vite -- --host $hostName --port $port --strictPort 2>&1 | ForEach-Object {
+  $viteBin = Join-Path $frontendPath "node_modules/.bin/vite.cmd"
+  & $viteBin --host $hostName --port $port --strictPort 2>&1 | ForEach-Object {
     "[web] $_"
   }
 }

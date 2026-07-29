@@ -357,12 +357,26 @@ def extract_unit_effects(unit_data: dict[str, Any]) -> list[dict[str, Any]]:
     effects: list[dict[str, Any]] = []
     for ability in unit_data.get("abilities", []):
         effects.extend(ability.get("effects", []))
+        ability_name = str(ability.get("name", "")).lower()
+        ability_text = f"{ability.get('name', '')} {ability.get('rules_text', '')}".lower()
         feel_no_pain_match = re.search(
             r"feel\s+no\s+pain\s+(\d+)\+",
-            f"{ability.get('name', '')} {ability.get('rules_text', '')}",
+            ability_text,
             re.IGNORECASE,
         )
-        if feel_no_pain_match:
+        conditional_feel_no_pain = (
+            "singular purpose" in ability_name
+            or "against mortal wounds" in ability_text
+            or "against psychic" in ability_text
+            or "while within range of" in ability_text
+            or "within range of" in ability_text
+            or "while a character" in ability_text
+            or "while a friendly" in ability_text
+            or "while this model is leading" in ability_text
+            or "while this unit contains" in ability_text
+            or "during the battle round" in ability_text
+        )
+        if feel_no_pain_match and not conditional_feel_no_pain:
             effects.append({
                 "type": "feel_no_pain",
                 "value": int(feel_no_pain_match.group(1)),
