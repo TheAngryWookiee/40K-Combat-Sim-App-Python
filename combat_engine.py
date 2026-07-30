@@ -2181,6 +2181,10 @@ class CombatSimulator:
     def clamp_target_number(value: int) -> int:
         return max(2, min(6, value))
 
+    @staticmethod
+    def clamp_hit_or_wound_roll_modifier(value: int) -> int:
+        return max(-1, min(1, value))
+
     def get_wound_roll_modifier(
         self,
         attacker_unit: dict[str, Any],
@@ -2194,6 +2198,17 @@ class CombatSimulator:
             + attack_context.get("target_incoming_wound_modifier", 0)
             + attack_context.get("oath_of_moment_wound_bonus", 0)
         )
+
+    def get_total_wound_roll_modifier(
+        self,
+        attacker_unit: dict[str, Any],
+        target_state: dict[str, Any],
+        weapon: dict[str, Any],
+        attack_context: dict[str, Any],
+    ) -> int:
+        modifier = self.get_wound_roll_modifier(attacker_unit, target_state, attack_context)
+        modifier += self.get_weapon_wound_bonus(weapon, attack_context)
+        return self.clamp_hit_or_wound_roll_modifier(modifier)
 
     def get_weapon_wound_bonus(
         self,
@@ -2608,8 +2623,8 @@ class CombatSimulator:
         ):
             modifier -= 1
         if attack_context.get("ignore_negative_hit_modifiers", False) and modifier < 0:
-            return 0
-        return modifier
+            modifier = 0
+        return self.clamp_hit_or_wound_roll_modifier(modifier)
 
     def validate_ranged_attack_context(
         self,
@@ -3694,8 +3709,12 @@ class CombatSimulator:
             effective_strength += attack_context.get("ranged_strength_bonus", 0)
         active_target = self.get_active_target_profile(target_state)
         base_to_wound = self.get_to_wound_threshold(effective_strength, active_target["toughness"])
-        wound_roll_modifier = self.get_wound_roll_modifier(attacker_unit, active_target, attack_context)
-        wound_roll_modifier += self.get_weapon_wound_bonus(weapon, attack_context)
+        wound_roll_modifier = self.get_total_wound_roll_modifier(
+            attacker_unit,
+            active_target,
+            weapon,
+            attack_context,
+        )
         to_wound = self.clamp_target_number(base_to_wound - wound_roll_modifier)
 
         self.log(f"\n{unit_name} attacks with {weapon['name']}")
@@ -3774,8 +3793,12 @@ class CombatSimulator:
         for _ in range(normal_hit_pool):
             current_target = self.get_active_target_profile(target_state)
             current_base_to_wound = self.get_to_wound_threshold(effective_strength, current_target["toughness"])
-            current_wound_roll_modifier = self.get_wound_roll_modifier(attacker_unit, current_target, attack_context)
-            current_wound_roll_modifier += self.get_weapon_wound_bonus(weapon, attack_context)
+            current_wound_roll_modifier = self.get_total_wound_roll_modifier(
+                attacker_unit,
+                current_target,
+                weapon,
+                attack_context,
+            )
             current_to_wound = self.clamp_target_number(current_base_to_wound - current_wound_roll_modifier)
             wound_succeeds, devastating_wound, critical_wound = self.resolve_wound(
                 unit_name,
