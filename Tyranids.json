@@ -1,7 +1,7 @@
 {
   "faction": {
     "name": "Tyranids",
-    "parent_faction": "Tyranids",
+    "parent_faction": "",
     "army_rules": [
       {
         "name": "Synapse",
@@ -609,7 +609,8 @@
           }
         ]
       }
-    ]
+    ],
+    "category": "Xenos"
   },
   "units": [
     {

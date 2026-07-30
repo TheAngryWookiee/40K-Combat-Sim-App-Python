@@ -962,6 +962,7 @@ def normalize_unit(unit_data: dict[str, Any], faction_name: str) -> dict[str, An
         "support": unit_data.get("support", {}),
         "wargear_options": unit_data.get("wargear_options", []),
         "loadout_options": unit_data.get("loadout_options", []),
+        "base_size": unit_data.get("base_size", ""),
         "stats": stats,
         "weapons": weapons,
         "effects": extract_unit_effects(unit_data),
@@ -993,6 +994,7 @@ def load_faction_file(data_file: Path) -> dict[str, Any] | None:
     return {
         "name": faction_name,
         "parent_faction": faction.get("parent_faction", ""),
+        "category": faction.get("category", ""),
         "file_name": data_file.name,
         "army_rules": faction.get("army_rules", []),
         "chapter_rules": faction.get("chapter_rules", []),
@@ -1033,6 +1035,70 @@ def load_factions(data_dir: Path = DATA_DIR, parent_faction: str | None = None) 
             return True
         return faction_name.lower() in chapter_keywords
 
+    def unit_matches_derived_keyword_condition(unit: dict[str, Any], condition: dict[str, Any]) -> bool:
+        if not condition:
+            return True
+
+        if condition.get("any_of"):
+            return any(unit_matches_derived_keyword_condition(unit, item) for item in condition["any_of"])
+        if condition.get("all_of"):
+            return all(unit_matches_derived_keyword_condition(unit, item) for item in condition["all_of"])
+
+        unit_keyword_set = {
+            str(keyword).strip().lower()
+            for keyword in unit.get("keywords", [])
+            if str(keyword).strip()
+        }
+        faction_keyword_set = {
+            str(keyword).strip().lower()
+            for keyword in unit.get("faction_keywords", [])
+            if str(keyword).strip()
+        }
+        unit_name = str(unit.get("name", "")).strip().lower()
+
+        if condition.get("unit_keywords_any") and not any(
+            str(keyword).strip().lower() in unit_keyword_set
+            for keyword in condition["unit_keywords_any"]
+        ):
+            return False
+        if condition.get("faction_keywords_any") and not any(
+            str(keyword).strip().lower() in faction_keyword_set
+            for keyword in condition["faction_keywords_any"]
+        ):
+            return False
+        if condition.get("unit_names_any") and not any(
+            unit_name == str(name).strip().lower()
+            for name in condition["unit_names_any"]
+        ):
+            return False
+
+        return True
+
+    def apply_derived_keywords(
+        units: dict[str, Any],
+        derived_keywords: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        if not derived_keywords:
+            return units
+
+        resolved_units = deepcopy(units)
+        for unit in resolved_units.values():
+            for derived_keyword in derived_keywords:
+                keyword = str(derived_keyword.get("keyword", "")).strip()
+                if not keyword:
+                    continue
+                if not unit_matches_derived_keyword_condition(
+                    unit,
+                    derived_keyword.get("applies_if", {}),
+                ):
+                    continue
+                normalized_keyword = keyword.lower()
+                if normalized_keyword not in unit.get("keywords", []):
+                    unit.setdefault("keywords", []).append(normalized_keyword)
+                if keyword not in unit.get("display_keywords", []):
+                    unit.setdefault("display_keywords", []).append(keyword)
+        return resolved_units
+
     def resolve_faction_units(faction_name: str, stack: tuple[str, ...] = ()) -> dict[str, Any]:
         if faction_name in resolved_unit_maps:
             return resolved_unit_maps[faction_name]
@@ -1064,6 +1130,10 @@ def load_factions(data_dir: Path = DATA_DIR, parent_faction: str | None = None) 
             **inherited_units,
             **faction_entry["own_units"],
         }
+        resolved_units = apply_derived_keywords(
+            resolved_units,
+            faction_entry.get("derived_keywords", []),
+        )
         resolved_unit_maps[faction_name] = resolved_units
         return resolved_units
 
@@ -1153,6 +1223,7 @@ def list_faction_summaries(factions: dict[str, dict[str, Any]]) -> list[dict[str
         {
             "name": faction["name"],
             "parent_faction": faction["parent_faction"],
+            "category": faction.get("category", ""),
             "unit_count": len(faction["units"]),
             "file_name": faction["file_name"],
         }
@@ -1170,6 +1241,7 @@ def list_unit_summaries(faction: dict[str, Any]) -> list[dict[str, Any]]:
             "faction_keywords": resolved_unit["faction_keywords"],
             "leader": resolved_unit["leader"],
             "support": resolved_unit.get("support", {}),
+            "base_size": resolved_unit.get("base_size", ""),
             "stats": resolved_unit["stats"],
             "weapons": [weapon["name"] for weapon in resolved_unit["weapons"].values()],
         }
@@ -1194,6 +1266,7 @@ def serialize_unit(unit: dict[str, Any]) -> dict[str, Any]:
         "wargear_abilities": unit["wargear_abilities"],
         "leader": unit["leader"],
         "support": unit.get("support", {}),
+        "base_size": unit.get("base_size", ""),
         "wargear_options": unit["wargear_options"],
         "loadout_options": unit.get("loadout_options", []),
         "selected_loadout": unit.get("selected_loadout", {}),

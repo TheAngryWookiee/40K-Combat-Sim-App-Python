@@ -197,6 +197,10 @@ class SimulationOptions(BaseModel):
     attacker_bigger_shells_active: bool = False
     attacker_bigger_shells_pushed: bool = False
     attacker_honour_the_chapter_active: bool = False
+    attacker_illuminating_fire_active: bool = False
+    attacker_relics_of_the_dark_age_active: bool = False
+    attacker_lions_will_active: bool = False
+    attacker_talon_strike_active: bool = False
     attacker_storm_of_fire_active: bool = False
     attacker_no_threat_too_great_active: bool = False
     attacker_battle_drill_recall_active: bool = False
@@ -217,6 +221,11 @@ class SimulationOptions(BaseModel):
     defender_hulking_brutes_active: bool = False
     defender_legendary_fortitude_active: bool = False
     defender_armour_of_contempt_active: bool = False
+    defender_army_battleshocked_dark_angels: bool = False
+    defender_strength_in_unity_active: bool = False
+    defender_high_speed_focus_active: bool = False
+    attacker_engaged_by_ravenwing_unit: bool = False
+    attacker_engaged_by_deathwing_unit: bool = False
     defender_overwhelming_onslaught_active: bool = False
     defender_unbreakable_lines_active: bool = False
     defender_pennant_of_remembrance_active: bool = False
@@ -503,6 +512,10 @@ ATTACKER_STRATAGEM_OPTION_KEYS = {
     "attacker_bigger_shells_active",
     "attacker_bigger_shells_pushed",
     "attacker_honour_the_chapter_active",
+    "attacker_illuminating_fire_active",
+    "attacker_relics_of_the_dark_age_active",
+    "attacker_lions_will_active",
+    "attacker_talon_strike_active",
     "attacker_storm_of_fire_active",
     "attacker_no_threat_too_great_active",
     "attacker_battle_drill_recall_active",
@@ -535,6 +548,8 @@ DEFENDER_STRATAGEM_OPTION_KEYS = {
     "defender_hulking_brutes_active",
     "defender_legendary_fortitude_active",
     "defender_armour_of_contempt_active",
+    "defender_strength_in_unity_active",
+    "defender_high_speed_focus_active",
     "defender_overwhelming_onslaught_active",
     "defender_reinforced_hive_node_active",
     "defender_unbreakable_lines_active",
@@ -1483,6 +1498,7 @@ def get_faction_details(faction_name: str) -> dict[str, object]:
     return {
         "name": faction["name"],
         "parent_faction": faction["parent_faction"],
+        "category": faction.get("category", ""),
         "army_rules": faction.get("army_rules", []),
         "chapter_rules": faction.get("chapter_rules", []),
         "detachments": faction["detachments"],

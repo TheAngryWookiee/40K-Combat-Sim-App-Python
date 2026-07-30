@@ -845,7 +845,8 @@
           }
         ]
       }
-    ]
+    ],
+    "category": "Adeptus Astartes"
   },
   "units": [
     {
@@ -1959,1565 +1960,6 @@
             "value": "3+"
           },
           "strength": "5",
-          "armor_piercing": "-2",
-          "damage": "2"
-        }
-      ]
-    },
-    {
-      "name": "Captain Sicarius",
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Captain Sicarius",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Artisan plasma pistol",
-            "Talassarian Tempest Blade"
-          ]
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Ultramarines"
-      ],
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Imperium",
-        "Tacticus",
-        "Captain",
-        "Sicarius"
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Leader"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Lead From the Front",
-          "rules_text": "While this model is leading a unit, models in that unit have the Scouts 6\" ability and ranged weapons equipped by models in that unit have the [ASSAULT] ability."
-        },
-        {
-          "name": "Knight Champion of Macragge",
-          "rules_text": "Once per turn, when an enemy unit ends a Normal, Advance or Fall Back move within 9\" of this model, if this model's unit is not within Engagement Range of one or more enemy units, it can make a Normal move of up to 6\"."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": {
-        "can_lead": [
-          "Assault Intercessor Squad",
-          "Bladeguard Veteran Squad",
-          "Company Heroes",
-          "Sternguard Veteran Squad",
-          "Tactical Squad"
-        ],
-        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad, Bladeguard Veteran Squad, Company Heroes, Sternguard Veteran Squad, Tactical Squad."
-      },
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [],
-      "stats": {
-        "movement": 6,
-        "toughness": 4,
-        "save": "2+",
-        "invulnerable_save": "4+",
-        "wounds": 5,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "weapons": [
-        {
-          "name": "Artisan plasma pistol",
-          "keywords": [
-            "Pistol"
-          ],
-          "range": "12 inches",
-          "attacks": "1",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "8",
-          "armor_piercing": "-3",
-          "damage": "2"
-        },
-        {
-          "name": "Talassarian Tempest Blade",
-          "keywords": [
-            "Lethal Hits"
-          ],
-          "range": "Melee",
-          "attacks": "6",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "5",
-          "armor_piercing": "-2",
-          "damage": "2"
-        }
-      ]
-    },
-    {
-      "name": "Chief Librarian Tigurius",
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Chief Librarian Tigurius",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Bolt pistol",
-            "Storm of the Emperor's Wrath",
-            "Rod of Tigurius"
-          ]
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Ultramarines"
-      ],
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Psyker",
-        "Imperium",
-        "Tacticus",
-        "Chief Librarian Tigurius"
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Leader"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Hood of Hellfire",
-          "rules_text": "While this model is leading a unit, models in that unit have the Feel No Pain 4+ ability against Psychic Attacks and mortal wounds."
-        },
-        {
-          "name": "Master of Prescience (Psychic)",
-          "rules_text": "While this model is leading a unit, each time an attack targets that unit, subtract 1 from the Hit roll. In addition, once per battle round, you can target that unit with one of the following Stratagems for 0CP: Counter-offensive; Fire Overwatch; Go to Ground; Heroic Intervention."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": {
-        "can_lead": [
-          "Assault Intercessor Squad",
-          "Bladeguard Veteran Squad",
-          "Desolation Squad",
-          "Devastator Squad",
-          "Intercessor Squad",
-          "Sternguard Veteran Squad",
-          "Tactical Squad"
-        ],
-        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad, Bladeguard Veteran Squad, Desolation Squad, Devastator Squad, Intercessor Squad, Sternguard Veteran Squad, Tactical Squad."
-      },
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [
-        {
-          "id": "storm_of_the_emperors_wrath_profile",
-          "label": "Storm of the Emperor's Wrath profile",
-          "target_model": "Chief Librarian Tigurius",
-          "default_option_id": "witchfire",
-          "options": [
-            {
-              "id": "witchfire",
-              "label": "Witchfire",
-              "description": "Before selecting targets for this weapon, select one of its profiles to make attacks with.",
-              "enabled_weapons": [
-                "Storm of the Emperor's Wrath - witchfire"
-              ]
-            },
-            {
-              "id": "focused_witchfire",
-              "label": "Focused witchfire",
-              "description": "Before selecting targets for this weapon, select one of its profiles to make attacks with.",
-              "enabled_weapons": [
-                "Storm of the Emperor's Wrath - focused witchfire"
-              ]
-            }
-          ]
-        }
-      ],
-      "stats": {
-        "movement": 6,
-        "toughness": 4,
-        "save": "3+",
-        "invulnerable_save": "4+",
-        "wounds": 4,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "weapons": [
-        {
-          "name": "Bolt pistol",
-          "keywords": [
-            "Pistol"
-          ],
-          "range": "12 inches",
-          "attacks": "1",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "4",
-          "armor_piercing": "0",
-          "damage": "1"
-        },
-        {
-          "name": "Storm of the Emperor's Wrath - witchfire",
-          "keywords": [
-            "Blast",
-            "Psychic"
-          ],
-          "range": "18 inches",
-          "attacks": "D6",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "6",
-          "armor_piercing": "-2",
-          "damage": "2"
-        },
-        {
-          "name": "Storm of the Emperor's Wrath - focused witchfire",
-          "keywords": [
-            "Blast",
-            "Hazardous",
-            "Psychic"
-          ],
-          "range": "18 inches",
-          "attacks": "2D6",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "6",
-          "armor_piercing": "-2",
-          "damage": "2"
-        },
-        {
-          "name": "Rod of Tigurius",
-          "keywords": [
-            "Psychic"
-          ],
-          "range": "Melee",
-          "attacks": "5",
-          "skill": {
-            "type": "WS",
-            "value": "3+"
-          },
-          "strength": "7",
-          "armor_piercing": "-2",
-          "damage": "D3"
-        }
-      ]
-    },
-    {
-      "name": "Darnath Lysander",
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Darnath Lysander",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Fist of Dorn"
-          ]
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Imperial Fists"
-      ],
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Imperium",
-        "Terminator",
-        "Captain",
-        "Darnath Lysander"
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Deep Strike, Leader"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Icon of Obstinacy",
-          "rules_text": "While this model is leading a unit, each time an attack targets that unit, if the Strength characteristic of that attack is greater than or equal to the Toughness characteristic of that unit, subtract 1 from the Wound roll."
-        },
-        {
-          "name": "Rampart",
-          "rules_text": "Once per battle, at the start of a phase, this model can use this ability. If it does, until the end of the phase, this model has a 2+ invulnerable save."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": {
-        "can_lead": [
-          "Terminator Assault Squad",
-          "Terminator Squad"
-        ],
-        "rules_text": "This model can be attached to the following units: Terminator Assault Squad, Terminator Squad."
-      },
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [],
-      "stats": {
-        "movement": 5,
-        "toughness": 5,
-        "save": "2+",
-        "invulnerable_save": "4+",
-        "wounds": 6,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "weapons": [
-        {
-          "name": "Fist of Dorn",
-          "keywords": [
-            "Devastating Wounds"
-          ],
-          "range": "Melee",
-          "attacks": "5",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "10",
-          "armor_piercing": "-3",
-          "damage": "3"
-        }
-      ]
-    },
-    {
-      "name": "Marneus Calgar",
-      "unit_composition": {
-        "min_models": 3,
-        "max_models": 3
-      },
-      "models": [
-        {
-          "name": "Marneus Calgar",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Gauntlets of Ultramar"
-          ],
-          "stats": {
-            "movement": 6,
-            "toughness": 6,
-            "save": "2+",
-            "invulnerable_save": "4+",
-            "wounds": 6,
-            "leadership": "6+",
-            "objective_control": 1
-          }
-        },
-        {
-          "name": "Victrix Honour Guard",
-          "count": {
-            "min": 2,
-            "max": 2
-          },
-          "default_wargear": [
-            "Victrix power sword"
-          ],
-          "stats": {
-            "movement": 6,
-            "toughness": 4,
-            "save": "2+",
-            "invulnerable_save": "4+",
-            "wounds": 3,
-            "leadership": "6+",
-            "objective_control": 1
-          }
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Ultramarines"
-      ],
-      "keywords": [
-        "Infantry",
-        "Imperium",
-        "Character",
-        "Epic Hero",
-        "Gravis",
-        "Chapter Master",
-        "Marneus Calgar"
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Leader"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Inspiring Leader",
-          "rules_text": "While this unit is leading a unit and contains a Marneus Calgar model, that unit is eligible to shoot and declare a charge in a turn in which it Advanced or Fell Back."
-        },
-        {
-          "name": "Master Tactician",
-          "rules_text": "At the start of your Command phase, if this unit's Marneus Calgar model is on the battlefield, you gain 1CP."
-        },
-        {
-          "name": "Honour Guard of Macragge",
-          "rules_text": "While this unit contains one or more Victrix Honour Guard models, this unit's Marneus Calgar model has the Feel No Pain 4+ ability."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": {
-        "can_lead": [
-          "Aggressor Squad",
-          "Assault Intercessor Squad",
-          "Bladeguard Veteran Squad",
-          "Company Heroes",
-          "Eradicator Squad",
-          "Heavy Intercessor Squad",
-          "Infernus Squad",
-          "Intercessor Squad",
-          "Sternguard Veteran Squad",
-          "Tactical Squad"
-        ],
-        "rules_text": "This unit can be attached to the following units: Aggressor Squad, Assault Intercessor Squad, Bladeguard Veteran Squad, Company Heroes, Eradicator Squad, Heavy Intercessor Squad, Infernus Squad, Intercessor Squad, Sternguard Veteran Squad, Tactical Squad."
-      },
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [],
-      "stats": null,
-      "weapons": [
-        {
-          "name": "Gauntlets of Ultramar - ranged",
-          "keywords": [
-            "Pistol",
-            "Twin-linked"
-          ],
-          "range": "18 inches",
-          "attacks": "4",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "4",
-          "armor_piercing": "-1",
-          "damage": "2"
-        },
-        {
-          "name": "Gauntlets of Ultramar - melee",
-          "keywords": [
-            "Twin-linked"
-          ],
-          "range": "Melee",
-          "attacks": "6",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "8",
-          "armor_piercing": "-3",
-          "damage": "3"
-        },
-        {
-          "name": "Victrix power sword",
-          "keywords": [],
-          "range": "Melee",
-          "attacks": "5",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "5",
-          "armor_piercing": "-2",
-          "damage": "2"
-        }
-      ]
-    },
-    {
-      "name": "Roboute Guilliman",
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Roboute Guilliman",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Hand of Dominion",
-            "Emperor's Sword"
-          ]
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Ultramarines"
-      ],
-      "keywords": [
-        "Monster",
-        "Character",
-        "Epic Hero",
-        "Imperium",
-        "Primarch",
-        "Roboute Guilliman"
-      ],
-      "abilities": [
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Author of the Codex",
-          "rules_text": "In your Command phase, select one Author of the Codex ability (see left). Until the start of your next Command phase, this model has that ability."
-        },
-        {
-          "name": "Primarch of the XIII (Aura)",
-          "rules_text": "While a friendly Adeptus Astartes unit is within 6\" of this model, add 1 to the Objective Control characteristic of models in that unit and you can re-roll Battle-shock and Leadership tests taken for that unit."
-        },
-        {
-          "name": "Master of Battle",
-          "rules_text": "At the start of your Command phase, after you have selected your Oath of Moment target, select a second enemy unit. Until the start of your next Command phase, if your Oath of Moment target is destroyed, that second enemy unit becomes your Oath of Moment target until you select a new one."
-        },
-        {
-          "name": "Supreme Strategist",
-          "rules_text": "Once per turn, you can target one friendly Adeptus Astartes unit within 12\" of this model with a Stratagem for 0CP, and can do so even if another unit from your army has already been targeted with that Stratagem this phase."
-        },
-        {
-          "name": "Ultramarines Bodyguard",
-          "rules_text": "While this model is within 3\" of one or more friendly Adeptus Astartes Infantry units, this model has the Lone Operative ability."
-        },
-        {
-          "name": "Armour of Fate",
-          "rules_text": "The first time this model is destroyed, roll one D6 at the end of the phase: on a 3+, set this model back up on the battlefield as close as possible to where it was destroyed and not within Engagement Range of any enemy units, with 6 wounds remaining."
-        },
-        {
-          "name": "Supreme Commander",
-          "rules_text": "If this model is in your army, it must be your Warlord."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": null,
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [],
-      "stats": {
-        "movement": 8,
-        "toughness": 9,
-        "save": "2+",
-        "invulnerable_save": "4+",
-        "wounds": 10,
-        "leadership": "5+",
-        "objective_control": 4
-      },
-      "weapons": [
-        {
-          "name": "Hand of Dominion - ranged",
-          "keywords": [
-            "Rapid Fire 2"
-          ],
-          "range": "30 inches",
-          "attacks": "2",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "6",
-          "armor_piercing": "-2",
-          "damage": "2"
-        },
-        {
-          "name": "Emperor's Sword",
-          "keywords": [
-            "Devastating Wounds"
-          ],
-          "range": "Melee",
-          "attacks": "14",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "8",
-          "armor_piercing": "-3",
-          "damage": "2"
-        },
-        {
-          "name": "Hand of Dominion - melee",
-          "keywords": [
-            "Lethal Hits"
-          ],
-          "range": "Melee",
-          "attacks": "7",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "14",
-          "armor_piercing": "-4",
-          "damage": "4"
-        }
-      ]
-    },
-    {
-      "name": "Uriel Ventris",
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Uriel Ventris",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Bolt pistol",
-            "Invictus",
-            "Sword of Idaeus"
-          ]
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Ultramarines"
-      ],
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Imperium",
-        "Tacticus",
-        "Captain",
-        "Uriel Ventris"
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Leader"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Unorthodox Strategist",
-          "rules_text": "While this model is leading a unit, you can target that unit with a Stratagem even if that Stratagem has already been used on another unit from your army this phase. In addition, this model's unit can still be selected as the target of a Stratagem while Battle-shocked."
-        },
-        {
-          "name": "Master of the Fleet",
-          "rules_text": "During the Declare Battle Formations step, if your army includes this model, select one Adeptus Astartes Infantry unit from your army. That unit gains the Deep Strike ability."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": {
-        "can_lead": [
-          "Assault Intercessor Squad",
-          "Bladeguard Veteran Squad",
-          "Company Heroes",
-          "Intercessor Squad",
-          "Sternguard Veteran Squad",
-          "Tactical Squad"
-        ],
-        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad, Bladeguard Veteran Squad, Company Heroes, Intercessor Squad, Sternguard Veteran Squad, Tactical Squad."
-      },
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [],
-      "stats": {
-        "movement": 6,
-        "toughness": 4,
-        "save": "3+",
-        "invulnerable_save": "4+",
-        "wounds": 5,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "weapons": [
-        {
-          "name": "Bolt pistol",
-          "keywords": [
-            "Pistol"
-          ],
-          "range": "12 inches",
-          "attacks": "1",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "4",
-          "armor_piercing": "0",
-          "damage": "1"
-        },
-        {
-          "name": "Invictus",
-          "keywords": [],
-          "range": "24 inches",
-          "attacks": "2",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "4",
-          "armor_piercing": "-1",
-          "damage": "2"
-        },
-        {
-          "name": "Sword of Idaeus",
-          "keywords": [
-            "Sustained Hits 1"
-          ],
-          "range": "Melee",
-          "attacks": "6",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "6",
-          "armor_piercing": "-2",
-          "damage": "2"
-        }
-      ]
-    },
-    {
-      "name": "Adrax Agatone",
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Adrax Agatone",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Drakkis",
-            "Malleus Noctum"
-          ]
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Salamanders"
-      ],
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Imperium",
-        "Tacticus",
-        "Captain",
-        "Adrax Agatone"
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Leader"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Unto the Anvil",
-          "rules_text": "While this model is leading a unit, each time a model in that unit makes a melee attack, you can re-roll the Wound roll."
-        },
-        {
-          "name": "Lord of the Pyroclasts",
-          "rules_text": "While an enemy unit is within Engagement Range of this model, halve the Objective Control characteristic of models in that unit."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": {
-        "can_lead": [
-          "Assault Intercessor Squad",
-          "Bladeguard Veteran Squad",
-          "Company Heroes",
-          "Infernus Squad",
-          "Intercessor Squad",
-          "Sternguard Veteran Squad",
-          "Tactical Squad"
-        ],
-        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad, Bladeguard Veteran Squad, Company Heroes, Infernus Squad, Intercessor Squad, Sternguard Veteran Squad, Tactical Squad."
-      },
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [],
-      "stats": {
-        "movement": 6,
-        "toughness": 4,
-        "save": "2+",
-        "invulnerable_save": "4+",
-        "wounds": 5,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "weapons": [
-        {
-          "name": "Drakkis",
-          "keywords": [
-            "Ignores Cover",
-            "Pistol",
-            "Torrent"
-          ],
-          "range": "12 inches",
-          "attacks": "D6+3",
-          "skill": {
-            "type": "BS",
-            "value": "N/A"
-          },
-          "strength": "4",
-          "armor_piercing": "-1",
-          "damage": "1"
-        },
-        {
-          "name": "Malleus Noctum",
-          "keywords": [],
-          "range": "Melee",
-          "attacks": "5",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "10",
-          "armor_piercing": "-2",
-          "damage": "3"
-        }
-      ]
-    },
-    {
-      "name": "Iron Father Feirros",
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Iron Father Feirros",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Bolt pistol",
-            "Gorgon's Wrath",
-            "Harrowhand",
-            "Medusan Manipuli"
-          ]
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Iron Hands"
-      ],
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Imperium",
-        "Gravis",
-        "Iron Father Feirros"
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Leader"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Rites of Tempering",
-          "rules_text": "While this model is leading a unit, models in that unit have the Feel No Pain 5+ ability."
-        },
-        {
-          "name": "Iron Father",
-          "rules_text": "While this model is within 3\" of one or more friendly ADEPTUS ASTARTES VEHICLE units, it has the Lone Operative ability."
-        },
-        {
-          "name": "Master of the Forge",
-          "rules_text": "In your Command phase, select one friendly ADEPTUS ASTARTES VEHICLE model within 3\" of this model. That model regains up to 3 lost wounds and, until the start of your next Command phase, each time that VEHICLE model makes an attack, add 1 to the Hit roll. You cannot select a unit for this ability that has already been selected for the Blessing of the Omnissiah ability this phase, and vice versa."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": {
-        "can_lead": [
-          "Aggressor Squad",
-          "Eradicator Squad",
-          "Heavy Intercessor Squad"
-        ],
-        "rules_text": "This model can be attached to the following units: Aggressor Squad, Eradicator Squad, Heavy Intercessor Squad."
-      },
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [],
-      "stats": {
-        "movement": 5,
-        "toughness": 6,
-        "save": "2+",
-        "invulnerable_save": null,
-        "wounds": 6,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "weapons": [
-        {
-          "name": "Bolt pistol",
-          "keywords": [
-            "Pistol"
-          ],
-          "range": "12 inches",
-          "attacks": "1",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "4",
-          "armor_piercing": "0",
-          "damage": "1"
-        },
-        {
-          "name": "Gorgon's Wrath",
-          "keywords": [
-            "Sustained Hits 2"
-          ],
-          "range": "36 inches",
-          "attacks": "3",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "5",
-          "armor_piercing": "-1",
-          "damage": "2"
-        },
-        {
-          "name": "Harrowhand",
-          "keywords": [],
-          "range": "Melee",
-          "attacks": "6",
-          "skill": {
-            "type": "WS",
-            "value": "3+"
-          },
-          "strength": "7",
-          "armor_piercing": "-2",
-          "damage": "2"
-        },
-        {
-          "name": "Medusan Manipuli",
-          "keywords": [
-            "Extra Attacks"
-          ],
-          "range": "Melee",
-          "attacks": "2",
-          "skill": {
-            "type": "WS",
-            "value": "3+"
-          },
-          "strength": "8",
-          "armor_piercing": "-2",
-          "damage": "3"
-        }
-      ]
-    },
-    {
-      "name": "Kayvaan Shrike",
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Kayvaan Shrike",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Blackout",
-            "The Raven's Talons"
-          ]
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Raven Guard"
-      ],
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Fly",
-        "Jump Pack",
-        "Imperium",
-        "Phobos",
-        "Chapter Master",
-        "Kayvaan Shrike"
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Deep Strike, Leader, Lone Operative, Stealth"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Trifold Path of Shadow",
-          "rules_text": "While this model is leading a unit, that unit cannot be targeted by ranged attacks unless the attacking model is within 12\"."
-        },
-        {
-          "name": "Echo of the Ravenspire",
-          "rules_text": "At the end of your opponent's turn, if this model's unit is not within Engagement Range of one or more enemy units, you can remove that unit from the battlefield and place it into Strategic Reserves."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": {
-        "can_lead": [
-          "Assault Intercessors with Jump Packs",
-          "Vanguard Veteran Squad with Jump Packs"
-        ],
-        "rules_text": "This model can be attached to the following units: Assault Intercessors with Jump Packs, Vanguard Veteran Squad with Jump Packs."
-      },
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [],
-      "stats": {
-        "movement": 12,
-        "toughness": 4,
-        "save": "3+",
-        "invulnerable_save": "4+",
-        "wounds": 5,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "weapons": [
-        {
-          "name": "Blackout",
-          "keywords": [
-            "Pistol",
-            "Precision"
-          ],
-          "range": "18 inches",
-          "attacks": "2",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "5",
-          "armor_piercing": "-1",
-          "damage": "2"
-        },
-        {
-          "name": "The Raven's Talons",
-          "keywords": [
-            "Precision",
-            "Twin-linked"
-          ],
-          "range": "Melee",
-          "attacks": "7",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "5",
-          "armor_piercing": "-2",
-          "damage": "2"
-        }
-      ]
-    },
-    {
-      "name": "Kor'sarro Khan",
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Kor'sarro Khan",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Bolt pistol",
-            "Moonfang"
-          ]
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "White Scars"
-      ],
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Imperium",
-        "Tacticus",
-        "Captain",
-        "Kor'sarro Khan"
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Leader"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "For the Khan!",
-          "rules_text": "While this model is leading a unit, ranged weapons equipped by models in that unit have the [ASSAULT] ability and melee weapons equipped by models in that unit have the [LANCE] ability."
-        },
-        {
-          "name": "Trophy Taker",
-          "rules_text": "Each time this model destroys an enemy CHARACTER model, you gain 1CP."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": {
-        "can_lead": [
-          "Assault Intercessor Squad",
-          "Bladeguard Veteran Squad",
-          "Infernus Squad",
-          "Sternguard Veteran Squad",
-          "Tactical Squad"
-        ],
-        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad, Bladeguard Veteran Squad, Infernus Squad, Sternguard Veteran Squad, Tactical Squad."
-      },
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [],
-      "stats": {
-        "movement": 6,
-        "toughness": 4,
-        "save": "3+",
-        "invulnerable_save": "4+",
-        "wounds": 5,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "weapons": [
-        {
-          "name": "Bolt pistol",
-          "keywords": [
-            "Pistol"
-          ],
-          "range": "12 inches",
-          "attacks": "1",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "4",
-          "armor_piercing": "0",
-          "damage": "1"
-        },
-        {
-          "name": "Moonfang",
-          "keywords": [
-            "Devastating Wounds",
-            "Precision"
-          ],
-          "range": "Melee",
-          "attacks": "6",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "5",
-          "armor_piercing": "-2",
-          "damage": "2"
-        }
-      ]
-    },
-    {
-      "name": "Pedro Kantor",
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Pedro Kantor",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Dorn's Arrow",
-            "Fist of Retribution"
-          ]
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Imperial Fists"
-      ],
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Grenades",
-        "Imperium",
-        "Tacticus",
-        "Chapter Master",
-        "Pedro Kantor"
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Feel No Pain 6+, Leader"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Oath of Rynn",
-          "rules_text": "Once per battle, at the start of either player's Command phase, this model can use this ability. When it does, until the end of the turn, add 1 to the Attacks characteristic of weapons equipped by models in this model's unit."
-        },
-        {
-          "name": "To the Last",
-          "rules_text": "While this model is leading a unit, each time a model in that unit makes an attack, add 1 to the Hit roll if that unit is below its Starting Strength, and add 1 to the Wound roll as well if that unit is Below Half-strength."
-        },
-        {
-          "name": "Crimson Fists",
-          "rules_text": "This model is from the Crimson Fists Chapter, a successor of the Imperial Fists. For all rules purposes, it is treated as an IMPERIAL FISTS model, but it cannot be included in an army that includes any other IMPERIAL FISTS EPIC HERO models."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": {
-        "can_lead": [
-          "Company Heroes",
-          "Bladeguard Veteran Squad",
-          "Sternguard Veteran Squad",
-          "Tactical Squad"
-        ],
-        "rules_text": "This model can be attached to the following units: Company Heroes, Bladeguard Veteran Squad, Sternguard Veteran Squad, Tactical Squad."
-      },
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [],
-      "stats": {
-        "movement": 6,
-        "toughness": 4,
-        "save": "2+",
-        "invulnerable_save": "4+",
-        "wounds": 5,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "weapons": [
-        {
-          "name": "Dorn's Arrow",
-          "keywords": [
-            "Rapid Fire 2",
-            "Sustained Hits 1"
-          ],
-          "range": "24 inches",
-          "attacks": "2",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "5",
-          "armor_piercing": "-1",
-          "damage": "2"
-        },
-        {
-          "name": "Fist of Retribution",
-          "keywords": [],
-          "range": "Melee",
-          "attacks": "5",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "8",
-          "armor_piercing": "-3",
-          "damage": "3"
-        }
-      ]
-    },
-    {
-      "name": "Tor Garadon",
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Tor Garadon",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Artificer grav-gun",
-            "Hand of Defiance"
-          ]
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Imperial Fists"
-      ],
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Imperium",
-        "Gravis",
-        "Captain",
-        "Tor Garadon"
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Leader"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Signum Array",
-          "rules_text": "While this model is leading a unit, ranged weapons equipped by models in that unit have the [IGNORES COVER] ability."
-        },
-        {
-          "name": "Siege Captain",
-          "rules_text": "Each time this model makes an attack that targets a MONSTER, VEHICLE or FORTIFICATION unit, improve the Strength, Armour Penetration and Damage characteristics of that attack by 2."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": {
-        "can_lead": [
-          "Aggressor Squad",
-          "Eradicator Squad",
-          "Heavy Intercessor Squad"
-        ],
-        "rules_text": "This model can be attached to the following units: Aggressor Squad, Eradicator Squad, Heavy Intercessor Squad."
-      },
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [],
-      "stats": {
-        "movement": 5,
-        "toughness": 6,
-        "save": "3+",
-        "invulnerable_save": "4+",
-        "wounds": 6,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "weapons": [
-        {
-          "name": "Artificer grav-gun",
-          "keywords": [
-            "Anti-Vehicle 2+"
-          ],
-          "range": "18 inches",
-          "attacks": "2",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "5",
-          "armor_piercing": "-1",
-          "damage": "2"
-        },
-        {
-          "name": "Hand of Defiance",
-          "keywords": [],
-          "range": "Melee",
-          "attacks": "5",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "12",
-          "armor_piercing": "-2",
-          "damage": "2"
-        }
-      ]
-    },
-    {
-      "name": "Vulkan He'stan",
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Vulkan He'stan",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Bolt pistol",
-            "Gauntlet of the Forge",
-            "Spear of Vulkan"
-          ]
-        }
-      ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Salamanders"
-      ],
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Grenades",
-        "Imperium",
-        "Captain",
-        "Vulkan He'stan"
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Feel No Pain 6+, Leader"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Forgefather",
-          "rules_text": "In your Shooting phase, select one enemy unit within 24\" of and visible to this model. Until the end of the phase, each time a friendly ADEPTUS ASTARTES model makes a ranged attack with a Torrent or Melta weapon that targets that enemy unit, you can re-roll the Wound roll."
-        },
-        {
-          "name": "Seeker of the Unfound",
-          "rules_text": "At the start of the battle, select one objective marker on the battlefield. While this model is within range of that objective marker, it has an Objective Control characteristic of 10, a Leadership characteristic of 5+ and the Feel No Pain 4+ ability."
-        }
-      ],
-      "selectable_abilities": [],
-      "wargear_abilities": [],
-      "leader": {
-        "can_lead": [
-          "Assault Intercessor Squad",
-          "Company Heroes",
-          "Infernus Squad",
-          "Tactical Squad"
-        ],
-        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad, Company Heroes, Infernus Squad, Tactical Squad."
-      },
-      "support": null,
-      "wargear_options": [],
-      "loadout_options": [],
-      "stats": {
-        "movement": 6,
-        "toughness": 4,
-        "save": "2+",
-        "invulnerable_save": "4+",
-        "wounds": 5,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "weapons": [
-        {
-          "name": "Bolt pistol",
-          "keywords": [
-            "Pistol"
-          ],
-          "range": "12 inches",
-          "attacks": "1",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "4",
-          "armor_piercing": "0",
-          "damage": "1"
-        },
-        {
-          "name": "Gauntlet of the Forge",
-          "keywords": [
-            "Ignores Cover",
-            "Torrent"
-          ],
-          "range": "12 inches",
-          "attacks": "D6+3",
-          "skill": {
-            "type": "BS",
-            "value": "N/A"
-          },
-          "strength": "6",
-          "armor_piercing": "-1",
-          "damage": "1"
-        },
-        {
-          "name": "Spear of Vulkan",
-          "keywords": [],
-          "range": "Melee",
-          "attacks": "6",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "6",
           "armor_piercing": "-2",
           "damage": "2"
         }
@@ -21211,6 +19653,386 @@
           "damage": "1"
         }
       ]
+    },
+    {
+      "name": "Astraeus",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Astraeus",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "2 Astraeus las-rippers",
+            "Ironhail heavy stubber",
+            "Storm bolter",
+            "Twin heavy bolter",
+            "Twin macro-accelerator cannon",
+            "Armoured hull"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Titanic",
+        "Imperium",
+        "Astraeus"
+      ],
+      "base_size": null,
+      "abilities": [
+        {
+          "name": "Deadly Demise D6+2",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers D6+2 mortal wounds."
+        },
+        {
+          "name": "Oath of Moment",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Suppression Fire",
+          "rules_text": "In your Shooting phase, after this model has shot, select one enemy unit hit by one or more attacks made with its twin macro-accelerator cannon this phase. Until the start of your next turn, while this model is on the battlefield, that enemy unit is suppressed. While a unit is suppressed, each time a model in that unit makes an attack, subtract 1 from the Hit roll."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [
+        {
+          "name": "Invulnerable Save Restriction",
+          "rules_text": "This unit's 5+ invulnerable save applies to ranged attacks only.",
+          "implemented": false
+        }
+      ],
+      "leader": {},
+      "support": {},
+      "transport": {},
+      "restrictions": [],
+      "wargear_options": [
+        "2 Astraeus las-rippers can be replaced with 2 plasma eradicators.",
+        "Twin heavy bolter can be replaced with 1 twin lascannon.",
+        "This model can be equipped with 1 ironhail heavy stubber."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 12,
+        "save": "2+",
+        "wounds": 24,
+        "leadership": "6+",
+        "objective_control": 8,
+        "movement": 10,
+        "invulnerable_save": "5+"
+      },
+      "weapons": [
+        {
+          "name": "Astraeus las-rippers",
+          "range": "36\"",
+          "attacks": 2,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 12,
+          "damage": "D6+1",
+          "armor_piercing": -3,
+          "keywords": []
+        },
+        {
+          "name": "Ironhail heavy stubber",
+          "range": "36\"",
+          "attacks": 3,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 4,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": [
+            "RAPID FIRE 3"
+          ]
+        },
+        {
+          "name": "Plasma eradicator - standard",
+          "range": "36\"",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 7,
+          "damage": 2,
+          "armor_piercing": -2,
+          "keywords": [
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Plasma eradicator - supercharge",
+          "range": "36\"",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 8,
+          "damage": 3,
+          "armor_piercing": -3,
+          "keywords": [
+            "BLAST",
+            "HAZARDOUS"
+          ]
+        },
+        {
+          "name": "Storm bolter",
+          "range": "24\"",
+          "attacks": 2,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 4,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": [
+            "RAPID FIRE 2"
+          ]
+        },
+        {
+          "name": "Twin heavy bolter",
+          "range": "36\"",
+          "attacks": 3,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": [
+            "SUSTAINED HITS 1",
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Twin lascannon",
+          "range": "48\"",
+          "attacks": 1,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 12,
+          "damage": "D6+1",
+          "armor_piercing": -3,
+          "keywords": [
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Twin macro-accelerator cannon",
+          "range": "72\"",
+          "attacks": 12,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 9,
+          "damage": 3,
+          "armor_piercing": -1,
+          "keywords": [
+            "SUSTAINED HITS 1",
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Armoured hull",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 8,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": []
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "Thunderhawk Gunship",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Thunderhawk Gunship",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "2 Lascannons",
+            "Thunderhawk heavy cannon",
+            "4 Twin heavy bolters",
+            "Armoured hull",
+            "Thunderhawk cluster bombs"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Titanic",
+        "Fly",
+        "Aircraft",
+        "Transport",
+        "Imperium",
+        "Thunderhawk Gunship"
+      ],
+      "base_size": "120 x 92mm flying base",
+      "abilities": [
+        {
+          "name": "Deadly Demise D6+2",
+          "rules_text": "On destruction, on a 6, each unit within 6\" suffers D6+2 mortal wounds."
+        },
+        {
+          "name": "Hover",
+          "rules_text": "Before the battle, this model can enter Hover mode."
+        },
+        {
+          "name": "Oath of Moment",
+          "rules_text": "Faction ability."
+        },
+        {
+          "name": "Aerial Assault",
+          "rules_text": "Each time a unit with the Deep Strike ability disembarks from this model after it has made a Normal move, that unit is still eligible to declare a charge this turn."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [
+        {
+          "name": "Thunderhawk Cluster Bombs",
+          "rules_text": "Each time the bearer ends a Normal move, select one enemy unit it moved over during that move and roll six D6: for each 3+, that unit suffers 1 mortal wound."
+        }
+      ],
+      "leader": {},
+      "support": {},
+      "transport": "This model has a transport capacity of 30 ADEPTUS ASTARTES INFANTRY or ADEPTUS ASTARTES MOUNTED models. Each JUMP PACK, WULFEN, GRAVIS or TERMINATOR model takes up the space of 2 models. Each CENTURION model takes up the space of 3 models. Each MOUNTED model takes up the space of 4 models.",
+      "restrictions": [],
+      "wargear_options": [
+        "Thunderhawk heavy cannon can be replaced with 1 turbo-laser destructor.",
+        "Thunderhawk cluster bombs can be replaced with 1 hellstrike missile battery."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "toughness": 12,
+        "save": "2+",
+        "wounds": 30,
+        "leadership": "6+",
+        "objective_control": 0,
+        "movement": "20+"
+      },
+      "weapons": [
+        {
+          "name": "Hellstrike missile battery",
+          "range": "72\"",
+          "attacks": 4,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 8,
+          "damage": 3,
+          "armor_piercing": -2,
+          "keywords": [
+            "ANTI-FLY 4+"
+          ]
+        },
+        {
+          "name": "Lascannon",
+          "range": "48\"",
+          "attacks": 1,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 12,
+          "damage": "D6+1",
+          "armor_piercing": -3,
+          "keywords": []
+        },
+        {
+          "name": "Thunderhawk heavy cannon",
+          "range": "48\"",
+          "attacks": "D6+6",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 10,
+          "damage": 3,
+          "armor_piercing": -2,
+          "keywords": [
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Turbo-laser destructor",
+          "range": "96\"",
+          "attacks": "D3+1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 20,
+          "damage": "D6+6",
+          "armor_piercing": -4,
+          "keywords": [
+            "BLAST"
+          ]
+        },
+        {
+          "name": "Twin heavy bolter",
+          "range": "36\"",
+          "attacks": 3,
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": 5,
+          "damage": 2,
+          "armor_piercing": -1,
+          "keywords": [
+            "SUSTAINED HITS 1",
+            "TWIN-LINKED"
+          ]
+        },
+        {
+          "name": "Armoured hull",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": 8,
+          "damage": 1,
+          "armor_piercing": 0,
+          "keywords": []
+        }
+      ],
+      "implemented": true
     }
   ]
 }

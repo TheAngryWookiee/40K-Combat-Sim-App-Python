@@ -344,7 +344,8 @@
         ],
         "stratagems": []
       }
-    ]
+    ],
+    "category": "Adeptus Astartes"
   },
   "units": [
     {
@@ -367,7 +368,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Character",
@@ -402,7 +406,9 @@
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": {
-        "can_lead": ["Wolf Guard Terminators"],
+        "can_lead": [
+          "Wolf Guard Terminators"
+        ],
         "rules_text": "This model can be attached to the following unit: Wolf Guard Terminators."
       },
       "wargear_options": [],
@@ -418,7 +424,9 @@
       "weapons": [
         {
           "name": "Storm bolter",
-          "keywords": ["Rapid Fire 2"],
+          "keywords": [
+            "Rapid Fire 2"
+          ],
           "range": "24 inches",
           "attacks": "2",
           "skill": {
@@ -457,7 +465,9 @@
         },
         {
           "name": "Tyrnak and Fenrir",
-          "keywords": ["Extra Attacks"],
+          "keywords": [
+            "Extra Attacks"
+          ],
           "range": "Melee",
           "attacks": "6",
           "skill": {
@@ -490,7 +500,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Character",
@@ -541,7 +554,9 @@
       "weapons": [
         {
           "name": "Bolt pistol",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -554,7 +569,10 @@
         },
         {
           "name": "Living Lightning - witchfire",
-          "keywords": ["Psychic", "Sustained Hits 2"],
+          "keywords": [
+            "Psychic",
+            "Sustained Hits 2"
+          ],
           "range": "24 inches",
           "attacks": "D6",
           "skill": {
@@ -567,7 +585,11 @@
         },
         {
           "name": "Living Lightning - focused witchfire",
-          "keywords": ["Hazardous", "Psychic", "Sustained Hits 2"],
+          "keywords": [
+            "Hazardous",
+            "Psychic",
+            "Sustained Hits 2"
+          ],
           "range": "24 inches",
           "attacks": "2D6",
           "skill": {
@@ -580,7 +602,10 @@
         },
         {
           "name": "Staff of the Stormcaller",
-          "keywords": ["Psychic", "Sustained Hits 2"],
+          "keywords": [
+            "Psychic",
+            "Sustained Hits 2"
+          ],
           "range": "Melee",
           "attacks": "4",
           "skill": {
@@ -612,7 +637,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Character",
@@ -663,7 +691,9 @@
       "weapons": [
         {
           "name": "Plasma pistol - standard",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -676,7 +706,10 @@
         },
         {
           "name": "Plasma pistol - supercharge",
-          "keywords": ["Hazardous", "Pistol"],
+          "keywords": [
+            "Hazardous",
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -689,7 +722,10 @@
         },
         {
           "name": "Artificer crozius arcanum",
-          "keywords": ["Anti-Monster 4+", "Anti-Vehicle 4+"],
+          "keywords": [
+            "Anti-Monster 4+",
+            "Anti-Vehicle 4+"
+          ],
           "range": "Melee",
           "attacks": "5",
           "skill": {
@@ -722,7 +758,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Vehicle",
         "Walker",
@@ -767,21 +806,36 @@
               "id": "assault_cannon",
               "label": "Assault cannon",
               "description": "Default loadout.",
-              "enabled_weapons": ["Assault cannon"]
+              "enabled_weapons": [
+                "Assault cannon"
+              ]
             },
             {
               "id": "helfrost_cannon",
               "label": "Helfrost cannon",
-              "enabled_weapons": ["Helfrost cannon - dispersed", "Helfrost cannon - focused"],
-              "remove_wargear": ["Assault cannon"],
-              "add_wargear": ["Helfrost cannon"]
+              "enabled_weapons": [
+                "Helfrost cannon - dispersed",
+                "Helfrost cannon - focused"
+              ],
+              "remove_wargear": [
+                "Assault cannon"
+              ],
+              "add_wargear": [
+                "Helfrost cannon"
+              ]
             },
             {
               "id": "multi_melta",
               "label": "Multi-melta",
-              "enabled_weapons": ["Multi-melta"],
-              "remove_wargear": ["Assault cannon"],
-              "add_wargear": ["Multi-melta"]
+              "enabled_weapons": [
+                "Multi-melta"
+              ],
+              "remove_wargear": [
+                "Assault cannon"
+              ],
+              "add_wargear": [
+                "Multi-melta"
+              ]
             }
           ]
         }
@@ -798,7 +852,9 @@
       "weapons": [
         {
           "name": "Assault cannon",
-          "keywords": ["Devastating Wounds"],
+          "keywords": [
+            "Devastating Wounds"
+          ],
           "range": "24 inches",
           "attacks": "6",
           "skill": {
@@ -811,7 +867,10 @@
         },
         {
           "name": "Heavy flamer",
-          "keywords": ["Ignores Cover", "Torrent"],
+          "keywords": [
+            "Ignores Cover",
+            "Torrent"
+          ],
           "range": "12 inches",
           "attacks": "D6",
           "skill": {
@@ -824,7 +883,9 @@
         },
         {
           "name": "Helfrost cannon - dispersed",
-          "keywords": ["Torrent"],
+          "keywords": [
+            "Torrent"
+          ],
           "range": "12 inches",
           "attacks": "D6",
           "skill": {
@@ -850,7 +911,9 @@
         },
         {
           "name": "Multi-melta",
-          "keywords": ["Melta 2"],
+          "keywords": [
+            "Melta 2"
+          ],
           "range": "18 inches",
           "attacks": "2",
           "skill": {
@@ -863,7 +926,9 @@
         },
         {
           "name": "Trueclaw",
-          "keywords": ["Lethal Hits"],
+          "keywords": [
+            "Lethal Hits"
+          ],
           "range": "Melee",
           "attacks": "6",
           "skill": {
@@ -895,7 +960,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Character",
@@ -927,7 +995,10 @@
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": {
-        "can_lead": ["Blood Claws", "Wolf Guard Headtakers"],
+        "can_lead": [
+          "Blood Claws",
+          "Wolf Guard Headtakers"
+        ],
         "rules_text": "This model can be attached to the following units: Blood Claws, Wolf Guard Headtakers."
       },
       "wargear_options": [],
@@ -943,7 +1014,9 @@
       "weapons": [
         {
           "name": "Bolt pistol",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -956,7 +1029,9 @@
         },
         {
           "name": "Frostfang",
-          "keywords": ["Sustained Hits 1"],
+          "keywords": [
+            "Sustained Hits 1"
+          ],
           "range": "Melee",
           "attacks": "8",
           "skill": {
@@ -987,7 +1062,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Character",
@@ -1017,7 +1095,9 @@
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": {
-        "can_lead": ["Wolf Guard Terminators"],
+        "can_lead": [
+          "Wolf Guard Terminators"
+        ],
         "rules_text": "This model can be attached to the following unit: Wolf Guard Terminators."
       },
       "wargear_options": [],
@@ -1033,7 +1113,11 @@
       "weapons": [
         {
           "name": "Foehammer - ranged",
-          "keywords": ["Anti-Monster 3+", "Anti-Vehicle 3+", "Assault"],
+          "keywords": [
+            "Anti-Monster 3+",
+            "Anti-Vehicle 3+",
+            "Assault"
+          ],
           "range": "6 inches",
           "attacks": "1",
           "skill": {
@@ -1046,7 +1130,11 @@
         },
         {
           "name": "Foehammer - melee",
-          "keywords": ["Anti-Monster 3+", "Anti-Vehicle 3+", "Precision"],
+          "keywords": [
+            "Anti-Monster 3+",
+            "Anti-Vehicle 3+",
+            "Precision"
+          ],
           "range": "Melee",
           "attacks": "5",
           "skill": {
@@ -1078,7 +1166,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Character",
@@ -1127,7 +1218,9 @@
       "weapons": [
         {
           "name": "Absolver bolt pistol",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "18 inches",
           "attacks": "1",
           "skill": {
@@ -1173,7 +1266,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Character",
@@ -1226,7 +1322,10 @@
       "weapons": [
         {
           "name": "Helfrost pistol - dispersed",
-          "keywords": ["Pistol", "Torrent"],
+          "keywords": [
+            "Pistol",
+            "Torrent"
+          ],
           "range": "12 inches",
           "attacks": "D6",
           "skill": {
@@ -1239,7 +1338,9 @@
         },
         {
           "name": "Helfrost pistol - focused",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -1284,7 +1385,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Character",
@@ -1340,12 +1444,16 @@
               "id": "mastercrafted_power_weapon",
               "label": "Master-crafted power weapon",
               "description": "Default loadout.",
-              "enabled_weapons": ["Master-crafted power weapon"]
+              "enabled_weapons": [
+                "Master-crafted power weapon"
+              ]
             },
             {
               "id": "thunder_hammer",
               "label": "Thunder hammer",
-              "enabled_weapons": ["Thunder hammer"]
+              "enabled_weapons": [
+                "Thunder hammer"
+              ]
             }
           ]
         },
@@ -1358,7 +1466,9 @@
               "id": "storm_shield",
               "label": "Storm shield",
               "description": "Default loadout.",
-              "enabled_wargear_abilities": ["Storm Shield"],
+              "enabled_wargear_abilities": [
+                "Storm Shield"
+              ],
               "stat_overrides": {
                 "wounds": 6
               }
@@ -1366,17 +1476,24 @@
             {
               "id": "mastercrafted_bolt_carbine",
               "label": "Master-crafted bolt carbine",
-              "enabled_weapons": ["Master-crafted bolt carbine"]
+              "enabled_weapons": [
+                "Master-crafted bolt carbine"
+              ]
             },
             {
               "id": "mastercrafted_heavy_bolt_pistol",
               "label": "Master-crafted heavy bolt pistol",
-              "enabled_weapons": ["Master-crafted heavy bolt pistol"]
+              "enabled_weapons": [
+                "Master-crafted heavy bolt pistol"
+              ]
             },
             {
               "id": "plasma_pistol",
               "label": "Plasma pistol",
-              "enabled_weapons": ["Plasma pistol - standard", "Plasma pistol - supercharge"]
+              "enabled_weapons": [
+                "Plasma pistol - standard",
+                "Plasma pistol - supercharge"
+              ]
             }
           ]
         }
@@ -1406,7 +1523,9 @@
         },
         {
           "name": "Master-crafted heavy bolt pistol",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "18 inches",
           "attacks": "1",
           "skill": {
@@ -1419,7 +1538,9 @@
         },
         {
           "name": "Plasma pistol - standard",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -1432,7 +1553,10 @@
         },
         {
           "name": "Plasma pistol - supercharge",
-          "keywords": ["Hazardous", "Pistol"],
+          "keywords": [
+            "Hazardous",
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -1458,7 +1582,9 @@
         },
         {
           "name": "Thunder hammer",
-          "keywords": ["Devastating Wounds"],
+          "keywords": [
+            "Devastating Wounds"
+          ],
           "range": "Melee",
           "attacks": "5",
           "skill": {
@@ -1501,7 +1627,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Battleline",
@@ -1542,9 +1671,16 @@
             {
               "id": "plasma_pistol",
               "label": "Plasma pistol",
-              "enabled_weapons": ["Plasma pistol - standard", "Plasma pistol - supercharge"],
-              "remove_wargear": ["Bolt pistol"],
-              "add_wargear": ["Plasma pistol"]
+              "enabled_weapons": [
+                "Plasma pistol - standard",
+                "Plasma pistol - supercharge"
+              ],
+              "remove_wargear": [
+                "Bolt pistol"
+              ],
+              "add_wargear": [
+                "Plasma pistol"
+              ]
             }
           ]
         },
@@ -1562,9 +1698,15 @@
             {
               "id": "power_weapon",
               "label": "Power weapon",
-              "enabled_weapons": ["Power weapon"],
-              "remove_wargear": ["Astartes chainsword"],
-              "add_wargear": ["Power weapon"]
+              "enabled_weapons": [
+                "Power weapon"
+              ],
+              "remove_wargear": [
+                "Astartes chainsword"
+              ],
+              "add_wargear": [
+                "Power weapon"
+              ]
             }
           ]
         }
@@ -1581,7 +1723,9 @@
       "weapons": [
         {
           "name": "Bolt pistol",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -1594,7 +1738,9 @@
         },
         {
           "name": "Plasma pistol - standard",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -1607,7 +1753,10 @@
         },
         {
           "name": "Plasma pistol - supercharge",
-          "keywords": ["Hazardous", "Pistol"],
+          "keywords": [
+            "Hazardous",
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -1678,7 +1827,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Battleline",
@@ -1720,9 +1872,16 @@
             {
               "id": "plasma_pistol",
               "label": "Plasma pistol",
-              "enabled_weapons": ["Plasma pistol - standard", "Plasma pistol - supercharge"],
-              "remove_wargear": ["Bolt carbine"],
-              "add_wargear": ["Plasma pistol"]
+              "enabled_weapons": [
+                "Plasma pistol - standard",
+                "Plasma pistol - supercharge"
+              ],
+              "remove_wargear": [
+                "Bolt carbine"
+              ],
+              "add_wargear": [
+                "Plasma pistol"
+              ]
             }
           ]
         },
@@ -1740,16 +1899,28 @@
             {
               "id": "power_fist",
               "label": "Power fist",
-              "enabled_weapons": ["Power fist"],
-              "remove_wargear": ["Astartes chainsword"],
-              "add_wargear": ["Power fist"]
+              "enabled_weapons": [
+                "Power fist"
+              ],
+              "remove_wargear": [
+                "Astartes chainsword"
+              ],
+              "add_wargear": [
+                "Power fist"
+              ]
             },
             {
               "id": "power_weapon",
               "label": "Power weapon",
-              "enabled_weapons": ["Power weapon"],
-              "remove_wargear": ["Astartes chainsword"],
-              "add_wargear": ["Power weapon"]
+              "enabled_weapons": [
+                "Power weapon"
+              ],
+              "remove_wargear": [
+                "Astartes chainsword"
+              ],
+              "add_wargear": [
+                "Power weapon"
+              ]
             }
           ]
         }
@@ -1766,7 +1937,9 @@
       "weapons": [
         {
           "name": "Bolt carbine",
-          "keywords": ["Rapid Fire 1"],
+          "keywords": [
+            "Rapid Fire 1"
+          ],
           "range": "24 inches",
           "attacks": "2",
           "skill": {
@@ -1779,7 +1952,9 @@
         },
         {
           "name": "Bolt pistol",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -1792,7 +1967,9 @@
         },
         {
           "name": "Plasma pistol - standard",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -1805,7 +1982,10 @@
         },
         {
           "name": "Plasma pistol - supercharge",
-          "keywords": ["Hazardous", "Pistol"],
+          "keywords": [
+            "Hazardous",
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -1903,7 +2083,10 @@
           }
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Imperium",
@@ -1951,7 +2134,9 @@
               "id": "paired_mastercrafted_power_weapons",
               "label": "Paired master-crafted power weapons",
               "description": "Replace a Headtaker's master-crafted power weapon and storm shield.",
-              "enabled_weapons": ["Paired master-crafted power weapons"],
+              "enabled_weapons": [
+                "Paired master-crafted power weapons"
+              ],
               "weapon_bearer_changes": {
                 "Master-crafted power weapon": -1,
                 "Storm shield": -1,
@@ -1973,7 +2158,9 @@
       "weapons": [
         {
           "name": "Heavy bolt pistol",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "18 inches",
           "attacks": "1",
           "skill": {
@@ -2057,7 +2244,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Mounted",
         "Grenades",
@@ -2097,7 +2287,9 @@
               "id": "boltgun",
               "label": "Boltgun",
               "description": "Replace one bolt pistol with one boltgun.",
-              "enabled_weapons": ["Boltgun"],
+              "enabled_weapons": [
+                "Boltgun"
+              ],
               "weapon_bearer_changes": {
                 "Bolt pistol": -1,
                 "Boltgun": 1
@@ -2107,7 +2299,9 @@
               "id": "storm_shield",
               "label": "Storm shield",
               "description": "Replace one bolt pistol with one storm shield.",
-              "enabled_wargear_abilities": ["Storm Shield"],
+              "enabled_wargear_abilities": [
+                "Storm Shield"
+              ],
               "weapon_bearer_changes": {
                 "Bolt pistol": -1,
                 "Storm shield": 1
@@ -2118,7 +2312,10 @@
               "label": "Plasma pistol",
               "description": "Replace one bolt pistol with one plasma pistol.",
               "max_count_per_models": 3,
-              "enabled_weapons": ["Plasma pistol - standard", "Plasma pistol - supercharge"],
+              "enabled_weapons": [
+                "Plasma pistol - standard",
+                "Plasma pistol - supercharge"
+              ],
               "weapon_bearer_changes": {
                 "Bolt pistol": -1,
                 "Plasma pistol": 1
@@ -2139,7 +2336,9 @@
       "weapons": [
         {
           "name": "Bolt pistol",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -2165,7 +2364,9 @@
         },
         {
           "name": "Plasma pistol - standard",
-          "keywords": ["Pistol"],
+          "keywords": [
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -2178,7 +2379,10 @@
         },
         {
           "name": "Plasma pistol - supercharge",
-          "keywords": ["Hazardous", "Pistol"],
+          "keywords": [
+            "Hazardous",
+            "Pistol"
+          ],
           "range": "12 inches",
           "attacks": "1",
           "skill": {
@@ -2191,7 +2395,9 @@
         },
         {
           "name": "Teeth and claws",
-          "keywords": ["Extra Attacks"],
+          "keywords": [
+            "Extra Attacks"
+          ],
           "range": "Melee",
           "attacks": "3",
           "skill": {
@@ -2247,7 +2453,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Imperium",
@@ -2292,7 +2501,9 @@
               "id": "storm_shield",
               "label": "Storm shield",
               "description": "Replace one storm bolter with one storm shield.",
-              "enabled_wargear_abilities": ["Storm Shield"],
+              "enabled_wargear_abilities": [
+                "Storm Shield"
+              ],
               "weapon_bearer_changes": {
                 "Storm bolter": -1,
                 "Storm shield": 1
@@ -2303,7 +2514,10 @@
               "label": "Assault cannon and power fist",
               "description": "Replace one storm bolter and master-crafted power weapon with one assault cannon and one power fist.",
               "max_count_per_models": 5,
-              "enabled_weapons": ["Assault cannon", "Power fist"],
+              "enabled_weapons": [
+                "Assault cannon",
+                "Power fist"
+              ],
               "weapon_bearer_changes": {
                 "Storm bolter": -1,
                 "Master-crafted power weapon": -1,
@@ -2327,16 +2541,30 @@
             {
               "id": "relic_greataxe",
               "label": "Relic greataxe",
-              "enabled_weapons": ["Relic greataxe"],
-              "remove_wargear": ["Storm bolter", "Master-crafted power weapon"],
-              "add_wargear": ["Relic greataxe"]
+              "enabled_weapons": [
+                "Relic greataxe"
+              ],
+              "remove_wargear": [
+                "Storm bolter",
+                "Master-crafted power weapon"
+              ],
+              "add_wargear": [
+                "Relic greataxe"
+              ]
             },
             {
               "id": "twin_lightning_claws",
               "label": "Twin lightning claws",
-              "enabled_weapons": ["Twin lightning claws"],
-              "remove_wargear": ["Storm bolter", "Master-crafted power weapon"],
-              "add_wargear": ["Twin lightning claws"]
+              "enabled_weapons": [
+                "Twin lightning claws"
+              ],
+              "remove_wargear": [
+                "Storm bolter",
+                "Master-crafted power weapon"
+              ],
+              "add_wargear": [
+                "Twin lightning claws"
+              ]
             }
           ]
         }
@@ -2353,7 +2581,9 @@
       "weapons": [
         {
           "name": "Assault cannon",
-          "keywords": ["Devastating Wounds"],
+          "keywords": [
+            "Devastating Wounds"
+          ],
           "range": "24 inches",
           "attacks": "6",
           "skill": {
@@ -2366,7 +2596,9 @@
         },
         {
           "name": "Storm bolter",
-          "keywords": ["Rapid Fire 2"],
+          "keywords": [
+            "Rapid Fire 2"
+          ],
           "range": "24 inches",
           "attacks": "2",
           "skill": {
@@ -2405,7 +2637,9 @@
         },
         {
           "name": "Relic greataxe",
-          "keywords": ["Devastating Wounds"],
+          "keywords": [
+            "Devastating Wounds"
+          ],
           "range": "Melee",
           "attacks": "3",
           "skill": {
@@ -2418,7 +2652,9 @@
         },
         {
           "name": "Twin lightning claws",
-          "keywords": ["Twin-linked"],
+          "keywords": [
+            "Twin-linked"
+          ],
           "range": "Melee",
           "attacks": "6",
           "skill": {
@@ -2449,7 +2685,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Beasts",
         "Imperium",
@@ -2517,7 +2756,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Imperium",
@@ -2554,7 +2796,10 @@
       "weapons": [
         {
           "name": "Stormfrag auto-launcher",
-          "keywords": ["Assault", "Blast"],
+          "keywords": [
+            "Assault",
+            "Blast"
+          ],
           "range": "12 inches",
           "attacks": "D3",
           "skill": {
@@ -2567,7 +2812,9 @@
         },
         {
           "name": "Wulfen weapons",
-          "keywords": ["Sustained Hits 1"],
+          "keywords": [
+            "Sustained Hits 1"
+          ],
           "range": "Melee",
           "attacks": "3",
           "skill": {
@@ -2599,7 +2846,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Infantry",
         "Imperium",
@@ -2636,7 +2886,10 @@
       "weapons": [
         {
           "name": "Stormfrag auto-launcher",
-          "keywords": ["Assault", "Blast"],
+          "keywords": [
+            "Assault",
+            "Blast"
+          ],
           "range": "12 inches",
           "attacks": "D3",
           "skill": {
@@ -2649,7 +2902,10 @@
         },
         {
           "name": "Thunder hammer",
-          "keywords": ["Anti-Monster 3+", "Anti-Vehicle 3+"],
+          "keywords": [
+            "Anti-Monster 3+",
+            "Anti-Vehicle 3+"
+          ],
           "range": "Melee",
           "attacks": "2",
           "skill": {
@@ -2682,7 +2938,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Vehicle",
         "Walker",
@@ -2731,7 +2990,10 @@
       "weapons": [
         {
           "name": "Heavy flamer",
-          "keywords": ["Ignores Cover", "Torrent"],
+          "keywords": [
+            "Ignores Cover",
+            "Torrent"
+          ],
           "range": "12 inches",
           "attacks": "D6",
           "skill": {
@@ -2744,7 +3006,9 @@
         },
         {
           "name": "Storm bolter",
-          "keywords": ["Rapid Fire 2"],
+          "keywords": [
+            "Rapid Fire 2"
+          ],
           "range": "24 inches",
           "attacks": "2",
           "skill": {
@@ -2757,7 +3021,10 @@
         },
         {
           "name": "Murderclaws",
-          "keywords": ["Sustained Hits 1", "Twin-linked"],
+          "keywords": [
+            "Sustained Hits 1",
+            "Twin-linked"
+          ],
           "range": "Melee",
           "attacks": "8",
           "skill": {
@@ -2790,7 +3057,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Vehicle",
         "Walker",
@@ -2853,7 +3123,9 @@
                 "Fenrisian greataxe - strike",
                 "Fenrisian greataxe - sweep"
               ],
-              "enabled_wargear_abilities": ["Blizzard Shield"],
+              "enabled_wargear_abilities": [
+                "Blizzard Shield"
+              ],
               "stat_overrides": {
                 "invulnerable_save": "4+"
               }
@@ -2866,7 +3138,9 @@
                 "Fenrisian greataxe - strike",
                 "Fenrisian greataxe - sweep"
               ],
-              "enabled_wargear_abilities": ["Blizzard Shield"],
+              "enabled_wargear_abilities": [
+                "Blizzard Shield"
+              ],
               "stat_overrides": {
                 "invulnerable_save": "4+"
               }
@@ -2878,7 +3152,9 @@
                 "Heavy flamer",
                 "Great wolf claw"
               ],
-              "enabled_wargear_abilities": ["Blizzard Shield"],
+              "enabled_wargear_abilities": [
+                "Blizzard Shield"
+              ],
               "stat_overrides": {
                 "invulnerable_save": "4+"
               }
@@ -2890,7 +3166,9 @@
                 "Storm bolter",
                 "Great wolf claw"
               ],
-              "enabled_wargear_abilities": ["Blizzard Shield"],
+              "enabled_wargear_abilities": [
+                "Blizzard Shield"
+              ],
               "stat_overrides": {
                 "invulnerable_save": "4+"
               }
@@ -2910,7 +3188,10 @@
       "weapons": [
         {
           "name": "Heavy flamer",
-          "keywords": ["Ignores Cover", "Torrent"],
+          "keywords": [
+            "Ignores Cover",
+            "Torrent"
+          ],
           "range": "12 inches",
           "attacks": "D6",
           "skill": {
@@ -2923,7 +3204,9 @@
         },
         {
           "name": "Storm bolter",
-          "keywords": ["Rapid Fire 2"],
+          "keywords": [
+            "Rapid Fire 2"
+          ],
           "range": "24 inches",
           "attacks": "2",
           "skill": {
@@ -2995,7 +3278,10 @@
           ]
         }
       ],
-      "faction_keywords": ["Adeptus Astartes", "Space Wolves"],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
       "keywords": [
         "Vehicle",
         "Walker",
@@ -3057,8 +3343,12 @@
                 "Heavy flamer",
                 "Dreadnought combat weapon"
               ],
-              "remove_wargear": ["Storm bolter"],
-              "add_wargear": ["Heavy flamer"]
+              "remove_wargear": [
+                "Storm bolter"
+              ],
+              "add_wargear": [
+                "Heavy flamer"
+              ]
             },
             {
               "id": "helfrost_stormbolter_fist",
@@ -3069,8 +3359,12 @@
                 "Storm bolter",
                 "Dreadnought combat weapon"
               ],
-              "remove_wargear": ["Assault cannon"],
-              "add_wargear": ["Helfrost cannon"]
+              "remove_wargear": [
+                "Assault cannon"
+              ],
+              "add_wargear": [
+                "Helfrost cannon"
+              ]
             },
             {
               "id": "helfrost_flamer_fist",
@@ -3081,8 +3375,14 @@
                 "Heavy flamer",
                 "Dreadnought combat weapon"
               ],
-              "remove_wargear": ["Assault cannon", "Storm bolter"],
-              "add_wargear": ["Helfrost cannon", "Heavy flamer"]
+              "remove_wargear": [
+                "Assault cannon",
+                "Storm bolter"
+              ],
+              "add_wargear": [
+                "Helfrost cannon",
+                "Heavy flamer"
+              ]
             },
             {
               "id": "melta_stormbolter_fist",
@@ -3092,8 +3392,12 @@
                 "Storm bolter",
                 "Dreadnought combat weapon"
               ],
-              "remove_wargear": ["Assault cannon"],
-              "add_wargear": ["Multi-melta"]
+              "remove_wargear": [
+                "Assault cannon"
+              ],
+              "add_wargear": [
+                "Multi-melta"
+              ]
             },
             {
               "id": "melta_flamer_fist",
@@ -3103,8 +3407,14 @@
                 "Heavy flamer",
                 "Dreadnought combat weapon"
               ],
-              "remove_wargear": ["Assault cannon", "Storm bolter"],
-              "add_wargear": ["Multi-melta", "Heavy flamer"]
+              "remove_wargear": [
+                "Assault cannon",
+                "Storm bolter"
+              ],
+              "add_wargear": [
+                "Multi-melta",
+                "Heavy flamer"
+              ]
             },
             {
               "id": "axe_shield_stormbolter",
@@ -3114,9 +3424,17 @@
                 "Fenrisian greataxe - sweep",
                 "Storm bolter"
               ],
-              "enabled_wargear_abilities": ["Blizzard Shield"],
-              "remove_wargear": ["Assault cannon", "Dreadnought combat weapon"],
-              "add_wargear": ["Fenrisian greataxe", "Blizzard shield"],
+              "enabled_wargear_abilities": [
+                "Blizzard Shield"
+              ],
+              "remove_wargear": [
+                "Assault cannon",
+                "Dreadnought combat weapon"
+              ],
+              "add_wargear": [
+                "Fenrisian greataxe",
+                "Blizzard shield"
+              ],
               "stat_overrides": {
                 "invulnerable_save": "4+"
               }
@@ -3129,9 +3447,19 @@
                 "Fenrisian greataxe - sweep",
                 "Heavy flamer"
               ],
-              "enabled_wargear_abilities": ["Blizzard Shield"],
-              "remove_wargear": ["Assault cannon", "Storm bolter", "Dreadnought combat weapon"],
-              "add_wargear": ["Fenrisian greataxe", "Blizzard shield", "Heavy flamer"],
+              "enabled_wargear_abilities": [
+                "Blizzard Shield"
+              ],
+              "remove_wargear": [
+                "Assault cannon",
+                "Storm bolter",
+                "Dreadnought combat weapon"
+              ],
+              "add_wargear": [
+                "Fenrisian greataxe",
+                "Blizzard shield",
+                "Heavy flamer"
+              ],
               "stat_overrides": {
                 "invulnerable_save": "4+"
               }
@@ -3151,7 +3479,9 @@
       "weapons": [
         {
           "name": "Assault cannon",
-          "keywords": ["Devastating Wounds"],
+          "keywords": [
+            "Devastating Wounds"
+          ],
           "range": "24 inches",
           "attacks": "6",
           "skill": {
@@ -3164,7 +3494,10 @@
         },
         {
           "name": "Heavy flamer",
-          "keywords": ["Ignores Cover", "Torrent"],
+          "keywords": [
+            "Ignores Cover",
+            "Torrent"
+          ],
           "range": "12 inches",
           "attacks": "D6",
           "skill": {
@@ -3177,7 +3510,9 @@
         },
         {
           "name": "Helfrost cannon - dispersed",
-          "keywords": ["Torrent"],
+          "keywords": [
+            "Torrent"
+          ],
           "range": "12 inches",
           "attacks": "D6",
           "skill": {
@@ -3203,7 +3538,9 @@
         },
         {
           "name": "Multi-melta",
-          "keywords": ["Melta 2"],
+          "keywords": [
+            "Melta 2"
+          ],
           "range": "18 inches",
           "attacks": "2",
           "skill": {
@@ -3216,7 +3553,9 @@
         },
         {
           "name": "Storm bolter",
-          "keywords": ["Rapid Fire 2"],
+          "keywords": [
+            "Rapid Fire 2"
+          ],
           "range": "24 inches",
           "attacks": "2",
           "skill": {

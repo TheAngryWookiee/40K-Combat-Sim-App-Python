@@ -1,0 +1,252 @@
+{
+  "faction": {
+    "name": "Salamanders",
+    "parent_faction": "Adeptus Astartes",
+    "army_rules": [],
+    "chapter_rules": [],
+    "derived_keywords": [],
+    "detachments": [],
+    "category": "Adeptus Astartes"
+  },
+  "units": [
+    {
+      "name": "Adrax Agatone",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Adrax Agatone",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Drakkis",
+            "Malleus Noctum"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Salamanders"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Imperium",
+        "Tacticus",
+        "Captain",
+        "Adrax Agatone"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Unto the Anvil",
+          "rules_text": "While this model is leading a unit, each time a model in that unit makes a melee attack, you can re-roll the Wound roll."
+        },
+        {
+          "name": "Lord of the Pyroclasts",
+          "rules_text": "While an enemy unit is within Engagement Range of this model, halve the Objective Control characteristic of models in that unit."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Assault Intercessor Squad",
+          "Bladeguard Veteran Squad",
+          "Company Heroes",
+          "Infernus Squad",
+          "Intercessor Squad",
+          "Sternguard Veteran Squad",
+          "Tactical Squad"
+        ],
+        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad, Bladeguard Veteran Squad, Company Heroes, Infernus Squad, Intercessor Squad, Sternguard Veteran Squad, Tactical Squad."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 5,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Drakkis",
+          "keywords": [
+            "Ignores Cover",
+            "Pistol",
+            "Torrent"
+          ],
+          "range": "12 inches",
+          "attacks": "D6+3",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Malleus Noctum",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "10",
+          "armor_piercing": "-2",
+          "damage": "3"
+        }
+      ]
+    },
+    {
+      "name": "Vulkan He'stan",
+      "faction": "Adeptus Astartes",
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Grenades",
+        "Imperium",
+        "Tacticus",
+        "Captain",
+        "Vulkan He'stan"
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Salamanders"
+      ],
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 5,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Vulkan He'stan",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Gauntlet of the Forge",
+            "Spear of Vulkan"
+          ]
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Feel No Pain 6+, Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Forgefather",
+          "rules_text": "In your Shooting phase, select one enemy unit within 24\" of and visible to this model. Until the end of the phase, each time a friendly ADEPTUS ASTARTES model makes a ranged attack with a Torrent or Melta weapon that targets that enemy unit, you can re-roll the Wound roll."
+        },
+        {
+          "name": "Seeker of the Unfound",
+          "rules_text": "The first time this model is set up on the battlefield, select one objective marker on the battlefield. While this model is within range of that objective marker, this model has an Objective Control characteristic of 10, a Leadership characteristic of 5+ and the Feel No Pain 4+ ability."
+        },
+        {
+          "name": "Inspiring Commander",
+          "rules_text": "If you include this model in your army, until the end of the battle, non-CHARACTER models in INFERNUS SQUAD units from your army have an Objective Control characteristic of 2 while they are not Battle-shocked."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "keywords": [
+            "Pistol"
+          ],
+          "range": "12\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Gauntlet of the Forge",
+          "keywords": [
+            "Ignores Cover",
+            "Pistol",
+            "Torrent"
+          ],
+          "range": "12\"",
+          "attacks": "D6+3",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Spear of Vulkan",
+          "keywords": [
+            "Devastating Wounds"
+          ],
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-2",
+          "damage": "2"
+        }
+      ],
+      "implemented": false,
+      "base_size": "40mm",
+      "leader": {
+        "can_lead": [
+          "Assault Intercessor Squad",
+          "Company Heroes",
+          "Infernus Squad",
+          "Tactical Squad",
+          "Assault Squad",
+          "Command Squad",
+          "Vanguard Veteran Squad"
+        ],
+        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad, Company Heroes, Infernus Squad, Tactical Squad, Assault Squad, Command Squad, Vanguard Veteran Squad."
+      }
+    }
+  ]
+}

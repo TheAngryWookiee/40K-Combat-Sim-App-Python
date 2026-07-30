@@ -120,6 +120,10 @@ const initialOptions = {
   attacker_bigger_shells_active: false,
   attacker_bigger_shells_pushed: false,
   attacker_honour_the_chapter_active: false,
+  attacker_illuminating_fire_active: false,
+  attacker_relics_of_the_dark_age_active: false,
+  attacker_lions_will_active: false,
+  attacker_talon_strike_active: false,
   attacker_storm_of_fire_active: false,
   attacker_no_threat_too_great_active: false,
   attacker_battle_drill_recall_active: false,
@@ -139,6 +143,11 @@ const initialOptions = {
   defender_hulking_brutes_active: false,
   defender_legendary_fortitude_active: false,
   defender_armour_of_contempt_active: false,
+  defender_army_battleshocked_dark_angels: false,
+  defender_strength_in_unity_active: false,
+  defender_high_speed_focus_active: false,
+  attacker_engaged_by_ravenwing_unit: false,
+  attacker_engaged_by_deathwing_unit: false,
   defender_overwhelming_onslaught_active: false,
   defender_unbreakable_lines_active: false,
   defender_pennant_of_remembrance_active: false,
@@ -147,6 +156,9 @@ const initialOptions = {
 }
 
 const UNFORGIVEN_TASK_FORCE = 'Unforgiven Task Force'
+const LIONS_BLADE_TASK_FORCE = "Lion's Blade Task Force"
+const WRATH_OF_THE_ROCK = 'Wrath of the Rock'
+const COMPANY_OF_HUNTERS = 'Company of Hunters'
 const SAGA_OF_THE_HUNTER = 'Saga of the Hunter'
 const SAGA_OF_THE_BEASTSLAYER = 'Saga of the Beastslayer'
 const SAGA_OF_THE_BOLD = 'Saga of the Bold'
@@ -352,12 +364,15 @@ function EmailVerificationView({ initialEmail, onBackToSignIn }) {
 const BATTLEFIELD_WIDTH_INCHES = 60
 const BATTLEFIELD_HEIGHT_INCHES = 44
 const SAVED_ARMY_LISTS_STORAGE_KEY = 'tactica-forge:saved-army-lists'
+const COMBAT_FORM_STORAGE_KEY = 'strategium-forge:combat-form'
 const APP_THEME_STORAGE_KEY = 'strategium-forge:theme'
 const MATRIX_RUN_HISTORY_STORAGE_KEY = 'strategium-forge:matrix-run-history'
 const BATTLEFIELD_GRID_STEP_INCHES = 6
 const SIMULATION_REQUEST_CONCURRENCY = 12
 const SUMMARY_ONLY_RUN_THRESHOLD = 500
 const MAX_SIMULATION_RUNS = 100
+const DEFAULT_FACTION_CATEGORY = 'Other'
+const FACTION_CATEGORY_ORDER = ['Adeptus Astartes', 'Imperium', 'Chaos', 'Xenos', DEFAULT_FACTION_CATEGORY]
 const APP_THEMES = {
   classic: {
     id: 'classic',
@@ -1260,6 +1275,30 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
     })
   }
 
+  if (detachment.name === LIONS_BLADE_TASK_FORCE) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Calibanite Armaments'
+      && selectedWeapon?.range === 'Melee'
+      && unitHasKeyword(enhancementBearerUnit, 'adeptus astartes')
+    ))
+  }
+
+  if (detachment.name === WRATH_OF_THE_ROCK) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Ancient Weapons'
+      && selectedWeapon?.range === 'Melee'
+      && unitHasKeyword(enhancementBearerUnit, 'adeptus astartes')
+    ))
+  }
+
+  if (detachment.name === COMPANY_OF_HUNTERS) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Master-crafted Weapon'
+      && selectedWeapon?.range === 'Melee'
+      && unitHasKeyword(enhancementBearerUnit, 'ravenwing')
+    ))
+  }
+
   if (detachment.name === GLADIUS_TASK_FORCE) {
     return (detachment.enhancements || []).filter((enhancement) => {
       if (enhancement.name === 'Artificer Armour') {
@@ -1590,6 +1629,27 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       return stratagem.name === 'Unforgiven Fury'
     }
 
+    if (detachment.name === LIONS_BLADE_TASK_FORCE) {
+      return (
+        stratagem.name === 'Illuminating Fire'
+        && isRangedWeapon
+        && unitHasKeyword(unit, 'deathwing')
+      )
+    }
+
+    if (detachment.name === WRATH_OF_THE_ROCK) {
+      if (stratagem.name === 'Relics of the Dark Age') {
+        return isRangedWeapon && (
+          unitHasKeyword(unit, 'infantry') || unitHasKeyword(unit, 'mounted')
+        )
+      }
+      return stratagem.name === "Lion's Will" && !isRangedWeapon
+    }
+
+    if (detachment.name === COMPANY_OF_HUNTERS) {
+      return stratagem.name === 'Talon Strike' && !isRangedWeapon
+    }
+
     if (detachment.name === GLADIUS_TASK_FORCE) {
       if (stratagem.name === 'Storm of Fire') {
         return isRangedWeapon
@@ -1741,6 +1801,25 @@ function getDefenderStratagemOptions(detachment, selectedWeapon, unit) {
         return Number(selectedWeapon?.ap || 0) > 0
       }
       return stratagem.name === 'Unbreakable Lines'
+    }
+
+    if (detachment.name === LIONS_BLADE_TASK_FORCE) {
+      return stratagem.name === 'Armour of Contempt' || (
+        stratagem.name === 'Strength in Unity'
+        && selectedWeapon?.range === 'Melee'
+      )
+    }
+
+    if (detachment.name === WRATH_OF_THE_ROCK) {
+      return stratagem.name === 'Armour of Contempt'
+    }
+
+    if (detachment.name === COMPANY_OF_HUNTERS) {
+      return stratagem.name === 'Armour of Contempt' || (
+        stratagem.name === 'High-speed Focus'
+        && selectedWeapon?.range !== 'Melee'
+        && unitHasKeyword(unit, 'ravenwing')
+      )
     }
 
     if (detachment.name === GLADIUS_TASK_FORCE) {
@@ -2033,6 +2112,10 @@ function buildSimulationPayload(state) {
     attacker_bigger_shells_active: state.attackerBiggerShellsActive,
     attacker_bigger_shells_pushed: state.attackerBiggerShellsPushed,
     attacker_honour_the_chapter_active: state.attackerHonourTheChapterActive,
+    attacker_illuminating_fire_active: state.attackerIlluminatingFireActive,
+    attacker_relics_of_the_dark_age_active: state.attackerRelicsOfTheDarkAgeActive,
+    attacker_lions_will_active: state.attackerLionsWillActive,
+    attacker_talon_strike_active: state.attackerTalonStrikeActive,
     attacker_storm_of_fire_active: state.attackerStormOfFireActive,
     attacker_no_threat_too_great_active: state.attackerNoThreatTooGreatActive,
     attacker_battle_drill_recall_active: state.attackerBattleDrillRecallActive,
@@ -2052,6 +2135,11 @@ function buildSimulationPayload(state) {
     defender_hulking_brutes_active: state.defenderHulkingBrutesActive,
     defender_legendary_fortitude_active: state.defenderLegendaryFortitudeActive,
     defender_armour_of_contempt_active: state.defenderArmourOfContemptActive,
+    defender_army_battleshocked_dark_angels: state.defenderArmyBattleshockedDarkAngels,
+    defender_strength_in_unity_active: state.defenderStrengthInUnityActive,
+    defender_high_speed_focus_active: state.defenderHighSpeedFocusActive,
+    attacker_engaged_by_ravenwing_unit: state.attackerEngagedByRavenwingUnit,
+    attacker_engaged_by_deathwing_unit: state.attackerEngagedByDeathwingUnit,
     defender_overwhelming_onslaught_active: state.defenderOverwhelmingOnslaughtActive,
     defender_unbreakable_lines_active: state.defenderUnbreakableLinesActive,
     defender_pennant_of_remembrance_active: state.defenderPennantOfRemembranceActive,
@@ -2605,7 +2693,62 @@ function getStratagemSource(stratagem) {
 }
 
 function getBaseDiameterMm(unit) {
+  const baseSizeText = String(unit?.base_size || unit?.baseSize || '').toLowerCase()
+  if (baseSizeText) {
+    const dimensions = Array.from(baseSizeText.matchAll(/\d+(?:\.\d+)?/g))
+      .map((match) => Number(match[0]))
+      .filter((value) => Number.isFinite(value) && value > 0)
+    if (dimensions.length) {
+      return Math.max(...dimensions)
+    }
+  }
   return UNIT_BASE_DIAMETERS_MM[unit?.name] || 40
+}
+
+function readCombatFormStateFromStorage() {
+  try {
+    const storedState = JSON.parse(localStorage.getItem(COMBAT_FORM_STORAGE_KEY) || 'null')
+    return storedState && typeof storedState === 'object' ? storedState : {}
+  } catch {
+    return {}
+  }
+}
+
+function getStoredCombatValue(storedState, key, fallbackValue) {
+  return Object.prototype.hasOwnProperty.call(storedState, key) ? storedState[key] : fallbackValue
+}
+
+function getFactionCategory(faction) {
+  return faction?.category || DEFAULT_FACTION_CATEGORY
+}
+
+function compareFactionCategories(leftCategory, rightCategory) {
+  const leftIndex = FACTION_CATEGORY_ORDER.indexOf(leftCategory)
+  const rightIndex = FACTION_CATEGORY_ORDER.indexOf(rightCategory)
+  if (leftIndex !== -1 || rightIndex !== -1) {
+    if (leftIndex === -1) {
+      return 1
+    }
+    if (rightIndex === -1) {
+      return -1
+    }
+    if (leftIndex !== rightIndex) {
+      return leftIndex - rightIndex
+    }
+  }
+  return leftCategory.localeCompare(rightCategory)
+}
+
+function getFactionCategories(factions) {
+  return Array.from(new Set(factions.map(getFactionCategory))).sort(compareFactionCategories)
+}
+
+function getFactionsByCategory(factions, category) {
+  return factions.filter((faction) => getFactionCategory(faction) === category)
+}
+
+function getFactionCategoryByName(factions, factionName) {
+  return getFactionCategory(factions.find((faction) => faction.name === factionName))
 }
 
 function mmToInches(value) {
@@ -5118,6 +5261,9 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'burna bomb': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
     allowOutOfPhaseAbilities && selectedWeapons.length > 0
   ),
+  'thunderhawk cluster bombs': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
   'deff from above': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
     allowOutOfPhaseAbilities && selectedWeapons.length > 0
   ),
@@ -5156,6 +5302,10 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
     allowOutOfPhaseAbilities && selectedWeapons.length > 0
   ),
   'resilient organism': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'rampart': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'banner of macragge': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
 }
 
 const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
@@ -5173,6 +5323,7 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'blastajet attack run',
   'champion of the kingsguard',
   'command squad',
+  'cold and calculating',
   'cunning hunters',
   'da bigger dey iz',
   'dakkastorm',
@@ -5209,6 +5360,7 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'pyromaniaks',
   'psychic hood',
   'priority target acquisition',
+  'press the attack',
   'ramshackle but rugged',
   'reaping tally',
   'rites of tempering',
@@ -5233,6 +5385,7 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'total obliteration',
   'to the last',
   'unto the anvil',
+  'ultramarines honour guard',
   'unstable oracle',
   'vanguard assault',
   'veil of time',
@@ -5424,6 +5577,7 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
     targetWithinTwelve = false,
     allowOutOfPhaseAbilities = false,
     selectedEntries = null,
+    side = 'attacker',
   } = context
   const collections = unitList.flatMap((unit) => [
     ...(unit.abilities || []).map((ability) => ({ ability, fallback: 'Datasheet Ability', unitName: unit.name, unit })),
@@ -5446,6 +5600,7 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
         waaaghActive,
         chargedThisTurn,
         allowOutOfPhaseAbilities,
+        side,
       }))
     })
     .filter(({ ability }) => {
@@ -5513,6 +5668,10 @@ function buildAttackerActiveRules({
   attackerSurpriseAssaultActive,
   attackerAssassinBeastsActive,
   attackerIrresistibleWillActive,
+  attackerIlluminatingFireActive,
+  attackerRelicsOfTheDarkAgeActive,
+  attackerLionsWillActive,
+  attackerTalonStrikeActive,
   attackerParasiticBiomorphologyFedActive,
   attackerStubbornTenacityActive,
   attackerWeaponsOfTheFirstLegionActive,
@@ -5787,6 +5946,50 @@ function buildAttackerActiveRules({
 
   if (attackerEnhancementName === 'War-tempered Artifice' && selectedWeapon?.range === 'Melee') {
     const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'War-tempered Artifice')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerDetachment?.name === COMPANY_OF_HUNTERS && selectedWeapon?.range !== 'Melee') {
+    const detachmentRule = getDetachmentEntry(attackerDetachment, 'rule', 'Masters of Manoeuvre')
+    if (detachmentRule) {
+      rules.push({
+        name: detachmentRule.name,
+        source: `${attackerDetachment.name} Rule`,
+        text: detachmentRule.rules_text,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Calibanite Armaments' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Calibanite Armaments')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Ancient Weapons' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Ancient Weapons')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Master-crafted Weapon' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Master-crafted Weapon')
     if (enhancement) {
       rules.push({
         name: enhancement.name,
@@ -6167,6 +6370,52 @@ function buildAttackerActiveRules({
     }
   }
 
+  if (attackerIlluminatingFireActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Illuminating Fire')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: attackerTargetWithinTwelve
+          ? stratagem.effect
+          : `${stratagem.effect} Mark the selected enemy unit as within 12" to apply the Wound modifier.`,
+      })
+    }
+  }
+
+  if (attackerRelicsOfTheDarkAgeActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Relics of the Dark Age')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerLionsWillActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', "Lion's Will")
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerTalonStrikeActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Talon Strike')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
   if (attackerUnforgivenFuryActive) {
     const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Unforgiven Fury')
     if (stratagem) {
@@ -6438,6 +6687,11 @@ function buildDefenderActiveRules({
   defenderSynapticImperative,
   defenderWithinSynapseRange,
   defenderArmourOfContemptActive,
+  defenderArmyBattleshockedDarkAngels,
+  defenderStrengthInUnityActive,
+  defenderHighSpeedFocusActive,
+  attackerEngagedByRavenwingUnit,
+  attackerEngagedByDeathwingUnit,
   defenderOverwhelmingOnslaughtActive,
   defenderUnbreakableLinesActive,
   defenderPennantOfRemembranceActive,
@@ -6466,8 +6720,53 @@ function buildDefenderActiveRules({
     rules.push(...getNamedActiveRules(defenderUnits, ['Psychic Hood']))
   }
 
+  if (
+    defenderDetachment?.name === WRATH_OF_THE_ROCK
+    && (
+      unitHasKeyword(defenderUnitDetails, 'infantry')
+      || unitHasKeyword(defenderUnitDetails, 'mounted')
+    )
+  ) {
+    const detachmentRule = getDetachmentEntry(defenderDetachment, 'rule', 'Dutiful Tenacity')
+    if (detachmentRule) {
+      rules.push({
+        name: detachmentRule.name,
+        source: `${defenderDetachment.name} Rule`,
+        text: detachmentRule.rules_text,
+      })
+    }
+  }
+
   if (defenderArmourOfContemptActive) {
     const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Armour of Contempt')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${defenderDetachment.name} Stratagem`,
+        text: defenderArmyBattleshockedDarkAngels && defenderDetachment?.name === LIONS_BLADE_TASK_FORCE
+          ? `${stratagem.effect} A Dark Angels unit in the defender's army is Battle-shocked, so the AP penalty is worsened by 2 total.`
+          : stratagem.effect,
+      })
+    }
+  }
+
+  if (defenderStrengthInUnityActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Strength in Unity')
+    if (stratagem) {
+      const conditionText = [
+        attackerEngagedByRavenwingUnit ? 'Ravenwing condition active: attacking unit suffers -1 to Hit.' : '',
+        attackerEngagedByDeathwingUnit ? 'Deathwing condition active: attacks stronger than the target suffer -1 to Wound.' : '',
+      ].filter(Boolean).join(' ')
+      rules.push({
+        name: stratagem.name,
+        source: `${defenderDetachment.name} Stratagem`,
+        text: conditionText ? `${stratagem.effect} ${conditionText}` : stratagem.effect,
+      })
+    }
+  }
+
+  if (defenderHighSpeedFocusActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'High-speed Focus')
     if (stratagem) {
       rules.push({
         name: stratagem.name,
@@ -6909,6 +7208,13 @@ function renderSelectedWeaponProfileRows(weapons) {
 function App() {
   const location = useLocation()
   const navigate = useNavigate()
+  const storedCombatFormRef = useRef(readCombatFormStateFromStorage())
+  const storedCombatForm = storedCombatFormRef.current
+  const combatInitial = (key, fallbackValue) => getStoredCombatValue(storedCombatForm, key, fallbackValue)
+  const skipInitialAttackerSelectionResetRef = useRef(Boolean(storedCombatForm.attackerFaction || storedCombatForm.attackerUnit))
+  const skipInitialDefenderSelectionResetRef = useRef(Boolean(storedCombatForm.defenderFaction || storedCombatForm.defenderUnit))
+  const skipInitialAttackerLeaderResetRef = useRef(Boolean(storedCombatForm.attackerAttachedLeaderName))
+  const skipInitialDefenderLeaderResetRef = useRef(Boolean(storedCombatForm.attachedCharacterName))
   const [factions, setFactions] = useState([])
   const [attackerUnits, setAttackerUnits] = useState([])
   const [defenderUnits, setDefenderUnits] = useState([])
@@ -6957,6 +7263,7 @@ function App() {
   ))
   const [battlefieldAttackerSavedArmyListId, setBattlefieldAttackerSavedArmyListId] = useState('')
   const [battlefieldDefenderSavedArmyListId, setBattlefieldDefenderSavedArmyListId] = useState('')
+  const [armyListFactionCategory, setArmyListFactionCategory] = useState('')
   const [armyListFaction, setArmyListFaction] = useState('')
   const [armyListUnits, setArmyListUnits] = useState([])
   const [armyListUnitName, setArmyListUnitName] = useState('')
@@ -6995,6 +7302,7 @@ function App() {
   const [battlefieldUsedStratagems, setBattlefieldUsedStratagems] = useState([])
   const [selectedBattlefieldTool, setSelectedBattlefieldTool] = useState('stratagems')
   const [battlefieldExtraUnits, setBattlefieldExtraUnits] = useState([])
+  const [battlefieldAddAttackerFactionCategory, setBattlefieldAddAttackerFactionCategory] = useState('')
   const [battlefieldAddAttackerFaction, setBattlefieldAddAttackerFaction] = useState('')
   const [battlefieldAddAttackerUnits, setBattlefieldAddAttackerUnits] = useState([])
   const [battlefieldAddAttackerFactionDetails, setBattlefieldAddAttackerFactionDetails] = useState(null)
@@ -7003,6 +7311,7 @@ function App() {
   const [battlefieldAddAttackerDetachmentName, setBattlefieldAddAttackerDetachmentName] = useState('')
   const [battlefieldAddAttackerModelCount, setBattlefieldAddAttackerModelCount] = useState('')
   const [battlefieldAddAttackerModelCounts, setBattlefieldAddAttackerModelCounts] = useState({})
+  const [battlefieldAddDefenderFactionCategory, setBattlefieldAddDefenderFactionCategory] = useState('')
   const [battlefieldAddDefenderFaction, setBattlefieldAddDefenderFaction] = useState('')
   const [battlefieldAddDefenderUnits, setBattlefieldAddDefenderUnits] = useState([])
   const [battlefieldAddDefenderFactionDetails, setBattlefieldAddDefenderFactionDetails] = useState(null)
@@ -7180,147 +7489,190 @@ function App() {
     }
   }, [activeAuthOverlay, activeAuthPath, location.pathname, navigate, pendingVerificationEmail])
 
-  const [attackerFaction, setAttackerFaction] = useState('')
-  const [attackerUnit, setAttackerUnit] = useState('')
-  const [attackerLoadoutSelections, setAttackerLoadoutSelections] = useState({})
-  const [attackerModelCount, setAttackerModelCount] = useState('')
-  const [attackerModelCounts, setAttackerModelCounts] = useState({})
-  const [weaponNames, setWeaponNames] = useState([])
-  const [weaponModelCounts, setWeaponModelCounts] = useState({})
-  const [attackerAttachedLeaderName, setAttackerAttachedLeaderName] = useState('')
-  const [attackerAttachedLeaderLoadoutSelections, setAttackerAttachedLeaderLoadoutSelections] = useState({})
-  const [attackerAttachedLeaderModelCount, setAttackerAttachedLeaderModelCount] = useState('')
-  const [attackerAttachedLeaderModelCounts, setAttackerAttachedLeaderModelCounts] = useState({})
-  const [attackerAttachedSupportName, setAttackerAttachedSupportName] = useState('')
-  const [attackerAttachedSupportLoadoutSelections, setAttackerAttachedSupportLoadoutSelections] = useState({})
-  const [attackerAttachedSupportModelCount, setAttackerAttachedSupportModelCount] = useState('')
-  const [attackerAttachedSupportModelCounts, setAttackerAttachedSupportModelCounts] = useState({})
-  const [defenderFaction, setDefenderFaction] = useState('')
-  const [defenderUnit, setDefenderUnit] = useState('')
-  const [defenderLoadoutSelections, setDefenderLoadoutSelections] = useState({})
-  const [defenderModelCount, setDefenderModelCount] = useState('')
-  const [defenderModelCounts, setDefenderModelCounts] = useState({})
-  const [attachedCharacterName, setAttachedCharacterName] = useState('')
-  const [attachedCharacterLoadoutSelections, setAttachedCharacterLoadoutSelections] = useState({})
-  const [attachedCharacterModelCount, setAttachedCharacterModelCount] = useState('')
-  const [attachedCharacterModelCounts, setAttachedCharacterModelCounts] = useState({})
-  const [attachedSupportName, setAttachedSupportName] = useState('')
-  const [attachedSupportLoadoutSelections, setAttachedSupportLoadoutSelections] = useState({})
-  const [attachedSupportModelCount, setAttachedSupportModelCount] = useState('')
-  const [attachedSupportModelCounts, setAttachedSupportModelCounts] = useState({})
-  const [defenderAllocationOrder, setDefenderAllocationOrder] = useState(initialOptions.defender_allocation_order)
-  const [attackerDetachmentName, setAttackerDetachmentName] = useState('')
-  const [defenderDetachmentName, setDefenderDetachmentName] = useState('')
-  const [attackerEnhancementName, setAttackerEnhancementName] = useState('')
-  const [defenderEnhancementName, setDefenderEnhancementName] = useState('')
-  const [runCount, setRunCount] = useState('1')
+  const [attackerFactionCategory, setAttackerFactionCategory] = useState(() => combatInitial('attackerFactionCategory', ''))
+  const [attackerFaction, setAttackerFaction] = useState(() => combatInitial('attackerFaction', ''))
+  const [attackerUnit, setAttackerUnit] = useState(() => combatInitial('attackerUnit', ''))
+  const [attackerLoadoutSelections, setAttackerLoadoutSelections] = useState(() => combatInitial('attackerLoadoutSelections', {}))
+  const [attackerModelCount, setAttackerModelCount] = useState(() => combatInitial('attackerModelCount', ''))
+  const [attackerModelCounts, setAttackerModelCounts] = useState(() => combatInitial('attackerModelCounts', {}))
+  const [weaponNames, setWeaponNames] = useState(() => combatInitial('weaponNames', []))
+  const [weaponModelCounts, setWeaponModelCounts] = useState(() => combatInitial('weaponModelCounts', {}))
+  const [attackerAttachedLeaderName, setAttackerAttachedLeaderName] = useState(() => combatInitial('attackerAttachedLeaderName', ''))
+  const [attackerAttachedLeaderLoadoutSelections, setAttackerAttachedLeaderLoadoutSelections] = useState(() => combatInitial('attackerAttachedLeaderLoadoutSelections', {}))
+  const [attackerAttachedLeaderModelCount, setAttackerAttachedLeaderModelCount] = useState(() => combatInitial('attackerAttachedLeaderModelCount', ''))
+  const [attackerAttachedLeaderModelCounts, setAttackerAttachedLeaderModelCounts] = useState(() => combatInitial('attackerAttachedLeaderModelCounts', {}))
+  const [attackerAttachedSupportName, setAttackerAttachedSupportName] = useState(() => combatInitial('attackerAttachedSupportName', ''))
+  const [attackerAttachedSupportLoadoutSelections, setAttackerAttachedSupportLoadoutSelections] = useState(() => combatInitial('attackerAttachedSupportLoadoutSelections', {}))
+  const [attackerAttachedSupportModelCount, setAttackerAttachedSupportModelCount] = useState(() => combatInitial('attackerAttachedSupportModelCount', ''))
+  const [attackerAttachedSupportModelCounts, setAttackerAttachedSupportModelCounts] = useState(() => combatInitial('attackerAttachedSupportModelCounts', {}))
+  const [defenderFactionCategory, setDefenderFactionCategory] = useState(() => combatInitial('defenderFactionCategory', ''))
+  const [defenderFaction, setDefenderFaction] = useState(() => combatInitial('defenderFaction', ''))
+  const [defenderUnit, setDefenderUnit] = useState(() => combatInitial('defenderUnit', ''))
+  const [defenderLoadoutSelections, setDefenderLoadoutSelections] = useState(() => combatInitial('defenderLoadoutSelections', {}))
+  const [defenderModelCount, setDefenderModelCount] = useState(() => combatInitial('defenderModelCount', ''))
+  const [defenderModelCounts, setDefenderModelCounts] = useState(() => combatInitial('defenderModelCounts', {}))
+  const [attachedCharacterName, setAttachedCharacterName] = useState(() => combatInitial('attachedCharacterName', ''))
+  const [attachedCharacterLoadoutSelections, setAttachedCharacterLoadoutSelections] = useState(() => combatInitial('attachedCharacterLoadoutSelections', {}))
+  const [attachedCharacterModelCount, setAttachedCharacterModelCount] = useState(() => combatInitial('attachedCharacterModelCount', ''))
+  const [attachedCharacterModelCounts, setAttachedCharacterModelCounts] = useState(() => combatInitial('attachedCharacterModelCounts', {}))
+  const [attachedSupportName, setAttachedSupportName] = useState(() => combatInitial('attachedSupportName', ''))
+  const [attachedSupportLoadoutSelections, setAttachedSupportLoadoutSelections] = useState(() => combatInitial('attachedSupportLoadoutSelections', {}))
+  const [attachedSupportModelCount, setAttachedSupportModelCount] = useState(() => combatInitial('attachedSupportModelCount', ''))
+  const [attachedSupportModelCounts, setAttachedSupportModelCounts] = useState(() => combatInitial('attachedSupportModelCounts', {}))
+  const [defenderAllocationOrder, setDefenderAllocationOrder] = useState(() => combatInitial('defenderAllocationOrder', initialOptions.defender_allocation_order))
+  const [attackerDetachmentName, setAttackerDetachmentName] = useState(() => combatInitial('attackerDetachmentName', ''))
+  const [defenderDetachmentName, setDefenderDetachmentName] = useState(() => combatInitial('defenderDetachmentName', ''))
+  const [attackerEnhancementName, setAttackerEnhancementName] = useState(() => combatInitial('attackerEnhancementName', ''))
+  const [defenderEnhancementName, setDefenderEnhancementName] = useState(() => combatInitial('defenderEnhancementName', ''))
+  const [runCount, setRunCount] = useState(() => combatInitial('runCount', '1'))
 
-  const [targetHasCover, setTargetHasCover] = useState(initialOptions.target_has_cover)
-  const [attackerInEngagementRange, setAttackerInEngagementRange] = useState(initialOptions.attacker_in_engagement_range)
-  const [targetInEngagementRangeOfAllies, setTargetInEngagementRangeOfAllies] = useState(initialOptions.target_in_engagement_range_of_allies)
-  const [attackerOnObjective, setAttackerOnObjective] = useState(initialOptions.attacker_on_objective)
-  const [defenderOnObjective, setDefenderOnObjective] = useState(initialOptions.defender_on_objective)
-  const [inHalfRange, setInHalfRange] = useState(initialOptions.in_half_range)
-  const [attackerActiveAbilityNames, setAttackerActiveAbilityNames] = useState([])
-  const [defenderActiveAbilityNames, setDefenderActiveAbilityNames] = useState([])
+  const [targetHasCover, setTargetHasCover] = useState(() => combatInitial('target_has_cover', initialOptions.target_has_cover))
+  const [attackerInEngagementRange, setAttackerInEngagementRange] = useState(() => combatInitial('attacker_in_engagement_range', initialOptions.attacker_in_engagement_range))
+  const [targetInEngagementRangeOfAllies, setTargetInEngagementRangeOfAllies] = useState(() => combatInitial('target_in_engagement_range_of_allies', initialOptions.target_in_engagement_range_of_allies))
+  const [attackerOnObjective, setAttackerOnObjective] = useState(() => combatInitial('attacker_on_objective', initialOptions.attacker_on_objective))
+  const [defenderOnObjective, setDefenderOnObjective] = useState(() => combatInitial('defender_on_objective', initialOptions.defender_on_objective))
+  const [inHalfRange, setInHalfRange] = useState(() => combatInitial('in_half_range', initialOptions.in_half_range))
+  const [attackerActiveAbilityNames, setAttackerActiveAbilityNames] = useState(() => combatInitial('attackerActiveAbilityNames', []))
+  const [defenderActiveAbilityNames, setDefenderActiveAbilityNames] = useState(() => combatInitial('defenderActiveAbilityNames', []))
   const [battlefieldActiveAbilityNames, setBattlefieldActiveAbilityNames] = useState([])
-  const [oathOfMomentActive, setOathOfMomentActive] = useState(initialOptions.oath_of_moment_active)
-  const [chargedThisTurn, setChargedThisTurn] = useState(initialOptions.charged_this_turn)
-  const [remainedStationary, setRemainedStationary] = useState(initialOptions.remained_stationary)
-  const [indirectTargetVisible, setIndirectTargetVisible] = useState(initialOptions.indirect_target_visible)
-  const [plungingFireActive, setPlungingFireActive] = useState(initialOptions.plunging_fire_active)
-  const [hazardousOverwatchChargePhase, setHazardousOverwatchChargePhase] = useState(initialOptions.hazardous_overwatch_charge_phase)
-  const [hazardousBearerCurrentWounds, setHazardousBearerCurrentWounds] = useState(initialOptions.hazardous_bearer_current_wounds)
-  const [attackerCombatDoctrine, setAttackerCombatDoctrine] = useState(initialOptions.attacker_combat_doctrine)
-  const [attackerFireDisciplineActive, setAttackerFireDisciplineActive] = useState(initialOptions.attacker_fire_discipline_active)
-  const [attackerMarkedForDestructionActive, setAttackerMarkedForDestructionActive] = useState(initialOptions.attacker_marked_for_destruction_active)
-  const [attackerUnforgivenFuryActive, setAttackerUnforgivenFuryActive] = useState(initialOptions.attacker_unforgiven_fury_active)
-  const [attackerUnforgivenFuryArmyBattleshocked, setAttackerUnforgivenFuryArmyBattleshocked] = useState(initialOptions.attacker_unforgiven_fury_army_battleshocked)
-  const [attackerStubbornTenacityActive, setAttackerStubbornTenacityActive] = useState(initialOptions.attacker_stubborn_tenacity_active)
-  const [attackerWeaponsOfTheFirstLegionActive, setAttackerWeaponsOfTheFirstLegionActive] = useState(initialOptions.attacker_weapons_of_the_first_legion_active)
-  const [attackerPennantOfRemembranceActive, setAttackerPennantOfRemembranceActive] = useState(initialOptions.attacker_pennant_of_remembrance_active)
-  const [attackerBelowStartingStrength, setAttackerBelowStartingStrength] = useState(initialOptions.attacker_below_starting_strength)
-  const [attackerBelowHalfStrength, setAttackerBelowHalfStrength] = useState(initialOptions.attacker_below_half_strength)
-  const [attackerBattleshocked, setAttackerBattleshocked] = useState(initialOptions.attacker_battleshocked)
-  const [attackerExtremisLevelThreatActive, setAttackerExtremisLevelThreatActive] = useState(initialOptions.attacker_extremis_level_threat_active)
-  const [attackerImperiumsSwordActive, setAttackerImperiumsSwordActive] = useState(initialOptions.attacker_imperiums_sword_active)
-  const [attackerSagaCompleted, setAttackerSagaCompleted] = useState(initialOptions.attacker_saga_completed)
-  const [attackerEldersGuidanceActive, setAttackerEldersGuidanceActive] = useState(initialOptions.attacker_elders_guidance_active)
-  const [attackerBoastAchieved, setAttackerBoastAchieved] = useState(initialOptions.attacker_boast_achieved)
-  const [attackerHordeslayerOutnumbered, setAttackerHordeslayerOutnumbered] = useState(initialOptions.attacker_hordeslayer_outnumbered)
-  const [attackerHeroesAllRerollType, setAttackerHeroesAllRerollType] = useState(initialOptions.attacker_heroes_all_reroll_type)
-  const [attackerArmouredWrathRerollType, setAttackerArmouredWrathRerollType] = useState(initialOptions.attacker_armoured_wrath_reroll_type)
-  const [attackerUnbridledFerocityActive, setAttackerUnbridledFerocityActive] = useState(initialOptions.attacker_unbridled_ferocity_active)
-  const [attackerWaaaghActive, setAttackerWaaaghActive] = useState(initialOptions.attacker_waaagh_active)
-  const [defenderWaaaghActive, setDefenderWaaaghActive] = useState(initialOptions.defender_waaagh_active)
-  const [attackerHyperAdaptation, setAttackerHyperAdaptation] = useState(initialOptions.attacker_hyper_adaptation)
-  const [attackerSynapticImperative, setAttackerSynapticImperative] = useState(initialOptions.attacker_synaptic_imperative)
-  const [defenderSynapticImperative, setDefenderSynapticImperative] = useState(initialOptions.defender_synaptic_imperative)
-  const [attackerWithinSynapseRange, setAttackerWithinSynapseRange] = useState(initialOptions.attacker_within_synapse_range)
-  const [defenderWithinSynapseRange, setDefenderWithinSynapseRange] = useState(initialOptions.defender_within_synapse_range)
-  const [attackerPreyActive, setAttackerPreyActive] = useState(initialOptions.attacker_prey_active)
-  const [attackerTargetWithinNine, setAttackerTargetWithinNine] = useState(initialOptions.attacker_target_within_9)
-  const [attackerTargetWithinTwelve, setAttackerTargetWithinTwelve] = useState(initialOptions.attacker_target_within_12)
-  const [attackerTargetClosestEligibleWithinSix, setAttackerTargetClosestEligibleWithinSix] = useState(initialOptions.attacker_target_closest_eligible_within_6)
-  const [attackerDisembarkedFromTransport, setAttackerDisembarkedFromTransport] = useState(initialOptions.attacker_disembarked_from_transport)
-  const [attackerCountsAsTenPlusModels, setAttackerCountsAsTenPlusModels] = useState(initialOptions.attacker_counts_as_ten_plus_models)
-  const [defenderCountsAsTenPlusModels, setDefenderCountsAsTenPlusModels] = useState(initialOptions.defender_counts_as_ten_plus_models)
-  const [targetBelowStartingStrength, setTargetBelowStartingStrength] = useState(initialOptions.target_below_starting_strength)
-  const [targetBelowHalfStrength, setTargetBelowHalfStrength] = useState(initialOptions.target_below_half_strength)
-  const [attackerTryDatButtonEffects, setAttackerTryDatButtonEffects] = useState(initialOptions.attacker_try_dat_button_effects)
-  const [attackerTryDatButtonHazardous, setAttackerTryDatButtonHazardous] = useState(initialOptions.attacker_try_dat_button_hazardous)
-  const [attackerUnbridledCarnageActive, setAttackerUnbridledCarnageActive] = useState(initialOptions.attacker_unbridled_carnage_active)
-  const [attackerAdrenalSurgeActive, setAttackerAdrenalSurgeActive] = useState(initialOptions.attacker_adrenal_surge_active)
-  const [attackerRampagingMonstrositiesActive, setAttackerRampagingMonstrositiesActive] = useState(initialOptions.attacker_rampaging_monstrosities_active)
-  const [attackerSwarmGuidedSalvoesActive, setAttackerSwarmGuidedSalvoesActive] = useState(initialOptions.attacker_swarm_guided_salvoes_active)
-  const [attackerMassiveImpactActive, setAttackerMassiveImpactActive] = useState(initialOptions.attacker_massive_impact_active)
-  const [attackerBroodguardImpulseActive, setAttackerBroodguardImpulseActive] = useState(initialOptions.attacker_broodguard_impulse_active)
-  const [attackerSecureBiomassActive, setAttackerSecureBiomassActive] = useState(initialOptions.attacker_secure_biomass_active)
-  const [attackerSurpriseAssaultActive, setAttackerSurpriseAssaultActive] = useState(initialOptions.attacker_surprise_assault_active)
-  const [attackerAssassinBeastsActive, setAttackerAssassinBeastsActive] = useState(initialOptions.attacker_assassin_beasts_active)
-  const [attackerIrresistibleWillActive, setAttackerIrresistibleWillActive] = useState(initialOptions.attacker_irresistible_will_active)
-  const [attackerParasiticBiomorphologyFedActive, setAttackerParasiticBiomorphologyFedActive] = useState(initialOptions.attacker_parasitic_biomorphology_fed_active)
-  const [defenderSavageRoarActive, setDefenderSavageRoarActive] = useState(initialOptions.defender_savage_roar_active)
-  const [defenderSavageRoarBattleshockFailed, setDefenderSavageRoarBattleshockFailed] = useState(initialOptions.defender_savage_roar_battleshock_failed)
-  const [defenderAblativeCarapaceActive, setDefenderAblativeCarapaceActive] = useState(initialOptions.defender_ablative_carapace_active)
-  const [defenderArdAsNailsActive, setDefenderArdAsNailsActive] = useState(initialOptions.defender_ard_as_nails_active)
-  const [attackerDragItDownActive, setAttackerDragItDownActive] = useState(initialOptions.attacker_drag_it_down_active)
-  const [defenderStalkinTaktiksActive, setDefenderStalkinTaktiksActive] = useState(initialOptions.defender_stalkin_taktiks_active)
-  const [defenderSpeediestFreeksActive, setDefenderSpeediestFreeksActive] = useState(initialOptions.defender_speediest_freeks_active)
-  const [defenderReinforcedHiveNodeActive, setDefenderReinforcedHiveNodeActive] = useState(initialOptions.defender_reinforced_hive_node_active)
-  const [attackerBlitzaFireActive, setAttackerBlitzaFireActive] = useState(initialOptions.attacker_blitza_fire_active)
-  const [attackerDakkastormActive, setAttackerDakkastormActive] = useState(initialOptions.attacker_dakkastorm_active)
-  const [attackerFullThrottleActive, setAttackerFullThrottleActive] = useState(initialOptions.attacker_full_throttle_active)
-  const [attackerKlankinKlawsActive, setAttackerKlankinKlawsActive] = useState(initialOptions.attacker_klankin_klaws_active)
-  const [attackerKlankinKlawsPushed, setAttackerKlankinKlawsPushed] = useState(initialOptions.attacker_klankin_klaws_pushed)
-  const [attackerDakkaDakkaDakkaActive, setAttackerDakkaDakkaDakkaActive] = useState(initialOptions.attacker_dakka_dakka_dakka_active)
-  const [attackerDakkaDakkaDakkaPushed, setAttackerDakkaDakkaDakkaPushed] = useState(initialOptions.attacker_dakka_dakka_dakka_pushed)
-  const [attackerBiggerShellsActive, setAttackerBiggerShellsActive] = useState(initialOptions.attacker_bigger_shells_active)
-  const [attackerBiggerShellsPushed, setAttackerBiggerShellsPushed] = useState(initialOptions.attacker_bigger_shells_pushed)
-  const [attackerHonourTheChapterActive, setAttackerHonourTheChapterActive] = useState(initialOptions.attacker_honour_the_chapter_active)
-  const [attackerStormOfFireActive, setAttackerStormOfFireActive] = useState(initialOptions.attacker_storm_of_fire_active)
-  const [attackerNoThreatTooGreatActive, setAttackerNoThreatTooGreatActive] = useState(initialOptions.attacker_no_threat_too_great_active)
-  const [attackerBattleDrillRecallActive, setAttackerBattleDrillRecallActive] = useState(initialOptions.attacker_battle_drill_recall_active)
-  const [attackerMercyIsWeaknessActive, setAttackerMercyIsWeaknessActive] = useState(initialOptions.attacker_mercy_is_weakness_active)
-  const [attackerAncientFuryActive, setAttackerAncientFuryActive] = useState(initialOptions.attacker_ancient_fury_active)
-  const [attackerCrucibleOfBattleActive, setAttackerCrucibleOfBattleActive] = useState(initialOptions.attacker_crucible_of_battle_active)
-  const [attackerImmolationProtocolsActive, setAttackerImmolationProtocolsActive] = useState(initialOptions.attacker_immolation_protocols_active)
-  const [attackerOnslaughtOfFireActive, setAttackerOnslaughtOfFireActive] = useState(initialOptions.attacker_onslaught_of_fire_active)
-  const [attackerBlitzingFusilladeActive, setAttackerBlitzingFusilladeActive] = useState(initialOptions.attacker_blitzing_fusillade_active)
-  const [attackerShockAssaultActive, setAttackerShockAssaultActive] = useState(initialOptions.attacker_shock_assault_active)
-  const [attackerStrikeFromTheShadowsActive, setAttackerStrikeFromTheShadowsActive] = useState(initialOptions.attacker_strike_from_the_shadows_active)
-  const [attackerHeroesOfTheChapterActive, setAttackerHeroesOfTheChapterActive] = useState(initialOptions.attacker_heroes_of_the_chapter_active)
-  const [defenderExtraGubbinzActive, setDefenderExtraGubbinzActive] = useState(initialOptions.defender_extra_gubbinz_active)
-  const [defenderRideHardRideFastActive, setDefenderRideHardRideFastActive] = useState(initialOptions.defender_ride_hard_ride_fast_active)
-  const [attackerCompetitiveStreakActive, setAttackerCompetitiveStreakActive] = useState(initialOptions.attacker_competitive_streak_active)
-  const [attackerArmedToDaTeefActive, setAttackerArmedToDaTeefActive] = useState(initialOptions.attacker_armed_to_da_teef_active)
-  const [defenderHulkingBrutesActive, setDefenderHulkingBrutesActive] = useState(initialOptions.defender_hulking_brutes_active)
-  const [defenderLegendaryFortitudeActive, setDefenderLegendaryFortitudeActive] = useState(initialOptions.defender_legendary_fortitude_active)
-  const [defenderArmourOfContemptActive, setDefenderArmourOfContemptActive] = useState(initialOptions.defender_armour_of_contempt_active)
-  const [defenderOverwhelmingOnslaughtActive, setDefenderOverwhelmingOnslaughtActive] = useState(initialOptions.defender_overwhelming_onslaught_active)
-  const [defenderUnbreakableLinesActive, setDefenderUnbreakableLinesActive] = useState(initialOptions.defender_unbreakable_lines_active)
-  const [defenderPennantOfRemembranceActive, setDefenderPennantOfRemembranceActive] = useState(initialOptions.defender_pennant_of_remembrance_active)
-  const [defenderBattleshocked, setDefenderBattleshocked] = useState(initialOptions.defender_battleshocked)
+  const [oathOfMomentActive, setOathOfMomentActive] = useState(() => combatInitial('oath_of_moment_active', initialOptions.oath_of_moment_active))
+  const [chargedThisTurn, setChargedThisTurn] = useState(() => combatInitial('charged_this_turn', initialOptions.charged_this_turn))
+  const [remainedStationary, setRemainedStationary] = useState(() => combatInitial('remained_stationary', initialOptions.remained_stationary))
+  const [indirectTargetVisible, setIndirectTargetVisible] = useState(() => combatInitial('indirect_target_visible', initialOptions.indirect_target_visible))
+  const [plungingFireActive, setPlungingFireActive] = useState(() => combatInitial('plunging_fire_active', initialOptions.plunging_fire_active))
+  const [hazardousOverwatchChargePhase, setHazardousOverwatchChargePhase] = useState(() => combatInitial('hazardous_overwatch_charge_phase', initialOptions.hazardous_overwatch_charge_phase))
+  const [hazardousBearerCurrentWounds, setHazardousBearerCurrentWounds] = useState(() => combatInitial('hazardous_bearer_current_wounds', initialOptions.hazardous_bearer_current_wounds))
+  const [attackerCombatDoctrine, setAttackerCombatDoctrine] = useState(() => combatInitial('attacker_combat_doctrine', initialOptions.attacker_combat_doctrine))
+  const [attackerFireDisciplineActive, setAttackerFireDisciplineActive] = useState(() => combatInitial('attacker_fire_discipline_active', initialOptions.attacker_fire_discipline_active))
+  const [attackerMarkedForDestructionActive, setAttackerMarkedForDestructionActive] = useState(() => combatInitial('attacker_marked_for_destruction_active', initialOptions.attacker_marked_for_destruction_active))
+  const [attackerUnforgivenFuryActive, setAttackerUnforgivenFuryActive] = useState(() => combatInitial('attacker_unforgiven_fury_active', initialOptions.attacker_unforgiven_fury_active))
+  const [attackerUnforgivenFuryArmyBattleshocked, setAttackerUnforgivenFuryArmyBattleshocked] = useState(() => combatInitial('attacker_unforgiven_fury_army_battleshocked', initialOptions.attacker_unforgiven_fury_army_battleshocked))
+  const [attackerStubbornTenacityActive, setAttackerStubbornTenacityActive] = useState(() => combatInitial('attacker_stubborn_tenacity_active', initialOptions.attacker_stubborn_tenacity_active))
+  const [attackerWeaponsOfTheFirstLegionActive, setAttackerWeaponsOfTheFirstLegionActive] = useState(() => combatInitial('attacker_weapons_of_the_first_legion_active', initialOptions.attacker_weapons_of_the_first_legion_active))
+  const [attackerPennantOfRemembranceActive, setAttackerPennantOfRemembranceActive] = useState(() => combatInitial('attacker_pennant_of_remembrance_active', initialOptions.attacker_pennant_of_remembrance_active))
+  const [attackerBelowStartingStrength, setAttackerBelowStartingStrength] = useState(() => combatInitial('attacker_below_starting_strength', initialOptions.attacker_below_starting_strength))
+  const [attackerBelowHalfStrength, setAttackerBelowHalfStrength] = useState(() => combatInitial('attacker_below_half_strength', initialOptions.attacker_below_half_strength))
+  const [attackerBattleshocked, setAttackerBattleshocked] = useState(() => combatInitial('attacker_battleshocked', initialOptions.attacker_battleshocked))
+  const [attackerExtremisLevelThreatActive, setAttackerExtremisLevelThreatActive] = useState(() => combatInitial('attacker_extremis_level_threat_active', initialOptions.attacker_extremis_level_threat_active))
+  const [attackerImperiumsSwordActive, setAttackerImperiumsSwordActive] = useState(() => combatInitial('attacker_imperiums_sword_active', initialOptions.attacker_imperiums_sword_active))
+  const [attackerSagaCompleted, setAttackerSagaCompleted] = useState(() => combatInitial('attacker_saga_completed', initialOptions.attacker_saga_completed))
+  const [attackerEldersGuidanceActive, setAttackerEldersGuidanceActive] = useState(() => combatInitial('attacker_elders_guidance_active', initialOptions.attacker_elders_guidance_active))
+  const [attackerBoastAchieved, setAttackerBoastAchieved] = useState(() => combatInitial('attacker_boast_achieved', initialOptions.attacker_boast_achieved))
+  const [attackerHordeslayerOutnumbered, setAttackerHordeslayerOutnumbered] = useState(() => combatInitial('attacker_hordeslayer_outnumbered', initialOptions.attacker_hordeslayer_outnumbered))
+  const [attackerHeroesAllRerollType, setAttackerHeroesAllRerollType] = useState(() => combatInitial('attacker_heroes_all_reroll_type', initialOptions.attacker_heroes_all_reroll_type))
+  const [attackerArmouredWrathRerollType, setAttackerArmouredWrathRerollType] = useState(() => combatInitial('attacker_armoured_wrath_reroll_type', initialOptions.attacker_armoured_wrath_reroll_type))
+  const [attackerUnbridledFerocityActive, setAttackerUnbridledFerocityActive] = useState(() => combatInitial('attacker_unbridled_ferocity_active', initialOptions.attacker_unbridled_ferocity_active))
+  const [attackerWaaaghActive, setAttackerWaaaghActive] = useState(() => combatInitial('attacker_waaagh_active', initialOptions.attacker_waaagh_active))
+  const [defenderWaaaghActive, setDefenderWaaaghActive] = useState(() => combatInitial('defender_waaagh_active', initialOptions.defender_waaagh_active))
+  const [attackerHyperAdaptation, setAttackerHyperAdaptation] = useState(() => combatInitial('attacker_hyper_adaptation', initialOptions.attacker_hyper_adaptation))
+  const [attackerSynapticImperative, setAttackerSynapticImperative] = useState(() => combatInitial('attacker_synaptic_imperative', initialOptions.attacker_synaptic_imperative))
+  const [defenderSynapticImperative, setDefenderSynapticImperative] = useState(() => combatInitial('defender_synaptic_imperative', initialOptions.defender_synaptic_imperative))
+  const [attackerWithinSynapseRange, setAttackerWithinSynapseRange] = useState(() => combatInitial('attacker_within_synapse_range', initialOptions.attacker_within_synapse_range))
+  const [defenderWithinSynapseRange, setDefenderWithinSynapseRange] = useState(() => combatInitial('defender_within_synapse_range', initialOptions.defender_within_synapse_range))
+  const [attackerPreyActive, setAttackerPreyActive] = useState(() => combatInitial('attacker_prey_active', initialOptions.attacker_prey_active))
+  const [attackerTargetWithinNine, setAttackerTargetWithinNine] = useState(() => combatInitial('attacker_target_within_9', initialOptions.attacker_target_within_9))
+  const [attackerTargetWithinTwelve, setAttackerTargetWithinTwelve] = useState(() => combatInitial('attacker_target_within_12', initialOptions.attacker_target_within_12))
+  const [attackerTargetClosestEligibleWithinSix, setAttackerTargetClosestEligibleWithinSix] = useState(() => combatInitial('attacker_target_closest_eligible_within_6', initialOptions.attacker_target_closest_eligible_within_6))
+  const [attackerDisembarkedFromTransport, setAttackerDisembarkedFromTransport] = useState(() => combatInitial('attacker_disembarked_from_transport', initialOptions.attacker_disembarked_from_transport))
+  const [attackerCountsAsTenPlusModels, setAttackerCountsAsTenPlusModels] = useState(() => combatInitial('attacker_counts_as_ten_plus_models', initialOptions.attacker_counts_as_ten_plus_models))
+  const [defenderCountsAsTenPlusModels, setDefenderCountsAsTenPlusModels] = useState(() => combatInitial('defender_counts_as_ten_plus_models', initialOptions.defender_counts_as_ten_plus_models))
+  const [targetBelowStartingStrength, setTargetBelowStartingStrength] = useState(() => combatInitial('target_below_starting_strength', initialOptions.target_below_starting_strength))
+  const [targetBelowHalfStrength, setTargetBelowHalfStrength] = useState(() => combatInitial('target_below_half_strength', initialOptions.target_below_half_strength))
+  const [attackerTryDatButtonEffects, setAttackerTryDatButtonEffects] = useState(() => combatInitial('attacker_try_dat_button_effects', initialOptions.attacker_try_dat_button_effects))
+  const [attackerTryDatButtonHazardous, setAttackerTryDatButtonHazardous] = useState(() => combatInitial('attacker_try_dat_button_hazardous', initialOptions.attacker_try_dat_button_hazardous))
+  const [attackerUnbridledCarnageActive, setAttackerUnbridledCarnageActive] = useState(() => combatInitial('attacker_unbridled_carnage_active', initialOptions.attacker_unbridled_carnage_active))
+  const [attackerAdrenalSurgeActive, setAttackerAdrenalSurgeActive] = useState(() => combatInitial('attacker_adrenal_surge_active', initialOptions.attacker_adrenal_surge_active))
+  const [attackerRampagingMonstrositiesActive, setAttackerRampagingMonstrositiesActive] = useState(() => combatInitial('attacker_rampaging_monstrosities_active', initialOptions.attacker_rampaging_monstrosities_active))
+  const [attackerSwarmGuidedSalvoesActive, setAttackerSwarmGuidedSalvoesActive] = useState(() => combatInitial('attacker_swarm_guided_salvoes_active', initialOptions.attacker_swarm_guided_salvoes_active))
+  const [attackerMassiveImpactActive, setAttackerMassiveImpactActive] = useState(() => combatInitial('attacker_massive_impact_active', initialOptions.attacker_massive_impact_active))
+  const [attackerBroodguardImpulseActive, setAttackerBroodguardImpulseActive] = useState(() => combatInitial('attacker_broodguard_impulse_active', initialOptions.attacker_broodguard_impulse_active))
+  const [attackerSecureBiomassActive, setAttackerSecureBiomassActive] = useState(() => combatInitial('attacker_secure_biomass_active', initialOptions.attacker_secure_biomass_active))
+  const [attackerSurpriseAssaultActive, setAttackerSurpriseAssaultActive] = useState(() => combatInitial('attacker_surprise_assault_active', initialOptions.attacker_surprise_assault_active))
+  const [attackerAssassinBeastsActive, setAttackerAssassinBeastsActive] = useState(() => combatInitial('attacker_assassin_beasts_active', initialOptions.attacker_assassin_beasts_active))
+  const [attackerIrresistibleWillActive, setAttackerIrresistibleWillActive] = useState(() => combatInitial('attacker_irresistible_will_active', initialOptions.attacker_irresistible_will_active))
+  const [attackerParasiticBiomorphologyFedActive, setAttackerParasiticBiomorphologyFedActive] = useState(() => combatInitial('attacker_parasitic_biomorphology_fed_active', initialOptions.attacker_parasitic_biomorphology_fed_active))
+  const [defenderSavageRoarActive, setDefenderSavageRoarActive] = useState(() => combatInitial('defender_savage_roar_active', initialOptions.defender_savage_roar_active))
+  const [defenderSavageRoarBattleshockFailed, setDefenderSavageRoarBattleshockFailed] = useState(() => combatInitial('defender_savage_roar_battleshock_failed', initialOptions.defender_savage_roar_battleshock_failed))
+  const [defenderAblativeCarapaceActive, setDefenderAblativeCarapaceActive] = useState(() => combatInitial('defender_ablative_carapace_active', initialOptions.defender_ablative_carapace_active))
+  const [defenderArdAsNailsActive, setDefenderArdAsNailsActive] = useState(() => combatInitial('defender_ard_as_nails_active', initialOptions.defender_ard_as_nails_active))
+  const [attackerDragItDownActive, setAttackerDragItDownActive] = useState(() => combatInitial('attacker_drag_it_down_active', initialOptions.attacker_drag_it_down_active))
+  const [defenderStalkinTaktiksActive, setDefenderStalkinTaktiksActive] = useState(() => combatInitial('defender_stalkin_taktiks_active', initialOptions.defender_stalkin_taktiks_active))
+  const [defenderSpeediestFreeksActive, setDefenderSpeediestFreeksActive] = useState(() => combatInitial('defender_speediest_freeks_active', initialOptions.defender_speediest_freeks_active))
+  const [defenderReinforcedHiveNodeActive, setDefenderReinforcedHiveNodeActive] = useState(() => combatInitial('defender_reinforced_hive_node_active', initialOptions.defender_reinforced_hive_node_active))
+  const [attackerBlitzaFireActive, setAttackerBlitzaFireActive] = useState(() => combatInitial('attacker_blitza_fire_active', initialOptions.attacker_blitza_fire_active))
+  const [attackerDakkastormActive, setAttackerDakkastormActive] = useState(() => combatInitial('attacker_dakkastorm_active', initialOptions.attacker_dakkastorm_active))
+  const [attackerFullThrottleActive, setAttackerFullThrottleActive] = useState(() => combatInitial('attacker_full_throttle_active', initialOptions.attacker_full_throttle_active))
+  const [attackerKlankinKlawsActive, setAttackerKlankinKlawsActive] = useState(() => combatInitial('attacker_klankin_klaws_active', initialOptions.attacker_klankin_klaws_active))
+  const [attackerKlankinKlawsPushed, setAttackerKlankinKlawsPushed] = useState(() => combatInitial('attacker_klankin_klaws_pushed', initialOptions.attacker_klankin_klaws_pushed))
+  const [attackerDakkaDakkaDakkaActive, setAttackerDakkaDakkaDakkaActive] = useState(() => combatInitial('attacker_dakka_dakka_dakka_active', initialOptions.attacker_dakka_dakka_dakka_active))
+  const [attackerDakkaDakkaDakkaPushed, setAttackerDakkaDakkaDakkaPushed] = useState(() => combatInitial('attacker_dakka_dakka_dakka_pushed', initialOptions.attacker_dakka_dakka_dakka_pushed))
+  const [attackerBiggerShellsActive, setAttackerBiggerShellsActive] = useState(() => combatInitial('attacker_bigger_shells_active', initialOptions.attacker_bigger_shells_active))
+  const [attackerBiggerShellsPushed, setAttackerBiggerShellsPushed] = useState(() => combatInitial('attacker_bigger_shells_pushed', initialOptions.attacker_bigger_shells_pushed))
+  const [attackerHonourTheChapterActive, setAttackerHonourTheChapterActive] = useState(() => combatInitial('attacker_honour_the_chapter_active', initialOptions.attacker_honour_the_chapter_active))
+  const [attackerIlluminatingFireActive, setAttackerIlluminatingFireActive] = useState(() => combatInitial('attacker_illuminating_fire_active', initialOptions.attacker_illuminating_fire_active))
+  const [attackerRelicsOfTheDarkAgeActive, setAttackerRelicsOfTheDarkAgeActive] = useState(() => combatInitial('attacker_relics_of_the_dark_age_active', initialOptions.attacker_relics_of_the_dark_age_active))
+  const [attackerLionsWillActive, setAttackerLionsWillActive] = useState(() => combatInitial('attacker_lions_will_active', initialOptions.attacker_lions_will_active))
+  const [attackerTalonStrikeActive, setAttackerTalonStrikeActive] = useState(() => combatInitial('attacker_talon_strike_active', initialOptions.attacker_talon_strike_active))
+  const [attackerStormOfFireActive, setAttackerStormOfFireActive] = useState(() => combatInitial('attacker_storm_of_fire_active', initialOptions.attacker_storm_of_fire_active))
+  const [attackerNoThreatTooGreatActive, setAttackerNoThreatTooGreatActive] = useState(() => combatInitial('attacker_no_threat_too_great_active', initialOptions.attacker_no_threat_too_great_active))
+  const [attackerBattleDrillRecallActive, setAttackerBattleDrillRecallActive] = useState(() => combatInitial('attacker_battle_drill_recall_active', initialOptions.attacker_battle_drill_recall_active))
+  const [attackerMercyIsWeaknessActive, setAttackerMercyIsWeaknessActive] = useState(() => combatInitial('attacker_mercy_is_weakness_active', initialOptions.attacker_mercy_is_weakness_active))
+  const [attackerAncientFuryActive, setAttackerAncientFuryActive] = useState(() => combatInitial('attacker_ancient_fury_active', initialOptions.attacker_ancient_fury_active))
+  const [attackerCrucibleOfBattleActive, setAttackerCrucibleOfBattleActive] = useState(() => combatInitial('attacker_crucible_of_battle_active', initialOptions.attacker_crucible_of_battle_active))
+  const [attackerImmolationProtocolsActive, setAttackerImmolationProtocolsActive] = useState(() => combatInitial('attacker_immolation_protocols_active', initialOptions.attacker_immolation_protocols_active))
+  const [attackerOnslaughtOfFireActive, setAttackerOnslaughtOfFireActive] = useState(() => combatInitial('attacker_onslaught_of_fire_active', initialOptions.attacker_onslaught_of_fire_active))
+  const [attackerBlitzingFusilladeActive, setAttackerBlitzingFusilladeActive] = useState(() => combatInitial('attacker_blitzing_fusillade_active', initialOptions.attacker_blitzing_fusillade_active))
+  const [attackerShockAssaultActive, setAttackerShockAssaultActive] = useState(() => combatInitial('attacker_shock_assault_active', initialOptions.attacker_shock_assault_active))
+  const [attackerStrikeFromTheShadowsActive, setAttackerStrikeFromTheShadowsActive] = useState(() => combatInitial('attacker_strike_from_the_shadows_active', initialOptions.attacker_strike_from_the_shadows_active))
+  const [attackerHeroesOfTheChapterActive, setAttackerHeroesOfTheChapterActive] = useState(() => combatInitial('attacker_heroes_of_the_chapter_active', initialOptions.attacker_heroes_of_the_chapter_active))
+  const [defenderExtraGubbinzActive, setDefenderExtraGubbinzActive] = useState(() => combatInitial('defender_extra_gubbinz_active', initialOptions.defender_extra_gubbinz_active))
+  const [defenderRideHardRideFastActive, setDefenderRideHardRideFastActive] = useState(() => combatInitial('defender_ride_hard_ride_fast_active', initialOptions.defender_ride_hard_ride_fast_active))
+  const [attackerCompetitiveStreakActive, setAttackerCompetitiveStreakActive] = useState(() => combatInitial('attacker_competitive_streak_active', initialOptions.attacker_competitive_streak_active))
+  const [attackerArmedToDaTeefActive, setAttackerArmedToDaTeefActive] = useState(() => combatInitial('attacker_armed_to_da_teef_active', initialOptions.attacker_armed_to_da_teef_active))
+  const [defenderHulkingBrutesActive, setDefenderHulkingBrutesActive] = useState(() => combatInitial('defender_hulking_brutes_active', initialOptions.defender_hulking_brutes_active))
+  const [defenderLegendaryFortitudeActive, setDefenderLegendaryFortitudeActive] = useState(() => combatInitial('defender_legendary_fortitude_active', initialOptions.defender_legendary_fortitude_active))
+  const [defenderArmourOfContemptActive, setDefenderArmourOfContemptActive] = useState(() => combatInitial('defender_armour_of_contempt_active', initialOptions.defender_armour_of_contempt_active))
+  const [defenderArmyBattleshockedDarkAngels, setDefenderArmyBattleshockedDarkAngels] = useState(() => combatInitial('defender_army_battleshocked_dark_angels', initialOptions.defender_army_battleshocked_dark_angels))
+  const [defenderStrengthInUnityActive, setDefenderStrengthInUnityActive] = useState(() => combatInitial('defender_strength_in_unity_active', initialOptions.defender_strength_in_unity_active))
+  const [defenderHighSpeedFocusActive, setDefenderHighSpeedFocusActive] = useState(() => combatInitial('defender_high_speed_focus_active', initialOptions.defender_high_speed_focus_active))
+  const [attackerEngagedByRavenwingUnit, setAttackerEngagedByRavenwingUnit] = useState(() => combatInitial('attacker_engaged_by_ravenwing_unit', initialOptions.attacker_engaged_by_ravenwing_unit))
+  const [attackerEngagedByDeathwingUnit, setAttackerEngagedByDeathwingUnit] = useState(() => combatInitial('attacker_engaged_by_deathwing_unit', initialOptions.attacker_engaged_by_deathwing_unit))
+  const [defenderOverwhelmingOnslaughtActive, setDefenderOverwhelmingOnslaughtActive] = useState(() => combatInitial('defender_overwhelming_onslaught_active', initialOptions.defender_overwhelming_onslaught_active))
+  const [defenderUnbreakableLinesActive, setDefenderUnbreakableLinesActive] = useState(() => combatInitial('defender_unbreakable_lines_active', initialOptions.defender_unbreakable_lines_active))
+  const [defenderPennantOfRemembranceActive, setDefenderPennantOfRemembranceActive] = useState(() => combatInitial('defender_pennant_of_remembrance_active', initialOptions.defender_pennant_of_remembrance_active))
+  const [defenderBattleshocked, setDefenderBattleshocked] = useState(() => combatInitial('defender_battleshocked', initialOptions.defender_battleshocked))
+
+  const factionCategories = useMemo(() => getFactionCategories(factions), [factions])
+  const attackerFactionOptions = useMemo(
+    () => getFactionsByCategory(factions, attackerFactionCategory),
+    [attackerFactionCategory, factions],
+  )
+  const defenderFactionOptions = useMemo(
+    () => getFactionsByCategory(factions, defenderFactionCategory),
+    [defenderFactionCategory, factions],
+  )
+  const armyListFactionOptions = useMemo(
+    () => getFactionsByCategory(factions, armyListFactionCategory),
+    [armyListFactionCategory, factions],
+  )
+  const battlefieldAddAttackerFactionOptions = useMemo(
+    () => getFactionsByCategory(factions, battlefieldAddAttackerFactionCategory),
+    [battlefieldAddAttackerFactionCategory, factions],
+  )
+  const battlefieldAddDefenderFactionOptions = useMemo(
+    () => getFactionsByCategory(factions, battlefieldAddDefenderFactionCategory),
+    [battlefieldAddDefenderFactionCategory, factions],
+  )
+
+  function updateFactionCategory(nextCategory, setCategory, setFaction) {
+    setCategory(nextCategory)
+    const nextFactionOptions = getFactionsByCategory(factions, nextCategory)
+    setFaction((currentFaction) => (
+      nextFactionOptions.some((faction) => faction.name === currentFaction)
+        ? currentFaction
+        : nextFactionOptions[0]?.name || ''
+    ))
+  }
 
   useEffect(() => {
     async function loadFactions() {
@@ -7329,12 +7681,28 @@ function App() {
         const data = await fetchFactions()
         const items = data.items || []
         setFactions(items)
-        if (items[0]) {
-          setAttackerFaction(items[0].name)
-          setDefenderFaction(items[0].name)
-          setArmyListFaction(items[0].name)
-          setBattlefieldAddAttackerFaction(items[0].name)
-          setBattlefieldAddDefenderFaction(items[0].name)
+        const firstCategory = getFactionCategories(items)[0] || ''
+        const firstFaction = getFactionsByCategory(items, firstCategory)[0]?.name || items[0]?.name || ''
+        const storedSnapshot = storedCombatFormRef.current
+        const savedAttackerFaction = items.some((faction) => faction.name === storedSnapshot.attackerFaction)
+          ? storedSnapshot.attackerFaction
+          : firstFaction
+        const savedDefenderFaction = items.some((faction) => faction.name === storedSnapshot.defenderFaction)
+          ? storedSnapshot.defenderFaction
+          : firstFaction
+        if (firstCategory) {
+          setAttackerFactionCategory(getFactionCategoryByName(items, savedAttackerFaction) || firstCategory)
+          setDefenderFactionCategory(getFactionCategoryByName(items, savedDefenderFaction) || firstCategory)
+          setArmyListFactionCategory(firstCategory)
+          setBattlefieldAddAttackerFactionCategory(firstCategory)
+          setBattlefieldAddDefenderFactionCategory(firstCategory)
+        }
+        if (firstFaction) {
+          setAttackerFaction(savedAttackerFaction)
+          setDefenderFaction(savedDefenderFaction)
+          setArmyListFaction(firstFaction)
+          setBattlefieldAddAttackerFaction(firstFaction)
+          setBattlefieldAddDefenderFaction(firstFaction)
         }
       } catch (requestError) {
         setError(formatError(requestError))
@@ -7347,12 +7715,207 @@ function App() {
   }, [])
 
   useEffect(() => {
+    if (!attackerFaction || !factions.length) {
+      return
+    }
+    const category = getFactionCategoryByName(factions, attackerFaction)
+    setAttackerFactionCategory((currentCategory) => (currentCategory === category ? currentCategory : category))
+  }, [attackerFaction, factions])
+
+  useEffect(() => {
+    if (!defenderFaction || !factions.length) {
+      return
+    }
+    const category = getFactionCategoryByName(factions, defenderFaction)
+    setDefenderFactionCategory((currentCategory) => (currentCategory === category ? currentCategory : category))
+  }, [defenderFaction, factions])
+
+  useEffect(() => {
+    if (!armyListFaction || !factions.length) {
+      return
+    }
+    const category = getFactionCategoryByName(factions, armyListFaction)
+    setArmyListFactionCategory((currentCategory) => (currentCategory === category ? currentCategory : category))
+  }, [armyListFaction, factions])
+
+  useEffect(() => {
+    if (!battlefieldAddAttackerFaction || !factions.length) {
+      return
+    }
+    const category = getFactionCategoryByName(factions, battlefieldAddAttackerFaction)
+    setBattlefieldAddAttackerFactionCategory((currentCategory) => (currentCategory === category ? currentCategory : category))
+  }, [battlefieldAddAttackerFaction, factions])
+
+  useEffect(() => {
+    if (!battlefieldAddDefenderFaction || !factions.length) {
+      return
+    }
+    const category = getFactionCategoryByName(factions, battlefieldAddDefenderFaction)
+    setBattlefieldAddDefenderFactionCategory((currentCategory) => (currentCategory === category ? currentCategory : category))
+  }, [battlefieldAddDefenderFaction, factions])
+
+  useEffect(() => {
     localStorage.setItem(SAVED_ARMY_LISTS_STORAGE_KEY, JSON.stringify(savedArmyLists))
   }, [savedArmyLists])
 
   useEffect(() => {
     localStorage.setItem(MATRIX_RUN_HISTORY_STORAGE_KEY, JSON.stringify(matrixRunHistory))
   }, [matrixRunHistory])
+
+  useEffect(() => {
+    localStorage.setItem(COMBAT_FORM_STORAGE_KEY, JSON.stringify({
+      attackerFactionCategory,
+      attackerFaction,
+      attackerUnit,
+      attackerLoadoutSelections,
+      attackerModelCount,
+      attackerModelCounts,
+      weaponNames,
+      weaponModelCounts,
+      attackerAttachedLeaderName,
+      attackerAttachedLeaderLoadoutSelections,
+      attackerAttachedLeaderModelCount,
+      attackerAttachedLeaderModelCounts,
+      attackerAttachedSupportName,
+      attackerAttachedSupportLoadoutSelections,
+      attackerAttachedSupportModelCount,
+      attackerAttachedSupportModelCounts,
+      defenderFactionCategory,
+      defenderFaction,
+      defenderUnit,
+      defenderLoadoutSelections,
+      defenderModelCount,
+      defenderModelCounts,
+      attachedCharacterName,
+      attachedCharacterLoadoutSelections,
+      attachedCharacterModelCount,
+      attachedCharacterModelCounts,
+      attachedSupportName,
+      attachedSupportLoadoutSelections,
+      attachedSupportModelCount,
+      attachedSupportModelCounts,
+      defenderAllocationOrder,
+      attackerDetachmentName,
+      defenderDetachmentName,
+      attackerEnhancementName,
+      defenderEnhancementName,
+      runCount,
+      target_has_cover: targetHasCover,
+      attacker_in_engagement_range: attackerInEngagementRange,
+      target_in_engagement_range_of_allies: targetInEngagementRangeOfAllies,
+      attacker_on_objective: attackerOnObjective,
+      defender_on_objective: defenderOnObjective,
+      in_half_range: inHalfRange,
+      attackerActiveAbilityNames,
+      defenderActiveAbilityNames,
+      oath_of_moment_active: oathOfMomentActive,
+      charged_this_turn: chargedThisTurn,
+      remained_stationary: remainedStationary,
+      indirect_target_visible: indirectTargetVisible,
+      plunging_fire_active: plungingFireActive,
+      hazardous_overwatch_charge_phase: hazardousOverwatchChargePhase,
+      hazardous_bearer_current_wounds: hazardousBearerCurrentWounds,
+      attacker_combat_doctrine: attackerCombatDoctrine,
+      attacker_fire_discipline_active: attackerFireDisciplineActive,
+      attacker_marked_for_destruction_active: attackerMarkedForDestructionActive,
+      attacker_unforgiven_fury_active: attackerUnforgivenFuryActive,
+      attacker_unforgiven_fury_army_battleshocked: attackerUnforgivenFuryArmyBattleshocked,
+      attacker_stubborn_tenacity_active: attackerStubbornTenacityActive,
+      attacker_weapons_of_the_first_legion_active: attackerWeaponsOfTheFirstLegionActive,
+      attacker_pennant_of_remembrance_active: attackerPennantOfRemembranceActive,
+      attacker_below_starting_strength: attackerBelowStartingStrength,
+      attacker_below_half_strength: attackerBelowHalfStrength,
+      attacker_battleshocked: attackerBattleshocked,
+      attacker_extremis_level_threat_active: attackerExtremisLevelThreatActive,
+      attacker_imperiums_sword_active: attackerImperiumsSwordActive,
+      attacker_saga_completed: attackerSagaCompleted,
+      attacker_elders_guidance_active: attackerEldersGuidanceActive,
+      attacker_boast_achieved: attackerBoastAchieved,
+      attacker_hordeslayer_outnumbered: attackerHordeslayerOutnumbered,
+      attacker_heroes_all_reroll_type: attackerHeroesAllRerollType,
+      attacker_armoured_wrath_reroll_type: attackerArmouredWrathRerollType,
+      attacker_unbridled_ferocity_active: attackerUnbridledFerocityActive,
+      attacker_waaagh_active: attackerWaaaghActive,
+      defender_waaagh_active: defenderWaaaghActive,
+      attacker_hyper_adaptation: attackerHyperAdaptation,
+      attacker_synaptic_imperative: attackerSynapticImperative,
+      defender_synaptic_imperative: defenderSynapticImperative,
+      attacker_within_synapse_range: attackerWithinSynapseRange,
+      defender_within_synapse_range: defenderWithinSynapseRange,
+      attacker_prey_active: attackerPreyActive,
+      attacker_target_within_9: attackerTargetWithinNine,
+      attacker_target_within_12: attackerTargetWithinTwelve,
+      attacker_target_closest_eligible_within_6: attackerTargetClosestEligibleWithinSix,
+      attacker_disembarked_from_transport: attackerDisembarkedFromTransport,
+      attacker_counts_as_ten_plus_models: attackerCountsAsTenPlusModels,
+      defender_counts_as_ten_plus_models: defenderCountsAsTenPlusModels,
+      target_below_starting_strength: targetBelowStartingStrength,
+      target_below_half_strength: targetBelowHalfStrength,
+      attacker_try_dat_button_effects: attackerTryDatButtonEffects,
+      attacker_try_dat_button_hazardous: attackerTryDatButtonHazardous,
+      attacker_unbridled_carnage_active: attackerUnbridledCarnageActive,
+      attacker_adrenal_surge_active: attackerAdrenalSurgeActive,
+      attacker_rampaging_monstrosities_active: attackerRampagingMonstrositiesActive,
+      attacker_swarm_guided_salvoes_active: attackerSwarmGuidedSalvoesActive,
+      attacker_massive_impact_active: attackerMassiveImpactActive,
+      attacker_broodguard_impulse_active: attackerBroodguardImpulseActive,
+      attacker_secure_biomass_active: attackerSecureBiomassActive,
+      attacker_surprise_assault_active: attackerSurpriseAssaultActive,
+      attacker_assassin_beasts_active: attackerAssassinBeastsActive,
+      attacker_irresistible_will_active: attackerIrresistibleWillActive,
+      attacker_parasitic_biomorphology_fed_active: attackerParasiticBiomorphologyFedActive,
+      defender_savage_roar_active: defenderSavageRoarActive,
+      defender_savage_roar_battleshock_failed: defenderSavageRoarBattleshockFailed,
+      defender_ablative_carapace_active: defenderAblativeCarapaceActive,
+      defender_ard_as_nails_active: defenderArdAsNailsActive,
+      attacker_drag_it_down_active: attackerDragItDownActive,
+      defender_stalkin_taktiks_active: defenderStalkinTaktiksActive,
+      defender_speediest_freeks_active: defenderSpeediestFreeksActive,
+      defender_reinforced_hive_node_active: defenderReinforcedHiveNodeActive,
+      attacker_blitza_fire_active: attackerBlitzaFireActive,
+      attacker_dakkastorm_active: attackerDakkastormActive,
+      attacker_full_throttle_active: attackerFullThrottleActive,
+      attacker_klankin_klaws_active: attackerKlankinKlawsActive,
+      attacker_klankin_klaws_pushed: attackerKlankinKlawsPushed,
+      attacker_dakka_dakka_dakka_active: attackerDakkaDakkaDakkaActive,
+      attacker_dakka_dakka_dakka_pushed: attackerDakkaDakkaDakkaPushed,
+      attacker_bigger_shells_active: attackerBiggerShellsActive,
+      attacker_bigger_shells_pushed: attackerBiggerShellsPushed,
+      attacker_honour_the_chapter_active: attackerHonourTheChapterActive,
+      attacker_illuminating_fire_active: attackerIlluminatingFireActive,
+      attacker_relics_of_the_dark_age_active: attackerRelicsOfTheDarkAgeActive,
+      attacker_lions_will_active: attackerLionsWillActive,
+      attacker_talon_strike_active: attackerTalonStrikeActive,
+      attacker_storm_of_fire_active: attackerStormOfFireActive,
+      attacker_no_threat_too_great_active: attackerNoThreatTooGreatActive,
+      attacker_battle_drill_recall_active: attackerBattleDrillRecallActive,
+      attacker_mercy_is_weakness_active: attackerMercyIsWeaknessActive,
+      attacker_ancient_fury_active: attackerAncientFuryActive,
+      attacker_crucible_of_battle_active: attackerCrucibleOfBattleActive,
+      attacker_immolation_protocols_active: attackerImmolationProtocolsActive,
+      attacker_onslaught_of_fire_active: attackerOnslaughtOfFireActive,
+      attacker_blitzing_fusillade_active: attackerBlitzingFusilladeActive,
+      attacker_shock_assault_active: attackerShockAssaultActive,
+      attacker_strike_from_the_shadows_active: attackerStrikeFromTheShadowsActive,
+      attacker_heroes_of_the_chapter_active: attackerHeroesOfTheChapterActive,
+      defender_extra_gubbinz_active: defenderExtraGubbinzActive,
+      defender_ride_hard_ride_fast_active: defenderRideHardRideFastActive,
+      attacker_competitive_streak_active: attackerCompetitiveStreakActive,
+      attacker_armed_to_da_teef_active: attackerArmedToDaTeefActive,
+      defender_hulking_brutes_active: defenderHulkingBrutesActive,
+      defender_legendary_fortitude_active: defenderLegendaryFortitudeActive,
+      defender_armour_of_contempt_active: defenderArmourOfContemptActive,
+      defender_army_battleshocked_dark_angels: defenderArmyBattleshockedDarkAngels,
+      defender_strength_in_unity_active: defenderStrengthInUnityActive,
+      defender_high_speed_focus_active: defenderHighSpeedFocusActive,
+      attacker_engaged_by_ravenwing_unit: attackerEngagedByRavenwingUnit,
+      attacker_engaged_by_deathwing_unit: attackerEngagedByDeathwingUnit,
+      defender_overwhelming_onslaught_active: defenderOverwhelmingOnslaughtActive,
+      defender_unbreakable_lines_active: defenderUnbreakableLinesActive,
+      defender_pennant_of_remembrance_active: defenderPennantOfRemembranceActive,
+      defender_battleshocked: defenderBattleshocked,
+    }))
+  })
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', appTheme)
@@ -8018,6 +8581,10 @@ function App() {
   }, [defenderFaction])
 
   useEffect(() => {
+    if (skipInitialAttackerSelectionResetRef.current) {
+      skipInitialAttackerSelectionResetRef.current = false
+      return
+    }
     setAttackerLoadoutSelections({})
     setAttackerModelCount('')
     setAttackerModelCounts({})
@@ -8025,12 +8592,20 @@ function App() {
   }, [attackerFaction, attackerUnit])
 
   useEffect(() => {
+    if (skipInitialDefenderSelectionResetRef.current) {
+      skipInitialDefenderSelectionResetRef.current = false
+      return
+    }
     setDefenderLoadoutSelections({})
     setDefenderModelCount('')
     setDefenderModelCounts({})
   }, [defenderFaction, defenderUnit])
 
   useEffect(() => {
+    if (skipInitialAttackerLeaderResetRef.current) {
+      skipInitialAttackerLeaderResetRef.current = false
+      return
+    }
     setAttackerAttachedLeaderLoadoutSelections({})
     setAttackerAttachedLeaderModelCount('')
     setAttackerAttachedLeaderModelCounts({})
@@ -8038,6 +8613,10 @@ function App() {
   }, [attackerAttachedLeaderName])
 
   useEffect(() => {
+    if (skipInitialDefenderLeaderResetRef.current) {
+      skipInitialDefenderLeaderResetRef.current = false
+      return
+    }
     setAttachedCharacterLoadoutSelections({})
     setAttachedCharacterModelCount('')
     setAttachedCharacterModelCounts({})
@@ -8411,6 +8990,7 @@ function App() {
       chargedThisTurn,
       allowOutOfPhaseAbilities: true,
       selectedEntries: selectedAttackEntries,
+      side: 'attacker',
     }),
     [
       attackerAttachedLeaderUnitDetails,
@@ -8422,6 +9002,7 @@ function App() {
       selectedAttackWeapons,
       selectedAttackEntries,
       selectedCombatPhaseId,
+      attackerTargetWithinTwelve,
     ],
   )
   const defenderCombatActivatedAbilityOptions = useMemo(
@@ -8429,6 +9010,7 @@ function App() {
       targetUnit: attackerUnitDetails,
       waaaghActive: defenderWaaaghActive,
       chargedThisTurn: false,
+      side: 'defender',
     }),
     [
       attachedCharacterUnitDetails,
@@ -8491,7 +9073,7 @@ function App() {
     selectedWeapons: selectedAttackWeapons,
     selectedEntries: selectedAttackEntries,
     attackerEnhancementName,
-    activeLanceStratagem: attackerHonourTheChapterActive || attackerShockAssaultActive,
+    activeLanceStratagem: attackerHonourTheChapterActive || attackerShockAssaultActive || attackerTalonStrikeActive,
   })
 
   useEffect(() => {
@@ -8810,6 +9392,10 @@ function App() {
   const canUseAttackerDakkaDakkaDakka = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Dakka! Dakka! Dakka!')
   const canUseAttackerBiggerShells = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Bigger Shells for Bigger Gitz')
   const canUseAttackerHonourTheChapter = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Honour the Chapter')
+  const canUseAttackerIlluminatingFire = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Illuminating Fire')
+  const canUseAttackerRelicsOfTheDarkAge = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Relics of the Dark Age')
+  const canUseAttackerLionsWill = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === "Lion's Will")
+  const canUseAttackerTalonStrike = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Talon Strike')
   const canUseAttackerStormOfFire = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Storm of Fire')
   const canUseAttackerNoThreatTooGreat = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'No Threat Too Great')
   const canUseAttackerBattleDrillRecall = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Battle Drill Recall')
@@ -8841,6 +9427,13 @@ function App() {
   const canUseDefenderHulkingBrutes = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Hulking Brutes')
   const canUseDefenderSavageRoar = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Savage Roar')
   const canUseDefenderLegendaryFortitude = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Legendary Fortitude')
+  const canUseDefenderStrengthInUnity = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Strength in Unity')
+  const canUseDefenderHighSpeedFocus = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'High-speed Focus')
+  const canUseDefenderArmyBattleshockedDarkAngels = (
+    defenderArmourOfContemptActive
+    && selectedDefenderDetachment?.name === LIONS_BLADE_TASK_FORCE
+  )
+  const canUseLionBladeEngagementMarkers = canUseDefenderStrengthInUnity && defenderStrengthInUnityActive
   const defenderIsRideHardTarget = unitHasKeyword(defenderUnitDetails, 'mounted') || (
     unitHasKeyword(defenderUnitDetails, 'vehicle')
     && unitHasKeyword(defenderUnitDetails, 'fly')
@@ -8870,6 +9463,7 @@ function App() {
     selectedAttackerDetachment?.name === FIRESTORM_ASSAULT_FORCE
     || selectedDefenderDetachment?.name === VANGUARD_SPEARHEAD
     || canUseAttackerStrikeFromTheShadows
+    || canUseAttackerIlluminatingFire
   )
   const canUseTargetClosestEligibleWithinSix = canUseAttackerCrucibleOfBattle
   const canUseAttackerDisembarkedFromTransport = canUseAttackerOnslaughtOfFire
@@ -9075,8 +9669,32 @@ function App() {
     () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Irresistible Will'),
     [selectedAttackerDetachment],
   )
+  const illuminatingFireEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Illuminating Fire'),
+    [selectedAttackerDetachment],
+  )
+  const relicsOfTheDarkAgeEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Relics of the Dark Age'),
+    [selectedAttackerDetachment],
+  )
+  const lionsWillEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', "Lion's Will"),
+    [selectedAttackerDetachment],
+  )
+  const talonStrikeEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Talon Strike'),
+    [selectedAttackerDetachment],
+  )
   const armourOfContemptEntry = useMemo(
     () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Armour of Contempt'),
+    [selectedDefenderDetachment],
+  )
+  const strengthInUnityEntry = useMemo(
+    () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Strength in Unity'),
+    [selectedDefenderDetachment],
+  )
+  const highSpeedFocusEntry = useMemo(
+    () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'High-speed Focus'),
     [selectedDefenderDetachment],
   )
   const overwhelmingOnslaughtEntry = useMemo(
@@ -9161,6 +9779,10 @@ function App() {
   const surpriseAssaultTooltip = formatStratagemTooltip(surpriseAssaultEntry)
   const assassinBeastsTooltip = formatStratagemTooltip(assassinBeastsEntry)
   const irresistibleWillTooltip = formatStratagemTooltip(irresistibleWillEntry)
+  const illuminatingFireTooltip = formatStratagemTooltip(illuminatingFireEntry)
+  const relicsOfTheDarkAgeTooltip = formatStratagemTooltip(relicsOfTheDarkAgeEntry)
+  const lionsWillTooltip = formatStratagemTooltip(lionsWillEntry)
+  const talonStrikeTooltip = formatStratagemTooltip(talonStrikeEntry)
   const dragItDownTooltip = formatStratagemTooltip(dragItDownEntry)
   const blitzaFireTooltip = formatStratagemTooltip(blitzaFireEntry)
   const dakkastormTooltip = formatStratagemTooltip(dakkastormEntry)
@@ -9184,6 +9806,8 @@ function App() {
   const competitiveStreakTooltip = formatStratagemTooltip(competitiveStreakEntry)
   const armedToDaTeefTooltip = formatStratagemTooltip(armedToDaTeefEntry)
   const armourOfContemptTooltip = formatStratagemTooltip(armourOfContemptEntry)
+  const strengthInUnityTooltip = formatStratagemTooltip(strengthInUnityEntry)
+  const highSpeedFocusTooltip = formatStratagemTooltip(highSpeedFocusEntry)
   const overwhelmingOnslaughtTooltip = formatStratagemTooltip(overwhelmingOnslaughtEntry)
   const unbreakableLinesTooltip = formatStratagemTooltip(unbreakableLinesEntry)
   const ardAsNailsTooltip = formatStratagemTooltip(ardAsNailsEntry)
@@ -9677,6 +10301,10 @@ function App() {
       attackerSurpriseAssaultActive,
       attackerAssassinBeastsActive,
       attackerIrresistibleWillActive,
+      attackerIlluminatingFireActive,
+      attackerRelicsOfTheDarkAgeActive,
+      attackerLionsWillActive,
+      attackerTalonStrikeActive,
       attackerParasiticBiomorphologyFedActive,
       attackerStubbornTenacityActive,
       attackerWeaponsOfTheFirstLegionActive,
@@ -9750,6 +10378,10 @@ function App() {
       attackerSurpriseAssaultActive,
       attackerAssassinBeastsActive,
       attackerIrresistibleWillActive,
+      attackerIlluminatingFireActive,
+      attackerRelicsOfTheDarkAgeActive,
+      attackerLionsWillActive,
+      attackerTalonStrikeActive,
       attackerParasiticBiomorphologyFedActive,
       attackerStubbornTenacityActive,
       attackerWeaponsOfTheFirstLegionActive,
@@ -9785,6 +10417,11 @@ function App() {
       defenderSynapticImperative,
       defenderWithinSynapseRange,
       defenderArmourOfContemptActive,
+      defenderArmyBattleshockedDarkAngels,
+      defenderStrengthInUnityActive,
+      defenderHighSpeedFocusActive,
+      attackerEngagedByRavenwingUnit,
+      attackerEngagedByDeathwingUnit,
       defenderOverwhelmingOnslaughtActive,
       defenderUnbreakableLinesActive,
       defenderPennantOfRemembranceActive,
@@ -9812,6 +10449,11 @@ function App() {
       defenderSynapticImperative,
       defenderWithinSynapseRange,
       defenderArmourOfContemptActive,
+      defenderArmyBattleshockedDarkAngels,
+      defenderStrengthInUnityActive,
+      defenderHighSpeedFocusActive,
+      attackerEngagedByRavenwingUnit,
+      attackerEngagedByDeathwingUnit,
       defenderOverwhelmingOnslaughtActive,
       defenderUnbreakableLinesActive,
       defenderPennantOfRemembranceActive,
@@ -9890,14 +10532,29 @@ function App() {
     { key: 'attachedCharacterDestroyed', label: 'Attached Destroyed', width: 136, numeric: true, defaultVisible: false },
     { key: 'hazardousBearerDestroyed', label: 'Hazard Destroyed', width: 140, numeric: true, defaultVisible: false },
   ], [])
-  const visibleMatrixColumnKeys = useMemo(() => (
-    matrixVisibleColumnKeys || matrixColumns
+  const defaultMatrixColumnKeys = useMemo(
+    () => matrixColumns
       .filter((column) => column.defaultVisible)
-      .map((column) => column.key)
-  ), [matrixColumns, matrixVisibleColumnKeys])
+      .map((column) => column.key),
+    [matrixColumns],
+  )
+  const visibleMatrixColumnKeys = useMemo(() => {
+    const matrixColumnKeySet = new Set(matrixColumns.map((column) => column.key))
+    const requestedColumnKeys = matrixVisibleColumnKeys || defaultMatrixColumnKeys
+    return requestedColumnKeys.filter((key) => matrixColumnKeySet.has(key))
+  }, [defaultMatrixColumnKeys, matrixColumns, matrixVisibleColumnKeys])
   const visibleMatrixColumns = useMemo(() => (
-    matrixColumns.filter((column) => visibleMatrixColumnKeys.includes(column.key))
+    visibleMatrixColumnKeys
+      .map((key) => matrixColumns.find((column) => column.key === key))
+      .filter(Boolean)
   ), [matrixColumns, visibleMatrixColumnKeys])
+  const matrixColumnPickerColumns = useMemo(() => {
+    const visibleColumnKeySet = new Set(visibleMatrixColumnKeys)
+    return [
+      ...visibleMatrixColumns,
+      ...matrixColumns.filter((column) => !visibleColumnKeySet.has(column.key)),
+    ]
+  }, [matrixColumns, visibleMatrixColumnKeys, visibleMatrixColumns])
   const selectedMatrixRuns = useMemo(() => {
     if (matrixView === MATRIX_VIEW_MINE) {
       return myMatrixRuns
@@ -10087,13 +10744,29 @@ function App() {
 
   function toggleMatrixColumn(key) {
     setMatrixVisibleColumnKeys((currentKeys) => {
-      const currentSet = new Set(currentKeys || matrixColumns.filter((column) => column.defaultVisible).map((column) => column.key))
-      if (currentSet.has(key)) {
-        currentSet.delete(key)
-      } else {
-        currentSet.add(key)
+      const currentColumnKeys = currentKeys || defaultMatrixColumnKeys
+      if (currentColumnKeys.includes(key)) {
+        return currentColumnKeys.filter((columnKey) => columnKey !== key)
       }
-      return Array.from(currentSet)
+      return [...currentColumnKeys, key]
+    })
+  }
+
+  function moveMatrixColumn(key, offset) {
+    setMatrixVisibleColumnKeys((currentKeys) => {
+      const currentColumnKeys = currentKeys || defaultMatrixColumnKeys
+      const currentIndex = currentColumnKeys.indexOf(key)
+      if (currentIndex === -1) {
+        return currentColumnKeys
+      }
+      const nextIndex = currentIndex + offset
+      if (nextIndex < 0 || nextIndex >= currentColumnKeys.length) {
+        return currentColumnKeys
+      }
+      const nextColumnKeys = [...currentColumnKeys]
+      const [movedColumnKey] = nextColumnKeys.splice(currentIndex, 1)
+      nextColumnKeys.splice(nextIndex, 0, movedColumnKey)
+      return nextColumnKeys
     })
   }
 
@@ -10943,12 +11616,14 @@ function App() {
         waaaghActive: battlefieldAttackerWaaaghActive,
         chargedThisTurn: battlefieldCombatAttackerCharged,
         allowOutOfPhaseAbilities: true,
+        side: 'attacker',
       },
     ),
     [
       activeGamePhase?.id,
       battlefieldAttackerWaaaghActive,
       battlefieldCombatAttackerCharged,
+      attackerTargetWithinTwelve,
       selectedBattlefieldCombatWeapons,
       selectedBattlefieldCombatant,
     ],
@@ -11496,7 +12171,35 @@ function App() {
     if (!canUseDefenderArmourOfContempt && defenderArmourOfContemptActive) {
       setDefenderArmourOfContemptActive(false)
     }
-  }, [canUseDefenderArmourOfContempt, defenderArmourOfContemptActive])
+    if (!canUseDefenderArmyBattleshockedDarkAngels && defenderArmyBattleshockedDarkAngels) {
+      setDefenderArmyBattleshockedDarkAngels(false)
+    }
+  }, [
+    canUseDefenderArmourOfContempt,
+    canUseDefenderArmyBattleshockedDarkAngels,
+    defenderArmourOfContemptActive,
+    defenderArmyBattleshockedDarkAngels,
+  ])
+
+  useEffect(() => {
+    if (!canUseDefenderStrengthInUnity && defenderStrengthInUnityActive) {
+      setDefenderStrengthInUnityActive(false)
+    }
+    if (!canUseLionBladeEngagementMarkers) {
+      if (attackerEngagedByRavenwingUnit) {
+        setAttackerEngagedByRavenwingUnit(false)
+      }
+      if (attackerEngagedByDeathwingUnit) {
+        setAttackerEngagedByDeathwingUnit(false)
+      }
+    }
+  }, [
+    attackerEngagedByDeathwingUnit,
+    attackerEngagedByRavenwingUnit,
+    canUseDefenderStrengthInUnity,
+    canUseLionBladeEngagementMarkers,
+    defenderStrengthInUnityActive,
+  ])
 
   useEffect(() => {
     if (!canUseDefenderOverwhelmingOnslaught && defenderOverwhelmingOnslaughtActive) {
@@ -11690,6 +12393,18 @@ function App() {
     if (!canUseAttackerHonourTheChapter && attackerHonourTheChapterActive) {
       setAttackerHonourTheChapterActive(false)
     }
+    if (!canUseAttackerIlluminatingFire && attackerIlluminatingFireActive) {
+      setAttackerIlluminatingFireActive(false)
+    }
+    if (!canUseAttackerRelicsOfTheDarkAge && attackerRelicsOfTheDarkAgeActive) {
+      setAttackerRelicsOfTheDarkAgeActive(false)
+    }
+    if (!canUseAttackerLionsWill && attackerLionsWillActive) {
+      setAttackerLionsWillActive(false)
+    }
+    if (!canUseAttackerTalonStrike && attackerTalonStrikeActive) {
+      setAttackerTalonStrikeActive(false)
+    }
     if (!canUseAttackerStormOfFire && attackerStormOfFireActive) {
       setAttackerStormOfFireActive(false)
     }
@@ -11756,6 +12471,9 @@ function App() {
     if (!canUseDefenderReinforcedHiveNode && defenderReinforcedHiveNodeActive) {
       setDefenderReinforcedHiveNodeActive(false)
     }
+    if (!canUseDefenderHighSpeedFocus && defenderHighSpeedFocusActive) {
+      setDefenderHighSpeedFocusActive(false)
+    }
   }, [
     attackerArmedToDaTeefActive,
     attackerAdrenalSurgeActive,
@@ -11784,6 +12502,10 @@ function App() {
     attackerDragItDownActive,
     attackerFullThrottleActive,
     attackerHonourTheChapterActive,
+    attackerIlluminatingFireActive,
+    attackerRelicsOfTheDarkAgeActive,
+    attackerLionsWillActive,
+    attackerTalonStrikeActive,
     attackerExtremisLevelThreatActive,
     attackerHeroesOfTheChapterActive,
     attackerImperiumsSwordActive,
@@ -11834,6 +12556,10 @@ function App() {
     canUseAttackerDragItDown,
     canUseAttackerFullThrottle,
     canUseAttackerHonourTheChapter,
+    canUseAttackerIlluminatingFire,
+    canUseAttackerRelicsOfTheDarkAge,
+    canUseAttackerLionsWill,
+    canUseAttackerTalonStrike,
     canUseAttackerBelowHalfStrength,
     canUseAttackerHeroesOfTheChapter,
     canUseAttackerImmolationProtocols,
@@ -11856,6 +12582,7 @@ function App() {
     canUseDefenderCountsAsTenPlus,
     canUseDefenderExtraGubbinz,
     canUseDefenderHulkingBrutes,
+    canUseDefenderHighSpeedFocus,
     canUseDefenderReinforcedHiveNode,
     canUseDefenderSavageRoar,
     canUseDefenderRideHardRideFast,
@@ -11879,6 +12606,7 @@ function App() {
     defenderCountsAsTenPlusModels,
     defenderExtraGubbinzActive,
     defenderHulkingBrutesActive,
+    defenderHighSpeedFocusActive,
     defenderReinforcedHiveNodeActive,
     defenderSavageRoarActive,
     defenderLegendaryFortitudeActive,
@@ -12873,6 +13601,10 @@ function App() {
       attackerWithinSynapseRange,
       defenderWithinSynapseRange,
       attackerHonourTheChapterActive,
+      attackerIlluminatingFireActive,
+      attackerRelicsOfTheDarkAgeActive,
+      attackerLionsWillActive,
+      attackerTalonStrikeActive,
       attackerStormOfFireActive,
       attackerNoThreatTooGreatActive,
       attackerBattleDrillRecallActive,
@@ -12889,6 +13621,11 @@ function App() {
       attackerTargetClosestEligibleWithinSix,
       attackerDisembarkedFromTransport,
       defenderArmourOfContemptActive,
+      defenderArmyBattleshockedDarkAngels,
+      defenderStrengthInUnityActive,
+      defenderHighSpeedFocusActive,
+      attackerEngagedByRavenwingUnit,
+      attackerEngagedByDeathwingUnit,
       defenderOverwhelmingOnslaughtActive,
       defenderUnbreakableLinesActive,
       defenderRideHardRideFastActive,
@@ -13005,6 +13742,10 @@ function App() {
         attacker_within_synapse_range: battlefieldAttackerSide === 'attacker' && attackerWithinSynapseRange,
         defender_within_synapse_range: battlefieldDefenderSide === 'defender' && defenderWithinSynapseRange,
         attacker_honour_the_chapter_active: battlefieldAttackerSide === 'attacker' && attackerHonourTheChapterActive,
+        attacker_illuminating_fire_active: battlefieldAttackerSide === 'attacker' && attackerIlluminatingFireActive,
+        attacker_relics_of_the_dark_age_active: battlefieldAttackerSide === 'attacker' && attackerRelicsOfTheDarkAgeActive,
+        attacker_lions_will_active: battlefieldAttackerSide === 'attacker' && attackerLionsWillActive,
+        attacker_talon_strike_active: battlefieldAttackerSide === 'attacker' && attackerTalonStrikeActive,
         attacker_storm_of_fire_active: battlefieldAttackerSide === 'attacker' && attackerStormOfFireActive,
         attacker_no_threat_too_great_active: battlefieldAttackerSide === 'attacker' && attackerNoThreatTooGreatActive,
         attacker_battle_drill_recall_active: battlefieldAttackerSide === 'attacker' && attackerBattleDrillRecallActive,
@@ -13037,6 +13778,11 @@ function App() {
         defender_savage_roar_active: battlefieldDefenderSide === 'defender' && defenderSavageRoarActive,
         defender_savage_roar_battleshock_failed: battlefieldDefenderSide === 'defender' && defenderSavageRoarBattleshockFailed,
         defender_ablative_carapace_active: battlefieldDefenderSide === 'defender' && defenderAblativeCarapaceActive,
+        defender_army_battleshocked_dark_angels: battlefieldDefenderSide === 'defender' && defenderArmyBattleshockedDarkAngels,
+        defender_strength_in_unity_active: battlefieldDefenderSide === 'defender' && defenderStrengthInUnityActive,
+        defender_high_speed_focus_active: battlefieldDefenderSide === 'defender' && defenderHighSpeedFocusActive,
+        attacker_engaged_by_ravenwing_unit: battlefieldDefenderSide === 'defender' && attackerEngagedByRavenwingUnit,
+        attacker_engaged_by_deathwing_unit: battlefieldDefenderSide === 'defender' && attackerEngagedByDeathwingUnit,
         defender_ride_hard_ride_fast_active: battlefieldDefenderSide === 'defender' && defenderRideHardRideFastActive,
         defender_legendary_fortitude_active: battlefieldDefenderSide === 'defender' && defenderLegendaryFortitudeActive,
         defender_reinforced_hive_node_active: battlefieldDefenderSide === 'defender' && defenderReinforcedHiveNodeActive,
@@ -15042,6 +15788,10 @@ function App() {
     setDefenderSavageRoarBattleshockFailed(initialOptions.defender_savage_roar_battleshock_failed)
     setDefenderAblativeCarapaceActive(initialOptions.defender_ablative_carapace_active)
     setAttackerHonourTheChapterActive(initialOptions.attacker_honour_the_chapter_active)
+    setAttackerIlluminatingFireActive(initialOptions.attacker_illuminating_fire_active)
+    setAttackerRelicsOfTheDarkAgeActive(initialOptions.attacker_relics_of_the_dark_age_active)
+    setAttackerLionsWillActive(initialOptions.attacker_lions_will_active)
+    setAttackerTalonStrikeActive(initialOptions.attacker_talon_strike_active)
     setAttackerStormOfFireActive(initialOptions.attacker_storm_of_fire_active)
     setAttackerNoThreatTooGreatActive(initialOptions.attacker_no_threat_too_great_active)
     setAttackerBattleDrillRecallActive(initialOptions.attacker_battle_drill_recall_active)
@@ -15062,6 +15812,11 @@ function App() {
     setAttackerWithinSynapseRange(initialOptions.attacker_within_synapse_range)
     setDefenderWithinSynapseRange(initialOptions.defender_within_synapse_range)
     setDefenderArmourOfContemptActive(initialOptions.defender_armour_of_contempt_active)
+    setDefenderArmyBattleshockedDarkAngels(initialOptions.defender_army_battleshocked_dark_angels)
+    setDefenderStrengthInUnityActive(initialOptions.defender_strength_in_unity_active)
+    setDefenderHighSpeedFocusActive(initialOptions.defender_high_speed_focus_active)
+    setAttackerEngagedByRavenwingUnit(initialOptions.attacker_engaged_by_ravenwing_unit)
+    setAttackerEngagedByDeathwingUnit(initialOptions.attacker_engaged_by_deathwing_unit)
     setDefenderOverwhelmingOnslaughtActive(initialOptions.defender_overwhelming_onslaught_active)
     setDefenderUnbreakableLinesActive(initialOptions.defender_unbreakable_lines_active)
     setDefenderRideHardRideFastActive(initialOptions.defender_ride_hard_ride_fast_active)
@@ -15295,9 +16050,23 @@ function App() {
               <section className="combat-side-panel">
                 <p className="kicker">Attacker</p>
                 <label>
+                  <span>Attacking Category</span>
+                  <select
+                    value={attackerFactionCategory}
+                    onChange={(event) => updateFactionCategory(event.target.value, setAttackerFactionCategory, setAttackerFaction)}
+                    disabled={!factionCategories.length}
+                  >
+                    {factionCategories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
                   <span>Attacking Faction</span>
                   <select value={attackerFaction} onChange={(event) => setAttackerFaction(event.target.value)}>
-                    {factions.map((faction) => (
+                    {attackerFactionOptions.map((faction) => (
                       <option key={faction.name} value={faction.name}>
                         {faction.name}
                       </option>
@@ -15430,9 +16199,23 @@ function App() {
               <section className="combat-side-panel">
                 <p className="kicker">Defender</p>
                 <label>
+                  <span>Defending Category</span>
+                  <select
+                    value={defenderFactionCategory}
+                    onChange={(event) => updateFactionCategory(event.target.value, setDefenderFactionCategory, setDefenderFaction)}
+                    disabled={!factionCategories.length}
+                  >
+                    {factionCategories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
                   <span>Defending Faction</span>
                   <select value={defenderFaction} onChange={(event) => setDefenderFaction(event.target.value)}>
-                    {factions.map((faction) => (
+                    {defenderFactionOptions.map((faction) => (
                       <option key={faction.name} value={faction.name}>
                         {faction.name}
                       </option>
@@ -15884,6 +16667,50 @@ function App() {
                 </label>
               ) : null}
 
+              {canUseAttackerIlluminatingFire ? (
+                <label className="checkbox-row" title={illuminatingFireTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerIlluminatingFireActive}
+                    onChange={(event) => setAttackerIlluminatingFireActive(event.target.checked)}
+                  />
+                  <span>Use Illuminating Fire</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerRelicsOfTheDarkAge ? (
+                <label className="checkbox-row" title={relicsOfTheDarkAgeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerRelicsOfTheDarkAgeActive}
+                    onChange={(event) => setAttackerRelicsOfTheDarkAgeActive(event.target.checked)}
+                  />
+                  <span>Use Relics of the Dark Age</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerLionsWill ? (
+                <label className="checkbox-row" title={lionsWillTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerLionsWillActive}
+                    onChange={(event) => setAttackerLionsWillActive(event.target.checked)}
+                  />
+                  <span>Use Lion's Will</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerTalonStrike ? (
+                <label className="checkbox-row" title={talonStrikeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerTalonStrikeActive}
+                    onChange={(event) => setAttackerTalonStrikeActive(event.target.checked)}
+                  />
+                  <span>Use Talon Strike</span>
+                </label>
+              ) : null}
+
               {canUseAttackerStormOfFire ? (
                 <label className="checkbox-row" title={stormOfFireTooltip}>
                   <input
@@ -16079,6 +16906,60 @@ function App() {
                     onChange={(event) => setDefenderArmourOfContemptActive(event.target.checked)}
                   />
                   <span>Defender uses Armour of Contempt</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderArmyBattleshockedDarkAngels ? (
+                <label className="checkbox-row combat-option-defender" title={armourOfContemptTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderArmyBattleshockedDarkAngels}
+                    onChange={(event) => setDefenderArmyBattleshockedDarkAngels(event.target.checked)}
+                  />
+                  <span>Defender army has a Battle-shocked Dark Angels unit</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderStrengthInUnity ? (
+                <label className="checkbox-row combat-option-defender" title={strengthInUnityTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderStrengthInUnityActive}
+                    onChange={(event) => setDefenderStrengthInUnityActive(event.target.checked)}
+                  />
+                  <span>Defender uses Strength in Unity</span>
+                </label>
+              ) : null}
+
+              {canUseLionBladeEngagementMarkers ? (
+                <>
+                  <label className="checkbox-row combat-option-defender" title={strengthInUnityTooltip}>
+                    <input
+                      type="checkbox"
+                      checked={attackerEngagedByRavenwingUnit}
+                      onChange={(event) => setAttackerEngagedByRavenwingUnit(event.target.checked)}
+                    />
+                    <span>Attacker is engaged by a Ravenwing unit</span>
+                  </label>
+                  <label className="checkbox-row combat-option-defender" title={strengthInUnityTooltip}>
+                    <input
+                      type="checkbox"
+                      checked={attackerEngagedByDeathwingUnit}
+                      onChange={(event) => setAttackerEngagedByDeathwingUnit(event.target.checked)}
+                    />
+                    <span>Attacker is engaged by a Deathwing unit</span>
+                  </label>
+                </>
+              ) : null}
+
+              {canUseDefenderHighSpeedFocus ? (
+                <label className="checkbox-row combat-option-defender" title={highSpeedFocusTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderHighSpeedFocusActive}
+                    onChange={(event) => setDefenderHighSpeedFocusActive(event.target.checked)}
+                  />
+                  <span>Defender uses High-speed Focus</span>
                 </label>
               ) : null}
 
@@ -17370,16 +18251,44 @@ function App() {
                   </div>
                   {matrixColumnsOpen ? (
                     <div className="matrix-column-picker">
-                      {matrixColumns.map((column) => (
-                        <label key={column.key} className="matrix-column-toggle">
-                          <input
-                            type="checkbox"
-                            checked={visibleMatrixColumnKeys.includes(column.key)}
-                            onChange={() => toggleMatrixColumn(column.key)}
-                          />
-                          <span>{column.label}</span>
-                        </label>
-                      ))}
+                      {matrixColumnPickerColumns.map((column) => {
+                        const visibleColumnIndex = visibleMatrixColumnKeys.indexOf(column.key)
+                        const columnIsVisible = visibleColumnIndex !== -1
+                        return (
+                          <div key={column.key} className="matrix-column-toggle">
+                            <label>
+                              <input
+                                type="checkbox"
+                                checked={columnIsVisible}
+                                onChange={() => toggleMatrixColumn(column.key)}
+                              />
+                              <span>{column.label}</span>
+                            </label>
+                            <div className="matrix-column-move-controls">
+                              <button
+                                type="button"
+                                className="secondary-button compact"
+                                onClick={() => moveMatrixColumn(column.key, -1)}
+                                disabled={!columnIsVisible || visibleColumnIndex === 0}
+                                aria-label={`Move ${column.label} left`}
+                                title={`Move ${column.label} left`}
+                              >
+                                &lt;
+                              </button>
+                              <button
+                                type="button"
+                                className="secondary-button compact"
+                                onClick={() => moveMatrixColumn(column.key, 1)}
+                                disabled={!columnIsVisible || visibleColumnIndex === visibleMatrixColumnKeys.length - 1}
+                                aria-label={`Move ${column.label} right`}
+                                title={`Move ${column.label} right`}
+                              >
+                                &gt;
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
                   ) : null}
                 </div>
@@ -17899,13 +18808,27 @@ function App() {
                 </div>
                 <div className="battlefield-instance-controls">
                   <label className="battlefield-side-field">
+                    <span>Attacker Category</span>
+                    <select
+                      value={battlefieldAddAttackerFactionCategory}
+                      onChange={(event) => updateFactionCategory(event.target.value, setBattlefieldAddAttackerFactionCategory, setBattlefieldAddAttackerFaction)}
+                      disabled={!factionCategories.length}
+                    >
+                      {factionCategories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="battlefield-side-field">
                     <span>Attacker Faction</span>
                     <select
                       value={battlefieldAddAttackerFaction}
                       onChange={(event) => setBattlefieldAddAttackerFaction(event.target.value)}
-                      disabled={!factions.length}
+                      disabled={!battlefieldAddAttackerFactionOptions.length}
                     >
-                      {factions.map((faction) => (
+                      {battlefieldAddAttackerFactionOptions.map((faction) => (
                         <option key={faction.name} value={faction.name}>
                           {faction.name}
                         </option>
@@ -17954,13 +18877,27 @@ function App() {
                     Add Attacker
                   </button>
                   <label className="battlefield-side-field">
+                    <span>Defender Category</span>
+                    <select
+                      value={battlefieldAddDefenderFactionCategory}
+                      onChange={(event) => updateFactionCategory(event.target.value, setBattlefieldAddDefenderFactionCategory, setBattlefieldAddDefenderFaction)}
+                      disabled={!factionCategories.length}
+                    >
+                      {factionCategories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="battlefield-side-field">
                     <span>Defender Faction</span>
                     <select
                       value={battlefieldAddDefenderFaction}
                       onChange={(event) => setBattlefieldAddDefenderFaction(event.target.value)}
-                      disabled={!factions.length}
+                      disabled={!battlefieldAddDefenderFactionOptions.length}
                     >
-                      {factions.map((faction) => (
+                      {battlefieldAddDefenderFactionOptions.map((faction) => (
                         <option key={faction.name} value={faction.name}>
                           {faction.name}
                         </option>
@@ -20524,9 +21461,23 @@ function App() {
           </div>
           <div className="army-list-builder-panel">
             <label>
+              <span>Category</span>
+              <select
+                value={armyListFactionCategory}
+                onChange={(event) => updateFactionCategory(event.target.value, setArmyListFactionCategory, setArmyListFaction)}
+                disabled={!factionCategories.length}
+              >
+                {factionCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
               <span>Faction</span>
               <select value={armyListFaction} onChange={(event) => setArmyListFaction(event.target.value)}>
-                {factions.map((faction) => (
+                {armyListFactionOptions.map((faction) => (
                   <option key={faction.name} value={faction.name}>
                     {faction.name}
                   </option>
@@ -20715,3 +21666,4 @@ function App() {
 }
 
 export default App
+

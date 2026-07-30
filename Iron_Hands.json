@@ -1,0 +1,264 @@
+{
+  "faction": {
+    "name": "Iron Hands",
+    "parent_faction": "Adeptus Astartes",
+    "army_rules": [],
+    "chapter_rules": [],
+    "derived_keywords": [],
+    "detachments": [],
+    "category": "Adeptus Astartes"
+  },
+  "units": [
+    {
+      "name": "Iron Father Feirros",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Iron Father Feirros",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Gorgon's Wrath",
+            "Harrowhand",
+            "Medusan Manipuli"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Iron Hands"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Imperium",
+        "Gravis",
+        "Iron Father Feirros"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Rites of Tempering",
+          "rules_text": "While this model is leading a unit, models in that unit have the Feel No Pain 5+ ability."
+        },
+        {
+          "name": "Iron Father",
+          "rules_text": "While this model is within 3\" of one or more friendly ADEPTUS ASTARTES VEHICLE units, it has the Lone Operative ability."
+        },
+        {
+          "name": "Master of the Forge",
+          "rules_text": "In your Command phase, select one friendly ADEPTUS ASTARTES VEHICLE model within 3\" of this model. That model regains up to 3 lost wounds and, until the start of your next Command phase, each time that VEHICLE model makes an attack, add 1 to the Hit roll. You cannot select a unit for this ability that has already been selected for the Blessing of the Omnissiah ability this phase, and vice versa."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Aggressor Squad",
+          "Eradicator Squad",
+          "Heavy Intercessor Squad"
+        ],
+        "rules_text": "This model can be attached to the following units: Aggressor Squad, Eradicator Squad, Heavy Intercessor Squad."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 5,
+        "toughness": 6,
+        "save": "2+",
+        "invulnerable_save": null,
+        "wounds": 6,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "keywords": [
+            "Pistol"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Gorgon's Wrath",
+          "keywords": [
+            "Sustained Hits 2"
+          ],
+          "range": "36 inches",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "2"
+        },
+        {
+          "name": "Harrowhand",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Medusan Manipuli",
+          "keywords": [
+            "Extra Attacks"
+          ],
+          "range": "Melee",
+          "attacks": "2",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "3"
+        }
+      ]
+    },
+    {
+      "name": "Caanok Var",
+      "faction": "Adeptus Astartes",
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Imperium",
+        "Terminator",
+        "Captain",
+        "Caanok Var"
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Iron Hands"
+      ],
+      "stats": {
+        "movement": 5,
+        "toughness": 5,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 6,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Caanok Var",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Storm bolter",
+            "Axiom"
+          ]
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike, Feel No Pain 5+, Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Cold and Calculating",
+          "rules_text": "Each time a model in this model's unit makes an attack that targets a MONSTER or VEHICLE unit, that attack has the [LETHAL HITS] ability. Each time a model in this model's unit makes an attack that targets any other unit, that attack has the [SUSTAINED HITS 1] ability."
+        },
+        {
+          "name": "Cerobex Logic Engine",
+          "rules_text": "At the start of the Declare Battle Formations step, you can select one ADEPTUS ASTARTES INFANTRY unit from your army. Until the end of the battle, that unit gains the Scouts 6\" ability. After both players have deployed their armies, you can select one ADEPTUS ASTARTES unit from your army and redeploy it. When doing so, you can set that unit up in Strategic Reserves if you wish, regardless of how many units are already in Strategic Reserves."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Storm bolter",
+          "keywords": [
+            "Rapid Fire 2"
+          ],
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Axiom \u2013 strike",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Axiom \u2013 sweep",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "10",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1"
+        }
+      ],
+      "implemented": false,
+      "base_size": "50mm",
+      "leader": {
+        "can_lead": [
+          "Terminator Assault Squad",
+          "Terminator Squad"
+        ],
+        "rules_text": "This model can be attached to the following units: Terminator Assault Squad, Terminator Squad."
+      }
+    }
+  ]
+}

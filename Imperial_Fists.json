@@ -1,0 +1,312 @@
+{
+  "faction": {
+    "name": "Imperial Fists",
+    "parent_faction": "Adeptus Astartes",
+    "army_rules": [],
+    "chapter_rules": [],
+    "derived_keywords": [],
+    "detachments": [],
+    "category": "Adeptus Astartes"
+  },
+  "units": [
+    {
+      "name": "Darnath Lysander",
+      "faction": "Adeptus Astartes",
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Imperium",
+        "Terminator",
+        "Captain",
+        "Darnath Lysander"
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Imperial Fists"
+      ],
+      "stats": {
+        "movement": 5,
+        "toughness": 5,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 7,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Darnath Lysander",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Fist of Dorn"
+          ]
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike, Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Icon of Obstinacy",
+          "rules_text": "Each time an attack targets this model's unit, if the Strength characteristic of that attack is greater than or equal to the Toughness characteristic of that unit, subtract 1 from the Wound roll."
+        },
+        {
+          "name": "Rampart",
+          "rules_text": "Once per battle, at the start of any phase, this model can use this ability. If it does, until the end of the phase, this model has a 2+ invulnerable save."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Fist of Dorn",
+          "keywords": [
+            "Devastating Wounds"
+          ],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "10",
+          "armor_piercing": "-3",
+          "damage": "3"
+        }
+      ],
+      "implemented": false,
+      "base_size": "50mm",
+      "leader": {
+        "can_lead": [
+          "Terminator Assault Squad",
+          "Terminator Squad"
+        ],
+        "rules_text": "This model can be attached to the following units: Terminator Assault Squad, Terminator Squad."
+      }
+    },
+    {
+      "name": "Pedro Kantor",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Pedro Kantor",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Dorn's Arrow",
+            "Fist of Retribution"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Imperial Fists"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Grenades",
+        "Imperium",
+        "Tacticus",
+        "Chapter Master",
+        "Pedro Kantor"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Feel No Pain 6+, Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Oath of Rynn",
+          "rules_text": "Once per battle, at the start of either player's Command phase, this model can use this ability. When it does, until the end of the turn, add 1 to the Attacks characteristic of weapons equipped by models in this model's unit."
+        },
+        {
+          "name": "To the Last",
+          "rules_text": "While this model is leading a unit, each time a model in that unit makes an attack, add 1 to the Hit roll if that unit is below its Starting Strength, and add 1 to the Wound roll as well if that unit is Below Half-strength."
+        },
+        {
+          "name": "Crimson Fists",
+          "rules_text": "This model is from the Crimson Fists Chapter, a successor of the Imperial Fists. For all rules purposes, it is treated as an IMPERIAL FISTS model, but it cannot be included in an army that includes any other IMPERIAL FISTS EPIC HERO models."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Company Heroes",
+          "Bladeguard Veteran Squad",
+          "Sternguard Veteran Squad",
+          "Tactical Squad"
+        ],
+        "rules_text": "This model can be attached to the following units: Company Heroes, Bladeguard Veteran Squad, Sternguard Veteran Squad, Tactical Squad."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 5,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Dorn's Arrow",
+          "keywords": [
+            "Rapid Fire 2",
+            "Sustained Hits 1"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "2"
+        },
+        {
+          "name": "Fist of Retribution",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "3"
+        }
+      ]
+    },
+    {
+      "name": "Tor Garadon",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Tor Garadon",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Artificer grav-gun",
+            "Hand of Defiance"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Imperial Fists"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Imperium",
+        "Gravis",
+        "Captain",
+        "Tor Garadon"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Signum Array",
+          "rules_text": "While this model is leading a unit, ranged weapons equipped by models in that unit have the [IGNORES COVER] ability."
+        },
+        {
+          "name": "Siege Captain",
+          "rules_text": "Each time this model makes an attack that targets a MONSTER, VEHICLE or FORTIFICATION unit, improve the Strength, Armour Penetration and Damage characteristics of that attack by 2."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Aggressor Squad",
+          "Eradicator Squad",
+          "Heavy Intercessor Squad"
+        ],
+        "rules_text": "This model can be attached to the following units: Aggressor Squad, Eradicator Squad, Heavy Intercessor Squad."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 5,
+        "toughness": 6,
+        "save": "3+",
+        "invulnerable_save": "4+",
+        "wounds": 6,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Artificer grav-gun",
+          "keywords": [
+            "Anti-Vehicle 2+"
+          ],
+          "range": "18 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "2"
+        },
+        {
+          "name": "Hand of Defiance",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "12",
+          "armor_piercing": "-2",
+          "damage": "2"
+        }
+      ]
+    }
+  ]
+}

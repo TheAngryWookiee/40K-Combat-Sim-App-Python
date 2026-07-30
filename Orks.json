@@ -1,7 +1,7 @@
 {
   "faction": {
     "name": "Orks",
-    "parent_faction": "Orks",
+    "parent_faction": "",
     "army_rules": [
       {
         "name": "Waaagh!",
@@ -732,7 +732,8 @@
           }
         ]
       }
-    ]
+    ],
+    "category": "Xenos"
   },
   "units": [
     {

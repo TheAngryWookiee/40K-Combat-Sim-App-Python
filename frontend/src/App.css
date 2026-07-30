@@ -3701,7 +3701,7 @@ textarea:focus {
 .matrix-column-picker {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 6px 8px;
   padding-top: 10px;
   border-top: 1px solid var(--line);
@@ -3715,22 +3715,31 @@ textarea:focus {
 }
 
 .matrix-column-toggle {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 6px;
   min-height: 28px;
   padding: 4px 6px;
   border: 0;
   border-radius: 8px;
   background: transparent;
-  cursor: pointer;
 }
 
 .matrix-column-toggle:hover {
   background: color-mix(in srgb, var(--surface-control) 72%, transparent);
 }
 
+.matrix-column-toggle label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  cursor: pointer;
+}
+
 .matrix-column-toggle input {
+  flex: 0 0 auto;
   width: 13px;
   height: 13px;
   margin: 0;
@@ -3740,6 +3749,21 @@ textarea:focus {
   color: var(--ink);
   font-size: 0.78rem;
   font-weight: 750;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matrix-column-move-controls {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
+.matrix-column-move-controls .secondary-button.compact {
+  width: 28px;
+  min-height: 26px;
+  padding: 0;
 }
 
 .secondary-button.compact {

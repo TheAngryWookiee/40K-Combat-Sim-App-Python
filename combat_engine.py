@@ -3478,6 +3478,24 @@ class CombatSimulator:
             else:
                 self.log(f"{ability_name} inflicts no mortal wounds")
 
+        if should_resolve_pre_attack_ability("Thunderhawk Cluster Bombs") and target_state["models"] > 0:
+            ability_name = "Thunderhawk Cluster Bombs"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Out-of-phase ability resolved before attacks for simulation convenience. "
+                "Actual timing: Movement phase, after this model ends a Normal move over the target."
+            )
+            rolls = [self.die_roll() for _ in range(6)]
+            mortal_wounds = sum(1 for roll in rolls if roll >= 3)
+            self.log(f"{ability_name} rolls: {rolls}")
+            if mortal_wounds > 0:
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wounds")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
         if should_resolve_pre_attack_ability("Terror From The Deep") and target_state["models"] > 0:
             ability_name = "Terror From The Deep"
             self.log(f"\n{attacker_unit['name']} activates {ability_name}")
@@ -4245,6 +4263,11 @@ class CombatSimulator:
                 {"Assault"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
             )
+        if attacker_detachment_name == "Company of Hunters":
+            add_keywords_to_matching_weapons(
+                {"Assault"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
         if bool(options.get("attacker_blitzing_fusillade_active", False)):
             add_keywords_to_matching_weapons(
                 {"Assault"},
@@ -4308,6 +4331,13 @@ class CombatSimulator:
             and weapon["range"].lower() != "melee"
         ):
             temporary_weapon_keywords.add("LH")
+        if self.ability_names_include(attacker_or_attached_ability_names, "press the attack"):
+            temporary_weapon_keywords.add("SH1")
+        if self.ability_names_include(attacker_or_attached_ability_names, "cold and calculating"):
+            if self.unit_has_keyword(target_state, "monster") or self.unit_has_keyword(target_state, "vehicle"):
+                temporary_weapon_keywords.add("LH")
+            else:
+                temporary_weapon_keywords.add("SH1")
         if bool(options.get("attacker_storm_of_fire_active", False)):
             add_keywords_to_matching_weapons(
                 {"Ignores Cover"},
@@ -4346,6 +4376,11 @@ class CombatSimulator:
         ):
             temporary_weapon_keywords.add("LH")
         if bool(options.get("attacker_honour_the_chapter_active", False)):
+            add_keywords_to_matching_weapons(
+                {"Lance"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if bool(options.get("attacker_talon_strike_active", False)):
             add_keywords_to_matching_weapons(
                 {"Lance"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
@@ -4484,6 +4519,14 @@ class CombatSimulator:
                     candidate_weapon["range"].lower() == "melee"
                     and not self.is_extra_attacks_weapon(candidate_weapon)
                 ),
+            )
+        if (
+            attacker_enhancement_name == "Master-crafted Weapon"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+        ):
+            add_keywords_to_matching_weapons(
+                {"Precision"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
             )
         if attacker_enhancement_name == "Gitfinder Gogglez":
             add_keywords_to_matching_weapons(
@@ -5002,6 +5045,21 @@ class CombatSimulator:
         ):
             reroll_all_wound_rolls = True
         if (
+            bool(options.get("attacker_illuminating_fire_active", False))
+            and weapon["range"].lower() != "melee"
+            and bool(options.get("attacker_target_within_12", False))
+            and self.unit_has_keyword(attacker_unit, "deathwing")
+        ):
+            attacker_outgoing_wound_modifier += 1
+        if (
+            bool(options.get("attacker_lions_will_active", False))
+            and weapon["range"].lower() == "melee"
+            and not self.unit_has_keyword(attacker_unit, "deathwing")
+            and not self.unit_has_keyword(attacker_unit, "ravenwing")
+            and not self.unit_has_keyword(attacker_unit, "vehicle")
+        ):
+            attacker_hit_modifier += 1
+        if (
             bool(options.get("attacker_extremis_level_threat_active", False))
             and bool(options.get("oath_of_moment_active", False))
             and self.unit_has_oath_of_moment(attacker_unit)
@@ -5084,6 +5142,12 @@ class CombatSimulator:
         ):
             melee_attack_bonus -= 1
         if (
+            "banner of macragge" in attacker_active_ability_names
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_attack_bonus += 1
+            melee_strength_bonus += 1
+        if (
             self.ability_names_include(attacker_ability_names, "gun-crazy show-offs")
             and weapon_base_name == "snazzgun"
         ):
@@ -5126,6 +5190,20 @@ class CombatSimulator:
         ):
             melee_strength_bonus += 3
         if (
+            attacker_enhancement_name == "Calibanite Armaments"
+            and weapon["range"].lower() == "melee"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+        ):
+            melee_damage_bonus += 1
+        if (
+            attacker_enhancement_name == "Ancient Weapons"
+            and weapon["range"].lower() == "melee"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+        ):
+            melee_strength_bonus += 2
+            melee_damage_bonus += 1
+            attacker_ap_modifier += 1
+        if (
             attacker_enhancement_name == "Fury of the Storm"
             and weapon["range"].lower() == "melee"
             and attacker_unit["name"] == attacker_enhancement_bearer_name
@@ -5164,6 +5242,15 @@ class CombatSimulator:
             and weapon["range"].lower() != "melee"
         ):
             ranged_strength_bonus += 1
+        if (
+            bool(options.get("attacker_relics_of_the_dark_age_active", False))
+            and weapon["range"].lower() != "melee"
+            and (
+                self.unit_has_keyword(attacker_unit, "infantry")
+                or self.unit_has_keyword(attacker_unit, "mounted")
+            )
+        ):
+            ranged_strength_bonus += 2
         if (
             self.ability_names_include(attacker_ability_names, "siege captain")
             and (
@@ -5339,6 +5426,23 @@ class CombatSimulator:
             if weapon["range"].lower() == "melee"
             else ranged_strength_bonus
         )
+        if bool(options.get("defender_strength_in_unity_active", False)):
+            if bool(options.get("attacker_engaged_by_ravenwing_unit", False)):
+                attacker_hit_modifier -= 1
+            if (
+                bool(options.get("attacker_engaged_by_deathwing_unit", False))
+                and effective_attack_strength_for_defense > int(target_state.get("toughness", 0))
+            ):
+                target_incoming_wound_modifier -= 1
+        if (
+            defender_detachment_name == "Wrath of the Rock"
+            and effective_attack_strength_for_defense > int(target_state.get("toughness", 0))
+            and (
+                self.unit_has_keyword(target_state, "infantry")
+                or self.unit_has_keyword(target_state, "mounted")
+            )
+        ):
+            target_incoming_wound_modifier -= 1
         if (
             (
                 self.target_state_has_ability(target_state, "legendary tenacity")
@@ -5350,6 +5454,13 @@ class CombatSimulator:
         if self.target_state_has_ability(target_state, "Command Squad"):
             target_incoming_wound_modifier -= 1
         if self.target_state_has_ability(target_state, "Master of Prescience"):
+            attacker_hit_modifier -= 1
+        if (
+            bool(options.get("defender_high_speed_focus_active", False))
+            and defender_detachment_name == "Company of Hunters"
+            and weapon["range"].lower() != "melee"
+            and self.unit_has_keyword(target_state, "ravenwing")
+        ):
             attacker_hit_modifier -= 1
         if (
             self.target_state_has_ability(target_state, "Shrouding")
@@ -5365,6 +5476,11 @@ class CombatSimulator:
         if self.target_state_has_ability(target_state, "Super Runts"):
             target_incoming_wound_modifier -= 1
         if (
+            self.target_state_has_ability(target_state, "Ultramarines Honour Guard")
+            and defender_has_attached_character
+        ):
+            target_incoming_wound_modifier -= 1
+        if (
             defender_enhancement_name == "Helm of the Beastslayer"
             and (
                 self.unit_has_keyword(attacker_unit, "character")
@@ -5373,7 +5489,14 @@ class CombatSimulator:
             )
         ):
             attacker_ap_modifier += 1
-        target_ap_modifier = -1 if bool(options.get("defender_armour_of_contempt_active", False)) else 0
+        target_ap_modifier = 0
+        if bool(options.get("defender_armour_of_contempt_active", False)):
+            target_ap_modifier -= 1
+            if (
+                defender_detachment_name == "Lion's Blade Task Force"
+                and bool(options.get("defender_army_battleshocked_dark_angels", False))
+            ):
+                target_ap_modifier -= 1
         if bool(options.get("defender_reinforced_hive_node_active", False)):
             target_ap_modifier -= 1
         if bool(options.get("defender_hulking_brutes_active", False)):
@@ -5495,6 +5618,11 @@ class CombatSimulator:
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 5)
         if self.target_state_has_ability(target_state, "Warp Field"):
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 6)
+        if (
+            "rampart" in defender_active_ability_names
+            and self.target_state_has_ability(target_state, "Rampart")
+        ):
+            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 2)
 
         reroll_save_rolls_of_1 = (
             defender_detachment_name == "Green Tide"
