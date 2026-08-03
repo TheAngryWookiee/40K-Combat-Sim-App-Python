@@ -343,6 +343,135 @@
           }
         ],
         "stratagems": []
+      },
+      {
+        "name": "Saga of the Great Wolf",
+        "rule": {
+          "name": "Master of Wolves",
+          "rules_text": "At the start of your Command phase, you can select one of the Hunting Packs listed below. Until the start of your next Command phase, that Hunting Pack is active and its effects apply to all Adeptus Astartes units from your army. You can only select each Hunting Pack once per battle.\n\nEncircling Jaws: This unit can re-roll Advance rolls and Charge rolls.\n\nHunter's Eyes: Each time a model in this unit makes a ranged attack, add 1 to the Hit roll.\n\nFerocious Strike: Each time this unit is selected to fight, select either the [LETHAL HITS] or [SUSTAINED HITS 1] ability. Until the end of the phase, weapons equipped by models in this unit have the selected ability.",
+          "saga": {
+            "name": "Howling Onslaught",
+            "rules_text": "Once per battle, when selecting a Hunting Pack for the Master of Wolves Detachment rule, if a Logan Grimnar model from your army is on the battlefield, you can select a Hunting Pack you have already selected this battle.",
+            "battle_size_thresholds": {},
+            "implemented": false
+          },
+          "implemented": true
+        },
+        "restrictions": [
+          "If your army uses any of the Detachments from this book, it can include Space Wolves units, but it cannot include any Adeptus Astartes units drawn from any other Chapter."
+        ],
+        "enhancements": [
+          {
+            "name": "Grimnar's Mark",
+            "rules_text": "Leader: Wolf Guard Terminators. Adeptus Astartes Terminator Captain model only. Once per battle round, from the second battle round onwards, you can target the bearer's unit with the Heroic Intervention Stratagem for 0CP, and can do so even if you have already targeted a different unit with that Stratagem this turn. In the Declare Battle Formations step, the bearer can be attached to a Wolf Guard Terminators unit.",
+            "restrictions": [
+              "Adeptus Astartes Terminator Captain model only."
+            ],
+            "implemented": false,
+            "points": 20
+          },
+          {
+            "name": "Howlmaw",
+            "rules_text": "Wolf Priest model only. At the start of the Fight phase, you can select one enemy unit within 6\" of the bearer. That unit must take a Battle-shock test, subtracting 1 from the result.",
+            "restrictions": [
+              "Wolf Priest model only."
+            ],
+            "implemented": false,
+            "points": 15
+          },
+          {
+            "name": "Chariots of the Storm",
+            "rules_text": "Adeptus Astartes model only. After both players have deployed their armies, select up to three Adeptus Astartes units from your army and redeploy them. When doing so, you can set those units up in Strategic Reserves, regardless of how many units are already in Strategic Reserves.",
+            "restrictions": [
+              "Adeptus Astartes model only."
+            ],
+            "implemented": false,
+            "points": 25
+          },
+          {
+            "name": "Skjald's Foretelling",
+            "rules_text": "Wolf Guard Battle Leader model only. While the bearer is leading a unit, weapons equipped by models in that unit have the [LANCE] ability.",
+            "restrictions": [
+              "Wolf Guard Battle Leader model only."
+            ],
+            "implemented": true,
+            "points": 25
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "The Foe Foreseen",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One Adeptus Astartes unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Until the attacking unit has finished making its attacks, each time an attack targets your unit, worsen the Armour Penetration characteristic of that attack by 1.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Grimnar's Command",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Command phase.",
+            "target": "One Adeptus Astartes unit from your army.",
+            "effect": "Select one Hunting Pack from the Master of Wolves Detachment rule. Until the start of your next Command phase, that Hunting Pack is active for your unit instead of any other Hunting Pack that is active, even if you have already selected that Hunting Pack this battle.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Fenrisian Ferocity",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase or your Charge phase.",
+            "target": "One Adeptus Astartes Mounted or Adeptus Astartes Walker unit from your army that has not been selected to move or charge this phase.",
+            "effect": "Until the end of the phase, each time a model in your unit makes a Normal, Advance, Fall Back or Charge move, it can move horizontally through models, excluding Titanic models, and terrain features. When doing so, it can move within Engagement Range of enemy models, but cannot end a Normal, Advance or Fall Back move within Engagement Range of them.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Unrelenting Hunters",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase.",
+            "target": "One Adeptus Astartes unit from your army that has not been selected to move this phase.",
+            "effect": "Until the end of the turn, your unit is eligible to declare a charge in a turn in which it Fell Back. If your unit is a Space Wolves unit, until the end of the turn it is eligible to declare a charge in a turn in which it Advanced or Fell Back.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Eye of the Pack",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase.",
+            "target": "One Adeptus Astartes unit from your army that has not been selected to shoot this phase.",
+            "effect": "Until the end of the phase, each time a model in your unit makes an attack, add 1 to the Wound roll.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Battle Instincts",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Shooting phase, just after an enemy unit has shot.",
+            "target": "One Space Wolves unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Your unit can make a Normal move of up to D6\".",
+            "restrictions": [],
+            "implemented": false
+          }
+        ]
       }
     ],
     "category": "Adeptus Astartes"

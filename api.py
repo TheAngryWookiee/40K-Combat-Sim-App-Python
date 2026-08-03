@@ -142,6 +142,10 @@ class SimulationOptions(BaseModel):
     attacker_extremis_level_threat_active: bool = False
     attacker_imperiums_sword_active: bool = False
     attacker_saga_completed: bool = False
+    attacker_great_wolf_hunting_pack: str | None = None
+    attacker_ferocious_strike_lethal_active: bool = False
+    attacker_ferocious_strike_sustained_active: bool = False
+    attacker_eye_of_the_pack_active: bool = False
     attacker_elders_guidance_active: bool = False
     attacker_boast_achieved: bool = False
     attacker_hordeslayer_outnumbered: bool = False
@@ -203,6 +207,27 @@ class SimulationOptions(BaseModel):
     attacker_talon_strike_active: bool = False
     attacker_storm_of_fire_active: bool = False
     attacker_no_threat_too_great_active: bool = False
+    attacker_no_sacrifice_too_great_active: bool = False
+    attacker_revelation_of_guilt_active: bool = False
+    attacker_exacting_punishment_active: bool = False
+    attacker_purgation_doctrine_active: bool = False
+    attacker_codex_discipline_active: bool = False
+    attacker_light_of_vengeance_lethal_active: bool = False
+    attacker_light_of_vengeance_sustained_active: bool = False
+    attacker_ceramite_entrenched_active: bool = False
+    attacker_priority_strike_active: bool = False
+    attacker_augmented_targeting_lethal_active: bool = False
+    attacker_augmented_targeting_sustained_active: bool = False
+    attacker_librarius_discipline: str | None = None
+    attacker_target_weak_point_active: bool = False
+    attacker_kill_shot_active: bool = False
+    attacker_vengeful_host_ingress_or_charge_active: bool = False
+    attacker_meteoric_onslaught_active: bool = False
+    attacker_orbital_set_up_this_turn_active: bool = False
+    attacker_disembarked_from_drop_pod: bool = False
+    attacker_tactical_decapitation_active: bool = False
+    attacker_auto_sense_coordination_lethal_active: bool = False
+    attacker_auto_sense_coordination_sustained_active: bool = False
     attacker_battle_drill_recall_active: bool = False
     attacker_mercy_is_weakness_active: bool = False
     attacker_ancient_fury_active: bool = False
@@ -221,12 +246,18 @@ class SimulationOptions(BaseModel):
     defender_hulking_brutes_active: bool = False
     defender_legendary_fortitude_active: bool = False
     defender_armour_of_contempt_active: bool = False
+    defender_foe_foreseen_active: bool = False
     defender_army_battleshocked_dark_angels: bool = False
     defender_strength_in_unity_active: bool = False
     defender_high_speed_focus_active: bool = False
+    defender_wings_of_shadow_active: bool = False
+    defender_shock_bombardment_active: bool = False
+    defender_suppression_strafing_active: bool = False
+    defender_blind_screen_active: bool = False
     attacker_engaged_by_ravenwing_unit: bool = False
     attacker_engaged_by_deathwing_unit: bool = False
     defender_overwhelming_onslaught_active: bool = False
+    defender_angels_defiant_active: bool = False
     defender_unbreakable_lines_active: bool = False
     defender_pennant_of_remembrance_active: bool = False
     defender_battleshocked: bool = False
@@ -498,6 +529,9 @@ class AttackResolutionPlanRequest(BaseModel):
 ATTACKER_STRATAGEM_OPTION_KEYS = {
     "attacker_fire_discipline_active",
     "attacker_marked_for_destruction_active",
+    "attacker_ferocious_strike_lethal_active",
+    "attacker_ferocious_strike_sustained_active",
+    "attacker_eye_of_the_pack_active",
     "attacker_unforgiven_fury_active",
     "attacker_unbridled_ferocity_active",
     "attacker_unbridled_carnage_active",
@@ -518,6 +552,22 @@ ATTACKER_STRATAGEM_OPTION_KEYS = {
     "attacker_talon_strike_active",
     "attacker_storm_of_fire_active",
     "attacker_no_threat_too_great_active",
+    "attacker_no_sacrifice_too_great_active",
+    "attacker_revelation_of_guilt_active",
+    "attacker_exacting_punishment_active",
+    "attacker_purgation_doctrine_active",
+    "attacker_codex_discipline_active",
+    "attacker_light_of_vengeance_lethal_active",
+    "attacker_light_of_vengeance_sustained_active",
+    "attacker_priority_strike_active",
+    "attacker_augmented_targeting_lethal_active",
+    "attacker_augmented_targeting_sustained_active",
+    "attacker_target_weak_point_active",
+    "attacker_kill_shot_active",
+    "attacker_meteoric_onslaught_active",
+    "attacker_tactical_decapitation_active",
+    "attacker_auto_sense_coordination_lethal_active",
+    "attacker_auto_sense_coordination_sustained_active",
     "attacker_battle_drill_recall_active",
     "attacker_mercy_is_weakness_active",
     "attacker_ancient_fury_active",
@@ -548,9 +598,15 @@ DEFENDER_STRATAGEM_OPTION_KEYS = {
     "defender_hulking_brutes_active",
     "defender_legendary_fortitude_active",
     "defender_armour_of_contempt_active",
+    "defender_foe_foreseen_active",
     "defender_strength_in_unity_active",
     "defender_high_speed_focus_active",
+    "defender_wings_of_shadow_active",
+    "defender_shock_bombardment_active",
+    "defender_suppression_strafing_active",
+    "defender_blind_screen_active",
     "defender_overwhelming_onslaught_active",
+    "defender_angels_defiant_active",
     "defender_reinforced_hive_node_active",
     "defender_unbreakable_lines_active",
 }
