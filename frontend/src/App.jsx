@@ -79,6 +79,7 @@ const initialOptions = {
   attacker_unbridled_ferocity_active: false,
   attacker_waaagh_active: false,
   defender_waaagh_active: false,
+  attacker_templar_vow: '',
   attacker_hyper_adaptation: 'swarming_instincts',
   attacker_synaptic_imperative: '',
   defender_synaptic_imperative: '',
@@ -128,6 +129,23 @@ const initialOptions = {
   attacker_relics_of_the_dark_age_active: false,
   attacker_lions_will_active: false,
   attacker_talon_strike_active: false,
+  attacker_pious_enmity_active: false,
+  attacker_for_the_emperors_honour_active: false,
+  attacker_litanies_of_purgation_active: false,
+  attacker_spoor_of_the_unholy_active: false,
+  attacker_reclaim_our_honour_active: false,
+  attacker_condemnatory_info_screed_active: false,
+  attacker_disembarked_from_land_raider: false,
+  attacker_slayers_of_abominations_active: false,
+  attacker_anointed_champion_active: false,
+  attacker_guiding_omens_instrument_active: false,
+  attacker_guiding_omens_vision_active: false,
+  attacker_adaptable_executioner_mode: '',
+  attacker_castigate_the_demagogues_active: false,
+  attacker_rite_of_perfervid_wrath_active: false,
+  attacker_rage_fuelled_warrior_active: false,
+  attacker_red_rampage_mode: '',
+  attacker_savage_echoes_mode: '',
   attacker_storm_of_fire_active: false,
   attacker_no_threat_too_great_active: false,
   attacker_no_sacrifice_too_great_active: false,
@@ -181,6 +199,9 @@ const initialOptions = {
   defender_overwhelming_onslaught_active: false,
   defender_angels_defiant_active: false,
   defender_unbreakable_lines_active: false,
+  defender_recitation_of_the_revered_active: false,
+  defender_blessed_hull_active: false,
+  defender_guiding_omens_augury_active: false,
   defender_pennant_of_remembrance_active: false,
   defender_battleshocked: false,
   defender_allocation_order: [],
@@ -190,6 +211,7 @@ const UNFORGIVEN_TASK_FORCE = 'Unforgiven Task Force'
 const LIONS_BLADE_TASK_FORCE = "Lion's Blade Task Force"
 const WRATH_OF_THE_ROCK = 'Wrath of the Rock'
 const COMPANY_OF_HUNTERS = 'Company of Hunters'
+const LIBERATOR_ASSAULT_GROUP = 'Liberator Assault Group'
 const DARK_AGE_ARSENAL = 'Dark Age Arsenal'
 const DARKFLIGHT_PURSUIT = 'Darkflight Pursuit'
 const INTERROGATION_CONCLAVE = 'Interrogation Conclave'
@@ -247,6 +269,7 @@ const CRUSHER_STAMPEDE = 'Crusher Stampede'
 const ASSIMILATION_SWARM = 'Assimilation Swarm'
 const VANGUARD_ONSLAUGHT = 'Vanguard Onslaught'
 const SYNAPTIC_NEXUS = 'Synaptic Nexus'
+const BLACK_TEMPLARS = 'Black Templars'
 const HYPER_ADAPTATION_OPTIONS = [
   { id: 'swarming_instincts', label: 'Swarming Instincts' },
   { id: 'hyper_aggression', label: 'Hyper-aggression' },
@@ -257,6 +280,13 @@ const SYNAPTIC_IMPERATIVE_OPTIONS = [
   { id: 'synaptic_augmentation', label: 'Synaptic Augmentation' },
   { id: 'surging_vitality', label: 'Surging Vitality' },
   { id: 'goaded_to_slaughter', label: 'Goaded to Slaughter' },
+]
+const TEMPLAR_VOW_OPTIONS = [
+  { id: '', label: 'No vow selected' },
+  { id: 'abhor_the_witch', label: 'Abhor the Witch, Destroy the Witch' },
+  { id: 'accept_any_challenge', label: 'Accept Any Challenge, No Matter the Odds' },
+  { id: 'suffer_not_the_unclean', label: 'Suffer Not the Unclean to Live' },
+  { id: 'uphold_the_honour', label: 'Uphold the Honour of the Emperor' },
 ]
 const AUTH_VERIFY_EMAIL_PATH = 'verify-email'
 const MATRIX_VIEW_GLOBAL = 'global'
@@ -1268,6 +1298,12 @@ const FIRESTORM_ASSAULT_FORCE = 'Firestorm Assault Force'
 const STORMLANCE_TASK_FORCE = 'Stormlance Task Force'
 const VANGUARD_SPEARHEAD = 'Vanguard Spearhead'
 const FIRST_COMPANY_TASK_FORCE = '1st Company Task Force'
+const COMPANIONS_OF_VEHEMENCE = 'Companions of Vehemence'
+const VINDICATION_TASK_FORCE = 'Vindication Task Force'
+const GODHAMMER_ASSAULT_FORCE = 'Godhammer Assault Force'
+const MARSHALS_HOUSEHOLD = "Marshal's Household"
+const THE_LIVING_MIRACLE = 'The Living Miracle'
+const WRATHFUL_PROCESSION = 'Wrathful Procession'
 const COMBAT_DOCTRINE_OPTIONS = [
   { id: '', label: 'No active doctrine' },
   { id: 'devastator', label: 'Devastator Doctrine' },
@@ -1355,6 +1391,59 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
       && selectedWeapon?.range === 'Melee'
       && unitHasKeyword(enhancementBearerUnit, 'ravenwing')
     ))
+  }
+
+  if (detachment.name === COMPANIONS_OF_VEHEMENCE) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (enhancement.name === 'Incendiary Animus' || enhancement.name === 'Merciless Denunciation') {
+        return (
+          selectedWeapon?.range === 'Melee'
+          && (unitHasKeyword(enhancementBearerUnit, 'chaplain') || unitHasKeyword(enhancementBearerUnit, 'judiciar'))
+        )
+      }
+      if (enhancement.name === 'Oathbound Exemplar') {
+        return unitHasKeyword(enhancementBearerUnit, 'infantry')
+      }
+      return enhancement.name === 'Zealous Vanguard' && unitHasKeyword(enhancementBearerUnit, 'adeptus astartes')
+    })
+  }
+
+  if (detachment.name === GODHAMMER_ASSAULT_FORCE) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (enhancement.name === 'Paragon of Fury') {
+        return selectedWeapon?.range === 'Melee' && unitHasKeyword(enhancementBearerUnit, 'adeptus astartes')
+      }
+      if (enhancement.name === 'Augur Servo-host') {
+        return selectedWeapon?.range !== 'Melee' && unitHasKeyword(enhancementBearerUnit, 'adeptus astartes')
+      }
+      return (
+        (enhancement.name === 'Battle-psalm Precentor' || enhancement.name === 'Herald of Sacred Slaughter')
+        && unitHasKeyword(enhancementBearerUnit, 'adeptus astartes')
+      )
+    })
+  }
+
+  if (detachment.name === MARSHALS_HOUSEHOLD) {
+    return (detachment.enhancements || []).filter(() => unitIsSwordBrethren(enhancementBearerUnit))
+  }
+
+  if (detachment.name === THE_LIVING_MIRACLE) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Guiding Omens' && unitIsEmperorsChampion(enhancementBearerUnit)
+    ))
+  }
+
+  if (detachment.name === WRATHFUL_PROCESSION) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (enhancement.name === 'Benediction of Fury') {
+        return selectedWeapon?.range === 'Melee' && unitHasKeyword(enhancementBearerUnit, 'chaplain')
+      }
+      return (
+        enhancement.name === 'Adaptable Executioner'
+        && selectedWeapon?.range === 'Melee'
+        && unitHasKeyword(enhancementBearerUnit, 'executor')
+      )
+    })
   }
 
   if (detachment.name === ARMOURED_SPEARTIP) {
@@ -1644,6 +1733,19 @@ function getDefenderEnhancementOptions(detachment, enhancementBearerUnit) {
     return []
   }
 
+  if (detachment.name === VINDICATION_TASK_FORCE) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Consecrating Aura'
+      && unitHasKeyword(enhancementBearerUnit, 'adeptus astartes')
+    ))
+  }
+
+  if (detachment.name === THE_LIVING_MIRACLE) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Guiding Omens' && unitIsEmperorsChampion(enhancementBearerUnit)
+    ))
+  }
+
   if (detachment.name === SAGA_OF_THE_HUNTER) {
     return (detachment.enhancements || []).filter((enhancement) => (
       enhancement.name === 'Fenrisian Grit' && Number(enhancementBearerUnit?.model_count ?? 1) === 1
@@ -1767,6 +1869,46 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
 
     if (detachment.name === COMPANY_OF_HUNTERS) {
       return stratagem.name === 'Talon Strike' && !isRangedWeapon
+    }
+
+    if (detachment.name === COMPANIONS_OF_VEHEMENCE) {
+      if (stratagem.name === 'Pious Enmity') {
+        return !isRangedWeapon && (unitHasKeyword(unit, 'chaplain') || unitHasKeyword(unit, 'judiciar'))
+      }
+      return stratagem.name === "For the Emperor's Honour!" && !isRangedWeapon && unitHasKeyword(unit, 'infantry')
+    }
+
+    if (detachment.name === VINDICATION_TASK_FORCE) {
+      if (stratagem.name === 'Litanies of Purgation') {
+        return !isRangedWeapon
+      }
+      if (stratagem.name === 'Spoor of the Unholy') {
+        return true
+      }
+      return stratagem.name === 'Reclaim Our Honour!'
+    }
+
+    if (detachment.name === GODHAMMER_ASSAULT_FORCE) {
+      return stratagem.name === 'Condemnatory Info-screed' && !isRangedWeapon
+    }
+
+    if (detachment.name === MARSHALS_HOUSEHOLD) {
+      return (
+        stratagem.name === 'Slayers of Abominations'
+        && !isRangedWeapon
+        && unitIsSwordBrethren(unit)
+      )
+    }
+
+    if (detachment.name === WRATHFUL_PROCESSION) {
+      return (
+        !isRangedWeapon
+        && unitHasKeyword(unit, 'chaplain')
+        && (
+          stratagem.name === 'Castigate the Demagogues'
+          || stratagem.name === 'Rite of Perfervid Wrath'
+        )
+      )
     }
 
     if (detachment.name === DARK_AGE_ARSENAL) {
@@ -1990,6 +2132,22 @@ function getDefenderStratagemOptions(detachment, selectedWeapon, unit) {
         stratagem.name === 'High-speed Focus'
         && selectedWeapon?.range !== 'Melee'
         && unitHasKeyword(unit, 'ravenwing')
+      )
+    }
+
+    if (detachment.name === VINDICATION_TASK_FORCE) {
+      return (
+        stratagem.name === 'Recitation of the Revered'
+        && selectedWeapon?.range !== 'Melee'
+        && unitHasKeyword(unit, 'ancient')
+      )
+    }
+
+    if (detachment.name === GODHAMMER_ASSAULT_FORCE) {
+      return (
+        stratagem.name === 'Blessed Hull'
+        && selectedWeapon?.range !== 'Melee'
+        && unitHasKeyword(unit, 'vehicle')
       )
     }
 
@@ -2275,6 +2433,7 @@ function buildSimulationPayload(state) {
     attacker_unbridled_ferocity_active: state.attackerUnbridledFerocityActive,
     attacker_waaagh_active: state.attackerWaaaghActive,
     defender_waaagh_active: state.defenderWaaaghActive,
+    attacker_templar_vow: state.attackerTemplarVow || null,
     attacker_hyper_adaptation: state.attackerHyperAdaptation || null,
     attacker_synaptic_imperative: state.attackerSynapticImperative || null,
     defender_synaptic_imperative: state.defenderSynapticImperative || null,
@@ -2324,6 +2483,23 @@ function buildSimulationPayload(state) {
     attacker_relics_of_the_dark_age_active: state.attackerRelicsOfTheDarkAgeActive,
     attacker_lions_will_active: state.attackerLionsWillActive,
     attacker_talon_strike_active: state.attackerTalonStrikeActive,
+    attacker_pious_enmity_active: state.attackerPiousEnmityActive,
+    attacker_for_the_emperors_honour_active: state.attackerForTheEmperorsHonourActive,
+    attacker_litanies_of_purgation_active: state.attackerLitaniesOfPurgationActive,
+    attacker_spoor_of_the_unholy_active: state.attackerSpoorOfTheUnholyActive,
+    attacker_reclaim_our_honour_active: state.attackerReclaimOurHonourActive,
+    attacker_condemnatory_info_screed_active: state.attackerCondemnatoryInfoScreedActive,
+    attacker_disembarked_from_land_raider: state.attackerDisembarkedFromLandRaider,
+    attacker_slayers_of_abominations_active: state.attackerSlayersOfAbominationsActive,
+    attacker_anointed_champion_active: state.attackerAnointedChampionActive,
+    attacker_guiding_omens_instrument_active: state.attackerGuidingOmensInstrumentActive,
+    attacker_guiding_omens_vision_active: state.attackerGuidingOmensVisionActive,
+    attacker_adaptable_executioner_mode: state.attackerAdaptableExecutionerMode || null,
+    attacker_castigate_the_demagogues_active: state.attackerCastigateTheDemagoguesActive,
+    attacker_rite_of_perfervid_wrath_active: state.attackerRiteOfPerfervidWrathActive,
+    attacker_rage_fuelled_warrior_active: state.attackerRageFuelledWarriorActive,
+    attacker_red_rampage_mode: state.attackerRedRampageMode,
+    attacker_savage_echoes_mode: state.attackerSavageEchoesMode,
     attacker_storm_of_fire_active: state.attackerStormOfFireActive,
     attacker_no_threat_too_great_active: state.attackerNoThreatTooGreatActive,
     attacker_no_sacrifice_too_great_active: state.attackerNoSacrificeTooGreatActive,
@@ -2377,6 +2553,9 @@ function buildSimulationPayload(state) {
     defender_overwhelming_onslaught_active: state.defenderOverwhelmingOnslaughtActive,
     defender_angels_defiant_active: state.defenderAngelsDefiantActive,
     defender_unbreakable_lines_active: state.defenderUnbreakableLinesActive,
+    defender_recitation_of_the_revered_active: state.defenderRecitationOfTheReveredActive,
+    defender_blessed_hull_active: state.defenderBlessedHullActive,
+    defender_guiding_omens_augury_active: state.defenderGuidingOmensAuguryActive,
     defender_pennant_of_remembrance_active: state.defenderPennantOfRemembranceActive,
     defender_battleshocked: state.defenderBattleshocked,
     defender_allocation_order: state.defenderAllocationOrder || [],
@@ -4193,6 +4372,14 @@ function unitIsFirstCompanyVeteranTarget(unit) {
   )
 }
 
+function unitIsSwordBrethren(unit) {
+  return unitNameOrKeywordIncludes(unit, 'sword brethren')
+}
+
+function unitIsEmperorsChampion(unit) {
+  return unitNameOrKeywordIncludes(unit, "emperor's champion")
+}
+
 function unitCanOverlapFriendlyModels(unit) {
   return unitHasKeyword(unit, 'fly') || unitHasKeyword(unit, 'aircraft')
 }
@@ -5568,6 +5755,43 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'banner of macragge': ({ phaseId, selectedWeapons }) => (
     phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
   ),
+  'sigismund\'s heir': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'fight'
+    && unitHasKeyword(targetUnit, 'character')
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'aquila optics': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'priority target acquisition': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'shooting'
+    && (unitHasKeyword(targetUnit, 'monster') || unitHasKeyword(targetUnit, 'vehicle'))
+    && selectedWeaponsIncludeProfileGroup(selectedWeapons, 'twin las-talon')
+  ),
+  'interception strike': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'virtuous onslaught': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'water from the stoup of elucidation': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'vehement aggression - passed': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'vehement aggression - failed': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'pious fervour +1': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeaponsIncludeProfileGroup(selectedWeapons, 'master-crafted power weapon')
+  ),
+  'pious fervour +2': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeaponsIncludeProfileGroup(selectedWeapons, 'master-crafted power weapon')
+  ),
+  'pious fervour +3': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeaponsIncludeProfileGroup(selectedWeapons, 'master-crafted power weapon')
+  ),
 }
 
 const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
@@ -5610,6 +5834,9 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'interceptor',
   'krumpin\' time',
   'kustom force field',
+  'crusade of wrath',
+  'inspirational exemplar',
+  'litanies of the devout',
   'litany of hate',
   'mark the target',
   'master of prescience',
@@ -5621,7 +5848,6 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'prophet of da great waaagh!',
   'pyromaniaks',
   'psychic hood',
-  'priority target acquisition',
   'press the attack',
   'ramshackle but rugged',
   'reaping tally',
@@ -5892,8 +6118,10 @@ function buildAttackerActiveRules({
   selectedAttackWeapons,
   oathOfMomentActive,
   attackerDetachment,
+  attackerFactionName,
   attackerEnhancementName,
   attackerCombatDoctrine,
+  attackerTemplarVow,
   attackerHyperAdaptation,
   attackerSynapticImperative,
   attackerWithinSynapseRange,
@@ -5934,6 +6162,22 @@ function buildAttackerActiveRules({
   attackerRelicsOfTheDarkAgeActive,
   attackerLionsWillActive,
   attackerTalonStrikeActive,
+  attackerPiousEnmityActive,
+  attackerForTheEmperorsHonourActive,
+  attackerLitaniesOfPurgationActive,
+  attackerSpoorOfTheUnholyActive,
+  attackerReclaimOurHonourActive,
+  attackerCondemnatoryInfoScreedActive,
+  attackerSlayersOfAbominationsActive,
+  attackerAnointedChampionActive,
+  attackerGuidingOmensInstrumentActive,
+  attackerGuidingOmensVisionActive,
+  attackerAdaptableExecutionerMode,
+  attackerCastigateTheDemagoguesActive,
+  attackerRiteOfPerfervidWrathActive,
+  attackerRageFuelledWarriorActive,
+  attackerRedRampageMode,
+  attackerSavageEchoesMode,
   attackerParasiticBiomorphologyFedActive,
   attackerStubbornTenacityActive,
   attackerWeaponsOfTheFirstLegionActive,
@@ -6007,6 +6251,7 @@ function buildAttackerActiveRules({
       ['teeth and claws', 'tyrnak and fenrir'].includes(String(weapon.name).toLowerCase())
     ))
   const activeCombatDoctrine = COMBAT_DOCTRINE_OPTIONS.find((option) => option.id === attackerCombatDoctrine)
+  const activeTemplarVow = TEMPLAR_VOW_OPTIONS.find((option) => option.id === attackerTemplarVow)
 
   if (oathOfMomentActive && unitHasOathOfMoment(attackerUnitDetails)) {
     const woundBonusText = unitGetsOathWoundBonus(attackerUnitDetails)
@@ -6062,6 +6307,46 @@ function buildAttackerActiveRules({
       name: activeCombatDoctrine.label,
       source: `${attackerDetachment.name} Rule`,
       text: detachmentRule?.rules_text || `${activeCombatDoctrine.label} is active for this attack.`,
+    })
+  }
+
+  if (String(attackerFactionName || '').toLowerCase() === BLACK_TEMPLARS.toLowerCase() && activeTemplarVow?.id) {
+    const textByVow = {
+      abhor_the_witch: unitHasKeyword(defenderUnitDetails, 'psyker') && selectedWeapon?.range === 'Melee'
+        ? 'This Black Templars unit selected Abhor the Witch, Destroy the Witch. Its melee attacks against this Psyker target have Precision.'
+        : 'This Black Templars unit selected Abhor the Witch, Destroy the Witch. The Precision effect applies to melee attacks against Psyker units.',
+      accept_any_challenge: selectedWeapon?.range === 'Melee'
+        ? 'This Black Templars unit selected Accept Any Challenge, No Matter the Odds. Melee attacks get +1 to Wound when their Strength is less than or equal to the target Toughness.'
+        : 'This Black Templars unit selected Accept Any Challenge, No Matter the Odds. Its attack modifier applies to melee attacks.',
+      suffer_not_the_unclean: 'This Black Templars unit selected Suffer Not the Unclean to Live. Its effects are movement and charge eligibility rules outside this attack sequence.',
+      uphold_the_honour: 'This Black Templars unit selected Uphold the Honour of the Emperor. Its effects are objective and Action rules outside this attack sequence.',
+    }
+    rules.push({
+      name: activeTemplarVow.label,
+      source: `${BLACK_TEMPLARS} Army Rule`,
+      text: textByVow[activeTemplarVow.id] || '',
+    })
+  }
+
+  if (attackerDetachment?.name === GODHAMMER_ASSAULT_FORCE && attackerDisembarkedFromTransport) {
+    const detachmentRule = getDetachmentEntry(attackerDetachment, 'rule', 'Shock and Awe')
+    if (detachmentRule) {
+      rules.push({
+        name: detachmentRule.name,
+        source: `${attackerDetachment.name} Rule`,
+        text: selectedWeapon?.range === 'Melee'
+          ? 'This unit disembarked from a Transport this turn, so its melee attacks get +1 to Hit. Its charge-triggered Battle-shock effect happens outside this attack sequence.'
+          : detachmentRule.rules_text,
+      })
+    }
+  }
+
+  if (attackerAnointedChampionActive) {
+    const detachmentRule = getDetachmentEntry(attackerDetachment, 'rule', 'Anointed Champion')
+    rules.push({
+      name: detachmentRule?.name || 'Anointed Champion',
+      source: `${attackerDetachment?.name || THE_LIVING_MIRACLE} Rule`,
+      text: 'This Emperor\'s Champion can re-roll one Hit roll and one Wound roll while resolving this melee attack sequence.',
     })
   }
 
@@ -6257,6 +6542,96 @@ function buildAttackerActiveRules({
         name: enhancement.name,
         source: `${attackerDetachment.name} Enhancement`,
         text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Incendiary Animus' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Incendiary Animus')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Merciless Denunciation' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Merciless Denunciation')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Paragon of Fury' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Paragon of Fury')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: attackerDisembarkedFromTransport
+          ? 'The bearer gets +2 Strength on melee weapons and +1 Damage because it disembarked from a Transport this turn.'
+          : enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Augur Servo-host' && selectedWeapon?.range !== 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Augur Servo-host')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: attackerTargetWithinTwelve
+          ? 'The selected enemy unit is within 12", visible, and cannot have the Benefit of Cover.'
+          : `${enhancement.rules_text} Mark the defender as within 12" to apply this. Visibility is assumed in free-form combat.`,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Guiding Omens' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Guiding Omens')
+    if (enhancement) {
+      const activeParts = []
+      if (attackerGuidingOmensInstrumentActive) {
+        activeParts.push('Instrument of the God-Emperor gives Devastating Wounds against this Character target')
+      }
+      if (attackerGuidingOmensVisionActive) {
+        activeParts.push('Vision of Momentous Brutality gives +2 Attacks')
+      }
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: activeParts.length ? `${activeParts.join('; ')}.` : enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Benediction of Fury' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Benediction of Fury')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerEnhancementName === 'Adaptable Executioner' && selectedWeapon?.range === 'Melee') {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Adaptable Executioner')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: attackerAdaptableExecutionerMode
+          ? `This model's melee attacks have ${attackerAdaptableExecutionerMode === 'cleave' ? 'Cleave 1' : 'Precision'}.`
+          : enhancement.rules_text,
       })
     }
   }
@@ -6678,6 +7053,153 @@ function buildAttackerActiveRules({
     }
   }
 
+  if (attackerPiousEnmityActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Pious Enmity')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerForTheEmperorsHonourActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', "For the Emperor's Honour!")
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerLitaniesOfPurgationActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Litanies of Purgation')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerSpoorOfTheUnholyActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Spoor of the Unholy')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerReclaimOurHonourActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Reclaim Our Honour!')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerCondemnatoryInfoScreedActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Condemnatory Info-screed')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: attackerDisembarkedFromTransport
+          ? stratagem.effect
+          : `${stratagem.effect} Mark the attacker as disembarked from a Transport to apply the reroll.`,
+      })
+    }
+  }
+
+  if (attackerSlayersOfAbominationsActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Slayers of Abominations')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerCastigateTheDemagoguesActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Castigate the Demagogues')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerRiteOfPerfervidWrathActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Rite of Perfervid Wrath')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerDetachment?.name === LIBERATOR_ASSAULT_GROUP && selectedWeapon?.range === 'Melee') {
+    const detachmentRule = getDetachmentEntry(attackerDetachment, 'rule', 'Red Thirst')
+    if (detachmentRule) {
+      rules.push({
+        name: detachmentRule.name,
+        source: `${attackerDetachment.name} Rule`,
+        text: chargedThisTurn
+          ? 'This unit charged this turn, so its melee weapons get +1 Attacks and +2 Strength.'
+          : 'This rule is selected, but the unit must have charged this turn for +1 Attacks and +2 Strength.',
+      })
+    }
+  }
+
+  if (attackerRageFuelledWarriorActive) {
+    const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Rage-fuelled Warrior')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${attackerDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (attackerRedRampageMode) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Red Rampage')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerSavageEchoesMode) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Savage Echoes')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
   if (attackerUnforgivenFuryActive) {
     const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Unforgiven Fury')
     if (stratagem) {
@@ -6956,6 +7478,9 @@ function buildDefenderActiveRules({
   attackerEngagedByDeathwingUnit,
   defenderOverwhelmingOnslaughtActive,
   defenderUnbreakableLinesActive,
+  defenderRecitationOfTheReveredActive,
+  defenderBlessedHullActive,
+  defenderGuidingOmensAuguryActive,
   defenderPennantOfRemembranceActive,
   defenderRideHardRideFastActive,
   defenderLegendaryFortitudeActive,
@@ -6995,6 +7520,47 @@ function buildDefenderActiveRules({
         name: detachmentRule.name,
         source: `${defenderDetachment.name} Rule`,
         text: detachmentRule.rules_text,
+      })
+    }
+  }
+
+  if (
+    defenderDetachment?.name === VINDICATION_TASK_FORCE
+    && unitHasKeyword(defenderUnitDetails, 'ancient')
+    && defenderOnObjective
+  ) {
+    const detachmentRule = getDetachmentEntry(defenderDetachment, 'rule', 'Purge and Sanctify')
+    if (detachmentRule) {
+      rules.push({
+        name: detachmentRule.name,
+        source: `${defenderDetachment.name} Rule`,
+        text: detachmentRule.rules_text,
+      })
+    }
+  }
+
+  if (
+    defenderDetachment?.name === WRATHFUL_PROCESSION
+    && selectedWeapon?.range !== 'Melee'
+    && unitHasKeyword(defenderUnitDetails, 'chaplain')
+  ) {
+    const detachmentRule = getDetachmentEntry(defenderDetachment, 'rule', 'Chant of Deathless Devotion')
+    if (detachmentRule) {
+      rules.push({
+        name: detachmentRule.name,
+        source: `${defenderDetachment.name} Rule`,
+        text: detachmentRule.rules_text,
+      })
+    }
+  }
+
+  if (defenderGuidingOmensAuguryActive) {
+    const enhancement = getDetachmentEntry(defenderDetachment, 'enhancements', 'Guiding Omens')
+    if (enhancement) {
+      rules.push({
+        name: 'Augury of Retribution',
+        source: `${defenderDetachment.name} Enhancement`,
+        text: 'Melee attacks that target this Emperor\'s Champion unit have Hazardous.',
       })
     }
   }
@@ -7071,8 +7637,41 @@ function buildDefenderActiveRules({
     }
   }
 
+  if (defenderRecitationOfTheReveredActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Recitation of the Revered')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${defenderDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (defenderBlessedHullActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Blessed Hull')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${defenderDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
   if (defenderPennantOfRemembranceActive) {
     const enhancement = getDetachmentEntry(defenderDetachment, 'enhancements', 'Pennant of Remembrance')
+    if (enhancement) {
+      rules.push({
+        name: enhancement.name,
+        source: `${defenderDetachment.name} Enhancement`,
+        text: enhancement.rules_text,
+      })
+    }
+  }
+
+  if (defenderEnhancementName === 'Consecrating Aura') {
+    const enhancement = getDetachmentEntry(defenderDetachment, 'enhancements', 'Consecrating Aura')
     if (enhancement) {
       rules.push({
         name: enhancement.name,
@@ -7830,6 +8429,7 @@ function App() {
   const [attackerUnbridledFerocityActive, setAttackerUnbridledFerocityActive] = useState(() => combatInitial('attacker_unbridled_ferocity_active', initialOptions.attacker_unbridled_ferocity_active))
   const [attackerWaaaghActive, setAttackerWaaaghActive] = useState(() => combatInitial('attacker_waaagh_active', initialOptions.attacker_waaagh_active))
   const [defenderWaaaghActive, setDefenderWaaaghActive] = useState(() => combatInitial('defender_waaagh_active', initialOptions.defender_waaagh_active))
+  const [attackerTemplarVow, setAttackerTemplarVow] = useState(() => combatInitial('attacker_templar_vow', initialOptions.attacker_templar_vow))
   const [attackerHyperAdaptation, setAttackerHyperAdaptation] = useState(() => combatInitial('attacker_hyper_adaptation', initialOptions.attacker_hyper_adaptation))
   const [attackerSynapticImperative, setAttackerSynapticImperative] = useState(() => combatInitial('attacker_synaptic_imperative', initialOptions.attacker_synaptic_imperative))
   const [defenderSynapticImperative, setDefenderSynapticImperative] = useState(() => combatInitial('defender_synaptic_imperative', initialOptions.defender_synaptic_imperative))
@@ -7879,6 +8479,23 @@ function App() {
   const [attackerRelicsOfTheDarkAgeActive, setAttackerRelicsOfTheDarkAgeActive] = useState(() => combatInitial('attacker_relics_of_the_dark_age_active', initialOptions.attacker_relics_of_the_dark_age_active))
   const [attackerLionsWillActive, setAttackerLionsWillActive] = useState(() => combatInitial('attacker_lions_will_active', initialOptions.attacker_lions_will_active))
   const [attackerTalonStrikeActive, setAttackerTalonStrikeActive] = useState(() => combatInitial('attacker_talon_strike_active', initialOptions.attacker_talon_strike_active))
+  const [attackerPiousEnmityActive, setAttackerPiousEnmityActive] = useState(() => combatInitial('attacker_pious_enmity_active', initialOptions.attacker_pious_enmity_active))
+  const [attackerForTheEmperorsHonourActive, setAttackerForTheEmperorsHonourActive] = useState(() => combatInitial('attacker_for_the_emperors_honour_active', initialOptions.attacker_for_the_emperors_honour_active))
+  const [attackerLitaniesOfPurgationActive, setAttackerLitaniesOfPurgationActive] = useState(() => combatInitial('attacker_litanies_of_purgation_active', initialOptions.attacker_litanies_of_purgation_active))
+  const [attackerSpoorOfTheUnholyActive, setAttackerSpoorOfTheUnholyActive] = useState(() => combatInitial('attacker_spoor_of_the_unholy_active', initialOptions.attacker_spoor_of_the_unholy_active))
+  const [attackerReclaimOurHonourActive, setAttackerReclaimOurHonourActive] = useState(() => combatInitial('attacker_reclaim_our_honour_active', initialOptions.attacker_reclaim_our_honour_active))
+  const [attackerCondemnatoryInfoScreedActive, setAttackerCondemnatoryInfoScreedActive] = useState(() => combatInitial('attacker_condemnatory_info_screed_active', initialOptions.attacker_condemnatory_info_screed_active))
+  const [attackerDisembarkedFromLandRaider, setAttackerDisembarkedFromLandRaider] = useState(() => combatInitial('attacker_disembarked_from_land_raider', initialOptions.attacker_disembarked_from_land_raider))
+  const [attackerSlayersOfAbominationsActive, setAttackerSlayersOfAbominationsActive] = useState(() => combatInitial('attacker_slayers_of_abominations_active', initialOptions.attacker_slayers_of_abominations_active))
+  const [attackerAnointedChampionActive, setAttackerAnointedChampionActive] = useState(() => combatInitial('attacker_anointed_champion_active', initialOptions.attacker_anointed_champion_active))
+  const [attackerGuidingOmensInstrumentActive, setAttackerGuidingOmensInstrumentActive] = useState(() => combatInitial('attacker_guiding_omens_instrument_active', initialOptions.attacker_guiding_omens_instrument_active))
+  const [attackerGuidingOmensVisionActive, setAttackerGuidingOmensVisionActive] = useState(() => combatInitial('attacker_guiding_omens_vision_active', initialOptions.attacker_guiding_omens_vision_active))
+  const [attackerAdaptableExecutionerMode, setAttackerAdaptableExecutionerMode] = useState(() => combatInitial('attacker_adaptable_executioner_mode', initialOptions.attacker_adaptable_executioner_mode))
+  const [attackerCastigateTheDemagoguesActive, setAttackerCastigateTheDemagoguesActive] = useState(() => combatInitial('attacker_castigate_the_demagogues_active', initialOptions.attacker_castigate_the_demagogues_active))
+  const [attackerRiteOfPerfervidWrathActive, setAttackerRiteOfPerfervidWrathActive] = useState(() => combatInitial('attacker_rite_of_perfervid_wrath_active', initialOptions.attacker_rite_of_perfervid_wrath_active))
+  const [attackerRageFuelledWarriorActive, setAttackerRageFuelledWarriorActive] = useState(() => combatInitial('attacker_rage_fuelled_warrior_active', initialOptions.attacker_rage_fuelled_warrior_active))
+  const [attackerRedRampageMode, setAttackerRedRampageMode] = useState(() => combatInitial('attacker_red_rampage_mode', initialOptions.attacker_red_rampage_mode))
+  const [attackerSavageEchoesMode, setAttackerSavageEchoesMode] = useState(() => combatInitial('attacker_savage_echoes_mode', initialOptions.attacker_savage_echoes_mode))
   const [attackerStormOfFireActive, setAttackerStormOfFireActive] = useState(() => combatInitial('attacker_storm_of_fire_active', initialOptions.attacker_storm_of_fire_active))
   const [attackerNoThreatTooGreatActive, setAttackerNoThreatTooGreatActive] = useState(() => combatInitial('attacker_no_threat_too_great_active', initialOptions.attacker_no_threat_too_great_active))
   const [attackerNoSacrificeTooGreatActive, setAttackerNoSacrificeTooGreatActive] = useState(() => combatInitial('attacker_no_sacrifice_too_great_active', initialOptions.attacker_no_sacrifice_too_great_active))
@@ -7932,6 +8549,9 @@ function App() {
   const [defenderOverwhelmingOnslaughtActive, setDefenderOverwhelmingOnslaughtActive] = useState(() => combatInitial('defender_overwhelming_onslaught_active', initialOptions.defender_overwhelming_onslaught_active))
   const [defenderAngelsDefiantActive, setDefenderAngelsDefiantActive] = useState(() => combatInitial('defender_angels_defiant_active', initialOptions.defender_angels_defiant_active))
   const [defenderUnbreakableLinesActive, setDefenderUnbreakableLinesActive] = useState(() => combatInitial('defender_unbreakable_lines_active', initialOptions.defender_unbreakable_lines_active))
+  const [defenderRecitationOfTheReveredActive, setDefenderRecitationOfTheReveredActive] = useState(() => combatInitial('defender_recitation_of_the_revered_active', initialOptions.defender_recitation_of_the_revered_active))
+  const [defenderBlessedHullActive, setDefenderBlessedHullActive] = useState(() => combatInitial('defender_blessed_hull_active', initialOptions.defender_blessed_hull_active))
+  const [defenderGuidingOmensAuguryActive, setDefenderGuidingOmensAuguryActive] = useState(() => combatInitial('defender_guiding_omens_augury_active', initialOptions.defender_guiding_omens_augury_active))
   const [defenderPennantOfRemembranceActive, setDefenderPennantOfRemembranceActive] = useState(() => combatInitial('defender_pennant_of_remembrance_active', initialOptions.defender_pennant_of_remembrance_active))
   const [defenderBattleshocked, setDefenderBattleshocked] = useState(() => combatInitial('defender_battleshocked', initialOptions.defender_battleshocked))
 
@@ -8134,6 +8754,7 @@ function App() {
       attacker_unbridled_ferocity_active: attackerUnbridledFerocityActive,
       attacker_waaagh_active: attackerWaaaghActive,
       defender_waaagh_active: defenderWaaaghActive,
+      attacker_templar_vow: attackerTemplarVow,
       attacker_hyper_adaptation: attackerHyperAdaptation,
       attacker_synaptic_imperative: attackerSynapticImperative,
       defender_synaptic_imperative: defenderSynapticImperative,
@@ -8183,6 +8804,23 @@ function App() {
       attacker_relics_of_the_dark_age_active: attackerRelicsOfTheDarkAgeActive,
       attacker_lions_will_active: attackerLionsWillActive,
       attacker_talon_strike_active: attackerTalonStrikeActive,
+      attacker_pious_enmity_active: attackerPiousEnmityActive,
+      attacker_for_the_emperors_honour_active: attackerForTheEmperorsHonourActive,
+      attacker_litanies_of_purgation_active: attackerLitaniesOfPurgationActive,
+      attacker_spoor_of_the_unholy_active: attackerSpoorOfTheUnholyActive,
+      attacker_reclaim_our_honour_active: attackerReclaimOurHonourActive,
+      attacker_condemnatory_info_screed_active: attackerCondemnatoryInfoScreedActive,
+      attacker_disembarked_from_land_raider: attackerDisembarkedFromLandRaider,
+      attacker_slayers_of_abominations_active: attackerSlayersOfAbominationsActive,
+      attacker_anointed_champion_active: attackerAnointedChampionActive,
+      attacker_guiding_omens_instrument_active: attackerGuidingOmensInstrumentActive,
+      attacker_guiding_omens_vision_active: attackerGuidingOmensVisionActive,
+      attacker_adaptable_executioner_mode: attackerAdaptableExecutionerMode,
+      attacker_castigate_the_demagogues_active: attackerCastigateTheDemagoguesActive,
+      attacker_rite_of_perfervid_wrath_active: attackerRiteOfPerfervidWrathActive,
+      attacker_rage_fuelled_warrior_active: attackerRageFuelledWarriorActive,
+      attacker_red_rampage_mode: attackerRedRampageMode,
+      attacker_savage_echoes_mode: attackerSavageEchoesMode,
       attacker_storm_of_fire_active: attackerStormOfFireActive,
       attacker_no_threat_too_great_active: attackerNoThreatTooGreatActive,
       attacker_no_sacrifice_too_great_active: attackerNoSacrificeTooGreatActive,
@@ -8236,6 +8874,9 @@ function App() {
       defender_overwhelming_onslaught_active: defenderOverwhelmingOnslaughtActive,
       defender_angels_defiant_active: defenderAngelsDefiantActive,
       defender_unbreakable_lines_active: defenderUnbreakableLinesActive,
+      defender_recitation_of_the_revered_active: defenderRecitationOfTheReveredActive,
+      defender_blessed_hull_active: defenderBlessedHullActive,
+      defender_guiding_omens_augury_active: defenderGuidingOmensAuguryActive,
       defender_pennant_of_remembrance_active: defenderPennantOfRemembranceActive,
       defender_battleshocked: defenderBattleshocked,
     }))
@@ -9671,7 +10312,8 @@ function App() {
     selectedAttackWeapons.some((weapon) => getWeaponKeywordValue(weapon, 'Rapid Fire') > 0)
     || selectedAttackWeapons.some((weapon) => getWeaponKeywordValue(weapon, 'Melta') > 0)
   )
-  const hasOathOfMoment = unitHasOathOfMoment(attackerUnitDetails)
+  const attackerArmyIsBlackTemplars = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === BLACK_TEMPLARS.toLowerCase()
+  const hasOathOfMoment = unitHasOathOfMoment(attackerUnitDetails) && !attackerArmyIsBlackTemplars
   const attackerEnhancementBearerUnit = attackerAttachedLeaderUnitDetails || attackerAttachedSupportUnitDetails || attackerUnitDetails
   const defenderEnhancementBearerUnit = attachedCharacterUnitDetails || attachedSupportUnitDetails || defenderUnitDetails
   const attackerEnhancementOptions = useMemo(
@@ -9720,6 +10362,30 @@ function App() {
   const canUseAttackerRelicsOfTheDarkAge = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Relics of the Dark Age')
   const canUseAttackerLionsWill = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === "Lion's Will")
   const canUseAttackerTalonStrike = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Talon Strike')
+  const canUseAttackerPiousEnmity = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Pious Enmity')
+  const canUseAttackerForTheEmperorsHonour = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === "For the Emperor's Honour!")
+  const canUseAttackerLitaniesOfPurgation = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Litanies of Purgation')
+  const canUseAttackerSpoorOfTheUnholy = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Spoor of the Unholy')
+  const canUseAttackerReclaimOurHonour = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Reclaim Our Honour!')
+  const canUseAttackerCondemnatoryInfoScreed = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Condemnatory Info-screed')
+  const canUseAttackerSlayersOfAbominations = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Slayers of Abominations')
+  const canUseAttackerAnointedChampion = (
+    selectedAttackerDetachment?.name === THE_LIVING_MIRACLE
+    && isMeleeWeapon
+    && unitIsEmperorsChampion(attackerEnhancementBearerUnit)
+  )
+  const canUseAttackerGuidingOmensInstrument = (
+    attackerEnhancementName === 'Guiding Omens'
+    && isMeleeWeapon
+    && unitHasKeyword(defenderUnitDetails, 'character')
+  )
+  const canUseAttackerGuidingOmensVision = attackerEnhancementName === 'Guiding Omens' && isMeleeWeapon
+  const canUseAttackerAdaptableExecutioner = attackerEnhancementName === 'Adaptable Executioner' && isMeleeWeapon
+  const canUseAttackerCastigateTheDemagogues = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Castigate the Demagogues')
+  const canUseAttackerRiteOfPerfervidWrath = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Rite of Perfervid Wrath')
+  const canUseAttackerRageFuelledWarrior = attackerEnhancementName === 'Rage-fuelled Warrior' && isMeleeWeapon
+  const canUseAttackerRedRampage = attackerCanBeTargetedByStratagems && isMeleeWeapon && attackerStratagemOptions.some((item) => item.name === 'Red Rampage')
+  const canUseAttackerSavageEchoes = attackerCanBeTargetedByStratagems && isMeleeWeapon && attackerStratagemOptions.some((item) => item.name === 'Savage Echoes')
   const canUseAttackerStormOfFire = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Storm of Fire')
   const canUseAttackerNoThreatTooGreat = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'No Threat Too Great')
   const canUseAttackerNoSacrificeTooGreat = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'No Sacrifice Too Great')
@@ -9764,6 +10430,9 @@ function App() {
   const canUseDefenderFoeForeseen = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'The Foe Foreseen')
   const canUseDefenderOverwhelmingOnslaught = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Overwhelming Onslaught')
   const canUseDefenderUnbreakableLines = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Unbreakable Lines')
+  const canUseDefenderRecitationOfTheRevered = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Recitation of the Revered')
+  const canUseDefenderBlessedHull = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Blessed Hull')
+  const canUseDefenderGuidingOmensAugury = defenderEnhancementName === 'Guiding Omens' && isMeleeWeapon
   const canUseDefenderArdAsNails = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === "'Ard as Nails")
   const canUseDefenderAblativeCarapace = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Ablative Carapace')
   const canUseDefenderStalkinTaktiks = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === "Stalkin' Taktiks")
@@ -9804,6 +10473,7 @@ function App() {
   )
   const canUseAttackerPrey = selectedAttackerDetachment?.name === DA_BIG_HUNT
   const canUseAttackerCombatDoctrine = selectedAttackerDetachment?.name === GLADIUS_TASK_FORCE
+  const canUseAttackerTemplarVow = attackerArmyIsBlackTemplars
   const canUseAttackerHyperAdaptation = selectedAttackerDetachment?.name === INVASION_FLEET
   const canUseAttackerSynapticImperative = selectedAttackerDetachment?.name === SYNAPTIC_NEXUS
   const canUseDefenderSynapticImperative = selectedDefenderDetachment?.name === SYNAPTIC_NEXUS
@@ -9816,6 +10486,7 @@ function App() {
       || selectedDefenderDetachment?.name === VANGUARD_SPEARHEAD
       || canUseAttackerStrikeFromTheShadows
       || canUseAttackerIlluminatingFire
+      || attackerEnhancementName === 'Augur Servo-host'
       || (
         selectedAttackerDetachment?.name === LIBRARIUS_CONCLAVE
         && attackerLibrariusDiscipline === 'pyromancy'
@@ -9823,7 +10494,13 @@ function App() {
     )
   )
   const canUseTargetClosestEligibleWithinSix = canUseAttackerCrucibleOfBattle
-  const canUseAttackerDisembarkedFromTransport = canUseAttackerOnslaughtOfFire
+  const canUseAttackerDisembarkedFromTransport = (
+    canUseAttackerOnslaughtOfFire
+    || selectedAttackerDetachment?.name === GODHAMMER_ASSAULT_FORCE
+    || attackerEnhancementName === 'Paragon of Fury'
+    || canUseAttackerCondemnatoryInfoScreed
+  )
+  const canUseAttackerDisembarkedFromLandRaider = canUseAttackerCondemnatoryInfoScreed && attackerDisembarkedFromTransport
   const canUseTargetBelowStartingStrength = (
     attackerEnhancementName === "'Eadstompa"
     || defenderEnhancementName === 'Adaptive Biology'
@@ -9847,11 +10524,12 @@ function App() {
     defenderUnitDetails?.attached_leader,
     defenderUnitDetails?.attached_support,
   ]
-  const canUseAttackerOnObjective = unitListHasObjectiveSelfRule(attackerObjectiveRuleUnits)
+  const canUseAttackerOnObjective = unitListHasObjectiveSelfRule(attackerObjectiveRuleUnits) || canUseAttackerLitaniesOfPurgation
   const canUseDefenderOnObjective = (
     unitListHasObjectiveSelfRule(defenderObjectiveRuleUnits)
     || unitListHasTargetObjectiveRule(attackerObjectiveRuleUnits)
     || defenderEnhancementName === 'Stoic Defender'
+    || canUseAttackerLitaniesOfPurgation
   )
   const canUseTryDatButton = selectedAttackerDetachment?.name === DREAD_MOB && (
     unitHasKeyword(attackerUnitDetails, 'mek')
@@ -10042,6 +10720,30 @@ function App() {
     () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Talon Strike'),
     [selectedAttackerDetachment],
   )
+  const piousEnmityEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Pious Enmity'),
+    [selectedAttackerDetachment],
+  )
+  const forTheEmperorsHonourEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', "For the Emperor's Honour!"),
+    [selectedAttackerDetachment],
+  )
+  const litaniesOfPurgationEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Litanies of Purgation'),
+    [selectedAttackerDetachment],
+  )
+  const spoorOfTheUnholyEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Spoor of the Unholy'),
+    [selectedAttackerDetachment],
+  )
+  const reclaimOurHonourEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Reclaim Our Honour!'),
+    [selectedAttackerDetachment],
+  )
+  const condemnatoryInfoScreedEntry = useMemo(
+    () => getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Condemnatory Info-screed'),
+    [selectedAttackerDetachment],
+  )
   const armourOfContemptEntry = useMemo(
     () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Armour of Contempt'),
     [selectedDefenderDetachment],
@@ -10060,6 +10762,14 @@ function App() {
   )
   const unbreakableLinesEntry = useMemo(
     () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Unbreakable Lines'),
+    [selectedDefenderDetachment],
+  )
+  const recitationOfTheReveredEntry = useMemo(
+    () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Recitation of the Revered'),
+    [selectedDefenderDetachment],
+  )
+  const blessedHullEntry = useMemo(
+    () => getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Blessed Hull'),
     [selectedDefenderDetachment],
   )
   const ardAsNailsEntry = useMemo(
@@ -10140,6 +10850,14 @@ function App() {
   const relicsOfTheDarkAgeTooltip = formatStratagemTooltip(relicsOfTheDarkAgeEntry)
   const lionsWillTooltip = formatStratagemTooltip(lionsWillEntry)
   const talonStrikeTooltip = formatStratagemTooltip(talonStrikeEntry)
+  const piousEnmityTooltip = formatStratagemTooltip(piousEnmityEntry)
+  const forTheEmperorsHonourTooltip = formatStratagemTooltip(forTheEmperorsHonourEntry)
+  const litaniesOfPurgationTooltip = formatStratagemTooltip(litaniesOfPurgationEntry)
+  const spoorOfTheUnholyTooltip = formatStratagemTooltip(spoorOfTheUnholyEntry)
+  const reclaimOurHonourTooltip = formatStratagemTooltip(reclaimOurHonourEntry)
+  const condemnatoryInfoScreedTooltip = formatStratagemTooltip(condemnatoryInfoScreedEntry)
+  const recitationOfTheReveredTooltip = formatStratagemTooltip(recitationOfTheReveredEntry)
+  const blessedHullTooltip = formatStratagemTooltip(blessedHullEntry)
   const dragItDownTooltip = formatStratagemTooltip(dragItDownEntry)
   const blitzaFireTooltip = formatStratagemTooltip(blitzaFireEntry)
   const dakkastormTooltip = formatStratagemTooltip(dakkastormEntry)
@@ -10577,6 +11295,7 @@ function App() {
   )
   const attackerPreyTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Da Hunt Is On')?.rules_text || ''
   const attackerCombatDoctrineTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Combat Doctrines')?.rules_text || ''
+  const attackerTemplarVowTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Templar Vows')?.rules_text || ''
   const attackerLibrariusDisciplineTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Psychic Disciplines')?.rules_text || ''
   const attackerSynapticImperativeTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Synaptic Imperatives')?.rules_text || ''
   const defenderSynapticImperativeTooltip = getDetachmentEntry(selectedDefenderDetachment, 'rule', 'Synaptic Imperatives')?.rules_text || ''
@@ -10620,8 +11339,10 @@ function App() {
       selectedAttackWeapons,
       oathOfMomentActive,
       attackerDetachment: selectedAttackerDetachment,
+      attackerFactionName: attackerFactionDetails?.name || attackerFaction,
       attackerEnhancementName,
       attackerCombatDoctrine,
+      attackerTemplarVow,
       attackerHyperAdaptation,
       attackerSynapticImperative,
       attackerWithinSynapseRange,
@@ -10647,7 +11368,7 @@ function App() {
       attackerStrikeFromTheShadowsActive,
       attackerTargetWithinTwelve,
       attackerTargetClosestEligibleWithinSix,
-      attackerDisembarkedFromTransport,
+  attackerDisembarkedFromTransport,
       attackerUnforgivenFuryActive,
       attackerUnbridledFerocityActive,
       attackerAdrenalSurgeActive,
@@ -10663,6 +11384,22 @@ function App() {
       attackerRelicsOfTheDarkAgeActive,
       attackerLionsWillActive,
       attackerTalonStrikeActive,
+      attackerPiousEnmityActive,
+      attackerForTheEmperorsHonourActive,
+      attackerLitaniesOfPurgationActive,
+      attackerSpoorOfTheUnholyActive,
+      attackerReclaimOurHonourActive,
+      attackerCondemnatoryInfoScreedActive,
+      attackerSlayersOfAbominationsActive,
+      attackerAnointedChampionActive,
+      attackerGuidingOmensInstrumentActive,
+      attackerGuidingOmensVisionActive,
+      attackerAdaptableExecutionerMode,
+      attackerCastigateTheDemagoguesActive,
+      attackerRiteOfPerfervidWrathActive,
+      attackerRageFuelledWarriorActive,
+      attackerRedRampageMode,
+      attackerSavageEchoesMode,
       attackerParasiticBiomorphologyFedActive,
       attackerStubbornTenacityActive,
       attackerWeaponsOfTheFirstLegionActive,
@@ -10697,8 +11434,11 @@ function App() {
       selectedAttackWeapons,
       oathOfMomentActive,
       selectedAttackerDetachment,
+      attackerFactionDetails?.name,
+      attackerFaction,
       attackerEnhancementName,
       attackerCombatDoctrine,
+      attackerTemplarVow,
       attackerHyperAdaptation,
       attackerSynapticImperative,
       attackerWithinSynapseRange,
@@ -10740,7 +11480,23 @@ function App() {
       attackerRelicsOfTheDarkAgeActive,
       attackerLionsWillActive,
       attackerTalonStrikeActive,
-      attackerParasiticBiomorphologyFedActive,
+      attackerPiousEnmityActive,
+      attackerForTheEmperorsHonourActive,
+      attackerLitaniesOfPurgationActive,
+      attackerSpoorOfTheUnholyActive,
+      attackerReclaimOurHonourActive,
+      attackerCondemnatoryInfoScreedActive,
+      attackerSlayersOfAbominationsActive,
+      attackerAnointedChampionActive,
+      attackerGuidingOmensInstrumentActive,
+      attackerGuidingOmensVisionActive,
+      attackerAdaptableExecutionerMode,
+    attackerCastigateTheDemagoguesActive,
+    attackerRiteOfPerfervidWrathActive,
+    attackerRageFuelledWarriorActive,
+    attackerRedRampageMode,
+    attackerSavageEchoesMode,
+    attackerParasiticBiomorphologyFedActive,
       attackerStubbornTenacityActive,
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
@@ -10782,6 +11538,9 @@ function App() {
       attackerEngagedByDeathwingUnit,
       defenderOverwhelmingOnslaughtActive,
       defenderUnbreakableLinesActive,
+      defenderRecitationOfTheReveredActive,
+      defenderBlessedHullActive,
+      defenderGuidingOmensAuguryActive,
       defenderPennantOfRemembranceActive,
       defenderRideHardRideFastActive,
       defenderLegendaryFortitudeActive,
@@ -10814,6 +11573,9 @@ function App() {
       attackerEngagedByDeathwingUnit,
       defenderOverwhelmingOnslaughtActive,
       defenderUnbreakableLinesActive,
+      defenderRecitationOfTheReveredActive,
+      defenderBlessedHullActive,
+      defenderGuidingOmensAuguryActive,
       defenderPennantOfRemembranceActive,
       defenderRideHardRideFastActive,
       defenderLegendaryFortitudeActive,
@@ -12608,6 +13370,9 @@ function App() {
     if (!canUseAttackerCombatDoctrine && attackerCombatDoctrine) {
       setAttackerCombatDoctrine('')
     }
+    if (!canUseAttackerTemplarVow && attackerTemplarVow) {
+      setAttackerTemplarVow(initialOptions.attacker_templar_vow)
+    }
     if (canUseAttackerHyperAdaptation && !attackerHyperAdaptation) {
       setAttackerHyperAdaptation(initialOptions.attacker_hyper_adaptation)
     } else if (!canUseAttackerHyperAdaptation && attackerHyperAdaptation !== initialOptions.attacker_hyper_adaptation) {
@@ -12762,6 +13527,57 @@ function App() {
     }
     if (!canUseAttackerTalonStrike && attackerTalonStrikeActive) {
       setAttackerTalonStrikeActive(false)
+    }
+    if (!canUseAttackerPiousEnmity && attackerPiousEnmityActive) {
+      setAttackerPiousEnmityActive(false)
+    }
+    if (!canUseAttackerForTheEmperorsHonour && attackerForTheEmperorsHonourActive) {
+      setAttackerForTheEmperorsHonourActive(false)
+    }
+    if (!canUseAttackerLitaniesOfPurgation && attackerLitaniesOfPurgationActive) {
+      setAttackerLitaniesOfPurgationActive(false)
+    }
+    if (!canUseAttackerSpoorOfTheUnholy && attackerSpoorOfTheUnholyActive) {
+      setAttackerSpoorOfTheUnholyActive(false)
+    }
+    if (!canUseAttackerReclaimOurHonour && attackerReclaimOurHonourActive) {
+      setAttackerReclaimOurHonourActive(false)
+    }
+    if (!canUseAttackerCondemnatoryInfoScreed && attackerCondemnatoryInfoScreedActive) {
+      setAttackerCondemnatoryInfoScreedActive(false)
+    }
+    if (!canUseAttackerDisembarkedFromLandRaider && attackerDisembarkedFromLandRaider) {
+      setAttackerDisembarkedFromLandRaider(false)
+    }
+    if (!canUseAttackerSlayersOfAbominations && attackerSlayersOfAbominationsActive) {
+      setAttackerSlayersOfAbominationsActive(false)
+    }
+    if (!canUseAttackerAnointedChampion && attackerAnointedChampionActive) {
+      setAttackerAnointedChampionActive(false)
+    }
+    if (!canUseAttackerGuidingOmensInstrument && attackerGuidingOmensInstrumentActive) {
+      setAttackerGuidingOmensInstrumentActive(false)
+    }
+    if (!canUseAttackerGuidingOmensVision && attackerGuidingOmensVisionActive) {
+      setAttackerGuidingOmensVisionActive(false)
+    }
+    if (!canUseAttackerAdaptableExecutioner && attackerAdaptableExecutionerMode) {
+      setAttackerAdaptableExecutionerMode('')
+    }
+    if (!canUseAttackerCastigateTheDemagogues && attackerCastigateTheDemagoguesActive) {
+      setAttackerCastigateTheDemagoguesActive(false)
+    }
+    if (!canUseAttackerRiteOfPerfervidWrath && attackerRiteOfPerfervidWrathActive) {
+      setAttackerRiteOfPerfervidWrathActive(false)
+    }
+    if (!canUseAttackerRageFuelledWarrior && attackerRageFuelledWarriorActive) {
+      setAttackerRageFuelledWarriorActive(false)
+    }
+    if (!canUseAttackerRedRampage && attackerRedRampageMode) {
+      setAttackerRedRampageMode('')
+    }
+    if (!canUseAttackerSavageEchoes && attackerSavageEchoesMode) {
+      setAttackerSavageEchoesMode('')
     }
     if (!canUseAttackerStormOfFire && attackerStormOfFireActive) {
       setAttackerStormOfFireActive(false)
@@ -12933,6 +13749,15 @@ function App() {
     if (!canUseDefenderAngelsDefiant && defenderAngelsDefiantActive) {
       setDefenderAngelsDefiantActive(false)
     }
+    if (!canUseDefenderRecitationOfTheRevered && defenderRecitationOfTheReveredActive) {
+      setDefenderRecitationOfTheReveredActive(false)
+    }
+    if (!canUseDefenderBlessedHull && defenderBlessedHullActive) {
+      setDefenderBlessedHullActive(false)
+    }
+    if (!canUseDefenderGuidingOmensAugury && defenderGuidingOmensAuguryActive) {
+      setDefenderGuidingOmensAuguryActive(false)
+    }
   }, [
     attackerArmedToDaTeefActive,
     attackerAdrenalSurgeActive,
@@ -12953,6 +13778,7 @@ function App() {
     attackerBattleDrillRecallActive,
     attackerBlitzaFireActive,
     attackerCombatDoctrine,
+    attackerTemplarVow,
     attackerCeramiteEntrenchedActive,
     attackerEyeOfThePackActive,
     attackerFerociousStrikeLethalActive,
@@ -12975,6 +13801,20 @@ function App() {
     attackerRelicsOfTheDarkAgeActive,
     attackerLionsWillActive,
     attackerTalonStrikeActive,
+    attackerPiousEnmityActive,
+    attackerForTheEmperorsHonourActive,
+    attackerLitaniesOfPurgationActive,
+    attackerSpoorOfTheUnholyActive,
+    attackerReclaimOurHonourActive,
+    attackerCondemnatoryInfoScreedActive,
+    attackerDisembarkedFromLandRaider,
+    attackerSlayersOfAbominationsActive,
+    attackerAnointedChampionActive,
+    attackerGuidingOmensInstrumentActive,
+    attackerGuidingOmensVisionActive,
+    attackerAdaptableExecutionerMode,
+    attackerCastigateTheDemagoguesActive,
+    attackerRiteOfPerfervidWrathActive,
     attackerExtremisLevelThreatActive,
     attackerHeroesOfTheChapterActive,
     attackerImperiumsSwordActive,
@@ -13028,6 +13868,7 @@ function App() {
     canUseAttackerAugmentedTargeting,
     canUseAttackerCeramiteEntrenched,
     canUseAttackerCombatDoctrine,
+    canUseAttackerTemplarVow,
     canUseAttackerHyperAdaptation,
     canUseAttackerSynapticImperative,
     canUseAttackerCompetitiveStreak,
@@ -13043,6 +13884,20 @@ function App() {
     canUseAttackerRelicsOfTheDarkAge,
     canUseAttackerLionsWill,
     canUseAttackerTalonStrike,
+    canUseAttackerPiousEnmity,
+    canUseAttackerForTheEmperorsHonour,
+    canUseAttackerLitaniesOfPurgation,
+    canUseAttackerSpoorOfTheUnholy,
+    canUseAttackerReclaimOurHonour,
+    canUseAttackerCondemnatoryInfoScreed,
+    canUseAttackerDisembarkedFromLandRaider,
+    canUseAttackerSlayersOfAbominations,
+    canUseAttackerAnointedChampion,
+    canUseAttackerGuidingOmensInstrument,
+    canUseAttackerGuidingOmensVision,
+    canUseAttackerAdaptableExecutioner,
+    canUseAttackerCastigateTheDemagogues,
+    canUseAttackerRiteOfPerfervidWrath,
     canUseAttackerBelowHalfStrength,
     canUseAttackerHeroesOfTheChapter,
     canUseAttackerImmolationProtocols,
@@ -13077,6 +13932,9 @@ function App() {
     canUseDefenderHulkingBrutes,
     canUseDefenderHighSpeedFocus,
     canUseDefenderReinforcedHiveNode,
+    canUseDefenderRecitationOfTheRevered,
+    canUseDefenderBlessedHull,
+    canUseDefenderGuidingOmensAugury,
     canUseDefenderSavageRoar,
     canUseDefenderRideHardRideFast,
     canUseDefenderLegendaryFortitude,
@@ -13105,6 +13963,9 @@ function App() {
     defenderHulkingBrutesActive,
     defenderHighSpeedFocusActive,
     defenderReinforcedHiveNodeActive,
+    defenderRecitationOfTheReveredActive,
+    defenderBlessedHullActive,
+    defenderGuidingOmensAuguryActive,
     defenderSavageRoarActive,
     defenderLegendaryFortitudeActive,
     defenderRideHardRideFastActive,
@@ -14081,6 +14942,7 @@ function App() {
       attackerActiveAbilityNames,
       attackerUnbridledFerocityActive,
       attackerAdrenalSurgeActive,
+      attackerTemplarVow,
       attackerRampagingMonstrositiesActive,
       attackerSwarmGuidedSalvoesActive,
       attackerMassiveImpactActive,
@@ -14103,6 +14965,23 @@ function App() {
       attackerRelicsOfTheDarkAgeActive,
       attackerLionsWillActive,
       attackerTalonStrikeActive,
+      attackerPiousEnmityActive,
+      attackerForTheEmperorsHonourActive,
+      attackerLitaniesOfPurgationActive,
+      attackerSpoorOfTheUnholyActive,
+      attackerReclaimOurHonourActive,
+      attackerCondemnatoryInfoScreedActive,
+      attackerDisembarkedFromLandRaider,
+      attackerSlayersOfAbominationsActive,
+      attackerAnointedChampionActive,
+      attackerGuidingOmensInstrumentActive,
+      attackerGuidingOmensVisionActive,
+      attackerAdaptableExecutionerMode,
+      attackerCastigateTheDemagoguesActive,
+      attackerRiteOfPerfervidWrathActive,
+      attackerRageFuelledWarriorActive,
+      attackerRedRampageMode,
+      attackerSavageEchoesMode,
       attackerStormOfFireActive,
       attackerNoThreatTooGreatActive,
       attackerNoSacrificeTooGreatActive,
@@ -14130,6 +15009,9 @@ function App() {
       attackerEngagedByDeathwingUnit,
       defenderOverwhelmingOnslaughtActive,
       defenderUnbreakableLinesActive,
+      defenderRecitationOfTheReveredActive,
+      defenderBlessedHullActive,
+      defenderGuidingOmensAuguryActive,
       defenderRideHardRideFastActive,
       defenderLegendaryFortitudeActive,
       defenderReinforcedHiveNodeActive,
@@ -14248,6 +15130,23 @@ function App() {
         attacker_relics_of_the_dark_age_active: battlefieldAttackerSide === 'attacker' && attackerRelicsOfTheDarkAgeActive,
         attacker_lions_will_active: battlefieldAttackerSide === 'attacker' && attackerLionsWillActive,
         attacker_talon_strike_active: battlefieldAttackerSide === 'attacker' && attackerTalonStrikeActive,
+        attacker_pious_enmity_active: battlefieldAttackerSide === 'attacker' && attackerPiousEnmityActive,
+        attacker_for_the_emperors_honour_active: battlefieldAttackerSide === 'attacker' && attackerForTheEmperorsHonourActive,
+        attacker_litanies_of_purgation_active: battlefieldAttackerSide === 'attacker' && attackerLitaniesOfPurgationActive,
+        attacker_spoor_of_the_unholy_active: battlefieldAttackerSide === 'attacker' && attackerSpoorOfTheUnholyActive,
+        attacker_reclaim_our_honour_active: battlefieldAttackerSide === 'attacker' && attackerReclaimOurHonourActive,
+        attacker_condemnatory_info_screed_active: battlefieldAttackerSide === 'attacker' && attackerCondemnatoryInfoScreedActive,
+        attacker_disembarked_from_land_raider: battlefieldAttackerSide === 'attacker' && attackerDisembarkedFromLandRaider,
+        attacker_slayers_of_abominations_active: battlefieldAttackerSide === 'attacker' && attackerSlayersOfAbominationsActive,
+        attacker_anointed_champion_active: battlefieldAttackerSide === 'attacker' && attackerAnointedChampionActive,
+        attacker_guiding_omens_instrument_active: battlefieldAttackerSide === 'attacker' && attackerGuidingOmensInstrumentActive,
+        attacker_guiding_omens_vision_active: battlefieldAttackerSide === 'attacker' && attackerGuidingOmensVisionActive,
+        attacker_adaptable_executioner_mode: battlefieldAttackerSide === 'attacker' ? attackerAdaptableExecutionerMode || null : null,
+        attacker_castigate_the_demagogues_active: battlefieldAttackerSide === 'attacker' && attackerCastigateTheDemagoguesActive,
+        attacker_rite_of_perfervid_wrath_active: battlefieldAttackerSide === 'attacker' && attackerRiteOfPerfervidWrathActive,
+        attacker_rage_fuelled_warrior_active: battlefieldAttackerSide === 'attacker' && attackerRageFuelledWarriorActive,
+        attacker_red_rampage_mode: battlefieldAttackerSide === 'attacker' ? attackerRedRampageMode || null : null,
+        attacker_savage_echoes_mode: battlefieldAttackerSide === 'attacker' ? attackerSavageEchoesMode || null : null,
         attacker_storm_of_fire_active: battlefieldAttackerSide === 'attacker' && attackerStormOfFireActive,
         attacker_no_threat_too_great_active: battlefieldAttackerSide === 'attacker' && attackerNoThreatTooGreatActive,
         attacker_no_sacrifice_too_great_active: battlefieldAttackerSide === 'attacker' && attackerNoSacrificeTooGreatActive,
@@ -14319,7 +15218,11 @@ function App() {
         defender_ride_hard_ride_fast_active: battlefieldDefenderSide === 'defender' && defenderRideHardRideFastActive,
         defender_legendary_fortitude_active: battlefieldDefenderSide === 'defender' && defenderLegendaryFortitudeActive,
         defender_reinforced_hive_node_active: battlefieldDefenderSide === 'defender' && defenderReinforcedHiveNodeActive,
+        defender_recitation_of_the_revered_active: battlefieldDefenderSide === 'defender' && defenderRecitationOfTheReveredActive,
+        defender_blessed_hull_active: battlefieldDefenderSide === 'defender' && defenderBlessedHullActive,
+        defender_guiding_omens_augury_active: battlefieldDefenderSide === 'defender' && defenderGuidingOmensAuguryActive,
         attacker_saga_completed: Boolean(battleAchievements[battlefieldAttackerSide]?.sagaCompleted),
+        attacker_templar_vow: battlefieldAttackerSide === 'attacker' ? attackerTemplarVow || null : null,
         attacker_active_ability_names: battlefieldActiveAbilityNames,
         attacker_waaagh_active: battlefieldAttackerWaaaghActive,
         defender_waaagh_active: battlefieldDefenderWaaaghActive,
@@ -16286,6 +17189,7 @@ function App() {
     setHazardousOverwatchChargePhase(initialOptions.hazardous_overwatch_charge_phase)
     setHazardousBearerCurrentWounds(initialOptions.hazardous_bearer_current_wounds)
     setAttackerCombatDoctrine(initialOptions.attacker_combat_doctrine)
+    setAttackerTemplarVow(initialOptions.attacker_templar_vow)
     setAttackerHyperAdaptation(initialOptions.attacker_hyper_adaptation)
     setAttackerFireDisciplineActive(initialOptions.attacker_fire_discipline_active)
     setAttackerMarkedForDestructionActive(initialOptions.attacker_marked_for_destruction_active)
@@ -16329,6 +17233,23 @@ function App() {
     setAttackerRelicsOfTheDarkAgeActive(initialOptions.attacker_relics_of_the_dark_age_active)
     setAttackerLionsWillActive(initialOptions.attacker_lions_will_active)
     setAttackerTalonStrikeActive(initialOptions.attacker_talon_strike_active)
+    setAttackerPiousEnmityActive(initialOptions.attacker_pious_enmity_active)
+    setAttackerForTheEmperorsHonourActive(initialOptions.attacker_for_the_emperors_honour_active)
+    setAttackerLitaniesOfPurgationActive(initialOptions.attacker_litanies_of_purgation_active)
+    setAttackerSpoorOfTheUnholyActive(initialOptions.attacker_spoor_of_the_unholy_active)
+    setAttackerReclaimOurHonourActive(initialOptions.attacker_reclaim_our_honour_active)
+    setAttackerCondemnatoryInfoScreedActive(initialOptions.attacker_condemnatory_info_screed_active)
+    setAttackerDisembarkedFromLandRaider(initialOptions.attacker_disembarked_from_land_raider)
+    setAttackerSlayersOfAbominationsActive(initialOptions.attacker_slayers_of_abominations_active)
+    setAttackerAnointedChampionActive(initialOptions.attacker_anointed_champion_active)
+    setAttackerGuidingOmensInstrumentActive(initialOptions.attacker_guiding_omens_instrument_active)
+    setAttackerGuidingOmensVisionActive(initialOptions.attacker_guiding_omens_vision_active)
+    setAttackerAdaptableExecutionerMode(initialOptions.attacker_adaptable_executioner_mode)
+    setAttackerCastigateTheDemagoguesActive(initialOptions.attacker_castigate_the_demagogues_active)
+    setAttackerRiteOfPerfervidWrathActive(initialOptions.attacker_rite_of_perfervid_wrath_active)
+    setAttackerRageFuelledWarriorActive(initialOptions.attacker_rage_fuelled_warrior_active)
+    setAttackerRedRampageMode(initialOptions.attacker_red_rampage_mode)
+    setAttackerSavageEchoesMode(initialOptions.attacker_savage_echoes_mode)
     setAttackerStormOfFireActive(initialOptions.attacker_storm_of_fire_active)
     setAttackerNoThreatTooGreatActive(initialOptions.attacker_no_threat_too_great_active)
     setAttackerNoSacrificeTooGreatActive(initialOptions.attacker_no_sacrifice_too_great_active)
@@ -16383,6 +17304,9 @@ function App() {
     setDefenderOverwhelmingOnslaughtActive(initialOptions.defender_overwhelming_onslaught_active)
     setDefenderAngelsDefiantActive(initialOptions.defender_angels_defiant_active)
     setDefenderUnbreakableLinesActive(initialOptions.defender_unbreakable_lines_active)
+    setDefenderRecitationOfTheReveredActive(initialOptions.defender_recitation_of_the_revered_active)
+    setDefenderBlessedHullActive(initialOptions.defender_blessed_hull_active)
+    setDefenderGuidingOmensAuguryActive(initialOptions.defender_guiding_omens_augury_active)
     setDefenderRideHardRideFastActive(initialOptions.defender_ride_hard_ride_fast_active)
     setDefenderLegendaryFortitudeActive(initialOptions.defender_legendary_fortitude_active)
     setDefenderReinforcedHiveNodeActive(initialOptions.defender_reinforced_hive_node_active)
@@ -17136,6 +18060,23 @@ function App() {
                 </label>
               ) : null}
 
+              {canUseAttackerTemplarVow ? (
+                <label className="combat-option-attacker" title={attackerTemplarVowTooltip}>
+                  <span>Attacker Templar Vow</span>
+                  <select
+                    title={attackerTemplarVowTooltip}
+                    value={attackerTemplarVow}
+                    onChange={(event) => setAttackerTemplarVow(event.target.value)}
+                  >
+                    {TEMPLAR_VOW_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
               {canUseGreatWolfHuntingPack ? (
                 <label className="combat-option-attacker" title={selectedAttackerDetachment?.rule?.rules_text || ''}>
                   <span>Attacker Hunting Pack</span>
@@ -17306,6 +18247,193 @@ function App() {
                     onChange={(event) => setAttackerTalonStrikeActive(event.target.checked)}
                   />
                   <span>Use Talon Strike</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerPiousEnmity ? (
+                <label className="checkbox-row" title={piousEnmityTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerPiousEnmityActive}
+                    onChange={(event) => setAttackerPiousEnmityActive(event.target.checked)}
+                  />
+                  <span>Use Pious Enmity</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerForTheEmperorsHonour ? (
+                <label className="checkbox-row" title={forTheEmperorsHonourTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerForTheEmperorsHonourActive}
+                    onChange={(event) => setAttackerForTheEmperorsHonourActive(event.target.checked)}
+                  />
+                  <span>Use For the Emperor's Honour!</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerLitaniesOfPurgation ? (
+                <label className="checkbox-row" title={litaniesOfPurgationTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerLitaniesOfPurgationActive}
+                    onChange={(event) => setAttackerLitaniesOfPurgationActive(event.target.checked)}
+                  />
+                  <span>Use Litanies of Purgation</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerSpoorOfTheUnholy ? (
+                <label className="checkbox-row" title={spoorOfTheUnholyTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerSpoorOfTheUnholyActive}
+                    onChange={(event) => setAttackerSpoorOfTheUnholyActive(event.target.checked)}
+                  />
+                  <span>Use Spoor of the Unholy</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerReclaimOurHonour ? (
+                <label className="checkbox-row" title={reclaimOurHonourTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerReclaimOurHonourActive}
+                    onChange={(event) => setAttackerReclaimOurHonourActive(event.target.checked)}
+                  />
+                  <span>Use Reclaim Our Honour!</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerCondemnatoryInfoScreed ? (
+                <label className="checkbox-row" title={condemnatoryInfoScreedTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerCondemnatoryInfoScreedActive}
+                    onChange={(event) => setAttackerCondemnatoryInfoScreedActive(event.target.checked)}
+                  />
+                  <span>Use Condemnatory Info-screed</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerSlayersOfAbominations ? (
+                <label className="checkbox-row" title={getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Slayers of Abominations')?.effect || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerSlayersOfAbominationsActive}
+                    onChange={(event) => setAttackerSlayersOfAbominationsActive(event.target.checked)}
+                  />
+                  <span>Use Slayers of Abominations</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerAnointedChampion ? (
+                <label className="checkbox-row" title={getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Anointed Champion')?.rules_text || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerAnointedChampionActive}
+                    onChange={(event) => setAttackerAnointedChampionActive(event.target.checked)}
+                  />
+                  <span>Use Anointed Champion</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerGuidingOmensInstrument ? (
+                <label className="checkbox-row" title={getDetachmentEntry(selectedAttackerDetachment, 'enhancements', 'Guiding Omens')?.rules_text || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerGuidingOmensInstrumentActive}
+                    onChange={(event) => setAttackerGuidingOmensInstrumentActive(event.target.checked)}
+                  />
+                  <span>Use Instrument of the God-Emperor</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerGuidingOmensVision ? (
+                <label className="checkbox-row" title={getDetachmentEntry(selectedAttackerDetachment, 'enhancements', 'Guiding Omens')?.rules_text || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerGuidingOmensVisionActive}
+                    onChange={(event) => setAttackerGuidingOmensVisionActive(event.target.checked)}
+                  />
+                  <span>Use Vision of Momentous Brutality</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerAdaptableExecutioner ? (
+                <label className="combat-option-attacker" title={getDetachmentEntry(selectedAttackerDetachment, 'enhancements', 'Adaptable Executioner')?.rules_text || ''}>
+                  <span>Adaptable Executioner</span>
+                  <select
+                    value={attackerAdaptableExecutionerMode}
+                    onChange={(event) => setAttackerAdaptableExecutionerMode(event.target.value)}
+                  >
+                    <option value="">No mode</option>
+                    <option value="cleave">Cleave</option>
+                    <option value="precision">Precision</option>
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerCastigateTheDemagogues ? (
+                <label className="checkbox-row" title={getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Castigate the Demagogues')?.effect || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerCastigateTheDemagoguesActive}
+                    onChange={(event) => setAttackerCastigateTheDemagoguesActive(event.target.checked)}
+                  />
+                  <span>Use Castigate the Demagogues</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerRiteOfPerfervidWrath ? (
+                <label className="checkbox-row" title={getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Rite of Perfervid Wrath')?.effect || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerRiteOfPerfervidWrathActive}
+                    onChange={(event) => setAttackerRiteOfPerfervidWrathActive(event.target.checked)}
+                  />
+                  <span>Use Rite of Perfervid Wrath</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerRageFuelledWarrior ? (
+                <label className="checkbox-row" title={getDetachmentEntry(selectedAttackerDetachment, 'enhancements', 'Rage-fuelled Warrior')?.rules_text || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerRageFuelledWarriorActive}
+                    onChange={(event) => setAttackerRageFuelledWarriorActive(event.target.checked)}
+                  />
+                  <span>Use Rage-fuelled Warrior</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerRedRampage ? (
+                <label className="combat-option-attacker" title={getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Red Rampage')?.effect || ''}>
+                  <span>Red Rampage</span>
+                  <select
+                    value={attackerRedRampageMode}
+                    onChange={(event) => setAttackerRedRampageMode(event.target.value)}
+                  >
+                    <option value="">No mode</option>
+                    <option value="lance">Lance</option>
+                    <option value="lethal_hits">Lethal Hits</option>
+                    <option value="both">Red Thirst: both</option>
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerSavageEchoes ? (
+                <label className="combat-option-attacker" title={getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Savage Echoes')?.effect || ''}>
+                  <span>Savage Echoes</span>
+                  <select
+                    value={attackerSavageEchoesMode}
+                    onChange={(event) => setAttackerSavageEchoesMode(event.target.value)}
+                  >
+                    <option value="">No mode</option>
+                    <option value="strength">+1 Strength</option>
+                    <option value="attacks">+1 Attacks</option>
+                    <option value="both">Red Thirst: both</option>
+                  </select>
                 </label>
               ) : null}
 
@@ -17933,6 +19061,39 @@ function App() {
                 </label>
               ) : null}
 
+              {canUseDefenderRecitationOfTheRevered ? (
+                <label className="checkbox-row combat-option-defender" title={recitationOfTheReveredTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderRecitationOfTheReveredActive}
+                    onChange={(event) => setDefenderRecitationOfTheReveredActive(event.target.checked)}
+                  />
+                  <span>Defender uses Recitation of the Revered</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderBlessedHull ? (
+                <label className="checkbox-row combat-option-defender" title={blessedHullTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderBlessedHullActive}
+                    onChange={(event) => setDefenderBlessedHullActive(event.target.checked)}
+                  />
+                  <span>Defender uses Blessed Hull</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderGuidingOmensAugury ? (
+                <label className="checkbox-row combat-option-defender" title={getDetachmentEntry(selectedDefenderDetachment, 'enhancements', 'Guiding Omens')?.rules_text || ''}>
+                  <input
+                    type="checkbox"
+                    checked={defenderGuidingOmensAuguryActive}
+                    onChange={(event) => setDefenderGuidingOmensAuguryActive(event.target.checked)}
+                  />
+                  <span>Use Augury of Retribution</span>
+                </label>
+              ) : null}
+
               {canUseDefenderRideHardRideFast ? (
                 <label className="checkbox-row combat-option-defender" title={rideHardRideFastTooltip}>
                   <input
@@ -18075,6 +19236,17 @@ function App() {
                     onChange={(event) => setAttackerDisembarkedFromTransport(event.target.checked)}
                   />
                   <span>Attacker disembarked from a Transport this turn</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerDisembarkedFromLandRaider ? (
+                <label className="checkbox-row combat-option-attacker" title={condemnatoryInfoScreedTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerDisembarkedFromLandRaider}
+                    onChange={(event) => setAttackerDisembarkedFromLandRaider(event.target.checked)}
+                  />
+                  <span>Transport had Land Raider keyword</span>
                 </label>
               ) : null}
 

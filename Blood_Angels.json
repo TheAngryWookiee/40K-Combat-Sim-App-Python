@@ -1,0 +1,154 @@
+{
+  "faction": {
+    "name": "Blood Angels",
+    "parent_faction": "Adeptus Astartes",
+    "inherits": {
+      "army_rules": [
+        {
+          "name": "Oath of Moment",
+          "source": "Adeptus Astartes",
+          "rules_text": "",
+          "implemented": true
+        }
+      ]
+    },
+    "army_rules": [
+      {
+        "name": "The Sons of Sanguinius",
+        "rules_text": "If an Adeptus Astartes unit has a second Faction keyword on its datasheet, that Faction keyword is the name of that unit's Chapter. For example, Lemartes has both the Adeptus Astartes and Blood Angels Faction keywords, and is therefore from the Blood Angels Chapter. You cannot include units from more than one Chapter in your army.",
+        "implemented": false
+      }
+    ],
+    "chapter_rules": [
+      {
+        "name": "The Sons of Sanguinius",
+        "rules_text": "Blood Angels armies cannot include Adeptus Astartes units drawn from more than one Chapter.",
+        "implemented": false
+      }
+    ],
+    "derived_keywords": [],
+    "detachments": [
+      {
+        "name": "Liberator Assault Group",
+        "rule": {
+          "name": "Red Thirst",
+          "rules_text": "Each time an ADEPTUS ASTARTES unit from your army is selected to fight, if that unit made a Charge move this turn, until the end of the phase, add 1 to the Attacks characteristic and add 2 to the Strength characteristic of melee weapons equipped by models in that unit.",
+          "implemented": true
+        },
+        "restrictions": [
+          "Your army can include BLOOD ANGELS units, but it cannot include any ADEPTUS ASTARTES units drawn from any other Chapter."
+        ],
+        "enhancements": [
+          {
+            "name": "Speed of the Primarch",
+            "rules_text": "ADEPTUS ASTARTES model only. Once per battle, at the start of the Fight phase, the bearer can use this Enhancement. If it does, until the end of the phase, models in the bearer's unit have the Fights First ability.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Rage-fuelled Warrior",
+            "rules_text": "ADEPTUS ASTARTES model only. Once per battle, at the start of the Fight phase, the bearer can use this Enhancement. If it does, until the end of the phase, the bearer's melee weapons have the [SUSTAINED HITS 3] ability.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "Icon of the Angel",
+            "rules_text": "ADEPTUS ASTARTES model only. Each time an enemy unit (excluding MONSTERS and VEHICLES) within Engagement Range of the bearer's unit is selected to Fall Back, models in that enemy unit must take Desperate Escape tests as if their unit was Battle-shocked. When doing so, if that enemy unit is also Battle-shocked by other means, subtract 1 from each of those Desperate Escape tests.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Gift of Foresight",
+            "rules_text": "ADEPTUS ASTARTES model only. Once per battle round, just after making a Hit roll, a Wound roll or a saving throw for the bearer, you can treat the result as an unmodified roll of 6 instead.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": false
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Angelic Grace",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Any phase, just after an ADEPTUS ASTARTES unit from your army has a mortal wound allocated to it.",
+            "target": "That ADEPTUS ASTARTES unit.",
+            "effect": "Until the end of the phase, models in your unit have the Feel No Pain 5+ ability against mortal wounds.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Armour of Contempt",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Your opponent's Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One ADEPTUS ASTARTES unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Until the attacking unit has finished making its attacks, each time an attack targets your unit, worsen the Armour Penetration characteristic of that attack by 1.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Savage Echoes",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Charge phase.",
+            "target": "One ADEPTUS ASTARTES unit from your army that was just charged by an enemy unit.",
+            "effect": "Select either the Strength or Attacks characteristic of melee weapons equipped by models in your unit. Until the end of the turn, add 1 to the selected characteristic. You can instead choose for your unit to give in to the Red Thirst if it does, it becomes Battle-shocked (but the effects of this Stratagem still apply to it) and until the end of the turn, add 1 to the Strength and Attacks characteristics of melee weapons equipped by models in your unit.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Red Rampage",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Fight phase.",
+            "target": "One ADEPTUS ASTARTES unit from your army that has not been selected to fight this phase.",
+            "effect": "Select either the [LANCE] or [LETHAL HITS] abilities. Until the end of the phase, melee weapons equipped by models in your unit have the selected ability. You can instead choose for your unit to give in to the Red Thirst if it does, then it becomes Battle-shocked (but the effects of this Stratagem still apply to it) and until the end of the phase, melee weapons equipped by models in your unit have the [LANCE] and [LETHAL HITS] abilities.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Aggressive Onslaught",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase, just after an ADEPTUS ASTARTES unit from your army has Advanced.",
+            "target": "That ADEPTUS ASTARTES unit.",
+            "effect": "Until the end of the turn, your unit is eligible to either shoot or declare a charge, even though it Advanced. You can instead choose for your unit to give in to the Red Thirst; if it does, it becomes Battle-shocked (but the effects of this Stratagem still apply to it) and until the end of the turn, your unit is eligible to both shoot and declare a charge, even though it Advanced.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Relentless Assault",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase, just after an ADEPTUS ASTARTES unit from your army Falls Back.",
+            "target": "That ADEPTUS ASTARTES unit.",
+            "effect": "Until the end of the turn, your unit is eligible to either shoot or declare a charge even though it Fell Back. You can instead choose for your unit to give in to the Red Thirst; if it does, it becomes Battle-shocked (but the effects of this Stratagem still apply to it) and until the end of the turn, your unit is eligible to both shoot and declare a charge, even though it Fell Back.",
+            "restrictions": [],
+            "implemented": false
+          }
+        ]
+      }
+    ],
+    "category": "Adeptus Astartes"
+  },
+  "units": []
+}

@@ -156,6 +156,7 @@ class SimulationOptions(BaseModel):
     attacker_unbridled_ferocity_active: bool = False
     attacker_waaagh_active: bool = False
     defender_waaagh_active: bool = False
+    attacker_templar_vow: str | None = None
     attacker_hyper_adaptation: str | None = None
     attacker_synaptic_imperative: str | None = None
     defender_synaptic_imperative: str | None = None
@@ -205,6 +206,23 @@ class SimulationOptions(BaseModel):
     attacker_relics_of_the_dark_age_active: bool = False
     attacker_lions_will_active: bool = False
     attacker_talon_strike_active: bool = False
+    attacker_pious_enmity_active: bool = False
+    attacker_for_the_emperors_honour_active: bool = False
+    attacker_litanies_of_purgation_active: bool = False
+    attacker_spoor_of_the_unholy_active: bool = False
+    attacker_reclaim_our_honour_active: bool = False
+    attacker_condemnatory_info_screed_active: bool = False
+    attacker_disembarked_from_land_raider: bool = False
+    attacker_slayers_of_abominations_active: bool = False
+    attacker_anointed_champion_active: bool = False
+    attacker_guiding_omens_instrument_active: bool = False
+    attacker_guiding_omens_vision_active: bool = False
+    attacker_adaptable_executioner_mode: str | None = None
+    attacker_castigate_the_demagogues_active: bool = False
+    attacker_rite_of_perfervid_wrath_active: bool = False
+    attacker_rage_fuelled_warrior_active: bool = False
+    attacker_red_rampage_mode: str | None = None
+    attacker_savage_echoes_mode: str | None = None
     attacker_storm_of_fire_active: bool = False
     attacker_no_threat_too_great_active: bool = False
     attacker_no_sacrifice_too_great_active: bool = False
@@ -259,6 +277,9 @@ class SimulationOptions(BaseModel):
     defender_overwhelming_onslaught_active: bool = False
     defender_angels_defiant_active: bool = False
     defender_unbreakable_lines_active: bool = False
+    defender_recitation_of_the_revered_active: bool = False
+    defender_blessed_hull_active: bool = False
+    defender_guiding_omens_augury_active: bool = False
     defender_pennant_of_remembrance_active: bool = False
     defender_battleshocked: bool = False
     defender_allocation_order: list[str] = Field(default_factory=list)
@@ -578,6 +599,18 @@ ATTACKER_STRATAGEM_OPTION_KEYS = {
     "attacker_shock_assault_active",
     "attacker_strike_from_the_shadows_active",
     "attacker_heroes_of_the_chapter_active",
+    "attacker_pious_enmity_active",
+    "attacker_for_the_emperors_honour_active",
+    "attacker_litanies_of_purgation_active",
+    "attacker_spoor_of_the_unholy_active",
+    "attacker_reclaim_our_honour_active",
+    "attacker_condemnatory_info_screed_active",
+    "attacker_slayers_of_abominations_active",
+    "attacker_castigate_the_demagogues_active",
+    "attacker_rite_of_perfervid_wrath_active",
+    "attacker_rage_fuelled_warrior_active",
+    "attacker_red_rampage_mode",
+    "attacker_savage_echoes_mode",
     "attacker_surgical_strikes_active",
     "attacker_competitive_streak_active",
     "attacker_armed_to_da_teef_active",
@@ -609,6 +642,8 @@ DEFENDER_STRATAGEM_OPTION_KEYS = {
     "defender_angels_defiant_active",
     "defender_reinforced_hive_node_active",
     "defender_unbreakable_lines_active",
+    "defender_recitation_of_the_revered_active",
+    "defender_blessed_hull_active",
 }
 
 
@@ -2055,6 +2090,7 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
             attacker_enhancement_bearer_unit["name"]
         ),
         "attacker_primary_unit_name": attacker_unit["name"],
+        "attacker_faction_name": request.attacker_faction,
         "attacker_has_attached_character": attacker_attached_character_unit is not None or attacker_attached_support_unit is not None,
         "attacker_attached_ability_names": sorted({
             *collect_unit_ability_names(attacker_attached_character_unit),

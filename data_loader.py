@@ -999,8 +999,10 @@ def load_faction_file(data_file: Path) -> dict[str, Any] | None:
         "army_rules": faction.get("army_rules", []),
         "chapter_rules": faction.get("chapter_rules", []),
         "detachments": faction.get("detachments", []),
+        "detachment_filters": faction.get("detachment_filters", {}),
         "inherits": faction.get("inherits", {}),
         "derived_keywords": faction.get("derived_keywords", []),
+        "unit_filters": faction.get("unit_filters", {}),
         "units": units,
     }
 
@@ -1034,6 +1036,55 @@ def load_factions(data_dir: Path = DATA_DIR, parent_faction: str | None = None) 
         if not chapter_keywords:
             return True
         return faction_name.lower() in chapter_keywords
+
+    def unit_passes_faction_filters(unit: dict[str, Any], faction_entry: dict[str, Any]) -> bool:
+        filters = faction_entry.get("unit_filters", {})
+        if not filters:
+            return True
+
+        unit_name = str(unit.get("name", "")).strip().lower()
+        unit_keywords = {
+            str(keyword).strip().lower()
+            for keyword in [*unit.get("keywords", []), *unit.get("faction_keywords", [])]
+            if str(keyword).strip()
+        }
+        deny_names = {
+            str(name).strip().lower()
+            for name in filters.get("deny_names", [])
+            if str(name).strip()
+        }
+        deny_keywords = {
+            str(keyword).strip().lower()
+            for keyword in filters.get("deny_keywords", [])
+            if str(keyword).strip()
+        }
+        if unit_name in deny_names:
+            return False
+        if deny_keywords and unit_keywords.intersection(deny_keywords):
+            return False
+        return True
+
+    def detachment_passes_faction_filters(detachment: dict[str, Any], faction_entry: dict[str, Any]) -> bool:
+        filters = faction_entry.get("detachment_filters", {})
+        if not filters:
+            return True
+
+        detachment_name = str(detachment.get("name", "")).strip()
+        allow_names = {
+            str(name).strip()
+            for name in filters.get("allow_names", [])
+            if str(name).strip()
+        }
+        deny_names = {
+            str(name).strip()
+            for name in filters.get("deny_names", [])
+            if str(name).strip()
+        }
+        if allow_names and detachment_name not in allow_names:
+            return False
+        if detachment_name in deny_names:
+            return False
+        return True
 
     def unit_matches_derived_keyword_condition(unit: dict[str, Any], condition: dict[str, Any]) -> bool:
         if not condition:
@@ -1127,7 +1178,11 @@ def load_factions(data_dir: Path = DATA_DIR, parent_faction: str | None = None) 
             }
 
         resolved_units = {
-            **inherited_units,
+            **{
+                unit_name: unit
+                for unit_name, unit in inherited_units.items()
+                if unit_passes_faction_filters(unit, faction_entry)
+            },
             **faction_entry["own_units"],
         }
         resolved_units = apply_derived_keywords(
@@ -1169,9 +1224,11 @@ def load_factions(data_dir: Path = DATA_DIR, parent_faction: str | None = None) 
             deepcopy(detachment)
             for detachment in inherited_detachments
             if str(detachment.get("name", "")) not in own_detachment_names
+            and detachment_passes_faction_filters(detachment, faction_entry)
         ] + [
             deepcopy(detachment)
             for detachment in own_detachments
+            if detachment_passes_faction_filters(detachment, faction_entry)
         ]
         resolved_detachment_maps[faction_name] = resolved_detachments
         return resolved_detachments
