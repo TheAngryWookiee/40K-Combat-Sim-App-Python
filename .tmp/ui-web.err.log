@@ -1,0 +1,86 @@
+[2m12:38:19 a.m.[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mReferenceError[22m: Cannot access 'attackerFaction' before initialization
+[39m > App src/App.jsx:8885:79
+    8883 |      : 'settings'
+    8884 |    const pendingVerificationEmail = pendingEmailVerification?.email || ''
+    8885 |  ...yIsAdeptaSororitas = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === ADEPTA_SORORI...
+         |                                                                 ^
+    8886 |    const defenderArmyIsAdeptaSororitas = String(defenderFactionDetails?.name || defenderFaction || '').toLowerCase() =...
+    8887 |  
+ > Object.react_stack_bottom_frame ../node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks ../node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent ../node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork ../node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV ../node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork ../node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync ../node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+ > renderRootSync ../node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
+ > performWorkOnRoot ../node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+
+[2m12:38:19 a.m.[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mAn error occurred in the <App> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+[2m12:38:19 a.m.[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Failed to execute 'fetch' on 'Window': '[object Promise]' is not a valid HTTP method.
+[39m > ../node_modules/@neondatabase/auth/dist/adapter-core-D4V1J06B.mjs:781:90
+ > InFlightRequestManager.deduplicate ../node_modules/@neondatabase/auth/dist/adapter-core-D4V1J06B.mjs:60:18
+ > customFetchImpl ../node_modules/@neondatabase/auth/dist/adapter-core-D4V1J06B.mjs:781:67
+ > betterFetch ../node_modules/@better-fetch/fetch/dist/index.js:569:17
+ > $fetch ../node_modules/@better-fetch/fetch/dist/index.js:472:11
+ > Object.apply ../node_modules/better-auth/dist/client/proxy.mjs:39:11
+
+[2m12:40:40 a.m.[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mReferenceError[22m: Cannot access 'attackerFaction' before initialization
+[39m > App src/App.jsx:8885:79
+    8883 |      : 'settings'
+    8884 |    const pendingVerificationEmail = pendingEmailVerification?.email || ''
+    8885 |  ...yIsAdeptaSororitas = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === ADEPTA_SORORI...
+         |                                                                 ^
+    8886 |    const defenderArmyIsAdeptaSororitas = String(defenderFactionDetails?.name || defenderFaction || '').toLowerCase() =...
+    8887 |  
+ > Object.react_stack_bottom_frame ../node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks ../node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent ../node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork ../node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV ../node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork ../node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync ../node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+ > renderRootSync ../node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
+ > performWorkOnRoot ../node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+
+[2m12:40:40 a.m.[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mAn error occurred in the <App> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+[2m12:40:40 a.m.[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Failed to execute 'fetch' on 'Window': '[object Promise]' is not a valid HTTP method.
+[39m > ../node_modules/@neondatabase/auth/dist/adapter-core-D4V1J06B.mjs:781:90
+ > InFlightRequestManager.deduplicate ../node_modules/@neondatabase/auth/dist/adapter-core-D4V1J06B.mjs:60:18
+ > customFetchImpl ../node_modules/@neondatabase/auth/dist/adapter-core-D4V1J06B.mjs:781:67
+ > betterFetch ../node_modules/@better-fetch/fetch/dist/index.js:569:17
+ > $fetch ../node_modules/@better-fetch/fetch/dist/index.js:472:11
+ > Object.apply ../node_modules/better-auth/dist/client/proxy.mjs:39:11
+
+[2m12:40:40 a.m.[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mAuthApiError[22m: HTTP 404 
+[39m > createNormalizedError ../node_modules/@neondatabase/auth/dist/better-auth-helpers-Bkezghej.mjs:456:64
+ > normalizeBetterAuthError ../node_modules/@neondatabase/auth/dist/better-auth-helpers-Bkezghej.mjs:372:9
+ > customFetchImpl ../node_modules/@neondatabase/auth/dist/adapter-core-D4V1J06B.mjs:787:12
+ > betterFetch ../node_modules/@better-fetch/fetch/dist/index.js:569:17
+ > $fetch ../node_modules/@better-fetch/fetch/dist/index.js:472:11
+ > Object.apply ../node_modules/better-auth/dist/client/proxy.mjs:39:11
+
+[2m12:41:42 a.m.[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Failed to execute 'fetch' on 'Window': '[object Promise]' is not a valid HTTP method.
+[39m > ../node_modules/@neondatabase/auth/dist/adapter-core-D4V1J06B.mjs:781:90
+ > InFlightRequestManager.deduplicate ../node_modules/@neondatabase/auth/dist/adapter-core-D4V1J06B.mjs:60:18
+ > customFetchImpl ../node_modules/@neondatabase/auth/dist/adapter-core-D4V1J06B.mjs:781:67
+ > betterFetch ../node_modules/@better-fetch/fetch/dist/index.js:569:17
+ > $fetch ../node_modules/@better-fetch/fetch/dist/index.js:472:11
+ > Object.apply ../node_modules/better-auth/dist/client/proxy.mjs:39:11
+
+[2m12:41:42 a.m.[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mAuthApiError[22m: HTTP 404 
+[39m > createNormalizedError ../node_modules/@neondatabase/auth/dist/better-auth-helpers-Bkezghej.mjs:456:64
+ > normalizeBetterAuthError ../node_modules/@neondatabase/auth/dist/better-auth-helpers-Bkezghej.mjs:372:9
+ > customFetchImpl ../node_modules/@neondatabase/auth/dist/adapter-core-D4V1J06B.mjs:787:12
+ > betterFetch ../node_modules/@better-fetch/fetch/dist/index.js:569:17
+ > $fetch ../node_modules/@better-fetch/fetch/dist/index.js:472:11
+ > Object.apply ../node_modules/better-auth/dist/client/proxy.mjs:39:11
+

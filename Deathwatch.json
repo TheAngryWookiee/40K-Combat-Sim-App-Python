@@ -1,0 +1,2858 @@
+{
+  "faction": {
+    "name": "Deathwatch",
+    "parent_faction": "Adeptus Astartes",
+    "inherits": {
+      "army_rules": [
+        {
+          "name": "Oath of Moment",
+          "source": "Adeptus Astartes",
+          "rules_text": "",
+          "implemented": true
+        }
+      ]
+    },
+    "army_rules": [
+      {
+        "name": "Kill Teams",
+        "rules_text": "Each time an attack targets a KILL TEAM unit from your army that contains models with different Toughness characteristics, until the attacking unit has finished making its attacks, use the Toughness characteristic of the majority of the models in that unit when determining what result is required for that attack to successfully wound. If two or more Toughness characteristics are tied for majority, use the highest Toughness characteristic.\n\nFor the purposes of determining which models can embark within a TRANSPORT model, KILL TEAM models follow the normal restrictions listed on the TRANSPORT model.",
+        "implemented": false
+      }
+    ],
+    "chapter_rules": [
+      {
+        "name": "The Long Vigil",
+        "rules_text": "If an Adeptus Astartes unit has a second Faction keyword on its datasheet, that Faction keyword is the name of that unit's Chapter. You cannot include units from more than one Chapter in your army. Deathwatch armies cannot include Adeptus Astartes units drawn from any other Chapter.",
+        "implemented": false
+      }
+    ],
+    "derived_keywords": [],
+    "detachments": [
+      {
+        "name": "Black Spear Task Force",
+        "rule": {
+          "name": "Mission Tactics",
+          "rules_text": "At the start of your Command phase, you can select one of the Mission Tactics listed below. Until the start of your next Command phase, that Mission Tactic is active and its effects apply to all units from your army with this ability. Each Mission Tactic can only be selected once per battle.\n\nFUROR TACTICS\nWhile this Mission Tactic is active, weapons equipped by ADEPTUS ASTARTES units from your army have the [SUSTAINED HITS 1] ability.\n\nMALLEUS TACTICS\nWhile this Mission Tactic is active, weapons equipped by ADEPTUS ASTARTES units from your army have the [LETHAL HITS] ability.\n\nPURGATUS TACTICS\nWhile this Mission Tactic is active, each time an ADEPTUS ASTARTES unit from your army makes an attack, if a Critical Hit is scored, that attack has the [PRECISION] ability.",
+          "implemented": false
+        },
+        "restrictions": [
+          "Your army can include ADEPTUS ASTARTES DEATHWATCH units, but it cannot include any ADEPTUS ASTARTES units drawn from any other Chapter.",
+          "With the exception of KILL TEAM CASSIUS (see Legends: Agents of the Imperium), your army cannot include any AGENTS OF THE IMPERIUM DEATHWATCH units.",
+          "Your army cannot include any of the following units: ASSAULT SQUAD, ASSAULT SQUAD WITH JUMP PACKS, ATTACK BIKE SQUAD, DEVASTATOR SQUAD, LAND SPEEDER STORM, RELIC TERMINATOR SQUAD, SCOUT BIKE SQUAD, SCOUT SQUAD, SCOUT SNIPER SQUAD, TACTICAL SQUAD, TERMINATOR ASSAULT SQUAD, TERMINATOR SQUAD."
+        ],
+        "enhancements": [
+          {
+            "name": "Thief of Secrets",
+            "rules_text": "ADEPTUS ASTARTES model only. Improve the Strength, Damage and Armour Penetration characteristics of the bearer's melee weapons by 1. At the end of the Fight phase, if one or more enemy models were destroyed as a result of a melee attack made by the bearer this phase, until the end of the battle, improve the Strength, Damage and Armour Penetration characteristics of the bearer's melee weapons by 2 instead.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Osseus Key",
+            "rules_text": "WATCH MASTER or TECHMARINE model only. At the start of your opponent's Shooting phase, select one enemy VEHICLE unit (excluding TITANIC units) within 12\" of and visible to the bearer. That unit must take a Leadership test. If that test is passed, until the end of the phase, each time a model in that unit makes an attack, subtract 1 from the Hit roll; if that test is failed, that unit is not eligible to shoot this phase.",
+            "restrictions": [
+              "WATCH MASTER or TECHMARINE model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Beacon Angelis",
+            "rules_text": "ADEPTUS ASTARTES model only. Models in the bearer's unit have the Deep Strike ability. In addition, you can target the bearer's unit with the Rapid Ingress Stratagem for 0CP.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "The Tome of Ectoclades",
+            "rules_text": "WATCH MASTER or CAPTAIN model only. Once per battle, after you have selected your Oath of Moment target, the bearer can use this Enhancement. If it does, select a second enemy unit to be an Oath of Moment target.\n\nDesigner's Note: This means that each time a model with the Oath of Moment ability makes an attack that targets either of your Oath of Moment targets, you can re-roll the Hit roll.",
+            "restrictions": [
+              "WATCH MASTER or CAPTAIN model only."
+            ],
+            "implemented": false
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Armour of Contempt",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Your opponent's Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One ADEPTUS ASTARTES unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Until the attacking unit has finished making its attacks, each time an attack targets your unit, worsen the Armour Penetration characteristic of that attack by 1.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Adaptive Tactics",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Command phase.",
+            "target": "Up to two KILL TEAM units from your army, or one other ADEPTUS ASTARTES unit from your army.",
+            "effect": "For each unit targeted, select Furor Tactics, Malleus Tactics or Purgatus Tactics. Until the start of your next Command phase, that Mission Tactic is active for that unit instead of any Mission Tactic that is active for your army.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Hellfire Rounds",
+            "type": "Wargear",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase.",
+            "target": "One KILL TEAM unit from your army that has not been selected to shoot this phase.",
+            "effect": "Until the end of the phase, ranged weapons (excluding Devastating Wounds weapons) equipped by models in your unit have the [ANTI-INFANTRY 2+] and [ANTI-MONSTER 5+] abilities.",
+            "restrictions": [
+              "You cannot select any units that have already been targeted with either the Kraken Rounds or Dragonfire Rounds Stratagems this phase."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Kraken Rounds",
+            "type": "Wargear",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase.",
+            "target": "One KILL TEAM unit from your army that has not been selected to shoot this phase.",
+            "effect": "Until the end of the phase, improve the Armour Penetration characteristic of ranged weapons equipped by models in your unit by 1 and improve the Range characteristic of those weapons by 6\".",
+            "restrictions": [
+              "You cannot select any units that have already been targeted with either the Dragonfire Rounds or Hellfire Rounds Stratagems this phase."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Dragonfire Rounds",
+            "type": "Wargear",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase.",
+            "target": "One KILL TEAM unit from your army that has not been selected to shoot this phase.",
+            "effect": "Until the end of the phase, ranged weapons equipped by models in your unit have the [ASSAULT] and [IGNORES COVER] abilities.",
+            "restrictions": [
+              "You cannot select any units that have already been targeted with either the Kraken Rounds or Hellfire Rounds Stratagems this phase."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Site-to-site Teleportation",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "End of your opponent's Fight phase.",
+            "target": "Up to two KILL TEAM units from your army, or one other ADEPTUS ASTARTES INFANTRY unit from your army, if those units are not within Engagement Range of one or more enemy units.",
+            "effect": "Remove those units from the battlefield and place them into Strategic Reserves. Until the end of your next Movement phase, models in those units that do not have the Deep Strike ability have the Deep Strike ability.",
+            "restrictions": [],
+            "implemented": false
+          }
+        ]
+      }
+    ]
+  },
+  "units": [
+    {
+      "name": "Corvus Blackstar",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Corvus Blackstar",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "2 Blackstar rocket launchers",
+            "Twin assault cannon",
+            "Armoured hull"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Deathwatch"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Fly",
+        "Imperium",
+        "Transport",
+        "Frame",
+        "Corvus Blackstar",
+        "Aircraft",
+        "Smoke"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise D6, Hover, Stealth"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Blackstar Cluster Launcher",
+          "rules_text": "Each time this model ends a Normal move, you can select one enemy unit it moved over during that move and roll six D6; for each 5+, that unit suffers 1 mortal wound."
+        },
+        {
+          "name": "Transport",
+          "rules_text": "This model has a transport capacity of 12 ADEPTUS ASTARTES INFANTRY or KILL TEAM models. Each JUMP PACK, GRAVIS or TERMINATOR model takes up the space of 2 models and each CENTURION model takes up the space of 3 models."
+        },
+        {
+          "name": "Damaged: 1-5 Wounds Remaining",
+          "rules_text": "While this model has 1-5 wounds remaining, each time this model makes an attack, subtract 1 from the Hit roll."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [
+        {
+          "name": "Auspex Array",
+          "rules_text": "Ranged weapons equipped by the bearer have the [IGNORES COVER] ability."
+        },
+        {
+          "name": "Infernum Halo-launcher",
+          "rules_text": "The bearer has the SMOKE keyword."
+        }
+      ],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "This model's twin assault cannon can be replaced with 1 twin lascannon.",
+        "This model's 2 Blackstar rocket launchers can be replaced with 2 stormstrike missile launchers.",
+        "This model can be equipped with 1 hurricane bolter.",
+        "This model can be equipped with one of the following: 1 auspex array; 1 infernum halo-launcher."
+      ],
+      "loadout_options": [],
+      "base_size": "120 x 92mm flying base",
+      "stats": {
+        "movement": 14,
+        "toughness": 10,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 14,
+        "leadership": "6+",
+        "objective_control": 0
+      },
+      "weapons": [
+        {
+          "name": "Blackstar rocket launcher",
+          "keywords": [
+            "Blast"
+          ],
+          "range": "30 inches",
+          "attacks": "D6+1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Hurricane bolter",
+          "keywords": [
+            "Rapid Fire 6",
+            "Twin-linked"
+          ],
+          "range": "24 inches",
+          "attacks": "6",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Stormstrike missile launcher",
+          "keywords": [],
+          "range": "48 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "10",
+          "armor_piercing": "-2",
+          "damage": "3"
+        },
+        {
+          "name": "Twin assault cannon",
+          "keywords": [
+            "Devastating Wounds",
+            "Twin-linked"
+          ],
+          "range": "24 inches",
+          "attacks": "6",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "6",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Twin lascannon",
+          "keywords": [
+            "Twin-linked"
+          ],
+          "range": "48 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "12",
+          "armor_piercing": "-3",
+          "damage": "D6+1"
+        },
+        {
+          "name": "Armoured hull",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "6",
+          "armor_piercing": "0",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Deathwatch Terminator Squad",
+      "unit_composition": {
+        "min_models": 5,
+        "max_models": 10
+      },
+      "models": [
+        {
+          "name": "Deathwatch Terminator Sergeant",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Power fist",
+            "Storm bolter"
+          ],
+          "stats_override": {
+            "movement": 5,
+            "toughness": 5,
+            "save": "2+",
+            "invulnerable_save": "4+",
+            "wounds": 3,
+            "leadership": "6+",
+            "objective_control": 1
+          }
+        },
+        {
+          "name": "Deathwatch Terminator",
+          "count": {
+            "min": 4,
+            "max": 9
+          },
+          "default_wargear": [
+            "Power fist",
+            "Storm bolter"
+          ],
+          "stats_override": {
+            "movement": 5,
+            "toughness": 5,
+            "save": "2+",
+            "invulnerable_save": "4+",
+            "wounds": 3,
+            "leadership": "6+",
+            "objective_control": 1
+          }
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Deathwatch"
+      ],
+      "keywords": [
+        "Infantry",
+        "Imperium",
+        "Terminator",
+        "Kill Team",
+        "Deathwatch Terminator Squad"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Terminatus Assault",
+          "rules_text": "You can re-roll Charge rolls made for this unit. Each time this unit ends a Charge move, each enemy unit within Engagement Range of this unit must take a Battle-shock test. If that enemy unit does not have the IMPERIUM or CHAOS keywords, subtract 1 from that test."
+        },
+        {
+          "name": "Teleport Homer",
+          "rules_text": "At the start of the battle, you can set up one Teleport Homer for this unit anywhere on the battlefield that is not in your opponent's deployment zone. If you do, once per battle, you can target this unit with the Rapid Ingress Stratagem for 0CP, but when resolving that Stratagem, you must set this unit up within 3\" of that token and not within 9\" horizontally of one or more enemy units. That token is then removed."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [
+        {
+          "name": "Storm Shield",
+          "rules_text": "The bearer has a Wounds characteristic of 4."
+        }
+      ],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "Up to 3 Deathwatch Terminators can each have their storm bolter replaced with one of the following: 1 assault cannon; 1 heavy flamer; 1 plasma cannon; 1 cyclone missile launcher and 1 storm bolter (this model's storm bolter cannot be replaced).",
+        "Any number of models can each have their power fist and storm bolter replaced with one of the following: 1 storm bolter and 1 power weapon; 1 storm bolter and 1 chainfist; 1 thunder hammer and 1 storm shield; 1 twin lightning claws."
+      ],
+      "loadout_options": [],
+      "base_size": "40mm",
+      "stats": {
+        "movement": 5,
+        "toughness": 5,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 3,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Assault cannon",
+          "keywords": [
+            "Devastating Wounds"
+          ],
+          "range": "24 inches",
+          "attacks": "6",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "6",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Cyclone missile launcher \u2013 frag",
+          "keywords": [
+            "Blast"
+          ],
+          "range": "36 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Cyclone missile launcher \u2013 krak",
+          "keywords": [],
+          "range": "36 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "9",
+          "armor_piercing": "-2",
+          "damage": "D6"
+        },
+        {
+          "name": "Heavy flamer",
+          "keywords": [
+            "Ignores Cover",
+            "Torrent"
+          ],
+          "range": "12 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma cannon \u2013 standard",
+          "keywords": [
+            "Blast"
+          ],
+          "range": "36 inches",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma cannon \u2013 supercharge",
+          "keywords": [
+            "Blast",
+            "Hazardous"
+          ],
+          "range": "36 inches",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "2"
+        },
+        {
+          "name": "Storm bolter",
+          "keywords": [
+            "Rapid Fire 2"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Chainfist",
+          "keywords": [
+            "Anti-Vehicle 3+"
+          ],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Power fist",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Power weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Thunder hammer",
+          "keywords": [
+            "Devastating Wounds"
+          ],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Twin lightning claws",
+          "keywords": [
+            "Twin-linked"
+          ],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Deathwatch Veterans",
+      "unit_composition": {
+        "min_models": 5,
+        "max_models": 10
+      },
+      "models": [
+        {
+          "name": "Watch Sergeant",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Boltgun",
+            "Power weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        },
+        {
+          "name": "Deathwatch Veteran",
+          "count": {
+            "min": 4,
+            "max": 9
+          },
+          "default_wargear": [
+            "Boltgun",
+            "Power weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Deathwatch"
+      ],
+      "keywords": [
+        "Infantry",
+        "Battleline",
+        "Grenades",
+        "Imperium",
+        "Kill Team",
+        "Deathwatch Veterans",
+        "Veteran"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Death to the Alien",
+          "rules_text": "Each time a model in this unit makes an attack, re-roll a Hit roll of 1. If the target of that attack does not have the IMPERIUM or CHAOS keywords, you can re-roll the Hit roll instead."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [
+        {
+          "name": "Astartes Shield",
+          "rules_text": "The bearer has a 4+ invulnerable save."
+        }
+      ],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "For every 5 models in this unit, up to 2 models can each have their boltgun and power weapon replaced with one of the following: 1 boltgun, 1 Astartes shield and 1 close combat weapon; 1 power weapon and 1 Astartes shield.",
+        "For every 5 models in this unit, up to 2 models can each have their boltgun and power weapon replaced with 1 Deathwatch thunder hammer.",
+        "For every 5 models in this unit, 1 model can have its boltgun and power weapon replaced with 1 stalker-pattern boltgun and 1 close combat weapon.",
+        "Any number of models can each have their boltgun and power weapon replaced with 1 Deathwatch shotgun and 1 close combat weapon.",
+        "For every 5 models in this unit, 1 model can have its boltgun and power weapon replaced with 1 frag cannon and 1 close combat weapon.",
+        "For every 5 models in this unit, 1 model can have its boltgun and power weapon replaced with 1 Infernus heavy bolter and 1 close combat weapon.",
+        "1 model's boltgun and power weapon can be replaced with 1 Black Shield blades.",
+        "The Watch Sergeant's power weapon can be replaced with 1 xenophase blade.",
+        "The Watch Sergeant's boltgun can be replaced with 1 combi-weapon."
+      ],
+      "loadout_options": [],
+      "base_size": "32mm",
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 2,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Boltgun",
+          "keywords": [],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Combi-weapon",
+          "keywords": [
+            "Anti-Infantry 4+",
+            "Devastating Wounds",
+            "Rapid Fire 1"
+          ],
+          "range": "24 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Deathwatch shotgun",
+          "keywords": [
+            "Assault"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "2"
+        },
+        {
+          "name": "Frag cannon",
+          "keywords": [
+            "Blast",
+            "Heavy",
+            "Rapid Fire D3"
+          ],
+          "range": "18 inches",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": "7",
+          "armor_piercing": "-1",
+          "damage": "2"
+        },
+        {
+          "name": "Infernus heavy bolter \u2013 heavy bolter",
+          "keywords": [
+            "Heavy",
+            "Sustained Hits 1"
+          ],
+          "range": "36 inches",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "2"
+        },
+        {
+          "name": "Infernus heavy bolter \u2013 heavy flamer",
+          "keywords": [
+            "Ignores Cover",
+            "Torrent"
+          ],
+          "range": "12 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Stalker-pattern boltgun",
+          "keywords": [
+            "Heavy",
+            "Precision"
+          ],
+          "range": "24 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2"
+        },
+        {
+          "name": "Black Shield blades",
+          "keywords": [
+            "Twin-linked"
+          ],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Close combat weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Deathwatch thunder hammer",
+          "keywords": [
+            "Devastating Wounds"
+          ],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "10",
+          "armor_piercing": "-2",
+          "damage": "3"
+        },
+        {
+          "name": "Power weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Xenophase blade",
+          "keywords": [
+            "Devastating Wounds"
+          ],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Decimus Kill Team",
+      "unit_composition": {
+        "min_models": 5,
+        "max_models": 10
+      },
+      "models": [
+        {
+          "name": "Kill Team Sergeant",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Plasma pistol",
+            "Power weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        },
+        {
+          "name": "Gravis Veteran",
+          "count": {
+            "min": 1,
+            "max": 2
+          },
+          "default_wargear": [
+            "Infernus heavy bolter - heavy bolter",
+            "Bolt pistol",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 5,
+            "toughness": 6,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 3,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        },
+        {
+          "name": "Deathwatch Veteran with stalker bolt rifle",
+          "count": {
+            "min": 1,
+            "max": 2
+          },
+          "default_wargear": [
+            "Stalker bolt rifle",
+            "Bolt pistol",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        },
+        {
+          "name": "Deathwatch Veteran with marksman bolt carbine",
+          "count": {
+            "min": 1,
+            "max": 2
+          },
+          "default_wargear": [
+            "Deathwatch marksman bolt carbine",
+            "Special-issue bolt pistol",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        },
+        {
+          "name": "Deathwatch Veteran with xenophase blade",
+          "count": {
+            "min": 0,
+            "max": 1
+          },
+          "default_wargear": [
+            "Special-issue bolt pistol",
+            "Xenophase blade"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        },
+        {
+          "name": "Deathwatch Veteran",
+          "count": {
+            "min": 1,
+            "max": 2
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Deathwatch"
+      ],
+      "keywords": [
+        "Infantry",
+        "Battleline",
+        "Grenades",
+        "Imperium",
+        "Kill Team",
+        "Decimus Kill Team",
+        "Tacticus",
+        "Gravis"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Death to the Alien",
+          "rules_text": "Each time a model in this unit makes an attack, re-roll a Hit roll of 1. If the target of that attack does not have the IMPERIUM or CHAOS keywords, you can re-roll the Hit roll instead."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [
+        {
+          "name": "Astartes Shield",
+          "rules_text": "The bearer has a 4+ invulnerable save."
+        }
+      ],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "For every 5 models in the unit, up to 1 model's Infernus heavy bolter can be replaced with one of the following: 1 frag cannon; 1 Hellstorm bolt rifle and 1 Astartes grenade launcher.",
+        "For every 5 models in the unit, up to 1 model's heavy thunder hammer can be replaced with 1 power weapon and 1 Astartes shield.",
+        "For every 5 models in the unit, up to 1 model's stalker bolt rifle can be replaced with 1 plasma incinerator.",
+        "For every 5 models in the unit, up to 1 model's Deathwatch marksman bolt carbine can be replaced with 1 combat knife."
+      ],
+      "loadout_options": [],
+      "base_size": "{'kill_team_sergeant_and_deathwatch_veterans': '32mm', 'gravis_veterans': '40mm'}",
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 2,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Astartes grenade launcher \u2013 frag",
+          "keywords": [
+            "Blast"
+          ],
+          "range": "24 inches",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Astartes grenade launcher \u2013 krak",
+          "keywords": [],
+          "range": "24 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "9",
+          "armor_piercing": "-2",
+          "damage": "D3"
+        },
+        {
+          "name": "Bolt pistol",
+          "keywords": [
+            "Lethal Hits"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Deathwatch marksman bolt carbine",
+          "keywords": [
+            "Heavy",
+            "Lethal Hits"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Frag cannon",
+          "keywords": [
+            "Blast",
+            "Heavy",
+            "Lethal Hits"
+          ],
+          "range": "18 inches",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Hellstorm bolt rifle",
+          "keywords": [
+            "Assault",
+            "Heavy",
+            "Lethal Hits"
+          ],
+          "range": "30 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "2"
+        },
+        {
+          "name": "Infernus heavy bolter \u2013 heavy bolter",
+          "keywords": [
+            "Heavy",
+            "Sustained Hits 1"
+          ],
+          "range": "36 inches",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "3"
+        },
+        {
+          "name": "Infernus heavy bolter \u2013 heavy flamer",
+          "keywords": [
+            "Ignores Cover",
+            "Torrent"
+          ],
+          "range": "12 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma incinerator \u2013 standard",
+          "keywords": [
+            "Assault",
+            "Heavy"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma incinerator \u2013 supercharge",
+          "keywords": [
+            "Assault",
+            "Hazardous",
+            "Heavy"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "2"
+        },
+        {
+          "name": "Plasma pistol \u2013 standard",
+          "keywords": [
+            "Pistol"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma pistol \u2013 supercharge",
+          "keywords": [
+            "Hazardous",
+            "Pistol"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "2"
+        },
+        {
+          "name": "Special-issue bolt pistol",
+          "keywords": [
+            "Pistol",
+            "Precision",
+            "Lethal Hits"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Stalker bolt rifle",
+          "keywords": [
+            "Heavy",
+            "Lethal Hits"
+          ],
+          "range": "30 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Close combat weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Combat knife",
+          "keywords": [
+            "Precision"
+          ],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Heavy thunder hammer",
+          "keywords": [
+            "Devastating Wounds"
+          ],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "10",
+          "armor_piercing": "-2",
+          "damage": "3"
+        },
+        {
+          "name": "Power fist",
+          "keywords": [
+            "Sustained Hits 1"
+          ],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Xenophase blade",
+          "keywords": [
+            "Devastating Wounds"
+          ],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Fortis Kill Team",
+      "unit_composition": {
+        "min_models": 10,
+        "max_models": 10
+      },
+      "models": [
+        {
+          "name": "Kill Team Sergeant",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Deathwatch bolt rifle",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        },
+        {
+          "name": "Kill Team Intercessor",
+          "count": {
+            "min": 2,
+            "max": 9
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Deathwatch bolt rifle",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        },
+        {
+          "name": "Kill Team Intercessor with plasma incinerator",
+          "count": {
+            "min": 0,
+            "max": 4
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Plasma incinerator - standard",
+            "Plasma incinerator - supercharge",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        },
+        {
+          "name": "Kill Team Intercessor with heavy bolt pistol",
+          "count": {
+            "min": 0,
+            "max": 4
+          },
+          "default_wargear": [
+            "Heavy bolt pistol",
+            "Astartes chainsword"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        },
+        {
+          "name": "Kill Team Intercessor with pyreblaster",
+          "count": {
+            "min": 0,
+            "max": 4
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Pyreblaster",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        },
+        {
+          "name": "Kill Team Intercessor with superfrag rocket launcher",
+          "count": {
+            "min": 0,
+            "max": 2
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Castellan launcher",
+            "Superfrag rocket launcher",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 2
+          }
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Deathwatch"
+      ],
+      "keywords": [
+        "Infantry",
+        "Grenades",
+        "Imperium",
+        "Tacticus",
+        "Kill Team",
+        "Fortis Kill Team",
+        "Battleline"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Fortis Doctrines",
+          "rules_text": "Each time a model in this unit makes an attack that targets a unit that is below its Starting Strength, add 1 to the Hit roll. If that attack targets a unit that is Below Half-strength, add 1 to the Hit roll and add 1 to the Wound roll instead."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "The Kill Team Sergeant can replace its Deathwatch bolt rifle with one of the following: 1 Astartes chainsword; 1 hand flamer; 1 plasma pistol; 1 power weapon.",
+        "The Kill Team Sergeant can replace its close combat weapon with one of the following: 1 Astartes chainsword; 1 power fist; 1 power weapon; 1 thunder hammer.",
+        "For every 5 models in this unit, 1 model equipped with a Deathwatch bolt rifle can be equipped with 1 Astartes grenade launcher.",
+        "One model equipped with a plasma incinerator can replace its bolt pistol with 1 plasma pistol.",
+        "1 model can replace its superfrag rocket launcher with 1 Vengor launcher.",
+        "Any number of models can each replace their superfrag rocket launcher with 1 superkrak rocket launcher."
+      ],
+      "loadout_options": [],
+      "base_size": "32mm",
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 2,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Astartes grenade launcher \u2013 frag",
+          "keywords": [
+            "Blast"
+          ],
+          "range": "24 inches",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Astartes grenade launcher \u2013 krak",
+          "keywords": [],
+          "range": "24 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "9",
+          "armor_piercing": "-2",
+          "damage": "D3"
+        },
+        {
+          "name": "Bolt pistol",
+          "keywords": [
+            "Lethal Hits"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Castellan launcher",
+          "keywords": [
+            "Blast",
+            "Indirect Fire",
+            "Lethal Hits"
+          ],
+          "range": "36 inches",
+          "attacks": "D3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Deathwatch bolt rifle",
+          "keywords": [
+            "Assault",
+            "Heavy",
+            "Lethal Hits"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Hand flamer",
+          "keywords": [
+            "Ignores Cover",
+            "Pistol",
+            "Torrent"
+          ],
+          "range": "12 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "3",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Heavy bolt pistol",
+          "keywords": [],
+          "range": "18 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma incinerator \u2013 standard",
+          "keywords": [
+            "Assault",
+            "Heavy"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma incinerator \u2013 supercharge",
+          "keywords": [
+            "Assault",
+            "Hazardous",
+            "Heavy"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "2"
+        },
+        {
+          "name": "Plasma pistol \u2013 standard",
+          "keywords": [
+            "Pistol"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma pistol \u2013 supercharge",
+          "keywords": [
+            "Hazardous",
+            "Pistol"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "2"
+        },
+        {
+          "name": "Pyreblaster",
+          "keywords": [
+            "Ignores Cover",
+            "Torrent"
+          ],
+          "range": "12 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "5",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Superfrag rocket launcher",
+          "keywords": [
+            "Blast",
+            "Heavy"
+          ],
+          "range": "48 inches",
+          "attacks": "D6+1",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": "5",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Superkrak rocket launcher",
+          "keywords": [
+            "Heavy"
+          ],
+          "range": "48 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": "10",
+          "armor_piercing": "-2",
+          "damage": "D6+1"
+        },
+        {
+          "name": "Vengor launcher",
+          "keywords": [
+            "Blast",
+            "Indirect Fire"
+          ],
+          "range": "48 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-1",
+          "damage": "2"
+        },
+        {
+          "name": "Astartes chainsword",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Close combat weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Power fist",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Power weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Thunder hammer",
+          "keywords": [
+            "Devastating Wounds"
+          ],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "2"
+        }
+      ]
+    },
+    {
+      "name": "Indomitor Kill Team",
+      "unit_composition": {
+        "min_models": 10,
+        "max_models": 10
+      },
+      "models": [
+        {
+          "name": "Kill Team Heavy Intercessor",
+          "count": {
+            "min": 3,
+            "max": 10
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Deathwatch heavy bolt rifle",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 5,
+            "toughness": 6,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 3,
+            "leadership": "6+",
+            "objective_control": 1
+          }
+        },
+        {
+          "name": "Kill Team Heavy Intercessor with power fists",
+          "count": {
+            "min": 0,
+            "max": 3
+          },
+          "default_wargear": [
+            "Flamestorm gauntlets",
+            "Twin power fists"
+          ],
+          "stats_override": {
+            "movement": 5,
+            "toughness": 6,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 3,
+            "leadership": "6+",
+            "objective_control": 1
+          }
+        },
+        {
+          "name": "Kill Team Heavy Intercessor with melta rifle",
+          "count": {
+            "min": 0,
+            "max": 3
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Melta rifle",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 5,
+            "toughness": 6,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 3,
+            "leadership": "6+",
+            "objective_control": 1
+          }
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Deathwatch"
+      ],
+      "keywords": [
+        "Infantry",
+        "Grenades",
+        "Imperium",
+        "Gravis",
+        "Kill Team",
+        "Indomitor Kill Team"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Indomitor Doctrines",
+          "rules_text": "Each time a model in this unit makes a ranged attack that targets an enemy unit that is the closest eligible target, or makes a melee attack in a turn in which it made a Charge move, improve the Strength characteristic of that attack by 2."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "For every 5 models in this unit, 1 model can replace its Deathwatch heavy bolt rifle with 1 Deathwatch heavy bolter.",
+        "1 model can replace its melta rifle with 1 multi-melta.",
+        "Any number of models can each have their flamestorm gauntlets replaced with 1 auto boltstorm gauntlets and 1 fragstorm grenade launcher."
+      ],
+      "loadout_options": [],
+      "base_size": "40mm",
+      "stats": {
+        "movement": 5,
+        "toughness": 6,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 3,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Auto boltstorm gauntlets",
+          "keywords": [
+            "Twin-linked"
+          ],
+          "range": "18 inches",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Bolt pistol",
+          "keywords": [
+            "Pistol"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Deathwatch heavy bolt rifle",
+          "keywords": [
+            "Assault",
+            "Heavy",
+            "Lethal Hits"
+          ],
+          "range": "30 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Deathwatch heavy bolter",
+          "keywords": [
+            "Assault",
+            "Heavy",
+            "Lethal Hits",
+            "Sustained Hits 1"
+          ],
+          "range": "36 inches",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "3"
+        },
+        {
+          "name": "Fragstorm grenade launcher",
+          "keywords": [
+            "Blast"
+          ],
+          "range": "18 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Flamestorm gauntlets",
+          "keywords": [
+            "Ignores Cover",
+            "Torrent",
+            "Twin-linked"
+          ],
+          "range": "12 inches",
+          "attacks": "D6+1",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Melta rifle",
+          "keywords": [
+            "Heavy",
+            "Melta 2"
+          ],
+          "range": "18 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "9",
+          "armor_piercing": "-4",
+          "damage": "D6"
+        },
+        {
+          "name": "Multi-melta",
+          "keywords": [
+            "Heavy",
+            "Melta 2"
+          ],
+          "range": "18 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": "9",
+          "armor_piercing": "-4",
+          "damage": "D6"
+        },
+        {
+          "name": "Close combat weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Twin power fists",
+          "keywords": [
+            "Twin-linked"
+          ],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "2"
+        }
+      ]
+    },
+    {
+      "name": "Spectrus Kill Team",
+      "unit_composition": {
+        "min_models": 10,
+        "max_models": 10
+      },
+      "models": [
+        {
+          "name": "Kill Team Infiltrator",
+          "count": {
+            "min": 3,
+            "max": 10
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Deathwatch marksman bolt carbine",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 1
+          }
+        },
+        {
+          "name": "Kill Team Infiltrator with bolt sniper rifle",
+          "count": {
+            "min": 0,
+            "max": 3
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Bolt sniper rifle",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 1
+          }
+        },
+        {
+          "name": "Kill Team Infiltrator with Deathwatch occult bolt carbine",
+          "count": {
+            "min": 0,
+            "max": 4
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Deathwatch occult bolt carbine",
+            "Paired combat blades"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 1
+          }
+        },
+        {
+          "name": "Kill Team Infiltrator with combat knife",
+          "count": {
+            "min": 0,
+            "max": 4
+          },
+          "default_wargear": [
+            "Special-issue bolt pistol",
+            "Combat knife"
+          ],
+          "stats_override": {
+            "movement": 6,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 1
+          }
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Deathwatch"
+      ],
+      "keywords": [
+        "Infantry",
+        "Smoke",
+        "Grenades",
+        "Imperium",
+        "Phobos",
+        "Kill Team",
+        "Spectrus Kill Team"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Infiltrators, Scouts 6\""
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Spectrus Doctrines",
+          "rules_text": "At the end of your opponent's turn, if this unit is more than 6\" away from all enemy units, you can remove this unit from the battlefield and place it into Strategic Reserves."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [
+        {
+          "name": "Helix Gauntlet",
+          "rules_text": "Models in the bearer's unit have the Feel No Pain 5+ ability."
+        },
+        {
+          "name": "Infiltrator Comms Array",
+          "rules_text": "Each time you target the bearer's unit with a Stratagem, roll one D6: on a 5+, you gain 1CP."
+        },
+        {
+          "name": "Instigator Bolt Carbine",
+          "rules_text": "In your Shooting phase, after the bearer\u2019s unit has shot, the bearer\u2019s unit can make a Normal move of up to D6\"; until the end of the turn, the bearer\u2019s unit is not eligible to declare a charge."
+        }
+      ],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "One model equipped with a Deathwatch marksman bolt carbine can be equipped with one of the following: 1 helix gauntlet; 1 infiltrator comms array.",
+        "One model can replace its bolt sniper rifle with 1 instigator bolt carbine.",
+        "Any number of models can each replace their bolt sniper rifle with 1 las fusil.",
+        "Any number of models can each replace their combat knife with 1 Deathwatch occult bolt carbine and 1 close combat weapon."
+      ],
+      "loadout_options": [],
+      "base_size": "{'standard_models': '32mm', 'kill_team_infiltrators_with_bolt_sniper_rifles': '40mm'}",
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 2,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "keywords": [
+            "Pistol"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Bolt sniper rifle",
+          "keywords": [
+            "Heavy",
+            "Precision"
+          ],
+          "range": "36 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "3"
+        },
+        {
+          "name": "Deathwatch bolt carbine",
+          "keywords": [
+            "Lethal Hits",
+            "Precision"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Deathwatch marksman bolt carbine",
+          "keywords": [
+            "Heavy",
+            "Lethal Hits"
+          ],
+          "range": "24 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Deathwatch occult bolt carbine",
+          "keywords": [
+            "Assault",
+            "Ignores Cover",
+            "Lethal Hits"
+          ],
+          "range": "24 inches",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Instigator bolt carbine",
+          "keywords": [
+            "Heavy"
+          ],
+          "range": "24 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Las fusil",
+          "keywords": [
+            "Heavy"
+          ],
+          "range": "36 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "9",
+          "armor_piercing": "-3",
+          "damage": "D6"
+        },
+        {
+          "name": "Special-issue bolt pistol",
+          "keywords": [
+            "Pistol",
+            "Precision"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Close combat weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Combat knife",
+          "keywords": [
+            "Precision"
+          ],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Paired combat blades",
+          "keywords": [
+            "Sustained Hits 1"
+          ],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Talonstrike Kill Team",
+      "unit_composition": {
+        "min_models": 10,
+        "max_models": 10
+      },
+      "models": [
+        {
+          "name": "Kill Team Sergeant with Jump Pack",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Heavy bolt pistol",
+            "Astartes chainsword"
+          ],
+          "stats_override": {
+            "movement": 12,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 1
+          }
+        },
+        {
+          "name": "Kill Team Intercessor with Jump Pack",
+          "count": {
+            "min": 2,
+            "max": 9
+          },
+          "default_wargear": [
+            "Heavy bolt pistol",
+            "Astartes chainsword"
+          ],
+          "stats_override": {
+            "movement": 12,
+            "toughness": 4,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 2,
+            "leadership": "6+",
+            "objective_control": 1
+          }
+        },
+        {
+          "name": "Kill Team Heavy Intercessor with Jump Pack",
+          "count": {
+            "min": 0,
+            "max": 5
+          },
+          "default_wargear": [
+            "Assault bolters",
+            "Close combat weapon"
+          ],
+          "stats_override": {
+            "movement": 10,
+            "toughness": 6,
+            "save": "3+",
+            "invulnerable_save": null,
+            "wounds": 3,
+            "leadership": "6+",
+            "objective_control": 1
+          }
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Deathwatch"
+      ],
+      "keywords": [
+        "Infantry",
+        "Fly",
+        "Jump Pack",
+        "Grenades",
+        "Imperium",
+        "Kill Team",
+        "Talonstrike Kill Team"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Talonstrike Doctrines",
+          "rules_text": "Each time this unit is set up on the battlefield, until the end of the turn: improve the Armour Penetration characteristic of weapons equipped by models in this unit by 1; melee weapons equipped by models in this unit have the [LANCE] ability."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "The Kill Team Sergeant with Jump Pack can replace its heavy bolt pistol with one of the following: 1 hand flamer; 1 plasma pistol.",
+        "The Kill Team Sergeant with Jump Pack can replace its Astartes chainsword with one of the following: 1 power fist; 1 power weapon.",
+        "For every 5 models in this unit, 1 model can replace its heavy bolt pistol with 1 plasma pistol.",
+        "Any number of models can each have their assault bolters replaced with 1 plasma exterminators."
+      ],
+      "loadout_options": [],
+      "base_size": "{'kill_team_sergeant_and_intercessors_with_jump_packs': '32mm', 'kill_team_heavy_intercessors_with_jump_packs': '40mm'}",
+      "stats": {
+        "movement": 12,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 2,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Assault bolters",
+          "keywords": [
+            "Assault",
+            "Heavy",
+            "Sustained Hits 2",
+            "Twin-linked"
+          ],
+          "range": "18 inches",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "2"
+        },
+        {
+          "name": "Hand flamer",
+          "keywords": [
+            "Ignores Cover",
+            "Pistol",
+            "Torrent"
+          ],
+          "range": "12 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "3",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Heavy bolt pistol",
+          "keywords": [
+            "Pistol"
+          ],
+          "range": "18 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma exterminators \u2013 standard",
+          "keywords": [
+            "Assault",
+            "Pistol",
+            "Twin-linked"
+          ],
+          "range": "18 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Plasma exterminators \u2013 supercharge",
+          "keywords": [
+            "Assault",
+            "Hazardous",
+            "Pistol",
+            "Twin-linked"
+          ],
+          "range": "18 inches",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "3"
+        },
+        {
+          "name": "Plasma pistol \u2013 standard",
+          "keywords": [
+            "Pistol"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma pistol \u2013 supercharge",
+          "keywords": [
+            "Hazardous",
+            "Pistol"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "2"
+        },
+        {
+          "name": "Astartes chainsword",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Close combat weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Power fist",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Power weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1"
+        }
+      ]
+    },
+    {
+      "name": "Watch Captain Artemis",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Watch Captain Artemis",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Hellfire Extremis",
+            "Master-crafted power weapon"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Deathwatch"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Grenades",
+        "Imperium",
+        "Captain",
+        "Watch Captain Artemis"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Feel No Pain 6+, Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Oath of Moment"
+        },
+        {
+          "name": "Tactical Instinct",
+          "rules_text": "While this model is leading a unit, weapons equipped by models in that unit have the [LETHAL HITS] ability."
+        },
+        {
+          "name": "Unstoppable Champion",
+          "rules_text": "The first time this model is destroyed, roll one D6 at the end of the phase. On a 2+, set this model back up on the battlefield, as close as possible to where it was destroyed and not within Engagement Range of any enemy units, with 1 wound remaining."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Deathwatch Veterans",
+          "Decimus Kill Team",
+          "Fortis Kill Team"
+        ],
+        "rules_text": "This model can be attached to the following units: Deathwatch Veterans; Decimus Kill Team; Fortis Kill Team."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "base_size": "32mm",
+      "stats": {
+        "movement": 6,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": "4+",
+        "wounds": 4,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Hellfire Extremis",
+          "keywords": [
+            "Anti-Infantry 4+",
+            "Devastating Wounds",
+            "Ignores Cover"
+          ],
+          "range": "12 inches",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Master-crafted power weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "2"
+        }
+      ]
+    }
+  ]
+}

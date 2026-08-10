@@ -37,6 +37,12 @@ const statDisplayRows = [
 const ATTACHED_LEADER_WEAPON_PREFIX = '__attacker_leader__::'
 const ATTACHED_SUPPORT_WEAPON_MARKER = 'support::'
 const GAME_VERSION = '11.06.27.26'
+const BLACK_SPEAR_MISSION_TACTIC_OPTIONS = [
+  { id: '', label: 'No tactic selected' },
+  { id: 'furor_tactics', label: 'Furor Tactics' },
+  { id: 'malleus_tactics', label: 'Malleus Tactics' },
+  { id: 'purgatus_tactics', label: 'Purgatus Tactics' },
+]
 
 const initialOptions = {
   target_has_cover: false,
@@ -81,15 +87,38 @@ const initialOptions = {
   defender_waaagh_active: false,
   attacker_templar_vow: '',
   attacker_hyper_adaptation: 'swarming_instincts',
+  attacker_black_spear_mission_tactic: '',
+  attacker_penitent_vow: '',
+  attacker_miracle_dice_policy: 'never',
+  attacker_miracle_dice_pool: '',
+  attacker_righteous_active: false,
+  defender_righteous_active: false,
+  attacker_hagiomnifex_mode: '',
+  defender_hagiomnifex_mode: '',
+  attacker_suffer_not_the_unfaithful_mode: '',
+  attacker_faith_and_fury_active: false,
+  attacker_divine_guidance_active: false,
+  defender_blinding_radiance_active: false,
+  attacker_to_the_heart_of_heresy_active: false,
+  attacker_sanctified_blows_active: false,
+  defender_faithful_fortitude_active: false,
+  attacker_harmonised_exorcism_active: false,
+  attacker_devastating_reprise_active: false,
+  attacker_passion_of_the_penitent_active: false,
+  defender_purity_of_suffering_active: false,
   attacker_synaptic_imperative: '',
   defender_synaptic_imperative: '',
+  defender_miracle_dice_policy: 'never',
+  defender_miracle_dice_pool: '',
   attacker_within_synapse_range: false,
   defender_within_synapse_range: false,
   attacker_prey_active: false,
   attacker_target_within_9: false,
   attacker_target_within_12: false,
   attacker_target_closest_eligible_within_6: false,
+  attacker_target_closest_eligible: false,
   attacker_disembarked_from_transport: false,
+  attacker_set_up_on_battlefield_this_turn: false,
   attacker_counts_as_ten_plus_models: false,
   defender_counts_as_ten_plus_models: false,
   target_below_starting_strength: false,
@@ -171,6 +200,9 @@ const initialOptions = {
   attacker_auto_sense_coordination_sustained_active: false,
   attacker_battle_drill_recall_active: false,
   attacker_mercy_is_weakness_active: false,
+  attacker_hellfire_rounds_active: false,
+  attacker_kraken_rounds_active: false,
+  attacker_dragonfire_rounds_active: false,
   attacker_ancient_fury_active: false,
   attacker_crucible_of_battle_active: false,
   attacker_immolation_protocols_active: false,
@@ -215,6 +247,7 @@ const LIBERATOR_ASSAULT_GROUP = 'Liberator Assault Group'
 const DARK_AGE_ARSENAL = 'Dark Age Arsenal'
 const DARKFLIGHT_PURSUIT = 'Darkflight Pursuit'
 const INTERROGATION_CONCLAVE = 'Interrogation Conclave'
+const HALLOWED_MARTYRS = 'Hallowed Martyrs'
 const ARMOURED_SPEARTIP = 'Armoured Speartip'
 const BASTION_TASK_FORCE = 'Bastion Task Force'
 const CERAMITE_SENTINELS = 'Ceramite Sentinels'
@@ -224,6 +257,7 @@ const LIBRARIUS_CONCLAVE = 'Librarius Conclave'
 const SUBVERSION_ASSETS = 'Subversion Assets'
 const VENGEFUL_HOSTS = 'Vengeful Hosts'
 const ORBITAL_ASSAULT_FORCE = 'Orbital Assault Force'
+const BLACK_SPEAR_TASK_FORCE = 'Black Spear Task Force'
 const SAGA_OF_THE_HUNTER = 'Saga of the Hunter'
 const SAGA_OF_THE_BEASTSLAYER = 'Saga of the Beastslayer'
 const SAGA_OF_THE_BOLD = 'Saga of the Bold'
@@ -269,7 +303,38 @@ const CRUSHER_STAMPEDE = 'Crusher Stampede'
 const ASSIMILATION_SWARM = 'Assimilation Swarm'
 const VANGUARD_ONSLAUGHT = 'Vanguard Onslaught'
 const SYNAPTIC_NEXUS = 'Synaptic Nexus'
+const ADEPTA_SORORITAS = 'Adepta Sororitas'
 const BLACK_TEMPLARS = 'Black Templars'
+const PENITENT_HOST = 'Penitent Host'
+const ARMY_OF_FAITH = 'Army of Faith'
+const CHAMPIONS_OF_FAITH = 'Champions of Faith'
+const CHORUS_OF_CONDEMNATION = 'Chorus of Condemnation'
+const SACRED_CHAMPIONS = 'Sacred Champions'
+const SANCTIFIED_ORATORS = 'Sanctified Orators'
+const MIRACLE_DICE_POLICY_OPTIONS = [
+  { id: 'never', label: 'Do not use Miracle Dice' },
+  { id: 'offensive', label: 'Offensive' },
+  { id: 'defensive', label: 'Defensive' },
+]
+const PENITENT_VOW_OPTIONS = [
+  { id: '', label: 'No vow selected' },
+  { id: 'path_of_the_penitent', label: 'The Path of the Penitent' },
+  { id: 'absolution_in_battle', label: 'Absolution in Battle' },
+  { id: 'death_before_disgrace', label: 'Death Before Disgrace' },
+]
+const SUFFER_NOT_THE_UNFAITHFUL_OPTIONS = [
+  { id: '', label: 'No blessing selected' },
+  { id: 'lethal_hits', label: 'Lethal Hits' },
+  { id: 'sustained_hits_1', label: 'Sustained Hits 1' },
+]
+const HAGIOMNIFEX_MODE_OPTIONS = [
+  { id: '', label: 'No hymn selected' },
+  { id: 'rite_of_revelation', label: 'Rite of Revelation' },
+  { id: 'sermon_of_intolerance', label: 'Sermon of Intolerance' },
+  { id: 'catechism_of_raging_fervour', label: 'Catechism of Raging Fervour' },
+  { id: 'psalm_of_righteous_smiting', label: 'Psalm of Righteous Smiting' },
+  { id: 'chorus_of_repudiation', label: 'Chorus of Repudiation' },
+]
 const HYPER_ADAPTATION_OPTIONS = [
   { id: 'swarming_instincts', label: 'Swarming Instincts' },
   { id: 'hyper_aggression', label: 'Hyper-aggression' },
@@ -301,6 +366,159 @@ const OATH_EXCLUDED_KEYWORDS = [
 ]
 const OATH_OF_MOMENT_RULE_TEXT = 'Select one enemy unit. Each time a model with Oath of Moment makes an attack that targets that unit, you can re-roll the Hit roll.'
 const OATH_OF_MOMENT_CODEX_RIDER_TEXT = 'If you are using a Codex: Space Marines Detachment and your army does not include Black Templars, Blood Angels, Dark Angels, Deathwatch, or Space Wolves units, add 1 to the Wound roll as well.'
+
+function filterNamedOptionsByQuery(items, query) {
+  const optionList = Array.isArray(items) ? items : []
+  const normalizedQuery = String(query || '').trim().toLowerCase()
+  if (!normalizedQuery) {
+    return optionList
+  }
+
+  return optionList.filter((item) => String(item?.name || '').toLowerCase().includes(normalizedQuery))
+}
+
+function parseMiracleDiceInput(value) {
+  return String(value || '')
+    .split(',')
+    .map((entry) => Number.parseInt(entry.trim(), 10))
+    .filter((entry) => Number.isInteger(entry) && entry >= 1 && entry <= 6)
+}
+
+function SearchableUnitSelect({
+  value,
+  options,
+  onChangeValue,
+  placeholder = 'Select a unit',
+  emptyMessage = 'No matching units found.',
+  disabled = false,
+}) {
+  const containerRef = useRef(null)
+  const inputRef = useRef(null)
+  const [isOpen, setIsOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const selectedLabel = useMemo(
+    () => options.find((option) => option.name === value)?.name || '',
+    [options, value],
+  )
+  const filteredOptions = useMemo(
+    () => filterNamedOptionsByQuery(options, query),
+    [options, query],
+  )
+
+  useEffect(() => {
+    if (!isOpen) {
+      setQuery(selectedLabel)
+    }
+  }, [isOpen, selectedLabel])
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined
+    }
+
+    const handlePointerDownOutside = (event) => {
+      if (!containerRef.current?.contains(event.target)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDownOutside)
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDownOutside)
+    }
+  }, [isOpen])
+
+  const openMenu = useCallback(() => {
+    if (disabled) {
+      return
+    }
+    setIsOpen(true)
+    setQuery('')
+    requestAnimationFrame(() => {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    })
+  }, [disabled])
+
+  const handleOptionSelect = useCallback((optionName) => {
+    onChangeValue(optionName)
+    setQuery(optionName)
+    setIsOpen(false)
+  }, [onChangeValue])
+
+  return (
+    <div className={`searchable-select ${isOpen ? 'open' : ''}`} ref={containerRef}>
+      <div className="searchable-select-control">
+        <input
+          ref={inputRef}
+          type="text"
+          className="searchable-select-input"
+          value={isOpen ? query : selectedLabel}
+          onFocus={openMenu}
+          onClick={openMenu}
+          onChange={(event) => {
+            setIsOpen(true)
+            setQuery(event.target.value)
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              if (filteredOptions.length) {
+                handleOptionSelect(filteredOptions[0].name)
+              }
+            }
+            if (event.key === 'Escape') {
+              event.preventDefault()
+              setIsOpen(false)
+            }
+          }}
+          placeholder={placeholder}
+          autoComplete="off"
+          disabled={disabled}
+          role="combobox"
+          aria-expanded={isOpen}
+          aria-autocomplete="list"
+        />
+        <button
+          type="button"
+          className="searchable-select-toggle"
+          onClick={() => {
+            if (isOpen) {
+              setIsOpen(false)
+              return
+            }
+            openMenu()
+          }}
+          disabled={disabled}
+          aria-label={isOpen ? 'Close unit list' : 'Open unit list'}
+        >
+          <span aria-hidden="true">{isOpen ? '▲' : '▼'}</span>
+        </button>
+      </div>
+      {isOpen ? (
+        <div className="searchable-select-menu" role="listbox">
+          {filteredOptions.length ? (
+            filteredOptions.map((option) => (
+              <button
+                key={option.name}
+                type="button"
+                className={`searchable-select-option ${option.name === value ? 'selected' : ''}`}
+                onMouseDown={(event) => {
+                  event.preventDefault()
+                  handleOptionSelect(option.name)
+                }}
+              >
+                {option.name}
+              </button>
+            ))
+          ) : (
+            <div className="searchable-select-empty">{emptyMessage}</div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  )
+}
 
 function EmailVerificationView({ initialEmail, onBackToSignIn }) {
   const [email, setEmail] = useState(initialEmail || '')
@@ -1959,6 +2177,14 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       return stratagem.name === 'Tactical Decapitation' || stratagem.name === 'Auto-sense Coordination'
     }
 
+    if (detachment.name === BLACK_SPEAR_TASK_FORCE) {
+      return isRangedWeapon && (
+        stratagem.name === 'Hellfire Rounds'
+        || stratagem.name === 'Kraken Rounds'
+        || stratagem.name === 'Dragonfire Rounds'
+      )
+    }
+
     if (detachment.name === GLADIUS_TASK_FORCE) {
       if (stratagem.name === 'Storm of Fire') {
         return isRangedWeapon
@@ -2435,15 +2661,38 @@ function buildSimulationPayload(state) {
     defender_waaagh_active: state.defenderWaaaghActive,
     attacker_templar_vow: state.attackerTemplarVow || null,
     attacker_hyper_adaptation: state.attackerHyperAdaptation || null,
+    attacker_black_spear_mission_tactic: state.attackerBlackSpearMissionTactic || null,
+    attacker_penitent_vow: state.attackerPenitentVow || null,
+    attacker_miracle_dice_policy: state.attackerMiracleDicePolicy || null,
+    attacker_miracle_dice_pool: parseMiracleDiceInput(state.attackerMiracleDicePool),
+    attacker_righteous_active: Boolean(state.attackerRighteousActive),
+    defender_righteous_active: Boolean(state.defenderRighteousActive),
+    attacker_hagiomnifex_mode: state.attackerHagiomnifexMode || null,
+    defender_hagiomnifex_mode: state.defenderHagiomnifexMode || null,
+    attacker_suffer_not_the_unfaithful_mode: state.attackerSufferNotTheUnfaithfulMode || null,
+    attacker_faith_and_fury_active: Boolean(state.attackerFaithAndFuryActive),
+    attacker_divine_guidance_active: Boolean(state.attackerDivineGuidanceActive),
+    defender_blinding_radiance_active: Boolean(state.defenderBlindingRadianceActive),
+    attacker_to_the_heart_of_heresy_active: Boolean(state.attackerToTheHeartOfHeresyActive),
+    attacker_sanctified_blows_active: Boolean(state.attackerSanctifiedBlowsActive),
+    defender_faithful_fortitude_active: Boolean(state.defenderFaithfulFortitudeActive),
+    attacker_harmonised_exorcism_active: Boolean(state.attackerHarmonisedExorcismActive),
+    attacker_devastating_reprise_active: Boolean(state.attackerDevastatingRepriseActive),
+    attacker_passion_of_the_penitent_active: Boolean(state.attackerPassionOfThePenitentActive),
+    defender_purity_of_suffering_active: Boolean(state.defenderPurityOfSufferingActive),
     attacker_synaptic_imperative: state.attackerSynapticImperative || null,
     defender_synaptic_imperative: state.defenderSynapticImperative || null,
+    defender_miracle_dice_policy: state.defenderMiracleDicePolicy || null,
+    defender_miracle_dice_pool: parseMiracleDiceInput(state.defenderMiracleDicePool),
     attacker_within_synapse_range: state.attackerWithinSynapseRange,
     defender_within_synapse_range: state.defenderWithinSynapseRange,
     attacker_prey_active: state.attackerPreyActive,
     attacker_target_within_9: state.attackerTargetWithinNine,
     attacker_target_within_12: state.attackerTargetWithinTwelve,
     attacker_target_closest_eligible_within_6: state.attackerTargetClosestEligibleWithinSix,
+    attacker_target_closest_eligible: state.attackerTargetClosestEligible,
     attacker_disembarked_from_transport: state.attackerDisembarkedFromTransport,
+    attacker_set_up_on_battlefield_this_turn: state.attackerSetUpOnBattlefieldThisTurn,
     attacker_counts_as_ten_plus_models: state.attackerCountsAsTenPlusModels,
     defender_counts_as_ten_plus_models: state.defenderCountsAsTenPlusModels,
     target_below_starting_strength: state.targetBelowStartingStrength,
@@ -2525,6 +2774,9 @@ function buildSimulationPayload(state) {
     attacker_auto_sense_coordination_sustained_active: state.attackerAutoSenseCoordinationSustainedActive,
     attacker_battle_drill_recall_active: state.attackerBattleDrillRecallActive,
     attacker_mercy_is_weakness_active: state.attackerMercyIsWeaknessActive,
+    attacker_hellfire_rounds_active: state.attackerHellfireRoundsActive,
+    attacker_kraken_rounds_active: state.attackerKrakenRoundsActive,
+    attacker_dragonfire_rounds_active: state.attackerDragonfireRoundsActive,
     attacker_ancient_fury_active: state.attackerAncientFuryActive,
     attacker_crucible_of_battle_active: state.attackerCrucibleOfBattleActive,
     attacker_immolation_protocols_active: state.attackerImmolationProtocolsActive,
@@ -6123,6 +6375,11 @@ function buildAttackerActiveRules({
   attackerCombatDoctrine,
   attackerTemplarVow,
   attackerHyperAdaptation,
+  attackerBlackSpearMissionTactic,
+  attackerPenitentVow,
+  attackerRighteousActive,
+  attackerHagiomnifexMode,
+  attackerSufferNotTheUnfaithfulMode,
   attackerSynapticImperative,
   attackerWithinSynapseRange,
   attackerSagaCompleted,
@@ -6138,6 +6395,9 @@ function buildAttackerActiveRules({
   attackerNoThreatTooGreatActive,
   attackerBattleDrillRecallActive,
   attackerMercyIsWeaknessActive,
+  attackerHellfireRoundsActive,
+  attackerKrakenRoundsActive,
+  attackerDragonfireRoundsActive,
   attackerAncientFuryActive,
   attackerCrucibleOfBattleActive,
   attackerImmolationProtocolsActive,
@@ -6146,7 +6406,9 @@ function buildAttackerActiveRules({
   attackerShockAssaultActive,
   attackerStrikeFromTheShadowsActive,
   attackerTargetWithinTwelve,
+  attackerTargetClosestEligible,
   attackerDisembarkedFromTransport,
+  attackerSetUpOnBattlefieldThisTurn,
   attackerUnforgivenFuryActive,
   attackerUnbridledFerocityActive,
   attackerAdrenalSurgeActive,
@@ -6162,6 +6424,8 @@ function buildAttackerActiveRules({
   attackerRelicsOfTheDarkAgeActive,
   attackerLionsWillActive,
   attackerTalonStrikeActive,
+  attackerFaithAndFuryActive,
+  attackerDivineGuidanceActive,
   attackerPiousEnmityActive,
   attackerForTheEmperorsHonourActive,
   attackerLitaniesOfPurgationActive,
@@ -6175,7 +6439,12 @@ function buildAttackerActiveRules({
   attackerAdaptableExecutionerMode,
   attackerCastigateTheDemagoguesActive,
   attackerRiteOfPerfervidWrathActive,
+  attackerToTheHeartOfHeresyActive,
   attackerRageFuelledWarriorActive,
+  attackerSanctifiedBlowsActive,
+  attackerHarmonisedExorcismActive,
+  attackerDevastatingRepriseActive,
+  attackerPassionOfThePenitentActive,
   attackerRedRampageMode,
   attackerSavageEchoesMode,
   attackerParasiticBiomorphologyFedActive,
@@ -6198,6 +6467,8 @@ function buildAttackerActiveRules({
   targetInEngagementRangeOfAllies,
   defenderOnObjective,
   defenderBattleshocked,
+  targetBelowStartingStrength,
+  targetBelowHalfStrength,
   hasHazardous,
 }) {
   const rules = [
@@ -6368,6 +6639,195 @@ function buildAttackerActiveRules({
       name: adaptation?.label || 'Hyper-adaptations',
       source: `${attackerDetachment.name} Rule`,
       text: activeTextByAdaptation[attackerHyperAdaptation] || getDetachmentEntry(attackerDetachment, 'rule', 'Hyper-adaptations')?.rules_text || '',
+    })
+  }
+
+  if (attackerDetachment?.name === BLACK_SPEAR_TASK_FORCE && attackerBlackSpearMissionTactic) {
+    const tactic = BLACK_SPEAR_MISSION_TACTIC_OPTIONS.find((option) => option.id === attackerBlackSpearMissionTactic)
+    const textByTactic = {
+      furor_tactics: 'All weapons in this attacking package have Sustained Hits 1 while Furor Tactics is active.',
+      malleus_tactics: 'All weapons in this attacking package have Lethal Hits while Malleus Tactics is active.',
+      purgatus_tactics: 'Critical hits from this attacking package gain Precision for that attack while Purgatus Tactics is active.',
+    }
+    rules.push({
+      name: tactic?.label || 'Mission Tactics',
+      source: `${attackerDetachment.name} Rule`,
+      text: textByTactic[attackerBlackSpearMissionTactic] || getDetachmentEntry(attackerDetachment, 'rule', 'Mission Tactics')?.rules_text || '',
+    })
+  }
+
+  if (attackerDetachment?.name === CHAMPIONS_OF_FAITH && attackerRighteousActive) {
+    rules.push({
+      name: 'Righteous Purpose',
+      source: `${attackerDetachment.name} Rule`,
+      text: ['Battle Sisters Squad', 'Celestian Sacresants', 'Paragon Warsuits'].includes(attackerUnitDetails?.name)
+        ? 'This unit is Righteous, so its weapons improve their WS and BS by 1 for this attack sequence.'
+        : 'This unit is Righteous. The Move and Leadership portions matter outside this attack sequence, but Righteous status can still unlock other detachment effects here.',
+    })
+  }
+
+  if (attackerDetachment?.name === SACRED_CHAMPIONS && attackerUnitDetails?.name === 'Celestian Sacresants') {
+    rules.push({
+      name: 'Holy Quest',
+      source: `${attackerDetachment.name} Rule`,
+      text: 'This Celestian Sacresants unit improves its WS and BS by 1.',
+    })
+  }
+
+  if (attackerEnhancementName === 'Hagiomnifex' && attackerHagiomnifexMode) {
+    const textByMode = {
+      rite_of_revelation: 'Rite of Revelation is active. The detection-range effect matters on the battlefield rather than inside this attack roll sequence.',
+      sermon_of_intolerance: 'Sermon of Intolerance is active. Its Battle-shock effect matters outside this attack sequence.',
+      catechism_of_raging_fervour: 'Catechism of Raging Fervour is active. Its Move bonus matters outside this attack sequence.',
+      psalm_of_righteous_smiting: 'Psalm of Righteous Smiting is active, so this unit gains +1 Strength for this attack.',
+      chorus_of_repudiation: 'Chorus of Repudiation is selected on the attacker, but its wound protection only matters while this unit is being targeted.',
+    }
+    rules.push({
+      name: 'Hagiomnifex',
+      source: `${attackerDetachment?.name || SANCTIFIED_ORATORS} Enhancement`,
+      text: textByMode[attackerHagiomnifexMode] || 'A Hagiomnifex hymn is active for this unit.',
+    })
+  }
+
+  if (attackerFaithAndFuryActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Faith and Fury')
+    rules.push({
+      name: stratagem?.name || 'Faith and Fury',
+      source: `${attackerDetachment?.name || ARMY_OF_FAITH} Stratagem`,
+      text: 'This unit’s melee weapons gain Lance for this fight.',
+    })
+  }
+
+  if (attackerDivineGuidanceActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Divine Guidance')
+    rules.push({
+      name: stratagem?.name || 'Divine Guidance',
+      source: `${attackerDetachment?.name || ARMY_OF_FAITH} Stratagem`,
+      text: 'This unit improves AP by 1 for this attack sequence.',
+    })
+  }
+
+  if (attackerRighteousActive && attackerSufferNotTheUnfaithfulMode) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Suffer Not the Unfaithful')
+    const modeText = attackerSufferNotTheUnfaithfulMode === 'lethal_hits'
+      ? 'Lethal Hits'
+      : 'Sustained Hits 1'
+    rules.push({
+      name: stratagem?.name || 'Suffer Not the Unfaithful',
+      source: `${attackerDetachment?.name || CHAMPIONS_OF_FAITH} Stratagem`,
+      text: `This Righteous unit gains ${modeText} on its weapons for this phase.`,
+    })
+  }
+
+  if (attackerToTheHeartOfHeresyActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'To the Heart of Heresy')
+    rules.push({
+      name: stratagem?.name || 'To the Heart of Heresy',
+      source: `${attackerDetachment?.name || CHAMPIONS_OF_FAITH} Stratagem`,
+      text: attackerRighteousActive
+        ? 'This unit’s melee weapons gain +1 Strength and +1 AP because it is Righteous.'
+        : 'This unit’s melee weapons gain +1 Strength for this fight.',
+    })
+  }
+
+  if (attackerSanctifiedBlowsActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Sanctified Blows')
+    rules.push({
+      name: stratagem?.name || 'Sanctified Blows',
+      source: `${attackerDetachment?.name || SACRED_CHAMPIONS} Stratagem`,
+      text: 'This unit’s melee attacks gain +1 Attack and +1 Strength.',
+    })
+  }
+
+  if (attackerHarmonisedExorcismActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Harmonised Exorcism')
+    rules.push({
+      name: stratagem?.name || 'Harmonised Exorcism',
+      source: `${attackerDetachment?.name || CHORUS_OF_CONDEMNATION} Stratagem`,
+      text: 'This ranged attack gets +1 to Hit.',
+    })
+  }
+
+  if (attackerDevastatingRepriseActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Devastating Reprise')
+    rules.push({
+      name: stratagem?.name || 'Devastating Reprise',
+      source: `${attackerDetachment?.name || CHORUS_OF_CONDEMNATION} Stratagem`,
+      text: unitHasKeyword(defenderUnitDetails, 'monster') || unitHasKeyword(defenderUnitDetails, 'vehicle')
+        ? 'Devastating Reprise is selected, but its Devastating Wounds rider only applies against non-Monster, non-Vehicle targets.'
+        : 'This ranged attack gains Devastating Wounds.',
+    })
+  }
+
+  if (attackerPassionOfThePenitentActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Passion of the Penitent')
+    rules.push({
+      name: stratagem?.name || 'Passion of the Penitent',
+      source: `${attackerDetachment?.name || PENITENT_HOST} Stratagem`,
+      text: 'This Penitent unit scores Critical Hits on unmodified 5+ melee hit rolls.',
+    })
+  }
+
+  if (unitHasAbility(attackerUnitDetails, 'Death to the Alien')) {
+    const xenosTarget = !defenderKeywordSet.has('imperium') && !defenderKeywordSet.has('chaos')
+    rules.push({
+      name: 'Death to the Alien',
+      source: `${attackerUnitDetails?.name || 'Unit'} Ability`,
+      text: xenosTarget
+        ? 'This unit re-rolls all Hit rolls against this non-Imperium, non-Chaos target.'
+        : 'This unit re-rolls Hit rolls of 1 against this target.',
+    })
+  }
+
+  if (unitHasAbility(attackerUnitDetails, 'Tactical Instinct')) {
+    rules.push({
+      name: 'Tactical Instinct',
+      source: `${attackerUnitDetails?.name || 'Unit'} Ability`,
+      text: 'This attacking package has Lethal Hits.',
+    })
+  }
+
+  if (unitHasAbility(attackerUnitDetails, 'Fortis Doctrines')) {
+    rules.push({
+      name: 'Fortis Doctrines',
+      source: `${attackerUnitDetails?.name || 'Unit'} Ability`,
+      text: targetBelowHalfStrength
+        ? 'This unit gets +1 to Hit and +1 to Wound because the target is below Half-strength.'
+        : targetBelowStartingStrength
+          ? 'This unit gets +1 to Hit because the target is below Starting Strength.'
+          : 'This rule applies when the target is below Starting Strength or below Half-strength.',
+    })
+  }
+
+  if (unitHasAbility(attackerUnitDetails, 'Indomitor Doctrines')) {
+    rules.push({
+      name: 'Indomitor Doctrines',
+      source: `${attackerUnitDetails?.name || 'Unit'} Ability`,
+      text: selectedWeapon?.range === 'Melee'
+        ? (
+          chargedThisTurn
+            ? 'This melee attack gets +2 Strength because the unit charged this turn.'
+            : 'This melee attack gets +2 Strength in a turn in which the unit charged.'
+        )
+        : (
+          attackerTargetClosestEligible
+            ? 'This ranged attack gets +2 Strength because the defender is the closest eligible target.'
+            : 'This ranged attack gets +2 Strength if the defender is the closest eligible target.'
+        ),
+    })
+  }
+
+  if (unitHasAbility(attackerUnitDetails, 'Talonstrike Doctrines')) {
+    rules.push({
+      name: 'Talonstrike Doctrines',
+      source: `${attackerUnitDetails?.name || 'Unit'} Ability`,
+      text: attackerSetUpOnBattlefieldThisTurn
+        ? (
+          selectedWeapon?.range === 'Melee'
+            ? 'This attack gets +1 AP, and the melee weapon also gains Lance because the unit was set up on the battlefield this turn.'
+            : 'This ranged attack gets +1 AP because the unit was set up on the battlefield this turn.'
+        )
+        : 'This rule applies in a turn in which the unit was set up on the battlefield.',
     })
   }
 
@@ -6788,6 +7248,39 @@ function buildAttackerActiveRules({
     }
   }
 
+  if (attackerHellfireRoundsActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Hellfire Rounds')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
+  if (attackerKrakenRoundsActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Kraken Rounds')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: `${stratagem.effect} The simulator applies the AP bonus here; the extended range matters on the battlefield and weapon selection side.`,
+      })
+    }
+  }
+
+  if (attackerDragonfireRoundsActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Dragonfire Rounds')
+    if (stratagem) {
+      rules.push({
+        name: stratagem.name,
+        source: `${attackerDetachment.name} Stratagem`,
+        text: stratagem.effect,
+      })
+    }
+  }
+
   if (attackerAncientFuryActive) {
     const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Ancient Fury')
     if (stratagem) {
@@ -7167,6 +7660,46 @@ function buildAttackerActiveRules({
     }
   }
 
+  if (attackerDetachment?.name === HALLOWED_MARTYRS) {
+    const detachmentRule = getDetachmentEntry(attackerDetachment, 'rule', 'The Blood of Martyrs')
+    if (detachmentRule) {
+      let text = detachmentRule.rules_text
+      if (attackerBelowHalfStrength) {
+        text = 'This unit is Below Half-strength, so its attacks get +1 to Hit and +1 to Wound.'
+      } else if (attackerBelowStartingStrength) {
+        text = 'This unit is below its Starting Strength, so its attacks get +1 to Hit.'
+      } else {
+        text = 'This rule is selected, but the unit must be below Starting Strength for +1 to Hit, and Below Half-strength for the additional +1 to Wound.'
+      }
+      rules.push({
+        name: detachmentRule.name,
+        source: `${attackerDetachment.name} Rule`,
+        text,
+      })
+    }
+  }
+
+  if (attackerDetachment?.name === PENITENT_HOST) {
+    const detachmentRule = getDetachmentEntry(attackerDetachment, 'rule', 'Desperate for Redemption')
+    if (detachmentRule) {
+      let text = 'Select an active Vow of Atonement to apply this detachment rule.'
+      if (attackerPenitentVow === 'path_of_the_penitent') {
+        text = 'The Path of the Penitent is active. PENITENT models get +3" Move; this matters on the battlefield more than the combat sim.'
+      } else if (attackerPenitentVow === 'absolution_in_battle') {
+        text = chargedThisTurn
+          ? 'Absolution in Battle is active. This charged PENITENT unit gets +1 Attacks and +1 Strength on melee weapons.'
+          : 'Absolution in Battle is active, but the unit must have charged this turn to gain +1 Attacks and +1 Strength on melee weapons.'
+      } else if (attackerPenitentVow === 'death_before_disgrace') {
+        text = 'Death Before Disgrace is active. Fight-on-death from enemy melee destruction is not fully simulated yet, so track this manually for now.'
+      }
+      rules.push({
+        name: detachmentRule.name,
+        source: `${attackerDetachment.name} Rule`,
+        text,
+      })
+    }
+  }
+
   if (attackerRageFuelledWarriorActive) {
     const enhancement = getDetachmentEntry(attackerDetachment, 'enhancements', 'Rage-fuelled Warrior')
     if (enhancement) {
@@ -7468,6 +8001,8 @@ function buildDefenderActiveRules({
   selectedAttackWeapons,
   defenderDetachment,
   defenderEnhancementName,
+  defenderRighteousActive,
+  defenderHagiomnifexMode,
   defenderSynapticImperative,
   defenderWithinSynapseRange,
   defenderArmourOfContemptActive,
@@ -7480,6 +8015,8 @@ function buildDefenderActiveRules({
   defenderUnbreakableLinesActive,
   defenderRecitationOfTheReveredActive,
   defenderBlessedHullActive,
+  defenderBlindingRadianceActive,
+  defenderFaithfulFortitudeActive,
   defenderGuidingOmensAuguryActive,
   defenderPennantOfRemembranceActive,
   defenderRideHardRideFastActive,
@@ -7487,6 +8024,7 @@ function buildDefenderActiveRules({
   defenderSavageRoarActive,
   defenderSavageRoarBattleshockFailed,
   defenderAblativeCarapaceActive,
+  defenderPurityOfSufferingActive,
   defenderReinforcedHiveNodeActive,
   defenderAllocationOrder,
   targetHasCover,
@@ -7505,6 +8043,31 @@ function buildDefenderActiveRules({
 
   if (psychicWeaponSelected) {
     rules.push(...getNamedActiveRules(defenderUnits, ['Psychic Hood']))
+  }
+
+  if (defenderDetachment?.name === CHAMPIONS_OF_FAITH && defenderRighteousActive) {
+    rules.push({
+      name: 'Righteous Purpose',
+      source: `${defenderDetachment.name} Rule`,
+      text: ['Battle Sisters Squad', 'Celestian Sacresants', 'Paragon Warsuits'].includes(defenderUnitDetails?.name)
+        ? 'This unit is Righteous, so its weapons improve their WS and BS by 1 when it attacks. Righteous status can also power allied detachment effects.'
+        : 'This unit is Righteous. Its Move and Leadership benefits matter outside this incoming attack, but Righteous status can still power allied detachment effects.',
+    })
+  }
+
+  if (defenderEnhancementName === 'Hagiomnifex' && defenderHagiomnifexMode) {
+    const textByMode = {
+      rite_of_revelation: 'Rite of Revelation is active. Its detection-range effect matters on the battlefield rather than during this attack sequence.',
+      sermon_of_intolerance: 'Sermon of Intolerance is active. Its Battle-shock effect matters outside this attack sequence.',
+      catechism_of_raging_fervour: 'Catechism of Raging Fervour is active. Its Move bonus matters outside this attack sequence.',
+      psalm_of_righteous_smiting: 'Psalm of Righteous Smiting is active, but its Strength bonus only matters while this unit attacks.',
+      chorus_of_repudiation: 'Chorus of Repudiation is active, so attacks stronger than this unit’s Toughness suffer -1 to Wound.',
+    }
+    rules.push({
+      name: 'Hagiomnifex',
+      source: `${defenderDetachment?.name || SANCTIFIED_ORATORS} Enhancement`,
+      text: textByMode[defenderHagiomnifexMode] || 'A Hagiomnifex hymn is active for this unit.',
+    })
   }
 
   if (
@@ -7657,6 +8220,33 @@ function buildDefenderActiveRules({
         text: stratagem.effect,
       })
     }
+  }
+
+  if (defenderBlindingRadianceActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Blinding Radiance')
+    rules.push({
+      name: stratagem?.name || 'Blinding Radiance',
+      source: `${defenderDetachment?.name || ARMY_OF_FAITH} Stratagem`,
+      text: 'Attacks that target this unit suffer -1 to Hit for this phase.',
+    })
+  }
+
+  if (defenderFaithfulFortitudeActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Faithful Fortitude')
+    rules.push({
+      name: stratagem?.name || 'Faithful Fortitude',
+      source: `${defenderDetachment?.name || SACRED_CHAMPIONS} Stratagem`,
+      text: 'This unit gains Feel No Pain 5+ for this phase. In the full tabletop rule this protection is specifically against mortal wounds.',
+    })
+  }
+
+  if (defenderPurityOfSufferingActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Purity of Suffering')
+    rules.push({
+      name: stratagem?.name || 'Purity of Suffering',
+      source: `${defenderDetachment?.name || PENITENT_HOST} Stratagem`,
+      text: 'Penitent models in this unit gain Feel No Pain 4+ for this phase.',
+    })
   }
 
   if (defenderPennantOfRemembranceActive) {
@@ -8431,15 +9021,38 @@ function App() {
   const [defenderWaaaghActive, setDefenderWaaaghActive] = useState(() => combatInitial('defender_waaagh_active', initialOptions.defender_waaagh_active))
   const [attackerTemplarVow, setAttackerTemplarVow] = useState(() => combatInitial('attacker_templar_vow', initialOptions.attacker_templar_vow))
   const [attackerHyperAdaptation, setAttackerHyperAdaptation] = useState(() => combatInitial('attacker_hyper_adaptation', initialOptions.attacker_hyper_adaptation))
+  const [attackerBlackSpearMissionTactic, setAttackerBlackSpearMissionTactic] = useState(() => combatInitial('attacker_black_spear_mission_tactic', initialOptions.attacker_black_spear_mission_tactic))
+  const [attackerPenitentVow, setAttackerPenitentVow] = useState(() => combatInitial('attacker_penitent_vow', initialOptions.attacker_penitent_vow))
+  const [attackerMiracleDicePolicy, setAttackerMiracleDicePolicy] = useState(() => combatInitial('attacker_miracle_dice_policy', initialOptions.attacker_miracle_dice_policy))
+  const [attackerMiracleDicePool, setAttackerMiracleDicePool] = useState(() => combatInitial('attacker_miracle_dice_pool', initialOptions.attacker_miracle_dice_pool))
+  const [attackerRighteousActive, setAttackerRighteousActive] = useState(() => combatInitial('attacker_righteous_active', initialOptions.attacker_righteous_active))
+  const [defenderRighteousActive, setDefenderRighteousActive] = useState(() => combatInitial('defender_righteous_active', initialOptions.defender_righteous_active))
+  const [attackerHagiomnifexMode, setAttackerHagiomnifexMode] = useState(() => combatInitial('attacker_hagiomnifex_mode', initialOptions.attacker_hagiomnifex_mode))
+  const [defenderHagiomnifexMode, setDefenderHagiomnifexMode] = useState(() => combatInitial('defender_hagiomnifex_mode', initialOptions.defender_hagiomnifex_mode))
+  const [attackerSufferNotTheUnfaithfulMode, setAttackerSufferNotTheUnfaithfulMode] = useState(() => combatInitial('attacker_suffer_not_the_unfaithful_mode', initialOptions.attacker_suffer_not_the_unfaithful_mode))
+  const [attackerFaithAndFuryActive, setAttackerFaithAndFuryActive] = useState(() => combatInitial('attacker_faith_and_fury_active', initialOptions.attacker_faith_and_fury_active))
+  const [attackerDivineGuidanceActive, setAttackerDivineGuidanceActive] = useState(() => combatInitial('attacker_divine_guidance_active', initialOptions.attacker_divine_guidance_active))
+  const [defenderBlindingRadianceActive, setDefenderBlindingRadianceActive] = useState(() => combatInitial('defender_blinding_radiance_active', initialOptions.defender_blinding_radiance_active))
+  const [attackerToTheHeartOfHeresyActive, setAttackerToTheHeartOfHeresyActive] = useState(() => combatInitial('attacker_to_the_heart_of_heresy_active', initialOptions.attacker_to_the_heart_of_heresy_active))
+  const [attackerSanctifiedBlowsActive, setAttackerSanctifiedBlowsActive] = useState(() => combatInitial('attacker_sanctified_blows_active', initialOptions.attacker_sanctified_blows_active))
+  const [defenderFaithfulFortitudeActive, setDefenderFaithfulFortitudeActive] = useState(() => combatInitial('defender_faithful_fortitude_active', initialOptions.defender_faithful_fortitude_active))
+  const [attackerHarmonisedExorcismActive, setAttackerHarmonisedExorcismActive] = useState(() => combatInitial('attacker_harmonised_exorcism_active', initialOptions.attacker_harmonised_exorcism_active))
+  const [attackerDevastatingRepriseActive, setAttackerDevastatingRepriseActive] = useState(() => combatInitial('attacker_devastating_reprise_active', initialOptions.attacker_devastating_reprise_active))
+  const [attackerPassionOfThePenitentActive, setAttackerPassionOfThePenitentActive] = useState(() => combatInitial('attacker_passion_of_the_penitent_active', initialOptions.attacker_passion_of_the_penitent_active))
+  const [defenderPurityOfSufferingActive, setDefenderPurityOfSufferingActive] = useState(() => combatInitial('defender_purity_of_suffering_active', initialOptions.defender_purity_of_suffering_active))
   const [attackerSynapticImperative, setAttackerSynapticImperative] = useState(() => combatInitial('attacker_synaptic_imperative', initialOptions.attacker_synaptic_imperative))
   const [defenderSynapticImperative, setDefenderSynapticImperative] = useState(() => combatInitial('defender_synaptic_imperative', initialOptions.defender_synaptic_imperative))
+  const [defenderMiracleDicePolicy, setDefenderMiracleDicePolicy] = useState(() => combatInitial('defender_miracle_dice_policy', initialOptions.defender_miracle_dice_policy))
+  const [defenderMiracleDicePool, setDefenderMiracleDicePool] = useState(() => combatInitial('defender_miracle_dice_pool', initialOptions.defender_miracle_dice_pool))
   const [attackerWithinSynapseRange, setAttackerWithinSynapseRange] = useState(() => combatInitial('attacker_within_synapse_range', initialOptions.attacker_within_synapse_range))
   const [defenderWithinSynapseRange, setDefenderWithinSynapseRange] = useState(() => combatInitial('defender_within_synapse_range', initialOptions.defender_within_synapse_range))
   const [attackerPreyActive, setAttackerPreyActive] = useState(() => combatInitial('attacker_prey_active', initialOptions.attacker_prey_active))
   const [attackerTargetWithinNine, setAttackerTargetWithinNine] = useState(() => combatInitial('attacker_target_within_9', initialOptions.attacker_target_within_9))
   const [attackerTargetWithinTwelve, setAttackerTargetWithinTwelve] = useState(() => combatInitial('attacker_target_within_12', initialOptions.attacker_target_within_12))
   const [attackerTargetClosestEligibleWithinSix, setAttackerTargetClosestEligibleWithinSix] = useState(() => combatInitial('attacker_target_closest_eligible_within_6', initialOptions.attacker_target_closest_eligible_within_6))
+  const [attackerTargetClosestEligible, setAttackerTargetClosestEligible] = useState(() => combatInitial('attacker_target_closest_eligible', initialOptions.attacker_target_closest_eligible))
   const [attackerDisembarkedFromTransport, setAttackerDisembarkedFromTransport] = useState(() => combatInitial('attacker_disembarked_from_transport', initialOptions.attacker_disembarked_from_transport))
+  const [attackerSetUpOnBattlefieldThisTurn, setAttackerSetUpOnBattlefieldThisTurn] = useState(() => combatInitial('attacker_set_up_on_battlefield_this_turn', initialOptions.attacker_set_up_on_battlefield_this_turn))
   const [attackerCountsAsTenPlusModels, setAttackerCountsAsTenPlusModels] = useState(() => combatInitial('attacker_counts_as_ten_plus_models', initialOptions.attacker_counts_as_ten_plus_models))
   const [defenderCountsAsTenPlusModels, setDefenderCountsAsTenPlusModels] = useState(() => combatInitial('defender_counts_as_ten_plus_models', initialOptions.defender_counts_as_ten_plus_models))
   const [targetBelowStartingStrength, setTargetBelowStartingStrength] = useState(() => combatInitial('target_below_starting_strength', initialOptions.target_below_starting_strength))
@@ -8521,6 +9134,9 @@ function App() {
   const [attackerAutoSenseCoordinationSustainedActive, setAttackerAutoSenseCoordinationSustainedActive] = useState(() => combatInitial('attacker_auto_sense_coordination_sustained_active', initialOptions.attacker_auto_sense_coordination_sustained_active))
   const [attackerBattleDrillRecallActive, setAttackerBattleDrillRecallActive] = useState(() => combatInitial('attacker_battle_drill_recall_active', initialOptions.attacker_battle_drill_recall_active))
   const [attackerMercyIsWeaknessActive, setAttackerMercyIsWeaknessActive] = useState(() => combatInitial('attacker_mercy_is_weakness_active', initialOptions.attacker_mercy_is_weakness_active))
+  const [attackerHellfireRoundsActive, setAttackerHellfireRoundsActive] = useState(() => combatInitial('attacker_hellfire_rounds_active', initialOptions.attacker_hellfire_rounds_active))
+  const [attackerKrakenRoundsActive, setAttackerKrakenRoundsActive] = useState(() => combatInitial('attacker_kraken_rounds_active', initialOptions.attacker_kraken_rounds_active))
+  const [attackerDragonfireRoundsActive, setAttackerDragonfireRoundsActive] = useState(() => combatInitial('attacker_dragonfire_rounds_active', initialOptions.attacker_dragonfire_rounds_active))
   const [attackerAncientFuryActive, setAttackerAncientFuryActive] = useState(() => combatInitial('attacker_ancient_fury_active', initialOptions.attacker_ancient_fury_active))
   const [attackerCrucibleOfBattleActive, setAttackerCrucibleOfBattleActive] = useState(() => combatInitial('attacker_crucible_of_battle_active', initialOptions.attacker_crucible_of_battle_active))
   const [attackerImmolationProtocolsActive, setAttackerImmolationProtocolsActive] = useState(() => combatInitial('attacker_immolation_protocols_active', initialOptions.attacker_immolation_protocols_active))
@@ -8554,6 +9170,8 @@ function App() {
   const [defenderGuidingOmensAuguryActive, setDefenderGuidingOmensAuguryActive] = useState(() => combatInitial('defender_guiding_omens_augury_active', initialOptions.defender_guiding_omens_augury_active))
   const [defenderPennantOfRemembranceActive, setDefenderPennantOfRemembranceActive] = useState(() => combatInitial('defender_pennant_of_remembrance_active', initialOptions.defender_pennant_of_remembrance_active))
   const [defenderBattleshocked, setDefenderBattleshocked] = useState(() => combatInitial('defender_battleshocked', initialOptions.defender_battleshocked))
+  const attackerArmyIsAdeptaSororitas = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === ADEPTA_SORORITAS.toLowerCase()
+  const defenderArmyIsAdeptaSororitas = String(defenderFactionDetails?.name || defenderFaction || '').toLowerCase() === ADEPTA_SORORITAS.toLowerCase()
 
   const factionCategories = useMemo(() => getFactionCategories(factions), [factions])
   const attackerFactionOptions = useMemo(
@@ -8668,6 +9286,20 @@ function App() {
   }, [battlefieldAddDefenderFaction, factions])
 
   useEffect(() => {
+    if (!attackerArmyIsAdeptaSororitas && (attackerMiracleDicePolicy !== 'never' || attackerMiracleDicePool)) {
+      setAttackerMiracleDicePolicy(initialOptions.attacker_miracle_dice_policy)
+      setAttackerMiracleDicePool(initialOptions.attacker_miracle_dice_pool)
+    }
+  }, [attackerArmyIsAdeptaSororitas, attackerMiracleDicePolicy, attackerMiracleDicePool])
+
+  useEffect(() => {
+    if (!defenderArmyIsAdeptaSororitas && (defenderMiracleDicePolicy !== 'never' || defenderMiracleDicePool)) {
+      setDefenderMiracleDicePolicy(initialOptions.defender_miracle_dice_policy)
+      setDefenderMiracleDicePool(initialOptions.defender_miracle_dice_pool)
+    }
+  }, [defenderArmyIsAdeptaSororitas, defenderMiracleDicePolicy, defenderMiracleDicePool])
+
+  useEffect(() => {
     localStorage.setItem(SAVED_ARMY_LISTS_STORAGE_KEY, JSON.stringify(savedArmyLists))
   }, [savedArmyLists])
 
@@ -8756,8 +9388,28 @@ function App() {
       defender_waaagh_active: defenderWaaaghActive,
       attacker_templar_vow: attackerTemplarVow,
       attacker_hyper_adaptation: attackerHyperAdaptation,
+      attacker_penitent_vow: attackerPenitentVow,
+      attacker_miracle_dice_policy: attackerMiracleDicePolicy,
+      attacker_miracle_dice_pool: attackerMiracleDicePool,
+      attacker_righteous_active: attackerRighteousActive,
+      defender_righteous_active: defenderRighteousActive,
+      attacker_hagiomnifex_mode: attackerHagiomnifexMode,
+      defender_hagiomnifex_mode: defenderHagiomnifexMode,
+      attacker_suffer_not_the_unfaithful_mode: attackerSufferNotTheUnfaithfulMode,
+      attacker_faith_and_fury_active: attackerFaithAndFuryActive,
+      attacker_divine_guidance_active: attackerDivineGuidanceActive,
+      defender_blinding_radiance_active: defenderBlindingRadianceActive,
+      attacker_to_the_heart_of_heresy_active: attackerToTheHeartOfHeresyActive,
+      attacker_sanctified_blows_active: attackerSanctifiedBlowsActive,
+      defender_faithful_fortitude_active: defenderFaithfulFortitudeActive,
+      attacker_harmonised_exorcism_active: attackerHarmonisedExorcismActive,
+      attacker_devastating_reprise_active: attackerDevastatingRepriseActive,
+      attacker_passion_of_the_penitent_active: attackerPassionOfThePenitentActive,
+      defender_purity_of_suffering_active: defenderPurityOfSufferingActive,
       attacker_synaptic_imperative: attackerSynapticImperative,
       defender_synaptic_imperative: defenderSynapticImperative,
+      defender_miracle_dice_policy: defenderMiracleDicePolicy,
+      defender_miracle_dice_pool: defenderMiracleDicePool,
       attacker_within_synapse_range: attackerWithinSynapseRange,
       defender_within_synapse_range: defenderWithinSynapseRange,
       attacker_prey_active: attackerPreyActive,
@@ -9645,7 +10297,6 @@ function App() {
       active = false
     }
   }, [attackerFaction, attackerLoadoutSelections, attackerModelCount, attackerModelCounts, attackerUnit, attackerUnits])
-
   const attackerAttachedLeaderOptions = useMemo(() => {
     if (!attackerUnit || !attackerFactionDetails?.units?.length) {
       return []
@@ -9866,7 +10517,6 @@ function App() {
       active = false
     }
   }, [defenderFaction, defenderLoadoutSelections, defenderModelCount, defenderModelCounts, defenderUnit, defenderUnits])
-
   const combatWeaponOptions = useMemo(
     () => getCombatWeaponOptions(
       attackerUnitDetails,
@@ -10475,6 +11125,23 @@ function App() {
   const canUseAttackerCombatDoctrine = selectedAttackerDetachment?.name === GLADIUS_TASK_FORCE
   const canUseAttackerTemplarVow = attackerArmyIsBlackTemplars
   const canUseAttackerHyperAdaptation = selectedAttackerDetachment?.name === INVASION_FLEET
+  const canUseAttackerBlackSpearMissionTactic = selectedAttackerDetachment?.name === BLACK_SPEAR_TASK_FORCE
+  const canUseAttackerPenitentVow = selectedAttackerDetachment?.name === PENITENT_HOST
+  const canUseAttackerRighteous = selectedAttackerDetachment?.name === CHAMPIONS_OF_FAITH
+  const canUseDefenderRighteous = selectedDefenderDetachment?.name === CHAMPIONS_OF_FAITH
+  const canUseAttackerHagiomnifex = attackerEnhancementName === 'Hagiomnifex'
+  const canUseDefenderHagiomnifex = defenderEnhancementName === 'Hagiomnifex'
+  const canUseAttackerFaithAndFury = attackerCanBeTargetedByStratagems && isMeleeWeapon && attackerStratagemOptions.some((item) => item.name === 'Faith and Fury')
+  const canUseAttackerDivineGuidance = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Divine Guidance')
+  const canUseDefenderBlindingRadiance = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Blinding Radiance')
+  const canUseAttackerSufferNotTheUnfaithful = attackerCanBeTargetedByStratagems && attackerRighteousActive && attackerStratagemOptions.some((item) => item.name === 'Suffer Not the Unfaithful')
+  const canUseAttackerToTheHeartOfHeresy = attackerCanBeTargetedByStratagems && isMeleeWeapon && attackerStratagemOptions.some((item) => item.name === 'To the Heart of Heresy')
+  const canUseAttackerSanctifiedBlows = attackerCanBeTargetedByStratagems && isMeleeWeapon && attackerStratagemOptions.some((item) => item.name === 'Sanctified Blows')
+  const canUseDefenderFaithfulFortitude = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Faithful Fortitude')
+  const canUseAttackerHarmonisedExorcism = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Harmonised Exorcism')
+  const canUseAttackerDevastatingReprise = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Devastating Reprise')
+  const canUseAttackerPassionOfThePenitent = attackerCanBeTargetedByStratagems && isMeleeWeapon && attackerStratagemOptions.some((item) => item.name === 'Passion of the Penitent')
+  const canUseDefenderPurityOfSuffering = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Purity of Suffering')
   const canUseAttackerSynapticImperative = selectedAttackerDetachment?.name === SYNAPTIC_NEXUS
   const canUseDefenderSynapticImperative = selectedDefenderDetachment?.name === SYNAPTIC_NEXUS
   const canUseAttackerWithinSynapseRange = canUseAttackerSynapticImperative || canUseAttackerIrresistibleWill
@@ -10493,7 +11160,12 @@ function App() {
       )
     )
   )
+  const canUseTargetClosestEligible = (
+    isRangedWeapon
+    && unitHasAbility(attackerUnitDetails, 'Indomitor Doctrines')
+  )
   const canUseTargetClosestEligibleWithinSix = canUseAttackerCrucibleOfBattle
+  const canUseAttackerSetUpOnBattlefieldThisTurn = unitHasAbility(attackerUnitDetails, 'Talonstrike Doctrines')
   const canUseAttackerDisembarkedFromTransport = (
     canUseAttackerOnslaughtOfFire
     || selectedAttackerDetachment?.name === GODHAMMER_ASSAULT_FORCE
@@ -10505,8 +11177,9 @@ function App() {
     attackerEnhancementName === "'Eadstompa"
     || defenderEnhancementName === 'Adaptive Biology'
     || canUseAttackerMercyIsWeakness
+    || unitHasAbility(attackerUnitDetails, 'Fortis Doctrines')
   )
-  const canUseTargetBelowHalfStrength = attackerEnhancementName === "'Eadstompa"
+  const canUseTargetBelowHalfStrength = attackerEnhancementName === "'Eadstompa" || unitHasAbility(attackerUnitDetails, 'Fortis Doctrines')
   const canUseParasiticBiomorphologyFed = attackerEnhancementName === 'Parasitic Biomorphology' && isMeleeWeapon
   const canUseAttackerCountsAsTenPlus = selectedAttackerDetachment?.name === GREEN_TIDE && attackerPackageModelCount < 10
   const canUseDefenderCountsAsTenPlus = selectedDefenderDetachment?.name === GREEN_TIDE && defenderPackageModelCount < 10
@@ -11275,6 +11948,7 @@ function App() {
   const defenderArmyIsOrks = String(battlefieldAddDefenderFaction || defenderFactionDetails?.name || '').toLowerCase() === 'orks'
   const attackerArmyIsTyranids = String(battlefieldAddAttackerFaction || attackerFactionDetails?.name || '').toLowerCase() === 'tyranids'
   const defenderArmyIsTyranids = String(battlefieldAddDefenderFaction || defenderFactionDetails?.name || '').toLowerCase() === 'tyranids'
+  const miracleDiceTooltip = 'Acts of Faith: enter the Miracle Dice currently available for this exchange as comma-separated values like 6,5,3. Offensive spends dice on hit, wound, or damage opportunities; Defensive spends them on saving throws.'
   const attackerWaaaghTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Waaagh!')?.rules_text || ''
   const defenderWaaaghTooltip = defenderFactionDetails?.army_rules?.find((rule) => rule.name === 'Waaagh!')?.rules_text || ''
   const attackerShadowInTheWarpTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Shadow in the Warp')?.rules_text || ''
@@ -11296,6 +11970,22 @@ function App() {
   const attackerPreyTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Da Hunt Is On')?.rules_text || ''
   const attackerCombatDoctrineTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Combat Doctrines')?.rules_text || ''
   const attackerTemplarVowTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Templar Vows')?.rules_text || ''
+  const attackerPenitentVowTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Desperate for Redemption')?.rules_text || ''
+  const attackerRighteousTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Righteous Purpose')?.rules_text || ''
+  const defenderRighteousTooltip = getDetachmentEntry(selectedDefenderDetachment, 'rule', 'Righteous Purpose')?.rules_text || ''
+  const attackerHagiomnifexTooltip = getDetachmentEntry(selectedAttackerDetachment, 'enhancements', 'Hagiomnifex')?.rules_text || ''
+  const defenderHagiomnifexTooltip = getDetachmentEntry(selectedDefenderDetachment, 'enhancements', 'Hagiomnifex')?.rules_text || ''
+  const attackerSufferNotTheUnfaithfulTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Suffer Not the Unfaithful')?.effect || ''
+  const attackerFaithAndFuryTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Faith and Fury')?.effect || ''
+  const attackerDivineGuidanceTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Divine Guidance')?.effect || ''
+  const defenderBlindingRadianceTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Blinding Radiance')?.effect || ''
+  const attackerToTheHeartOfHeresyTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'To the Heart of Heresy')?.effect || ''
+  const attackerSanctifiedBlowsTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Sanctified Blows')?.effect || ''
+  const defenderFaithfulFortitudeTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Faithful Fortitude')?.effect || ''
+  const attackerHarmonisedExorcismTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Harmonised Exorcism')?.effect || ''
+  const attackerDevastatingRepriseTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Devastating Reprise')?.effect || ''
+  const attackerPassionOfThePenitentTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Passion of the Penitent')?.effect || ''
+  const defenderPurityOfSufferingTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Purity of Suffering')?.effect || ''
   const attackerLibrariusDisciplineTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Psychic Disciplines')?.rules_text || ''
   const attackerSynapticImperativeTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Synaptic Imperatives')?.rules_text || ''
   const defenderSynapticImperativeTooltip = getDetachmentEntry(selectedDefenderDetachment, 'rule', 'Synaptic Imperatives')?.rules_text || ''
@@ -11344,6 +12034,11 @@ function App() {
       attackerCombatDoctrine,
       attackerTemplarVow,
       attackerHyperAdaptation,
+      attackerBlackSpearMissionTactic,
+      attackerPenitentVow,
+      attackerRighteousActive,
+      attackerHagiomnifexMode,
+      attackerSufferNotTheUnfaithfulMode,
       attackerSynapticImperative,
       attackerWithinSynapseRange,
       attackerSagaCompleted: effectiveAttackerSagaCompleted,
@@ -11359,6 +12054,9 @@ function App() {
       attackerNoThreatTooGreatActive,
       attackerBattleDrillRecallActive,
       attackerMercyIsWeaknessActive,
+      attackerHellfireRoundsActive,
+      attackerKrakenRoundsActive,
+      attackerDragonfireRoundsActive,
       attackerAncientFuryActive,
       attackerCrucibleOfBattleActive,
       attackerImmolationProtocolsActive,
@@ -11368,7 +12066,9 @@ function App() {
       attackerStrikeFromTheShadowsActive,
       attackerTargetWithinTwelve,
       attackerTargetClosestEligibleWithinSix,
-  attackerDisembarkedFromTransport,
+      attackerTargetClosestEligible,
+      attackerDisembarkedFromTransport,
+      attackerSetUpOnBattlefieldThisTurn,
       attackerUnforgivenFuryActive,
       attackerUnbridledFerocityActive,
       attackerAdrenalSurgeActive,
@@ -11384,6 +12084,8 @@ function App() {
       attackerRelicsOfTheDarkAgeActive,
       attackerLionsWillActive,
       attackerTalonStrikeActive,
+      attackerFaithAndFuryActive,
+      attackerDivineGuidanceActive,
       attackerPiousEnmityActive,
       attackerForTheEmperorsHonourActive,
       attackerLitaniesOfPurgationActive,
@@ -11397,7 +12099,12 @@ function App() {
       attackerAdaptableExecutionerMode,
       attackerCastigateTheDemagoguesActive,
       attackerRiteOfPerfervidWrathActive,
+      attackerToTheHeartOfHeresyActive,
       attackerRageFuelledWarriorActive,
+      attackerSanctifiedBlowsActive,
+      attackerHarmonisedExorcismActive,
+      attackerDevastatingRepriseActive,
+      attackerPassionOfThePenitentActive,
       attackerRedRampageMode,
       attackerSavageEchoesMode,
       attackerParasiticBiomorphologyFedActive,
@@ -11420,6 +12127,8 @@ function App() {
       targetInEngagementRangeOfAllies,
       defenderOnObjective,
       defenderBattleshocked,
+      targetBelowStartingStrength,
+      targetBelowHalfStrength,
       hasHazardous,
     }),
     [
@@ -11440,6 +12149,11 @@ function App() {
       attackerCombatDoctrine,
       attackerTemplarVow,
       attackerHyperAdaptation,
+      attackerBlackSpearMissionTactic,
+      attackerPenitentVow,
+      attackerRighteousActive,
+      attackerHagiomnifexMode,
+      attackerSufferNotTheUnfaithfulMode,
       attackerSynapticImperative,
       attackerWithinSynapseRange,
       effectiveAttackerSagaCompleted,
@@ -11455,6 +12169,9 @@ function App() {
       attackerNoThreatTooGreatActive,
       attackerBattleDrillRecallActive,
       attackerMercyIsWeaknessActive,
+      attackerHellfireRoundsActive,
+      attackerKrakenRoundsActive,
+      attackerDragonfireRoundsActive,
       attackerAncientFuryActive,
       attackerCrucibleOfBattleActive,
       attackerImmolationProtocolsActive,
@@ -11464,7 +12181,9 @@ function App() {
       attackerStrikeFromTheShadowsActive,
       attackerTargetWithinTwelve,
       attackerTargetClosestEligibleWithinSix,
+      attackerTargetClosestEligible,
       attackerDisembarkedFromTransport,
+      attackerSetUpOnBattlefieldThisTurn,
       attackerUnforgivenFuryActive,
       attackerUnbridledFerocityActive,
       attackerAdrenalSurgeActive,
@@ -11480,6 +12199,8 @@ function App() {
       attackerRelicsOfTheDarkAgeActive,
       attackerLionsWillActive,
       attackerTalonStrikeActive,
+      attackerFaithAndFuryActive,
+      attackerDivineGuidanceActive,
       attackerPiousEnmityActive,
       attackerForTheEmperorsHonourActive,
       attackerLitaniesOfPurgationActive,
@@ -11491,12 +12212,17 @@ function App() {
       attackerGuidingOmensInstrumentActive,
       attackerGuidingOmensVisionActive,
       attackerAdaptableExecutionerMode,
-    attackerCastigateTheDemagoguesActive,
-    attackerRiteOfPerfervidWrathActive,
-    attackerRageFuelledWarriorActive,
-    attackerRedRampageMode,
-    attackerSavageEchoesMode,
-    attackerParasiticBiomorphologyFedActive,
+      attackerCastigateTheDemagoguesActive,
+      attackerRiteOfPerfervidWrathActive,
+      attackerToTheHeartOfHeresyActive,
+      attackerRageFuelledWarriorActive,
+      attackerSanctifiedBlowsActive,
+      attackerHarmonisedExorcismActive,
+      attackerDevastatingRepriseActive,
+      attackerPassionOfThePenitentActive,
+      attackerRedRampageMode,
+      attackerSavageEchoesMode,
+      attackerParasiticBiomorphologyFedActive,
       attackerStubbornTenacityActive,
       attackerWeaponsOfTheFirstLegionActive,
       attackerPennantOfRemembranceActive,
@@ -11516,6 +12242,8 @@ function App() {
       targetInEngagementRangeOfAllies,
       defenderOnObjective,
       defenderBattleshocked,
+      targetBelowStartingStrength,
+      targetBelowHalfStrength,
       hasHazardous,
     ],
   )
@@ -11528,6 +12256,8 @@ function App() {
       selectedAttackWeapons,
       defenderDetachment: selectedDefenderDetachment,
       defenderEnhancementName,
+      defenderRighteousActive,
+      defenderHagiomnifexMode,
       defenderSynapticImperative,
       defenderWithinSynapseRange,
       defenderArmourOfContemptActive,
@@ -11540,6 +12270,8 @@ function App() {
       defenderUnbreakableLinesActive,
       defenderRecitationOfTheReveredActive,
       defenderBlessedHullActive,
+      defenderBlindingRadianceActive,
+      defenderFaithfulFortitudeActive,
       defenderGuidingOmensAuguryActive,
       defenderPennantOfRemembranceActive,
       defenderRideHardRideFastActive,
@@ -11547,6 +12279,7 @@ function App() {
       defenderSavageRoarActive,
       defenderSavageRoarBattleshockFailed,
       defenderAblativeCarapaceActive,
+      defenderPurityOfSufferingActive,
       defenderReinforcedHiveNodeActive,
       defenderAllocationOrder,
       targetHasCover,
@@ -11563,6 +12296,8 @@ function App() {
       selectedAttackWeapons,
       selectedDefenderDetachment,
       defenderEnhancementName,
+      defenderRighteousActive,
+      defenderHagiomnifexMode,
       defenderSynapticImperative,
       defenderWithinSynapseRange,
       defenderArmourOfContemptActive,
@@ -11575,6 +12310,8 @@ function App() {
       defenderUnbreakableLinesActive,
       defenderRecitationOfTheReveredActive,
       defenderBlessedHullActive,
+      defenderBlindingRadianceActive,
+      defenderFaithfulFortitudeActive,
       defenderGuidingOmensAuguryActive,
       defenderPennantOfRemembranceActive,
       defenderRideHardRideFastActive,
@@ -11582,6 +12319,7 @@ function App() {
       defenderSavageRoarActive,
       defenderSavageRoarBattleshockFailed,
       defenderAblativeCarapaceActive,
+      defenderPurityOfSufferingActive,
       defenderReinforcedHiveNodeActive,
       defenderAllocationOrder,
       targetHasCover,
@@ -11591,6 +12329,84 @@ function App() {
       defenderOnObjective,
     ],
   )
+  useEffect(() => {
+    if (!canUseAttackerRighteous && attackerRighteousActive) {
+      setAttackerRighteousActive(false)
+    }
+    if (!canUseDefenderRighteous && defenderRighteousActive) {
+      setDefenderRighteousActive(false)
+    }
+    if (!canUseAttackerHagiomnifex && attackerHagiomnifexMode) {
+      setAttackerHagiomnifexMode('')
+    }
+    if (!canUseDefenderHagiomnifex && defenderHagiomnifexMode) {
+      setDefenderHagiomnifexMode('')
+    }
+    if (!canUseAttackerSufferNotTheUnfaithful && attackerSufferNotTheUnfaithfulMode) {
+      setAttackerSufferNotTheUnfaithfulMode('')
+    }
+    if (!canUseAttackerFaithAndFury && attackerFaithAndFuryActive) {
+      setAttackerFaithAndFuryActive(false)
+    }
+    if (!canUseAttackerDivineGuidance && attackerDivineGuidanceActive) {
+      setAttackerDivineGuidanceActive(false)
+    }
+    if (!canUseDefenderBlindingRadiance && defenderBlindingRadianceActive) {
+      setDefenderBlindingRadianceActive(false)
+    }
+    if (!canUseAttackerToTheHeartOfHeresy && attackerToTheHeartOfHeresyActive) {
+      setAttackerToTheHeartOfHeresyActive(false)
+    }
+    if (!canUseAttackerSanctifiedBlows && attackerSanctifiedBlowsActive) {
+      setAttackerSanctifiedBlowsActive(false)
+    }
+    if (!canUseDefenderFaithfulFortitude && defenderFaithfulFortitudeActive) {
+      setDefenderFaithfulFortitudeActive(false)
+    }
+    if (!canUseAttackerHarmonisedExorcism && attackerHarmonisedExorcismActive) {
+      setAttackerHarmonisedExorcismActive(false)
+    }
+    if (!canUseAttackerDevastatingReprise && attackerDevastatingRepriseActive) {
+      setAttackerDevastatingRepriseActive(false)
+    }
+    if (!canUseAttackerPassionOfThePenitent && attackerPassionOfThePenitentActive) {
+      setAttackerPassionOfThePenitentActive(false)
+    }
+    if (!canUseDefenderPurityOfSuffering && defenderPurityOfSufferingActive) {
+      setDefenderPurityOfSufferingActive(false)
+    }
+  }, [
+    attackerDevastatingRepriseActive,
+    attackerDivineGuidanceActive,
+    attackerFaithAndFuryActive,
+    attackerHagiomnifexMode,
+    attackerHarmonisedExorcismActive,
+    attackerPassionOfThePenitentActive,
+    attackerRighteousActive,
+    attackerSanctifiedBlowsActive,
+    attackerSufferNotTheUnfaithfulMode,
+    attackerToTheHeartOfHeresyActive,
+    canUseAttackerDevastatingReprise,
+    canUseAttackerDivineGuidance,
+    canUseAttackerFaithAndFury,
+    canUseAttackerHagiomnifex,
+    canUseAttackerHarmonisedExorcism,
+    canUseAttackerPassionOfThePenitent,
+    canUseAttackerRighteous,
+    canUseAttackerSanctifiedBlows,
+    canUseAttackerSufferNotTheUnfaithful,
+    canUseAttackerToTheHeartOfHeresy,
+    canUseDefenderBlindingRadiance,
+    canUseDefenderFaithfulFortitude,
+    canUseDefenderHagiomnifex,
+    canUseDefenderPurityOfSuffering,
+    canUseDefenderRighteous,
+    defenderBlindingRadianceActive,
+    defenderFaithfulFortitudeActive,
+    defenderHagiomnifexMode,
+    defenderPurityOfSufferingActive,
+    defenderRighteousActive,
+  ])
   const summaryStats = useMemo(() => buildRunSummary(simulationRuns), [simulationRuns])
   const matrixColumns = useMemo(() => [
     { key: 'gameVersion', label: 'Version', width: 118, defaultVisible: false },
@@ -13378,6 +14194,12 @@ function App() {
     } else if (!canUseAttackerHyperAdaptation && attackerHyperAdaptation !== initialOptions.attacker_hyper_adaptation) {
       setAttackerHyperAdaptation(initialOptions.attacker_hyper_adaptation)
     }
+    if (!canUseAttackerBlackSpearMissionTactic && attackerBlackSpearMissionTactic) {
+      setAttackerBlackSpearMissionTactic(initialOptions.attacker_black_spear_mission_tactic)
+    }
+    if (!canUseAttackerPenitentVow && attackerPenitentVow) {
+      setAttackerPenitentVow(initialOptions.attacker_penitent_vow)
+    }
     if (!canUseAttackerSynapticImperative && attackerSynapticImperative) {
       setAttackerSynapticImperative(initialOptions.attacker_synaptic_imperative)
     }
@@ -13426,6 +14248,9 @@ function App() {
     }
     if (!canUseTargetWithinNine && attackerTargetWithinNine) {
       setAttackerTargetWithinNine(false)
+    }
+    if (!canUseTargetClosestEligible && attackerTargetClosestEligible) {
+      setAttackerTargetClosestEligible(false)
     }
     if (!canUseAttackerCountsAsTenPlus && attackerCountsAsTenPlusModels) {
       setAttackerCountsAsTenPlusModels(false)
@@ -13674,6 +14499,15 @@ function App() {
     if (!canUseAttackerMercyIsWeakness && attackerMercyIsWeaknessActive) {
       setAttackerMercyIsWeaknessActive(false)
     }
+    if (!attackerStratagemOptions.some((item) => item.name === 'Hellfire Rounds') && attackerHellfireRoundsActive) {
+      setAttackerHellfireRoundsActive(false)
+    }
+    if (!attackerStratagemOptions.some((item) => item.name === 'Kraken Rounds') && attackerKrakenRoundsActive) {
+      setAttackerKrakenRoundsActive(false)
+    }
+    if (!attackerStratagemOptions.some((item) => item.name === 'Dragonfire Rounds') && attackerDragonfireRoundsActive) {
+      setAttackerDragonfireRoundsActive(false)
+    }
     if (!canUseAttackerAncientFury && attackerAncientFuryActive) {
       setAttackerAncientFuryActive(false)
     }
@@ -13703,6 +14537,9 @@ function App() {
     }
     if (!canUseTargetClosestEligibleWithinSix && attackerTargetClosestEligibleWithinSix) {
       setAttackerTargetClosestEligibleWithinSix(false)
+    }
+    if (!canUseAttackerSetUpOnBattlefieldThisTurn && attackerSetUpOnBattlefieldThisTurn) {
+      setAttackerSetUpOnBattlefieldThisTurn(false)
     }
     if (!canUseAttackerDisembarkedFromTransport && attackerDisembarkedFromTransport) {
       setAttackerDisembarkedFromTransport(false)
@@ -13830,6 +14667,7 @@ function App() {
     attackerOnslaughtOfFireActive,
     attackerOrbitalSetUpThisTurnActive,
     attackerParasiticBiomorphologyFedActive,
+    attackerPenitentVow,
     attackerPreyActive,
     attackerPriorityStrikeActive,
     attackerSecureBiomassActive,
@@ -13870,6 +14708,7 @@ function App() {
     canUseAttackerCombatDoctrine,
     canUseAttackerTemplarVow,
     canUseAttackerHyperAdaptation,
+    canUseAttackerPenitentVow,
     canUseAttackerSynapticImperative,
     canUseAttackerCompetitiveStreak,
     canUseAttackerCountsAsTenPlus,
@@ -14943,6 +15782,10 @@ function App() {
       attackerUnbridledFerocityActive,
       attackerAdrenalSurgeActive,
       attackerTemplarVow,
+      attackerPenitentVow,
+      attackerBlackSpearMissionTactic,
+      attackerMiracleDicePolicy,
+      attackerMiracleDicePool,
       attackerRampagingMonstrositiesActive,
       attackerSwarmGuidedSalvoesActive,
       attackerMassiveImpactActive,
@@ -14958,6 +15801,8 @@ function App() {
       attackerHyperAdaptation,
       attackerSynapticImperative,
       defenderSynapticImperative,
+      defenderMiracleDicePolicy,
+      defenderMiracleDicePool,
       attackerWithinSynapseRange,
       defenderWithinSynapseRange,
       attackerHonourTheChapterActive,
@@ -14989,6 +15834,9 @@ function App() {
       attackerExactingPunishmentActive,
       attackerBattleDrillRecallActive,
       attackerMercyIsWeaknessActive,
+      attackerHellfireRoundsActive,
+      attackerKrakenRoundsActive,
+      attackerDragonfireRoundsActive,
       attackerAncientFuryActive,
       attackerCrucibleOfBattleActive,
       attackerImmolationProtocolsActive,
@@ -14999,7 +15847,9 @@ function App() {
       attackerHeroesOfTheChapterActive,
       attackerTargetWithinTwelve,
       attackerTargetClosestEligibleWithinSix,
+      attackerTargetClosestEligible,
       attackerDisembarkedFromTransport,
+      attackerSetUpOnBattlefieldThisTurn,
       defenderArmourOfContemptActive,
       defenderArmyBattleshockedDarkAngels,
       defenderStrengthInUnityActive,
@@ -15121,8 +15971,36 @@ function App() {
         attacker_eligible_model_count: selectedBattlefieldEligibleAttackerModelCount,
         attacker_combat_doctrine: battlefieldAttackerSide === 'attacker' ? attackerCombatDoctrine || null : null,
         attacker_hyper_adaptation: battlefieldAttackerSide === 'attacker' ? attackerHyperAdaptation || null : null,
+        attacker_penitent_vow: battlefieldAttackerSide === 'attacker' ? attackerPenitentVow || null : null,
+        attacker_righteous_active: battlefieldAttackerSide === 'attacker' ? attackerRighteousActive : defenderRighteousActive,
+        defender_righteous_active: battlefieldDefenderSide === 'defender' ? defenderRighteousActive : attackerRighteousActive,
+        attacker_hagiomnifex_mode: battlefieldAttackerSide === 'attacker' ? attackerHagiomnifexMode || null : defenderHagiomnifexMode || null,
+        defender_hagiomnifex_mode: battlefieldDefenderSide === 'defender' ? defenderHagiomnifexMode || null : attackerHagiomnifexMode || null,
+        attacker_suffer_not_the_unfaithful_mode: battlefieldAttackerSide === 'attacker' ? attackerSufferNotTheUnfaithfulMode || null : null,
+        attacker_faith_and_fury_active: battlefieldAttackerSide === 'attacker' ? attackerFaithAndFuryActive : false,
+        attacker_divine_guidance_active: battlefieldAttackerSide === 'attacker' ? attackerDivineGuidanceActive : false,
+        defender_blinding_radiance_active: battlefieldDefenderSide === 'defender' ? defenderBlindingRadianceActive : false,
+        attacker_to_the_heart_of_heresy_active: battlefieldAttackerSide === 'attacker' ? attackerToTheHeartOfHeresyActive : false,
+        attacker_sanctified_blows_active: battlefieldAttackerSide === 'attacker' ? attackerSanctifiedBlowsActive : false,
+        defender_faithful_fortitude_active: battlefieldDefenderSide === 'defender' ? defenderFaithfulFortitudeActive : false,
+        attacker_harmonised_exorcism_active: battlefieldAttackerSide === 'attacker' ? attackerHarmonisedExorcismActive : false,
+        attacker_devastating_reprise_active: battlefieldAttackerSide === 'attacker' ? attackerDevastatingRepriseActive : false,
+        attacker_passion_of_the_penitent_active: battlefieldAttackerSide === 'attacker' ? attackerPassionOfThePenitentActive : false,
+        defender_purity_of_suffering_active: battlefieldDefenderSide === 'defender' ? defenderPurityOfSufferingActive : false,
+        attacker_miracle_dice_policy: battlefieldAttackerSide === 'attacker'
+          ? attackerMiracleDicePolicy || null
+          : defenderMiracleDicePolicy || null,
+        attacker_miracle_dice_pool: battlefieldAttackerSide === 'attacker'
+          ? parseMiracleDiceInput(attackerMiracleDicePool)
+          : parseMiracleDiceInput(defenderMiracleDicePool),
         attacker_synaptic_imperative: battlefieldAttackerSide === 'attacker' ? attackerSynapticImperative || null : null,
         defender_synaptic_imperative: battlefieldDefenderSide === 'defender' ? defenderSynapticImperative || null : null,
+        defender_miracle_dice_policy: battlefieldDefenderSide === 'defender'
+          ? defenderMiracleDicePolicy || null
+          : attackerMiracleDicePolicy || null,
+        defender_miracle_dice_pool: battlefieldDefenderSide === 'defender'
+          ? parseMiracleDiceInput(defenderMiracleDicePool)
+          : parseMiracleDiceInput(attackerMiracleDicePool),
         attacker_within_synapse_range: battlefieldAttackerSide === 'attacker' && attackerWithinSynapseRange,
         defender_within_synapse_range: battlefieldDefenderSide === 'defender' && defenderWithinSynapseRange,
         attacker_honour_the_chapter_active: battlefieldAttackerSide === 'attacker' && attackerHonourTheChapterActive,
@@ -17191,6 +18069,25 @@ function App() {
     setAttackerCombatDoctrine(initialOptions.attacker_combat_doctrine)
     setAttackerTemplarVow(initialOptions.attacker_templar_vow)
     setAttackerHyperAdaptation(initialOptions.attacker_hyper_adaptation)
+    setAttackerBlackSpearMissionTactic(initialOptions.attacker_black_spear_mission_tactic)
+    setAttackerPenitentVow(initialOptions.attacker_penitent_vow)
+    setAttackerMiracleDicePolicy(initialOptions.attacker_miracle_dice_policy)
+    setAttackerMiracleDicePool(initialOptions.attacker_miracle_dice_pool)
+    setAttackerRighteousActive(initialOptions.attacker_righteous_active)
+    setDefenderRighteousActive(initialOptions.defender_righteous_active)
+    setAttackerHagiomnifexMode(initialOptions.attacker_hagiomnifex_mode)
+    setDefenderHagiomnifexMode(initialOptions.defender_hagiomnifex_mode)
+    setAttackerSufferNotTheUnfaithfulMode(initialOptions.attacker_suffer_not_the_unfaithful_mode)
+    setAttackerFaithAndFuryActive(initialOptions.attacker_faith_and_fury_active)
+    setAttackerDivineGuidanceActive(initialOptions.attacker_divine_guidance_active)
+    setDefenderBlindingRadianceActive(initialOptions.defender_blinding_radiance_active)
+    setAttackerToTheHeartOfHeresyActive(initialOptions.attacker_to_the_heart_of_heresy_active)
+    setAttackerSanctifiedBlowsActive(initialOptions.attacker_sanctified_blows_active)
+    setDefenderFaithfulFortitudeActive(initialOptions.defender_faithful_fortitude_active)
+    setAttackerHarmonisedExorcismActive(initialOptions.attacker_harmonised_exorcism_active)
+    setAttackerDevastatingRepriseActive(initialOptions.attacker_devastating_reprise_active)
+    setAttackerPassionOfThePenitentActive(initialOptions.attacker_passion_of_the_penitent_active)
+    setDefenderPurityOfSufferingActive(initialOptions.defender_purity_of_suffering_active)
     setAttackerFireDisciplineActive(initialOptions.attacker_fire_discipline_active)
     setAttackerMarkedForDestructionActive(initialOptions.attacker_marked_for_destruction_active)
     setAttackerUnforgivenFuryActive(initialOptions.attacker_unforgiven_fury_active)
@@ -17275,6 +18172,9 @@ function App() {
     setAttackerAutoSenseCoordinationSustainedActive(initialOptions.attacker_auto_sense_coordination_sustained_active)
     setAttackerBattleDrillRecallActive(initialOptions.attacker_battle_drill_recall_active)
     setAttackerMercyIsWeaknessActive(initialOptions.attacker_mercy_is_weakness_active)
+    setAttackerHellfireRoundsActive(initialOptions.attacker_hellfire_rounds_active)
+    setAttackerKrakenRoundsActive(initialOptions.attacker_kraken_rounds_active)
+    setAttackerDragonfireRoundsActive(initialOptions.attacker_dragonfire_rounds_active)
     setAttackerAncientFuryActive(initialOptions.attacker_ancient_fury_active)
     setAttackerCrucibleOfBattleActive(initialOptions.attacker_crucible_of_battle_active)
     setAttackerImmolationProtocolsActive(initialOptions.attacker_immolation_protocols_active)
@@ -17285,9 +18185,13 @@ function App() {
     setAttackerHeroesOfTheChapterActive(initialOptions.attacker_heroes_of_the_chapter_active)
     setAttackerTargetWithinTwelve(initialOptions.attacker_target_within_12)
     setAttackerTargetClosestEligibleWithinSix(initialOptions.attacker_target_closest_eligible_within_6)
+    setAttackerTargetClosestEligible(initialOptions.attacker_target_closest_eligible)
     setAttackerDisembarkedFromTransport(initialOptions.attacker_disembarked_from_transport)
+    setAttackerSetUpOnBattlefieldThisTurn(initialOptions.attacker_set_up_on_battlefield_this_turn)
     setAttackerSynapticImperative(initialOptions.attacker_synaptic_imperative)
     setDefenderSynapticImperative(initialOptions.defender_synaptic_imperative)
+    setDefenderMiracleDicePolicy(initialOptions.defender_miracle_dice_policy)
+    setDefenderMiracleDicePool(initialOptions.defender_miracle_dice_pool)
     setAttackerWithinSynapseRange(initialOptions.attacker_within_synapse_range)
     setDefenderWithinSynapseRange(initialOptions.defender_within_synapse_range)
     setDefenderArmourOfContemptActive(initialOptions.defender_armour_of_contempt_active)
@@ -17564,13 +18468,13 @@ function App() {
 
                 <label>
                   <span>Attacking Unit</span>
-                  <select value={attackerUnit} onChange={(event) => setAttackerUnit(event.target.value)}>
-                    {attackerUnits.map((unit) => (
-                      <option key={unit.name} value={unit.name}>
-                        {unit.name}
-                      </option>
-                    ))}
-                  </select>
+                  <SearchableUnitSelect
+                    value={attackerUnit}
+                    options={attackerUnits}
+                    onChangeValue={setAttackerUnit}
+                    placeholder="Search attacker units"
+                    emptyMessage="No attacking units match this search."
+                  />
                 </label>
 
                 {renderModelCountSelector(
@@ -17682,6 +18586,33 @@ function App() {
                     </select>
                   </label>
                 ) : null}
+
+                {attackerArmyIsAdeptaSororitas ? (
+                  <>
+                    <label title={miracleDiceTooltip}>
+                      <span>Attacker Miracle Dice Pool</span>
+                      <input
+                        type="text"
+                        value={attackerMiracleDicePool}
+                        onChange={(event) => setAttackerMiracleDicePool(event.target.value)}
+                        placeholder="6,5,3"
+                      />
+                    </label>
+                    <label title={miracleDiceTooltip}>
+                      <span>Attacker Miracle Dice Policy</span>
+                      <select
+                        value={attackerMiracleDicePolicy}
+                        onChange={(event) => setAttackerMiracleDicePolicy(event.target.value)}
+                      >
+                        {MIRACLE_DICE_POLICY_OPTIONS.filter((option) => option.id !== 'defensive').map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </>
+                ) : null}
               </section>
 
               <section className="combat-side-panel">
@@ -17713,13 +18644,13 @@ function App() {
 
                 <label>
                   <span>Defending Unit</span>
-                  <select value={defenderUnit} onChange={(event) => setDefenderUnit(event.target.value)}>
-                    {defenderUnits.map((unit) => (
-                      <option key={unit.name} value={unit.name}>
-                        {unit.name}
-                      </option>
-                    ))}
-                  </select>
+                  <SearchableUnitSelect
+                    value={defenderUnit}
+                    options={defenderUnits}
+                    onChangeValue={setDefenderUnit}
+                    placeholder="Search defending units"
+                    emptyMessage="No defending units match this search."
+                  />
                 </label>
 
                 {renderModelCountSelector(
@@ -17730,6 +18661,33 @@ function App() {
                   defenderModelCounts,
                   setDefenderModelCounts,
                 )}
+
+                {defenderArmyIsAdeptaSororitas ? (
+                  <>
+                    <label title={miracleDiceTooltip}>
+                      <span>Defender Miracle Dice Pool</span>
+                      <input
+                        type="text"
+                        value={defenderMiracleDicePool}
+                        onChange={(event) => setDefenderMiracleDicePool(event.target.value)}
+                        placeholder="6,5,3"
+                      />
+                    </label>
+                    <label title={miracleDiceTooltip}>
+                      <span>Defender Miracle Dice Policy</span>
+                      <select
+                        value={defenderMiracleDicePolicy}
+                        onChange={(event) => setDefenderMiracleDicePolicy(event.target.value)}
+                      >
+                        {MIRACLE_DICE_POLICY_OPTIONS.filter((option) => option.id !== 'offensive').map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </>
+                ) : null}
 
                 {renderLoadoutSelectors(
                   'Defender',
@@ -18128,6 +19086,113 @@ function App() {
                 </label>
               ) : null}
 
+              {canUseAttackerBlackSpearMissionTactic ? (
+                <label className="combat-option-attacker" title={getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Mission Tactics')?.rules_text || ''}>
+                  <span>Mission Tactics</span>
+                  <select
+                    title={getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Mission Tactics')?.rules_text || ''}
+                    value={attackerBlackSpearMissionTactic}
+                    onChange={(event) => setAttackerBlackSpearMissionTactic(event.target.value)}
+                  >
+                    {BLACK_SPEAR_MISSION_TACTIC_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerPenitentVow ? (
+                <label className="combat-option-attacker" title={attackerPenitentVowTooltip}>
+                  <span>Vow of Atonement</span>
+                  <select
+                    title={attackerPenitentVowTooltip}
+                    value={attackerPenitentVow}
+                    onChange={(event) => setAttackerPenitentVow(event.target.value)}
+                  >
+                    {PENITENT_VOW_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerRighteous ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerRighteousTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerRighteousActive}
+                    onChange={(event) => setAttackerRighteousActive(event.target.checked)}
+                  />
+                  <span>Attacker is Righteous</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderRighteous ? (
+                <label className="checkbox-row combat-option-defender" title={defenderRighteousTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderRighteousActive}
+                    onChange={(event) => setDefenderRighteousActive(event.target.checked)}
+                  />
+                  <span>Defender is Righteous</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerHagiomnifex ? (
+                <label className="combat-option-attacker" title={attackerHagiomnifexTooltip}>
+                  <span>Attacker Hagiomnifex</span>
+                  <select
+                    title={attackerHagiomnifexTooltip}
+                    value={attackerHagiomnifexMode}
+                    onChange={(event) => setAttackerHagiomnifexMode(event.target.value)}
+                  >
+                    {HAGIOMNIFEX_MODE_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseDefenderHagiomnifex ? (
+                <label className="combat-option-defender" title={defenderHagiomnifexTooltip}>
+                  <span>Defender Hagiomnifex</span>
+                  <select
+                    title={defenderHagiomnifexTooltip}
+                    value={defenderHagiomnifexMode}
+                    onChange={(event) => setDefenderHagiomnifexMode(event.target.value)}
+                  >
+                    {HAGIOMNIFEX_MODE_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerSufferNotTheUnfaithful ? (
+                <label className="combat-option-attacker" title={attackerSufferNotTheUnfaithfulTooltip}>
+                  <span>Suffer Not the Unfaithful</span>
+                  <select
+                    title={attackerSufferNotTheUnfaithfulTooltip}
+                    value={attackerSufferNotTheUnfaithfulMode}
+                    onChange={(event) => setAttackerSufferNotTheUnfaithfulMode(event.target.value)}
+                  >
+                    {SUFFER_NOT_THE_UNFAITHFUL_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
               {canUseAttackerSynapticImperative ? (
                 <label className="combat-option-attacker" title={attackerSynapticImperativeTooltip}>
                   <span>Attacker Synaptic Imperative</span>
@@ -18181,6 +19246,116 @@ function App() {
                     onChange={(event) => setDefenderWithinSynapseRange(event.target.checked)}
                   />
                   <span>Defender is within Synapse Range</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerFaithAndFury ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerFaithAndFuryTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerFaithAndFuryActive}
+                    onChange={(event) => setAttackerFaithAndFuryActive(event.target.checked)}
+                  />
+                  <span>Use Faith and Fury</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerDivineGuidance ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerDivineGuidanceTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerDivineGuidanceActive}
+                    onChange={(event) => setAttackerDivineGuidanceActive(event.target.checked)}
+                  />
+                  <span>Use Divine Guidance</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderBlindingRadiance ? (
+                <label className="checkbox-row combat-option-defender" title={defenderBlindingRadianceTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderBlindingRadianceActive}
+                    onChange={(event) => setDefenderBlindingRadianceActive(event.target.checked)}
+                  />
+                  <span>Use Blinding Radiance</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerToTheHeartOfHeresy ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerToTheHeartOfHeresyTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerToTheHeartOfHeresyActive}
+                    onChange={(event) => setAttackerToTheHeartOfHeresyActive(event.target.checked)}
+                  />
+                  <span>Use To the Heart of Heresy</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerSanctifiedBlows ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerSanctifiedBlowsTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerSanctifiedBlowsActive}
+                    onChange={(event) => setAttackerSanctifiedBlowsActive(event.target.checked)}
+                  />
+                  <span>Use Sanctified Blows</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderFaithfulFortitude ? (
+                <label className="checkbox-row combat-option-defender" title={defenderFaithfulFortitudeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderFaithfulFortitudeActive}
+                    onChange={(event) => setDefenderFaithfulFortitudeActive(event.target.checked)}
+                  />
+                  <span>Use Faithful Fortitude</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerHarmonisedExorcism ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerHarmonisedExorcismTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerHarmonisedExorcismActive}
+                    onChange={(event) => setAttackerHarmonisedExorcismActive(event.target.checked)}
+                  />
+                  <span>Use Harmonised Exorcism</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerDevastatingReprise ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerDevastatingRepriseTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerDevastatingRepriseActive}
+                    onChange={(event) => setAttackerDevastatingRepriseActive(event.target.checked)}
+                  />
+                  <span>Use Devastating Reprise</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerPassionOfThePenitent ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerPassionOfThePenitentTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerPassionOfThePenitentActive}
+                    onChange={(event) => setAttackerPassionOfThePenitentActive(event.target.checked)}
+                  />
+                  <span>Use Passion of the Penitent</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderPurityOfSuffering ? (
+                <label className="checkbox-row combat-option-defender" title={defenderPurityOfSufferingTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderPurityOfSufferingActive}
+                    onChange={(event) => setDefenderPurityOfSufferingActive(event.target.checked)}
+                  />
+                  <span>Use Purity of Suffering</span>
                 </label>
               ) : null}
 
@@ -18765,6 +19940,57 @@ function App() {
                 </label>
               ) : null}
 
+              {attackerStratagemOptions.some((item) => item.name === 'Hellfire Rounds') ? (
+                <label className="checkbox-row" title={getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Hellfire Rounds')?.effect || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerHellfireRoundsActive}
+                    onChange={(event) => {
+                      setAttackerHellfireRoundsActive(event.target.checked)
+                      if (event.target.checked) {
+                        setAttackerKrakenRoundsActive(false)
+                        setAttackerDragonfireRoundsActive(false)
+                      }
+                    }}
+                  />
+                  <span>Use Hellfire Rounds</span>
+                </label>
+              ) : null}
+
+              {attackerStratagemOptions.some((item) => item.name === 'Kraken Rounds') ? (
+                <label className="checkbox-row" title={getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Kraken Rounds')?.effect || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerKrakenRoundsActive}
+                    onChange={(event) => {
+                      setAttackerKrakenRoundsActive(event.target.checked)
+                      if (event.target.checked) {
+                        setAttackerHellfireRoundsActive(false)
+                        setAttackerDragonfireRoundsActive(false)
+                      }
+                    }}
+                  />
+                  <span>Use Kraken Rounds</span>
+                </label>
+              ) : null}
+
+              {attackerStratagemOptions.some((item) => item.name === 'Dragonfire Rounds') ? (
+                <label className="checkbox-row" title={getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Dragonfire Rounds')?.effect || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerDragonfireRoundsActive}
+                    onChange={(event) => {
+                      setAttackerDragonfireRoundsActive(event.target.checked)
+                      if (event.target.checked) {
+                        setAttackerHellfireRoundsActive(false)
+                        setAttackerKrakenRoundsActive(false)
+                      }
+                    }}
+                  />
+                  <span>Use Dragonfire Rounds</span>
+                </label>
+              ) : null}
+
               {canUseAttackerAncientFury ? (
                 <label className="checkbox-row" title={ancientFuryTooltip}>
                   <input
@@ -19225,6 +20451,28 @@ function App() {
                     onChange={(event) => setAttackerTargetClosestEligibleWithinSix(event.target.checked)}
                   />
                   <span>Defender is closest eligible target within 6"</span>
+                </label>
+              ) : null}
+
+              {canUseTargetClosestEligible ? (
+                <label className="checkbox-row combat-option-defender" title={getRelevantUnitRules(attackerUnitDetails, 'attacker').find((rule) => rule.name === 'Indomitor Doctrines')?.text || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerTargetClosestEligible}
+                    onChange={(event) => setAttackerTargetClosestEligible(event.target.checked)}
+                  />
+                  <span>Defender is the closest eligible target</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerSetUpOnBattlefieldThisTurn ? (
+                <label className="checkbox-row combat-option-attacker" title={getRelevantUnitRules(attackerUnitDetails, 'attacker').find((rule) => rule.name === 'Talonstrike Doctrines')?.text || ''}>
+                  <input
+                    type="checkbox"
+                    checked={attackerSetUpOnBattlefieldThisTurn}
+                    onChange={(event) => setAttackerSetUpOnBattlefieldThisTurn(event.target.checked)}
+                  />
+                  <span>Attacker was set up on the battlefield this turn</span>
                 </label>
               ) : null}
 

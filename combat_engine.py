@@ -1839,6 +1839,136 @@ class CombatSimulator:
         modifier = int(match.group(3) or "0")
         return dice_count + modifier, (dice_count * die_sides) + modifier
 
+    @staticmethod
+    def normalize_miracle_dice_pool(pool: Any) -> list[int]:
+        normalized_pool: list[int] = []
+        for value in pool or []:
+            try:
+                die_value = int(value)
+            except (TypeError, ValueError):
+                continue
+            if 1 <= die_value <= 6:
+                normalized_pool.append(die_value)
+        return sorted(normalized_pool)
+
+    @staticmethod
+    def get_miracle_dice_policy(attack_context: dict[str, Any], side: str) -> str:
+        return str(attack_context.get(f"{side}_miracle_dice_policy", "never") or "never").strip().lower()
+
+    @staticmethod
+    def find_lowest_successful_miracle_die(
+        pool: list[int],
+        threshold: int,
+        *,
+        maximum_value: int = 6,
+    ) -> int | None:
+        for die_value in pool:
+            if threshold <= die_value <= maximum_value:
+                return die_value
+        return None
+
+    def spend_miracle_die(
+        self,
+        attack_context: dict[str, Any],
+        side: str,
+        die_value: int,
+        roll_type: str,
+        unit_name: str,
+    ) -> int:
+        sequence_state = attack_context.get("sequence_state", {})
+        pool_key = f"{side}_miracle_dice_pool"
+        pool = list(sequence_state.get(pool_key, []))
+        if die_value not in pool:
+            raise CombatSimulationError(f"Miracle Die {die_value} is not available in the {side} pool.")
+        pool.remove(die_value)
+        sequence_state[pool_key] = pool
+        sequence_state.setdefault("miracle_dice_used", []).append({
+            "side": side,
+            "unit": unit_name,
+            "roll_type": roll_type,
+            "value": die_value,
+        })
+        self.log(f"{unit_name} uses Miracle Die {die_value} for the {roll_type} with Acts of Faith")
+        return die_value
+
+    def maybe_use_attacker_miracle_die_for_hit(
+        self,
+        unit_name: str,
+        weapon: dict[str, Any],
+        attack_context: dict[str, Any],
+        hit_required: int,
+    ) -> int | None:
+        if self.get_miracle_dice_policy(attack_context, "attacker") != "offensive":
+            return None
+        if int(attack_context.get("current_total_attacks", 0)) > 1:
+            return None
+        pool = attack_context.get("sequence_state", {}).get("attacker_miracle_dice_pool", [])
+        threshold = hit_required
+        if (
+            attack_context.get("indirect_no_visibility", False)
+            and self.weapon_has_keyword(weapon, "Indirect Fire", attack_context)
+        ):
+            threshold = max(threshold, 4)
+        die_value = self.find_lowest_successful_miracle_die(pool, threshold)
+        if die_value is None:
+            return None
+        return self.spend_miracle_die(attack_context, "attacker", die_value, "Hit roll", unit_name)
+
+    def maybe_use_attacker_miracle_die_for_wound(
+        self,
+        unit_name: str,
+        attack_context: dict[str, Any],
+        to_wound: int,
+    ) -> int | None:
+        if self.get_miracle_dice_policy(attack_context, "attacker") != "offensive":
+            return None
+        if int(attack_context.get("current_total_attacks", 0)) > 1:
+            return None
+        pool = attack_context.get("sequence_state", {}).get("attacker_miracle_dice_pool", [])
+        die_value = self.find_lowest_successful_miracle_die(pool, to_wound)
+        if die_value is None:
+            return None
+        return self.spend_miracle_die(attack_context, "attacker", die_value, "Wound roll", unit_name)
+
+    def maybe_use_defender_miracle_die_for_save(
+        self,
+        target_name: str,
+        attack_context: dict[str, Any],
+        required: int,
+    ) -> int | None:
+        if self.get_miracle_dice_policy(attack_context, "defender") != "defensive":
+            return None
+        pool = attack_context.get("sequence_state", {}).get("defender_miracle_dice_pool", [])
+        die_value = self.find_lowest_successful_miracle_die(pool, required)
+        if die_value is None:
+            return None
+        return self.spend_miracle_die(attack_context, "defender", die_value, "Saving throw", target_name)
+
+    def maybe_use_attacker_miracle_die_for_damage(
+        self,
+        weapon: dict[str, Any],
+        target_state: dict[str, Any] | None,
+        attack_context: dict[str, Any],
+        unit_name: str,
+    ) -> int | None:
+        if self.get_miracle_dice_policy(attack_context, "attacker") != "offensive":
+            return None
+        minimum_damage, maximum_damage = self.get_roll_bounds(weapon["damage"])
+        if maximum_damage <= minimum_damage:
+            return None
+        current_wounds = int((target_state or {}).get("current_wounds", 0) or 0)
+        if current_wounds <= 0:
+            return None
+        pool = attack_context.get("sequence_state", {}).get("attacker_miracle_dice_pool", [])
+        die_value = self.find_lowest_successful_miracle_die(
+            pool,
+            current_wounds,
+            maximum_value=maximum_damage,
+        )
+        if die_value is None:
+            return None
+        return self.spend_miracle_die(attack_context, "attacker", die_value, "Damage roll", unit_name)
+
     def get_sustained_hits_bonus(
         self,
         weapon: dict[str, Any],
@@ -2021,6 +2151,43 @@ class CombatSimulator:
                 return profile
         return target_state
 
+    def get_effective_target_toughness(self, target_state: dict[str, Any]) -> int:
+        profiles = [
+            profile
+            for profile in target_state.get("profiles", [])
+            if profile.get("models", 0) > 0
+        ]
+        if not profiles:
+            return int(target_state.get("toughness", 0))
+
+        if self.unit_has_keyword(target_state, "kill team"):
+            toughness_counts: dict[int, int] = {}
+            for profile in profiles:
+                toughness = int(profile.get("toughness", 0))
+                toughness_counts[toughness] = toughness_counts.get(toughness, 0) + max(
+                    0,
+                    int(profile.get("models", 0)),
+                )
+            if toughness_counts:
+                majority_count = max(toughness_counts.values())
+                return max(
+                    toughness
+                    for toughness, count in toughness_counts.items()
+                    if count == majority_count
+                )
+
+        if target_state.get("uses_attached_bodyguard_toughness", False):
+            bodyguard_profiles = [
+                profile
+                for profile in profiles
+                if not str(profile.get("allocation_role", "")).startswith("attached")
+            ]
+            relevant_profiles = bodyguard_profiles or profiles
+            return max(int(profile.get("toughness", 0)) for profile in relevant_profiles)
+
+        active_profile = self.get_active_target_profile(target_state)
+        return int(active_profile.get("toughness", target_state.get("toughness", 0)))
+
     def sync_target_state_profiles(self, target_state: dict[str, Any]) -> None:
         profiles = target_state.get("profiles", [])
         if not profiles:
@@ -2045,24 +2212,20 @@ class CombatSimulator:
         target_state["invulnerable_save"] = active_profile["invulnerable_save"]
         target_state["feel_no_pain"] = active_profile.get("feel_no_pain", 0)
         target_state["active_profile_name"] = active_profile["name"]
-        if target_state.get("uses_attached_bodyguard_toughness", False):
-            bodyguard_profiles = [
-                profile
-                for profile in profiles
-                if profile.get("models", 0) > 0 and not str(profile.get("allocation_role", "")).startswith("attached")
-            ]
-            target_state["toughness"] = max(
-                int(profile.get("toughness", 0))
-                for profile in (bodyguard_profiles or profiles)
-            )
+        target_state["toughness"] = self.get_effective_target_toughness(target_state)
 
     def get_precision_allocation_target(
         self,
         target_state: dict[str, Any],
         weapon: dict[str, Any],
         attack_context: dict[str, Any],
+        wound_event: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        if not self.weapon_has_keyword(weapon, "Precision"):
+        precision_active = (
+            self.weapon_has_keyword(weapon, "Precision", attack_context)
+            or bool((wound_event or {}).get("precision", False))
+        )
+        if not precision_active:
             return target_state
         attached_profile = self.get_active_target_profile(target_state, "attached_character")
         if (
@@ -2712,20 +2875,26 @@ class CombatSimulator:
         weapon: dict[str, Any],
         target_name: str,
         attack_context: dict[str, Any],
-    ) -> tuple[int, int]:
+    ) -> tuple[int, int, int, int]:
         self.stats["attack_instances"] += 1
         if self.weapon_has_keyword(weapon, "Torrent", attack_context):
             self.stats["auto_hit_attacks"] += 1
             self.stats["successful_hit_attacks"] += 1
             self.stats["torrent_hits"] += 1
             self.log(f"{weapon['name']} automatically hits {target_name} because it has Torrent")
-            return 1, 0
+            return 1, 0, 0, 0
 
         self.stats["hit_rolls"] += 1
-        hit_roll = self.die_roll()
-        self.log(f"{unit_name} rolls a {hit_roll} to hit")
         hit_modifier = self.get_hit_roll_modifier(weapon, attack_context)
         hit_required = max(2, weapon["skill"] - int(attack_context.get("attacker_skill_modifier", 0)))
+        miracle_hit_roll = self.maybe_use_attacker_miracle_die_for_hit(
+            unit_name,
+            weapon,
+            attack_context,
+            hit_required,
+        )
+        hit_roll = miracle_hit_roll if miracle_hit_roll is not None else self.die_roll()
+        self.log(f"{unit_name} rolls a {hit_roll} to hit")
         modified_hit_roll = hit_roll + hit_modifier
         if hit_modifier != 0:
             self.log(f"Hit roll modifier applied: {hit_modifier:+d}")
@@ -2737,7 +2906,7 @@ class CombatSimulator:
         ):
             self.stats["failed_hit_attacks"] += 1
             self.log(f"{unit_name} fails to hit because Indirect Fire with no visibility fails on 1-3")
-            return 0, 0
+            return 0, 0, 0, 0
 
         if (
             modified_hit_roll < hit_required
@@ -2777,7 +2946,7 @@ class CombatSimulator:
             ):
                 self.stats["failed_hit_attacks"] += 1
                 self.log(f"{unit_name} fails to hit because Indirect Fire with no visibility fails on 1-3")
-                return 0, 0
+                return 0, 0, 0, 0
             if modified_hit_roll >= hit_required:
                 self.stats["hit_reroll_successes"] += 1
 
@@ -2797,7 +2966,7 @@ class CombatSimulator:
         if modified_hit_roll < hit_required:
             self.stats["failed_hit_attacks"] += 1
             self.log(f"{unit_name} failed to hit")
-            return 0, 0
+            return 0, 0, 0, 0
 
         critical_hit = (
             bool(attack_context.get("successful_hit_is_critical", False))
@@ -2808,6 +2977,8 @@ class CombatSimulator:
             self.stats["critical_hit_attacks"] += 1
         normal_hits = 1
         auto_wounds = 0
+        precision_normal_hits = 0
+        precision_auto_wounds = 0
 
         sustained_hits_bonus = self.get_sustained_hits_bonus(weapon, attack_context)
         if critical_hit and sustained_hits_bonus > 0:
@@ -2824,7 +2995,13 @@ class CombatSimulator:
             self.stats["lethal_hits_triggered"] += 1
             self.log(f"On a critical hit {unit_name} automatically wounds {target_name} due to Lethal Hits")
 
-        return normal_hits, auto_wounds
+        if critical_hit and bool(attack_context.get("critical_hit_precision", False)):
+            if auto_wounds > 0:
+                precision_auto_wounds = 1
+            elif normal_hits > 0:
+                precision_normal_hits = 1
+
+        return normal_hits, auto_wounds, precision_normal_hits, precision_auto_wounds
 
     def apply_anti_rule(self, wound_roll: int, weapon: dict[str, Any], target: dict[str, Any]) -> int:
         anti_rules = weapon.get("anti_rules") or []
@@ -2853,7 +3030,12 @@ class CombatSimulator:
         attack_context: dict[str, Any],
     ) -> tuple[bool, bool, bool]:
         self.stats["wound_rolls"] += 1
-        wound_roll = self.die_roll()
+        miracle_wound_roll = self.maybe_use_attacker_miracle_die_for_wound(
+            unit_name,
+            attack_context,
+            to_wound,
+        )
+        wound_roll = miracle_wound_roll if miracle_wound_roll is not None else self.die_roll()
         self.log(f"{unit_name} rolls a {wound_roll} to wound")
         wound_roll = self.apply_anti_rule(wound_roll, weapon, target)
 
@@ -2955,7 +3137,12 @@ class CombatSimulator:
 
         required, save_type = min(available_saves, key=lambda item: item[0])
         self.stats["save_attempts"] += 1
-        save_roll = self.die_roll()
+        miracle_save_roll = self.maybe_use_defender_miracle_die_for_save(
+            target["name"],
+            attack_context,
+            required,
+        )
+        save_roll = miracle_save_roll if miracle_save_roll is not None else self.die_roll()
         self.log(f"{target['name']} attempts an {save_type} save on {required}+")
 
         if save_roll == 1 and attack_context.get("reroll_save_rolls_of_1", False):
@@ -2972,9 +3159,20 @@ class CombatSimulator:
         self.log(f"{target['name']} fails the save with a {save_roll}")
         return True
 
-    def roll_damage(self, weapon: dict[str, Any], attack_context: dict[str, Any]) -> tuple[int, int]:
-        base_damage = self.roll_value(weapon["damage"])
+    def roll_damage(
+        self,
+        weapon: dict[str, Any],
+        attack_context: dict[str, Any],
+        target_state: dict[str, Any] | None = None,
+    ) -> tuple[int, int]:
         minimum_damage, maximum_damage = self.get_roll_bounds(weapon["damage"])
+        miracle_damage = self.maybe_use_attacker_miracle_die_for_damage(
+            weapon,
+            target_state,
+            attack_context,
+            str(attack_context.get("attacker_unit_name", "") or "Attacker"),
+        )
+        base_damage = miracle_damage if miracle_damage is not None else self.roll_value(weapon["damage"])
         sequence_state = attack_context.get("sequence_state", {})
         remaining_damage_rerolls = int(sequence_state.get("remaining_damage_rerolls", 0))
         if (
@@ -3238,7 +3436,7 @@ class CombatSimulator:
         damage_mode: str,
         attack_context: dict[str, Any],
     ) -> None:
-        damage, melta_bonus = self.roll_damage(weapon, attack_context)
+        damage, melta_bonus = self.roll_damage(weapon, attack_context, target_state)
         self.apply_damage_amount(
             unit_name,
             weapon,
@@ -3720,13 +3918,16 @@ class CombatSimulator:
         cleave_bonus = self.get_cleave_bonus(weapon, target_state, attack_context) * weapon_bearer_count
         attacks_remaining += rapid_fire_bonus + blast_bonus + cleave_bonus
         attacks_remaining = max(0, attacks_remaining)
+        attack_context["current_total_attacks"] = attacks_remaining
+        attack_context["attacker_unit_name"] = unit_name
         effective_strength = weapon["strength"]
         if weapon["range"].lower() == "melee":
             effective_strength += attack_context.get("melee_strength_bonus", 0)
         else:
             effective_strength += attack_context.get("ranged_strength_bonus", 0)
         active_target = self.get_active_target_profile(target_state)
-        base_to_wound = self.get_to_wound_threshold(effective_strength, active_target["toughness"])
+        effective_target_toughness = self.get_effective_target_toughness(target_state)
+        base_to_wound = self.get_to_wound_threshold(effective_strength, effective_target_toughness)
         wound_roll_modifier = self.get_total_wound_roll_modifier(
             attacker_unit,
             active_target,
@@ -3784,11 +3985,26 @@ class CombatSimulator:
 
         normal_hit_pool = 0
         auto_wound_pool = 0
+        precision_hit_pool = 0
         pending_mortal_wounds = 0
+        wound_events: list[dict[str, Any]] = []
         for _ in range(attacks_remaining):
-            normal_hits, auto_wounds = self.resolve_hit(unit_name, weapon, target_state["name"], attack_context)
+            (
+                normal_hits,
+                auto_wounds,
+                precision_normal_hits,
+                precision_auto_wounds,
+            ) = self.resolve_hit(unit_name, weapon, target_state["name"], attack_context)
             normal_hit_pool += normal_hits
             auto_wound_pool += auto_wounds
+            precision_hit_pool += precision_normal_hits
+            for index in range(auto_wounds):
+                wound_events.append({
+                    "critical_wound": False,
+                    "devastating_wound": False,
+                    "source": "auto_wound",
+                    "precision": index < precision_auto_wounds,
+                })
 
         if normal_hit_pool or auto_wound_pool:
             self.stats["hit_pool"] += normal_hit_pool + auto_wound_pool
@@ -3800,17 +4016,10 @@ class CombatSimulator:
                 " into the wound step"
             )
 
-        wound_events: list[dict[str, Any]] = [
-            {
-                "critical_wound": False,
-                "devastating_wound": False,
-                "source": "auto_wound",
-            }
-            for _ in range(auto_wound_pool)
-        ]
-        for _ in range(normal_hit_pool):
+        for hit_index in range(normal_hit_pool):
             current_target = self.get_active_target_profile(target_state)
-            current_base_to_wound = self.get_to_wound_threshold(effective_strength, current_target["toughness"])
+            current_target_toughness = self.get_effective_target_toughness(target_state)
+            current_base_to_wound = self.get_to_wound_threshold(effective_strength, current_target_toughness)
             current_wound_roll_modifier = self.get_total_wound_roll_modifier(
                 attacker_unit,
                 current_target,
@@ -3831,12 +4040,13 @@ class CombatSimulator:
                 "critical_wound": critical_wound,
                 "devastating_wound": devastating_wound,
                 "source": "wound_roll",
+                "precision": hit_index < precision_hit_pool,
             })
         self.stats["wound_pool"] += len(wound_events)
 
         normal_damage_events: list[dict[str, Any]] = []
         for wound_event in wound_events:
-            allocation_target = self.get_precision_allocation_target(target_state, weapon, attack_context)
+            allocation_target = self.get_precision_allocation_target(target_state, weapon, attack_context, wound_event)
             damage_target = self.get_active_target_profile(allocation_target)
             if allocation_target is not target_state:
                 self.log(
@@ -3860,7 +4070,7 @@ class CombatSimulator:
                     f"{'' if extra_mortal_wounds == 1 else 's'} on a critical wound"
                 )
             if wound_event["devastating_wound"]:
-                mortal_damage, melta_bonus = self.roll_damage(weapon, attack_context)
+                mortal_damage, melta_bonus = self.roll_damage(weapon, attack_context, damage_target)
                 self.stats["damage_pool"] += mortal_damage
                 self.stats["devastating_damage"] += mortal_damage
                 self.record_mortal_damage("Devastating Wounds", mortal_damage)
@@ -3873,7 +4083,7 @@ class CombatSimulator:
                 )
                 continue
             if self.resolve_save(damage_target, weapon, False, attack_context, wound_event["critical_wound"]):
-                damage, melta_bonus = self.roll_damage(weapon, attack_context)
+                damage, melta_bonus = self.roll_damage(weapon, attack_context, damage_target)
                 self.stats["damage_pool"] += damage
                 normal_damage_events.append({
                     "allocation_target": allocation_target,
@@ -4124,61 +4334,59 @@ class CombatSimulator:
     def build_sequence_state(
         self,
         options: dict[str, Any],
-    ) -> dict[str, int]:
+    ) -> dict[str, Any]:
         attacker_detachment_name = str(options.get("attacker_detachment_name", "") or "")
+        sequence_state: dict[str, Any] = {
+            "remaining_hit_rerolls": 0,
+            "remaining_wound_rerolls": 0,
+            "remaining_damage_rerolls": 0,
+            "attacker_miracle_dice_pool": self.normalize_miracle_dice_pool(
+                options.get("attacker_miracle_dice_pool", [])
+            ),
+            "defender_miracle_dice_pool": self.normalize_miracle_dice_pool(
+                options.get("defender_miracle_dice_pool", [])
+            ),
+            "miracle_dice_used": [],
+        }
         if bool(options.get("attacker_anointed_champion_active", False)):
-            return {
-                "remaining_hit_rerolls": 1,
-                "remaining_wound_rerolls": 1,
-                "remaining_damage_rerolls": 0,
-            }
+            sequence_state["remaining_hit_rerolls"] = 1
+            sequence_state["remaining_wound_rerolls"] = 1
+            return sequence_state
 
         attacker_active_ability_names = {
             str(name).lower()
             for name in options.get("attacker_active_ability_names", [])
         }
         if "aquila optics" in attacker_active_ability_names:
-            return {
-                "remaining_hit_rerolls": 1,
-                "remaining_wound_rerolls": 1,
-                "remaining_damage_rerolls": 1,
-            }
+            sequence_state["remaining_hit_rerolls"] = 1
+            sequence_state["remaining_wound_rerolls"] = 1
+            sequence_state["remaining_damage_rerolls"] = 1
+            return sequence_state
 
         if attacker_detachment_name == "Ironstorm Spearhead":
             reroll_type = str(options.get("attacker_armoured_wrath_reroll_type", "") or "").lower()
-            return {
-                "remaining_hit_rerolls": 1 if reroll_type == "hit" else 0,
-                "remaining_wound_rerolls": 1 if reroll_type == "wound" else 0,
-                "remaining_damage_rerolls": 1 if reroll_type == "damage" else 0,
-            }
+            sequence_state["remaining_hit_rerolls"] = 1 if reroll_type == "hit" else 0
+            sequence_state["remaining_wound_rerolls"] = 1 if reroll_type == "wound" else 0
+            sequence_state["remaining_damage_rerolls"] = 1 if reroll_type == "damage" else 0
+            return sequence_state
 
         if attacker_detachment_name != "Saga of the Bold":
-            return {
-                "remaining_hit_rerolls": 0,
-                "remaining_wound_rerolls": 0,
-                "remaining_damage_rerolls": 0,
-            }
+            return sequence_state
 
         if bool(options.get("attacker_saga_completed", False)):
-            return {
-                "remaining_hit_rerolls": 1,
-                "remaining_wound_rerolls": 1,
-                "remaining_damage_rerolls": 1,
-            }
+            sequence_state["remaining_hit_rerolls"] = 1
+            sequence_state["remaining_wound_rerolls"] = 1
+            sequence_state["remaining_damage_rerolls"] = 1
+            return sequence_state
 
         if not bool(options.get("attacker_package_is_character_unit", False)):
-            return {
-                "remaining_hit_rerolls": 0,
-                "remaining_wound_rerolls": 0,
-                "remaining_damage_rerolls": 0,
-            }
+            return sequence_state
 
         reroll_type = str(options.get("attacker_heroes_all_reroll_type", "") or "").lower()
-        return {
-            "remaining_hit_rerolls": 1 if reroll_type == "hit" else 0,
-            "remaining_wound_rerolls": 1 if reroll_type == "wound" else 0,
-            "remaining_damage_rerolls": 1 if reroll_type == "damage" else 0,
-        }
+        sequence_state["remaining_hit_rerolls"] = 1 if reroll_type == "hit" else 0
+        sequence_state["remaining_wound_rerolls"] = 1 if reroll_type == "wound" else 0
+        sequence_state["remaining_damage_rerolls"] = 1 if reroll_type == "damage" else 0
+        return sequence_state
 
     def build_attack_context(
         self,
@@ -4205,6 +4413,14 @@ class CombatSimulator:
         defender_synaptic_imperative = str(options.get("defender_synaptic_imperative", "") or "").lower()
         attacker_combat_doctrine = str(options.get("attacker_combat_doctrine", "") or "").lower()
         attacker_templar_vow = str(options.get("attacker_templar_vow", "") or "").lower()
+        attacker_penitent_vow = str(options.get("attacker_penitent_vow", "") or "").lower()
+        attacker_righteous_active = bool(options.get("attacker_righteous_active", False))
+        defender_righteous_active = bool(options.get("defender_righteous_active", False))
+        attacker_hagiomnifex_mode = str(options.get("attacker_hagiomnifex_mode", "") or "").lower()
+        defender_hagiomnifex_mode = str(options.get("defender_hagiomnifex_mode", "") or "").lower()
+        attacker_suffer_not_the_unfaithful_mode = str(
+            options.get("attacker_suffer_not_the_unfaithful_mode", "") or ""
+        ).lower()
         attacker_black_templars_active = str(options.get("attacker_faction_name", "") or "").lower() == "black templars"
         attacker_devastator_doctrine_active = (
             attacker_detachment_name == "Gladius Task Force"
@@ -4340,6 +4556,14 @@ class CombatSimulator:
                 and self.unit_has_keyword(target_state, "character")
             ):
                 temporary_weapon_keywords.add("Precision")
+        attacker_black_spear_mission_tactic = str(
+            options.get("attacker_black_spear_mission_tactic", "") or ""
+        ).lower()
+        if attacker_detachment_name == "Black Spear Task Force":
+            if attacker_black_spear_mission_tactic == "furor_tactics":
+                temporary_weapon_keywords.add("SH1")
+            elif attacker_black_spear_mission_tactic == "malleus_tactics":
+                temporary_weapon_keywords.add("LH")
         if bool(options.get("attacker_secure_biomass_active", False)):
             add_keywords_to_matching_weapons(
                 {"LH"},
@@ -4358,6 +4582,30 @@ class CombatSimulator:
             add_keywords_to_matching_weapons(
                 {"Precision"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if (
+            attacker_righteous_active
+            and attacker_suffer_not_the_unfaithful_mode == "lethal_hits"
+        ):
+            temporary_weapon_keywords.add("LH")
+        if (
+            attacker_righteous_active
+            and attacker_suffer_not_the_unfaithful_mode == "sustained_hits_1"
+        ):
+            temporary_weapon_keywords.add("SH1")
+        if bool(options.get("attacker_faith_and_fury_active", False)):
+            add_keywords_to_matching_weapons(
+                {"Lance"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if (
+            bool(options.get("attacker_devastating_reprise_active", False))
+            and not self.unit_has_keyword(target_state, "monster")
+            and not self.unit_has_keyword(target_state, "vehicle")
+        ):
+            add_keywords_to_matching_weapons(
+                {"DW"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
             )
         if self.ability_names_include(attacker_or_attached_ability_names, "vicious insight"):
             temporary_weapon_keywords.add("DW")
@@ -4500,6 +4748,19 @@ class CombatSimulator:
                 {"SH1"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
             )
+        if bool(options.get("attacker_hellfire_rounds_active", False)):
+            add_keywords_to_matching_weapons(
+                {"Anti-Infantry 2+", "Anti-Monster 5+"},
+                lambda candidate_weapon: (
+                    candidate_weapon["range"].lower() != "melee"
+                    and not self.weapon_has_keyword(candidate_weapon, "DW")
+                ),
+            )
+        if bool(options.get("attacker_dragonfire_rounds_active", False)):
+            add_keywords_to_matching_weapons(
+                {"Assault", "Ignores Cover"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
         if bool(options.get("attacker_immolation_protocols_active", False)):
             add_keywords_to_matching_weapons(
                 {"DW"},
@@ -4539,6 +4800,8 @@ class CombatSimulator:
         ):
             temporary_melee_weapon_keywords.add("DW")
         if self.ability_names_include(attacker_or_attached_ability_names, "tactical precision"):
+            temporary_weapon_keywords.add("LH")
+        if self.ability_names_include(attacker_or_attached_ability_names, "tactical instinct"):
             temporary_weapon_keywords.add("LH")
         if self.ability_names_include(attacker_or_attached_ability_names, "surgical precision"):
             temporary_weapon_keywords.add("LH")
@@ -4775,6 +5038,10 @@ class CombatSimulator:
             )
         ):
             reroll_all_hit_rolls = True
+        if self.ability_names_include(attacker_ability_names, "death to the alien"):
+            reroll_hit_rolls_of_1 = True
+            if not self.unit_has_keyword(target_state, "imperium") and not self.unit_has_keyword(target_state, "chaos"):
+                reroll_all_hit_rolls = True
         if self.ability_names_include(attacker_or_attached_ability_names, "alpha leader"):
             reroll_all_hit_rolls = True
         if self.ability_names_include(attacker_ability_names, "vanguard predator"):
@@ -4920,6 +5187,13 @@ class CombatSimulator:
             and bool(options.get("attacker_below_starting_strength", False))
         ):
             attacker_hit_modifier += 1
+        if (
+            bool(options.get("attacker_harmonised_exorcism_active", False))
+            and weapon["range"].lower() != "melee"
+        ):
+            attacker_hit_modifier += 1
+        if bool(options.get("defender_blinding_radiance_active", False)):
+            attacker_hit_modifier -= 1
         attacker_skill_modifier = 0
         if (
             bool(options.get("attacker_strike_from_the_shadows_active", False))
@@ -4929,6 +5203,21 @@ class CombatSimulator:
         ):
             attacker_skill_modifier += 1
             attacker_ap_modifier += 1
+        if (
+            attacker_detachment_name == "Champions of Faith"
+            and attacker_righteous_active
+            and attacker_unit.get("name") in {
+                "Battle Sisters Squad",
+                "Celestian Sacresants",
+                "Paragon Warsuits",
+            }
+        ):
+            attacker_skill_modifier += 1
+        if (
+            attacker_detachment_name == "Sacred Champions"
+            and attacker_unit.get("name") == "Celestian Sacresants"
+        ):
+            attacker_skill_modifier += 1
         if (
             bool(options.get("attacker_heroes_of_the_chapter_active", False))
             and bool(options.get("attacker_below_half_strength", False))
@@ -5066,6 +5355,11 @@ class CombatSimulator:
         ):
             reroll_all_wound_rolls = True
         if self.ability_names_include(attacker_or_attached_ability_names, "to the last"):
+            if bool(options.get("attacker_below_starting_strength", False)):
+                attacker_hit_modifier += 1
+            if bool(options.get("attacker_below_half_strength", False)):
+                attacker_outgoing_wound_modifier += 1
+        if attacker_detachment_name == "Hallowed Martyrs":
             if bool(options.get("attacker_below_starting_strength", False)):
                 attacker_hit_modifier += 1
             if bool(options.get("attacker_below_half_strength", False)):
@@ -5216,6 +5510,12 @@ class CombatSimulator:
                 reroll_all_wound_rolls = True
             elif bool(options.get("target_below_starting_strength", False)):
                 reroll_wound_rolls_of_1 = True
+        if self.ability_names_include(attacker_ability_names, "fortis doctrines"):
+            if bool(options.get("target_below_half_strength", False)):
+                attacker_hit_modifier += 1
+                attacker_outgoing_wound_modifier += 1
+            elif bool(options.get("target_below_starting_strength", False)):
+                attacker_hit_modifier += 1
 
         melee_attack_bonus = 0
         melee_strength_bonus = 0
@@ -5297,6 +5597,40 @@ class CombatSimulator:
             melee_attack_bonus += 1
             melee_strength_bonus += 1
         if (
+            bool(options.get("attacker_sanctified_blows_active", False))
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_attack_bonus += 1
+            melee_strength_bonus += 1
+        if (
+            bool(options.get("attacker_to_the_heart_of_heresy_active", False))
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_strength_bonus += 1
+            if attacker_righteous_active:
+                attacker_ap_modifier += 1
+        if (
+            attacker_hagiomnifex_mode == "psalm_of_righteous_smiting"
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_strength_bonus += 1
+        if (
+            attacker_enhancement_name == "Mark of Devotion"
+            and weapon["range"].lower() == "melee"
+        ):
+            if attacker_righteous_active:
+                melee_attack_bonus += 2
+                melee_damage_bonus += 1
+            else:
+                melee_attack_bonus += 1
+        if (
+            attacker_enhancement_name == "Blade of Saint Ellynor"
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_strength_bonus += 1
+            attacker_ap_modifier += 1
+            temporary_weapon_keywords.add("Precision")
+        if (
             self.ability_names_include(attacker_ability_names, "gun-crazy show-offs")
             and weapon_base_name == "snazzgun"
         ):
@@ -5360,6 +5694,15 @@ class CombatSimulator:
             melee_attack_bonus += 1
             melee_strength_bonus += 2
         if (
+            attacker_detachment_name == "Penitent Host"
+            and attacker_penitent_vow == "absolution_in_battle"
+            and bool(options.get("charged_this_turn", False))
+            and weapon["range"].lower() == "melee"
+            and self.unit_has_keyword(attacker_unit, "penitent")
+        ):
+            melee_attack_bonus += 1
+            melee_strength_bonus += 1
+        if (
             attacker_enhancement_name == "Incendiary Animus"
             and weapon["range"].lower() == "melee"
         ):
@@ -5399,6 +5742,8 @@ class CombatSimulator:
             and weapon["range"].lower() == "melee"
         ):
             melee_strength_bonus += 1
+        if bool(options.get("attacker_divine_guidance_active", False)):
+            attacker_ap_modifier += 1
         if (
             bool(options.get("attacker_condemnatory_info_screed_active", False))
             and bool(options.get("attacker_disembarked_from_transport", False))
@@ -5473,6 +5818,27 @@ class CombatSimulator:
             )
         ):
             ranged_strength_bonus += 2
+        if (
+            self.ability_names_include(attacker_ability_names, "indomitor doctrines")
+            and weapon["range"].lower() != "melee"
+            and bool(options.get("attacker_target_closest_eligible", False))
+        ):
+            ranged_strength_bonus += 2
+        if (
+            self.ability_names_include(attacker_ability_names, "indomitor doctrines")
+            and weapon["range"].lower() == "melee"
+            and bool(options.get("charged_this_turn", False))
+        ):
+            melee_strength_bonus += 2
+        if (
+            self.ability_names_include(attacker_ability_names, "talonstrike doctrines")
+            and bool(options.get("attacker_set_up_on_battlefield_this_turn", False))
+        ):
+            attacker_ap_modifier += 1
+            if weapon["range"].lower() == "melee":
+                temporary_melee_weapon_keywords.add("Lance")
+        if bool(options.get("attacker_kraken_rounds_active", False)) and weapon["range"].lower() != "melee":
+            attacker_ap_modifier += 1
         if (
             self.ability_names_include(attacker_ability_names, "siege captain")
             and (
@@ -5821,10 +6187,14 @@ class CombatSimulator:
             and defender_has_attached_character
         ):
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 5)
+        if bool(options.get("defender_faithful_fortitude_active", False)):
+            target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 5)
         if (
             self.target_state_has_ability(target_state, "Krumpin' Time")
             and bool(options.get("defender_waaagh_active", False))
         ):
+            target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 4)
+        if bool(options.get("defender_purity_of_suffering_active", False)):
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 4)
         if (
             defender_enhancement_name == "Surly As a Squiggoth"
@@ -5832,6 +6202,11 @@ class CombatSimulator:
         ):
             if effective_attack_strength_for_defense > int(target_state.get("toughness", 0)):
                 target_incoming_wound_modifier -= 1
+        if (
+            defender_hagiomnifex_mode == "chorus_of_repudiation"
+            and effective_attack_strength_for_defense > int(target_state.get("toughness", 0))
+        ):
+            target_incoming_wound_modifier -= 1
 
         target_invulnerable_save = 0
         if bool(options.get("defender_waaagh_active", False)):
@@ -6012,6 +6387,9 @@ class CombatSimulator:
             and not attacker_black_templars_active
             and self.unit_has_oath_of_moment(attacker_unit),
             "oath_of_moment_wound_bonus": 0,
+            "critical_hit_precision": str(
+                options.get("attacker_black_spear_mission_tactic", "") or ""
+            ).lower() == "purgatus_tactics",
             "temporary_weapon_keywords": temporary_weapon_keywords,
             "temporary_melee_weapon_keywords": temporary_melee_weapon_keywords,
             "temporary_ranged_weapon_keywords": temporary_ranged_weapon_keywords,
@@ -6070,6 +6448,9 @@ class CombatSimulator:
                         5 if self.ability_names_include(attacker_or_attached_ability_names, "prophet of da great waaagh")
                         and bool(options.get("attacker_waaagh_active", False))
                         and weapon["range"].lower() == "melee" else 6,
+                        5 if bool(options.get("attacker_passion_of_the_penitent_active", False))
+                        and weapon["range"].lower() == "melee"
+                        and self.unit_has_keyword(attacker_unit, "penitent") else 6,
                     ]
                 ],
             ),
@@ -6113,6 +6494,8 @@ class CombatSimulator:
             "critical_wound_ap_modifier": critical_wound_ap_modifier,
             "hazardous_fail_threshold": hazardous_fail_threshold,
             "attacker_active_ability_names": attacker_active_ability_names,
+            "attacker_miracle_dice_policy": str(options.get("attacker_miracle_dice_policy", "never") or "never").lower(),
+            "defender_miracle_dice_policy": str(options.get("defender_miracle_dice_policy", "never") or "never").lower(),
             "sequence_state": options.get("sequence_state", {}),
         }
         if attack_context["oath_of_moment_active"] and self.unit_gets_oath_wound_bonus(attacker_unit):
@@ -6234,6 +6617,11 @@ class CombatSimulator:
                 "indirect_no_visibility": attack_context.get("indirect_no_visibility", False),
                 "attacker_in_engagement_range": attack_context.get("attacker_in_engagement_range", False),
                 "target_has_cover": target_state.get("has_cover", target_has_cover),
+                "miracle_dice": {
+                    "attacker_pool_remaining": list(options["sequence_state"].get("attacker_miracle_dice_pool", [])),
+                    "defender_pool_remaining": list(options["sequence_state"].get("defender_miracle_dice_pool", [])),
+                    "used": list(options["sequence_state"].get("miracle_dice_used", [])),
+                },
             },
         }
         return result
@@ -6318,6 +6706,11 @@ class CombatSimulator:
                 "charged_this_turn": attack_context.get("charged_this_turn", False),
                 "target_has_cover": target_has_cover,
                 "weapons": [weapon["name"] for weapon in weapons],
+                "miracle_dice": {
+                    "attacker_pool_remaining": list(options["sequence_state"].get("attacker_miracle_dice_pool", [])),
+                    "defender_pool_remaining": list(options["sequence_state"].get("defender_miracle_dice_pool", [])),
+                    "used": list(options["sequence_state"].get("miracle_dice_used", [])),
+                },
             },
         }
         return result
@@ -6453,5 +6846,10 @@ class CombatSimulator:
                     }
                     for entry in attack_entries
                 ],
+                "miracle_dice": {
+                    "attacker_pool_remaining": list(options["sequence_state"].get("attacker_miracle_dice_pool", [])),
+                    "defender_pool_remaining": list(options["sequence_state"].get("defender_miracle_dice_pool", [])),
+                    "used": list(options["sequence_state"].get("miracle_dice_used", [])),
+                },
             },
         }
