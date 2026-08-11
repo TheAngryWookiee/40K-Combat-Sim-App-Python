@@ -1025,6 +1025,35 @@ def load_factions(data_dir: Path = DATA_DIR, parent_faction: str | None = None) 
 
     resolved_unit_maps: dict[str, dict[str, Any]] = {}
     resolved_detachment_maps: dict[str, list[dict[str, Any]]] = {}
+    resolved_categories: dict[str, str] = {}
+
+    def resolve_faction_category(faction_name: str, stack: tuple[str, ...] = ()) -> str:
+        if faction_name in resolved_categories:
+            return resolved_categories[faction_name]
+
+        if faction_name in stack:
+            raise ValueError(
+                "Circular parent faction reference detected: "
+                + " -> ".join([*stack, faction_name])
+            )
+
+        faction_entry = factions.get(faction_name)
+        if faction_entry is None:
+            raise ValueError(f"Unknown parent faction: {faction_name}")
+
+        own_category = str(faction_entry.get("category", "")).strip()
+        if own_category:
+            resolved_categories[faction_name] = own_category
+            return own_category
+
+        parent_name = str(faction_entry.get("parent_faction", "")).strip()
+        if parent_name and parent_name != faction_name:
+            parent_category = resolve_faction_category(parent_name, (*stack, faction_name))
+            resolved_categories[faction_name] = parent_category
+            return parent_category
+
+        resolved_categories[faction_name] = ""
+        return ""
 
     def unit_can_be_inherited_by_faction(unit: dict[str, Any], faction_name: str) -> bool:
         inherited_faction_keywords = {
@@ -1234,6 +1263,7 @@ def load_factions(data_dir: Path = DATA_DIR, parent_faction: str | None = None) 
         return resolved_detachments
 
     for faction_name, faction_entry in factions.items():
+        faction_entry["category"] = resolve_faction_category(faction_name)
         faction_entry["units"] = resolve_faction_units(faction_name)
         faction_entry["detachments"] = resolve_faction_detachments(faction_name)
 
