@@ -86,6 +86,54 @@ const initialOptions = {
   attacker_waaagh_active: false,
   defender_waaagh_active: false,
   attacker_templar_vow: '',
+  attacker_martial_katah: '',
+  attacker_doctrina_imperative: '',
+  defender_doctrina_imperative: '',
+  attacker_admech_battleline_bonus_active: false,
+  defender_admech_battleline_bonus_active: false,
+  attacker_target_in_opponent_deployment_zone: false,
+  attacker_pre_calibrated_purge_solution_active: false,
+  attacker_lethal_dosage_active: false,
+  attacker_rad_bombardment_mode: '',
+  attacker_extinction_order_active: false,
+  defender_baleful_halo_active: false,
+  defender_bulwark_imperative_active: false,
+  attacker_data_psalm_benediction: '',
+  attacker_chant_of_the_remorseless_fist_active: false,
+  attacker_litany_of_the_electromancer_active: false,
+  attacker_litany_of_the_electromancer_electro_priest: false,
+  attacker_binharic_offence_active: false,
+  attacker_isolate_and_destroy_active: false,
+  attacker_target_isolated: false,
+  attacker_acquisition_objective_active: false,
+  attacker_auto_oracular_retrieval_active: false,
+  attacker_arch_negator_active: false,
+  attacker_auto_divinatory_targeting_active: false,
+  attacker_machine_spirit_resurgent_active: false,
+  attacker_transcendent_cogitation_active: false,
+  attacker_servo_driven_charge_active: false,
+  attacker_unshackled_wrath_mode: '',
+  attacker_threat_cogitation_targeters_active: false,
+  attacker_precision_onslaught_active: false,
+  attacker_halo_override_active: false,
+  attacker_halo_override_mode: '',
+  attacker_eradication_protocols_active: false,
+  attacker_targeting_override_active: false,
+  attacker_defect_scrutiny_active: false,
+  attacker_echoes_of_the_conduit_wars_active: false,
+  attacker_cantic_thrallnet_active: false,
+  attacker_martial_signatum_amplificator_active: false,
+  defender_genetor_active: false,
+  defender_incense_exhausts_active: false,
+  defender_necromechanic_active: false,
+  defender_lord_of_machines_active: false,
+  defender_benevolence_of_the_omnissiah_active: false,
+  defender_halo_override_mode: '',
+  defender_scriptural_prognosis_active: false,
+  defender_mantle_of_the_gnosticarch_active: false,
+  defender_tribute_of_emphatic_veneration_active: false,
+  defender_luminescent_blessing_active: false,
+  defender_bionic_endurance_active: false,
   attacker_hyper_adaptation: 'swarming_instincts',
   attacker_black_spear_mission_tactic: '',
   attacker_penitent_vow: '',
@@ -304,7 +352,19 @@ const ASSIMILATION_SWARM = 'Assimilation Swarm'
 const VANGUARD_ONSLAUGHT = 'Vanguard Onslaught'
 const SYNAPTIC_NEXUS = 'Synaptic Nexus'
 const ADEPTA_SORORITAS = 'Adepta Sororitas'
+const ADEPTUS_CUSTODES = 'Adeptus Custodes'
+const ADEPTUS_MECHANICUS = 'Adeptus Mechanicus'
 const BLACK_TEMPLARS = 'Black Templars'
+const RAD_ZONE_CORPS = 'Rad-Zone Corps'
+const DATA_PSALM_CONCLAVE = 'Data-psalm Conclave'
+const SKITARII_HUNTER_COHORT = 'Skitarii Hunter Cohort'
+const EXPLORATOR_MANIPLE = 'Explorator Maniple'
+const COHORT_CYBERNETICA = 'Cohort Cybernetica'
+const ERADICATION_COHORT = 'Eradication Cohort'
+const HALOSCREED_BATTLE_CLADE = 'Haloscreed Battle Clade'
+const COHORT_ACQUISITUS = 'Cohort Acquisitus'
+const LORDS_OF_THE_FORGE = 'Lords of the Forge'
+const LUMINEN_AUTO_CHOIR = 'Luminen Auto-choir'
 const PENITENT_HOST = 'Penitent Host'
 const ARMY_OF_FAITH = 'Army of Faith'
 const CHAMPIONS_OF_FAITH = 'Champions of Faith'
@@ -352,6 +412,40 @@ const TEMPLAR_VOW_OPTIONS = [
   { id: 'accept_any_challenge', label: 'Accept Any Challenge, No Matter the Odds' },
   { id: 'suffer_not_the_unclean', label: 'Suffer Not the Unclean to Live' },
   { id: 'uphold_the_honour', label: 'Uphold the Honour of the Emperor' },
+]
+const MARTIAL_KATAH_OPTIONS = [
+  { id: '', label: 'No stance selected' },
+  { id: 'dacatarai', label: 'Dacatarai Stance' },
+  { id: 'rendax', label: 'Rendax Stance' },
+]
+const DOCTRINA_IMPERATIVE_OPTIONS = [
+  { id: '', label: 'No imperative selected' },
+  { id: 'protector', label: 'Protector Imperative' },
+  { id: 'conqueror', label: 'Conqueror Imperative' },
+]
+const DATA_PSALM_BENEDICTION_OPTIONS = [
+  { id: '', label: 'No benediction selected' },
+  { id: 'panegyric_procession', label: 'Panegyric Procession' },
+  { id: 'citation_in_savagery', label: 'Citation in Savagery' },
+]
+const UNSHACKLED_WRATH_OPTIONS = [
+  { id: '', label: 'No ability selected' },
+  { id: 'sustained_hits_1', label: 'Sustained Hits 1' },
+  { id: 'lethal_hits', label: 'Lethal Hits' },
+  { id: 'both_hazardous', label: 'Both + Hazardous' },
+]
+const HALO_OVERRIDE_OPTIONS = [
+  { id: '', label: 'No override selected' },
+  { id: 'electromotive_energisation', label: 'Electromotive Energisation' },
+  { id: 'microactuator_bracing', label: 'Microactuator Bracing' },
+  { id: 'predation_protocols', label: 'Predation Protocols' },
+  { id: 'muted_servomotors', label: 'Muted Servomotors' },
+]
+const RAD_BOMBARDMENT_OPTIONS = [
+  { id: '', label: 'Do not resolve' },
+  { id: 'standing_firm', label: 'Round 1: Standing Firm' },
+  { id: 'taking_cover', label: 'Round 1: Taking Cover' },
+  { id: 'fallout', label: 'Round 2+: Fallout' },
 ]
 const AUTH_VERIFY_EMAIL_PATH = 'verify-email'
 const MATRIX_VIEW_GLOBAL = 'global'
@@ -404,12 +498,6 @@ function SearchableUnitSelect({
     () => filterNamedOptionsByQuery(options, query),
     [options, query],
   )
-
-  useEffect(() => {
-    if (!isOpen) {
-      setQuery(selectedLabel)
-    }
-  }, [isOpen, selectedLabel])
 
   useEffect(() => {
     if (!isOpen) {
@@ -2129,6 +2217,85 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       )
     }
 
+    if (detachment.name === RAD_ZONE_CORPS) {
+      if (stratagem.name === 'Extinction Order') {
+        return true
+      }
+      return isRangedWeapon && (
+        stratagem.name === 'Pre-calibrated Purge Solution'
+        || stratagem.name === 'Lethal Dosage'
+      )
+    }
+
+    if (detachment.name === DATA_PSALM_CONCLAVE) {
+      return (
+        stratagem.name === 'Litany of the Electromancer'
+        || (
+          stratagem.name === 'Chant of the Remorseless Fist'
+          && !isRangedWeapon
+        )
+      )
+    }
+
+    if (detachment.name === SKITARII_HUNTER_COHORT) {
+      return (
+        stratagem.name === 'Binharic Offence'
+        || (
+          stratagem.name === 'Isolate and Destroy'
+          && (
+            unitHasKeyword(unit, 'sicarian')
+            || unitHasKeyword(unit, 'pteraxii')
+            || unitHasKeyword(unit, 'sydonian')
+            || unitHasKeyword(unit, 'ironstrider ballistarii')
+            || unitHasKeyword(unit, 'mounted')
+          )
+        )
+      )
+    }
+
+    if (detachment.name === EXPLORATOR_MANIPLE) {
+      return stratagem.name === 'Auto-Oracular Retrieval' && isRangedWeapon
+    }
+
+    if (detachment.name === COHORT_CYBERNETICA) {
+      return (
+        (
+          stratagem.name === 'Auto-divinatory Targeting'
+          || stratagem.name === 'Machine Spirit Resurgent'
+          || stratagem.name === 'Transcendent Cogitation'
+        )
+        && (
+          unitHasKeyword(unit, 'legio cybernetica')
+          || unitHasKeyword(unit, 'vehicle')
+        )
+      )
+    }
+
+    if (detachment.name === ERADICATION_COHORT) {
+      if (stratagem.name === 'Servo-driven Charge') {
+        return !isRangedWeapon
+      }
+      if (stratagem.name === 'Unshackled Wrath') {
+        return isRangedWeapon && unitHasKeyword(unit, 'skitarii')
+      }
+      if (stratagem.name === 'Threat-cogitation Targeters') {
+        return isRangedWeapon && unitHasKeyword(unit, 'skitarii') && unitHasKeyword(unit, 'vehicle')
+      }
+      return stratagem.name === 'Precision Onslaught' && unitHasKeyword(unit, 'sicarian')
+    }
+
+    if (detachment.name === HALOSCREED_BATTLE_CLADE) {
+      return stratagem.name === 'Eradication Protocols' || stratagem.name === 'Targeting Override'
+    }
+
+    if (detachment.name === COHORT_ACQUISITUS) {
+      return stratagem.name === 'Defect Scrutiny' && isRangedWeapon
+    }
+
+    if (detachment.name === LUMINEN_AUTO_CHOIR) {
+      return stratagem.name === 'Echoes of the Conduit Wars' && unitHasKeyword(unit, 'electro-priests')
+    }
+
     if (detachment.name === DARK_AGE_ARSENAL) {
       return isRangedWeapon && (
         stratagem.name === 'No Sacrifice Too Great' || stratagem.name === 'Revelation of Guilt'
@@ -2485,6 +2652,48 @@ function getDefenderStratagemOptions(detachment, selectedWeapon, unit) {
       return stratagem.name === 'Reinforced Hive Node'
     }
 
+    if (detachment.name === RAD_ZONE_CORPS) {
+      if (stratagem.name === 'Baleful Halo') {
+        return selectedWeapon?.range === 'Melee' && !unitHasKeyword(unit, 'vehicle')
+      }
+      if (stratagem.name === 'Bulwark Imperative') {
+        return selectedWeapon?.range !== 'Melee' && unitHasKeyword(unit, 'skitarii')
+      }
+    }
+
+    if (detachment.name === DATA_PSALM_CONCLAVE) {
+      return (
+        stratagem.name === 'Tribute of Emphatic Veneration'
+        || (
+          stratagem.name === 'Luminescent Blessing'
+          && selectedWeapon?.range !== 'Melee'
+        )
+      )
+    }
+
+    if (detachment.name === SKITARII_HUNTER_COHORT) {
+      return stratagem.name === 'Bionic Endurance' && (
+        unitHasKeyword(unit, 'sicarian')
+        || unitHasKeyword(unit, 'pteraxii')
+        || unitHasKeyword(unit, 'sydonian')
+      )
+    }
+
+    if (detachment.name === EXPLORATOR_MANIPLE) {
+      return stratagem.name === 'Incense Exhausts' && selectedWeapon?.range !== 'Melee'
+    }
+
+    if (detachment.name === COHORT_CYBERNETICA) {
+      return stratagem.name === 'Benevolence of the Omnissiah' && (
+        unitHasKeyword(unit, 'legio cybernetica')
+        || unitHasKeyword(unit, 'vehicle')
+      )
+    }
+
+    if (detachment.name === LORDS_OF_THE_FORGE) {
+      return stratagem.name === 'Scriptural Prognosis' && unitHasKeyword(unit, 'tech-priest')
+    }
+
     return false
   })
 }
@@ -2660,6 +2869,54 @@ function buildSimulationPayload(state) {
     attacker_waaagh_active: state.attackerWaaaghActive,
     defender_waaagh_active: state.defenderWaaaghActive,
     attacker_templar_vow: state.attackerTemplarVow || null,
+    attacker_martial_katah: state.attackerMartialKatah || null,
+    attacker_doctrina_imperative: state.attackerDoctrinaImperative || null,
+    defender_doctrina_imperative: state.defenderDoctrinaImperative || null,
+    attacker_admech_battleline_bonus_active: Boolean(state.attackerAdmechBattlelineBonusActive),
+    defender_admech_battleline_bonus_active: Boolean(state.defenderAdmechBattlelineBonusActive),
+    attacker_target_in_opponent_deployment_zone: Boolean(state.attackerTargetInOpponentDeploymentZone),
+    attacker_pre_calibrated_purge_solution_active: Boolean(state.attackerPreCalibratedPurgeSolutionActive),
+    attacker_lethal_dosage_active: Boolean(state.attackerLethalDosageActive),
+    attacker_rad_bombardment_mode: state.attackerRadBombardmentMode || null,
+    attacker_extinction_order_active: Boolean(state.attackerExtinctionOrderActive),
+    defender_baleful_halo_active: Boolean(state.defenderBalefulHaloActive),
+    defender_bulwark_imperative_active: Boolean(state.defenderBulwarkImperativeActive),
+    attacker_data_psalm_benediction: state.attackerDataPsalmBenediction || null,
+    attacker_chant_of_the_remorseless_fist_active: Boolean(state.attackerChantOfTheRemorselessFistActive),
+    attacker_litany_of_the_electromancer_active: Boolean(state.attackerLitanyOfTheElectromancerActive),
+    attacker_litany_of_the_electromancer_electro_priest: Boolean(state.attackerLitanyOfTheElectromancerElectroPriest),
+    attacker_binharic_offence_active: Boolean(state.attackerBinharicOffenceActive),
+    attacker_isolate_and_destroy_active: Boolean(state.attackerIsolateAndDestroyActive),
+    attacker_target_isolated: Boolean(state.attackerTargetIsolated),
+    attacker_acquisition_objective_active: Boolean(state.attackerAcquisitionObjectiveActive),
+    attacker_auto_oracular_retrieval_active: Boolean(state.attackerAutoOracularRetrievalActive),
+    attacker_arch_negator_active: Boolean(state.attackerArchNegatorActive),
+    attacker_auto_divinatory_targeting_active: Boolean(state.attackerAutoDivinatoryTargetingActive),
+    attacker_machine_spirit_resurgent_active: Boolean(state.attackerMachineSpiritResurgentActive),
+    attacker_transcendent_cogitation_active: Boolean(state.attackerTranscendentCogitationActive),
+    attacker_servo_driven_charge_active: Boolean(state.attackerServoDrivenChargeActive),
+    attacker_unshackled_wrath_mode: state.attackerUnshackledWrathMode || null,
+    attacker_threat_cogitation_targeters_active: Boolean(state.attackerThreatCogitationTargetersActive),
+    attacker_precision_onslaught_active: Boolean(state.attackerPrecisionOnslaughtActive),
+    attacker_halo_override_active: Boolean(state.attackerHaloOverrideActive),
+    attacker_halo_override_mode: state.attackerHaloOverrideMode || null,
+    attacker_eradication_protocols_active: Boolean(state.attackerEradicationProtocolsActive),
+    attacker_targeting_override_active: Boolean(state.attackerTargetingOverrideActive),
+    attacker_defect_scrutiny_active: Boolean(state.attackerDefectScrutinyActive),
+    attacker_echoes_of_the_conduit_wars_active: Boolean(state.attackerEchoesOfTheConduitWarsActive),
+    attacker_cantic_thrallnet_active: Boolean(state.attackerCanticThrallnetActive),
+    attacker_martial_signatum_amplificator_active: Boolean(state.attackerMartialSignatumAmplificatorActive),
+    defender_genetor_active: Boolean(state.defenderGenetorActive),
+    defender_incense_exhausts_active: Boolean(state.defenderIncenseExhaustsActive),
+    defender_necromechanic_active: Boolean(state.defenderNecromechanicActive),
+    defender_lord_of_machines_active: Boolean(state.defenderLordOfMachinesActive),
+    defender_benevolence_of_the_omnissiah_active: Boolean(state.defenderBenevolenceOfTheOmnissiahActive),
+    defender_halo_override_mode: state.defenderHaloOverrideMode || null,
+    defender_scriptural_prognosis_active: Boolean(state.defenderScripturalPrognosisActive),
+    defender_mantle_of_the_gnosticarch_active: Boolean(state.defenderMantleOfTheGnosticarchActive),
+    defender_tribute_of_emphatic_veneration_active: Boolean(state.defenderTributeOfEmphaticVenerationActive),
+    defender_luminescent_blessing_active: Boolean(state.defenderLuminescentBlessingActive),
+    defender_bionic_endurance_active: Boolean(state.defenderBionicEnduranceActive),
     attacker_hyper_adaptation: state.attackerHyperAdaptation || null,
     attacker_black_spear_mission_tactic: state.attackerBlackSpearMissionTactic || null,
     attacker_penitent_vow: state.attackerPenitentVow || null,
@@ -5968,8 +6225,16 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'deff from above': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
     allowOutOfPhaseAbilities && selectedWeapons.length > 0
   ),
+  'infernus firebombs': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
   'drill through': ({ allowOutOfPhaseAbilities, selectedWeapons, chargedThisTurn }) => (
     allowOutOfPhaseAbilities && chargedThisTurn && selectedWeapons.length > 0
+  ),
+  'dread foe': ({ allowOutOfPhaseAbilities, phaseId, selectedWeapons }) => (
+    allowOutOfPhaseAbilities
+    && phaseId === 'fight'
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
   ),
   'squig mine': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
     allowOutOfPhaseAbilities && selectedWeapons.length > 0
@@ -5986,6 +6251,12 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   ),
   'harpoon barbs': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
     allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'quicksilver execution': ({ allowOutOfPhaseAbilities, selectedWeapons, targetUnit }) => (
+    allowOutOfPhaseAbilities
+    && selectedWeapons.length > 0
+    && !unitHasKeyword(targetUnit, 'monster')
+    && !unitHasKeyword(targetUnit, 'vehicle')
   ),
   'spore mine cysts': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
     allowOutOfPhaseAbilities && selectedWeapons.length > 0
@@ -6044,10 +6315,29 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'pious fervour +3': ({ phaseId, selectedWeapons }) => (
     phaseId === 'fight' && selectedWeaponsIncludeProfileGroup(selectedWeapons, 'master-crafted power weapon')
   ),
+  'master of the stances': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'moment shackle': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeaponsIncludeProfileGroup(selectedWeapons, "watcher's axe")
+  ),
+  'auramite and adamantine': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'no foe shall stand': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'disintegration beams': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'living fortress': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
 }
 
 const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'ammo runt',
+  'advanced firepower',
   'angel\'s wrath',
   'annihilator protocols',
   'armoured resilience',
@@ -6062,17 +6352,22 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'champion of the kingsguard',
   'command squad',
   'cold and calculating',
+  'captain-general',
   'cunning hunters',
   'da bigger dey iz',
   'dakkastorm',
   'dat\'s our loot',
   'decimator protocols',
   'destructor',
+  'devoted to destruction',
+  'daughter of the abyss',
+  'daughters of the abyss',
   'distraction grot',
   'dok\'s toolz',
   "dok's sawy arrgh",
   'drive-by dakka',
   'duty eternal',
+  'deft parry',
   'executioner',
   'ferocious rage',
   'feel no pain',
@@ -6081,6 +6376,7 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'gun-crazy show-offs',
   'helix gauntlet',
   'hold still and say',
+  'heavy assault infantry',
   'hood of hellfire',
   'icon of obstinacy',
   'interceptor',
@@ -6090,11 +6386,13 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'inspirational exemplar',
   'litanies of the devout',
   'litany of hate',
+  'purity of execution',
   'mark the target',
   'master of prescience',
   'monster hunters',
   'more dakka',
   'mental fortress',
+  'merciless hunter',
   'might is right',
   'oathbound',
   'prophet of da great waaagh!',
@@ -6104,12 +6402,15 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'ramshackle but rugged',
   'reaping tally',
   'rites of tempering',
+  'resolute will',
   'shield dome',
+  'slayers of tyrants',
   'shrouding',
   'signum array',
   'siege captain',
   'signum',
   'splat',
+  'stand vigil',
   'speedboss',
   'strafing run',
   'super runts',
@@ -6138,9 +6439,13 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'brood progenitor',
   'feeding frenzy',
   'foul spores',
+  'galatus shield',
+  'golden laurels',
+  'guardian eternal',
   'node lash',
   'psychological saboteur',
   'symbiotic targeting',
+  'tenacious spirit',
   'vanguard predator',
   'vicious insight',
   'warp field',
@@ -6374,6 +6679,38 @@ function buildAttackerActiveRules({
   attackerEnhancementName,
   attackerCombatDoctrine,
   attackerTemplarVow,
+  attackerMartialKatah,
+  attackerDoctrinaImperative,
+  attackerAdmechBattlelineBonusActive,
+  attackerTargetInOpponentDeploymentZone,
+  attackerPreCalibratedPurgeSolutionActive,
+  attackerLethalDosageActive,
+  attackerRadBombardmentMode,
+  attackerExtinctionOrderActive,
+  attackerDataPsalmBenediction,
+  attackerChantOfTheRemorselessFistActive,
+  attackerLitanyOfTheElectromancerActive,
+  attackerBinharicOffenceActive,
+  attackerIsolateAndDestroyActive,
+  attackerTargetIsolated,
+  attackerAcquisitionObjectiveActive,
+  attackerAutoOracularRetrievalActive,
+  attackerArchNegatorActive,
+  attackerAutoDivinatoryTargetingActive,
+  attackerMachineSpiritResurgentActive,
+  attackerTranscendentCogitationActive,
+  attackerServoDrivenChargeActive,
+  attackerUnshackledWrathMode,
+  attackerThreatCogitationTargetersActive,
+  attackerPrecisionOnslaughtActive,
+  attackerHaloOverrideActive,
+  attackerHaloOverrideMode,
+  attackerEradicationProtocolsActive,
+  attackerTargetingOverrideActive,
+  attackerDefectScrutinyActive,
+  attackerEchoesOfTheConduitWarsActive,
+  attackerCanticThrallnetActive,
+  attackerMartialSignatumAmplificatorActive,
   attackerHyperAdaptation,
   attackerBlackSpearMissionTactic,
   attackerPenitentVow,
@@ -6523,6 +6860,8 @@ function buildAttackerActiveRules({
     ))
   const activeCombatDoctrine = COMBAT_DOCTRINE_OPTIONS.find((option) => option.id === attackerCombatDoctrine)
   const activeTemplarVow = TEMPLAR_VOW_OPTIONS.find((option) => option.id === attackerTemplarVow)
+  const activeMartialKatah = MARTIAL_KATAH_OPTIONS.find((option) => option.id === attackerMartialKatah)
+  const activeDoctrinaImperative = DOCTRINA_IMPERATIVE_OPTIONS.find((option) => option.id === attackerDoctrinaImperative)
 
   if (oathOfMomentActive && unitHasOathOfMoment(attackerUnitDetails)) {
     const woundBonusText = unitGetsOathWoundBonus(attackerUnitDetails)
@@ -6596,6 +6935,271 @@ function buildAttackerActiveRules({
       name: activeTemplarVow.label,
       source: `${BLACK_TEMPLARS} Army Rule`,
       text: textByVow[activeTemplarVow.id] || '',
+    })
+  }
+
+  if (String(attackerFactionName || '').toLowerCase() === ADEPTUS_CUSTODES.toLowerCase() && activeMartialKatah?.id) {
+    const textByStance = {
+      dacatarai: selectedWeapon?.range === 'Melee'
+        ? 'This Adeptus Custodes unit selected Dacatarai Stance. Its melee weapons have Sustained Hits 1.'
+        : 'This Adeptus Custodes unit selected Dacatarai Stance. The effect applies to melee weapons.',
+      rendax: selectedWeapon?.range === 'Melee'
+        ? 'This Adeptus Custodes unit selected Rendax Stance. Its melee weapons have Lethal Hits.'
+        : 'This Adeptus Custodes unit selected Rendax Stance. The effect applies to melee weapons.',
+    }
+    rules.push({
+      name: activeMartialKatah.label,
+      source: `${ADEPTUS_CUSTODES} Army Rule`,
+      text: textByStance[activeMartialKatah.id] || '',
+    })
+  }
+
+  if (String(attackerFactionName || '').toLowerCase() === ADEPTUS_MECHANICUS.toLowerCase() && activeDoctrinaImperative?.id) {
+    const battlelineApText = unitHasKeyword(attackerUnitDetails, 'battleline') || attackerAdmechBattlelineBonusActive
+      ? ' The Battleline proximity bonus is active, so this unit also improves the Armour Penetration characteristic of its attacks by 1 while using Conqueror.'
+      : ''
+    const textByImperative = {
+      protector: selectedWeapon?.range !== 'Melee'
+        ? 'This Adeptus Mechanicus unit selected Protector Imperative. Its ranged weapons have Heavy and improve their Ballistic Skill by 1.'
+        : 'This Adeptus Mechanicus unit selected Protector Imperative. The offensive effect applies to ranged weapons; the defensive melee hit penalty is shown on the defender when relevant.',
+      conqueror: selectedWeapon?.range === 'Melee'
+        ? `This Adeptus Mechanicus unit selected Conqueror Imperative. Its melee weapons improve their Weapon Skill by 1.${battlelineApText}`
+        : `This Adeptus Mechanicus unit selected Conqueror Imperative. Its ranged weapons have Assault.${battlelineApText}`,
+    }
+    rules.push({
+      name: activeDoctrinaImperative.label,
+      source: `${ADEPTUS_MECHANICUS} Army Rule`,
+      text: textByImperative[activeDoctrinaImperative.id] || '',
+    })
+  }
+
+  if (attackerPreCalibratedPurgeSolutionActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Pre-calibrated Purge Solution')
+    rules.push({
+      name: 'Pre-calibrated Purge Solution',
+      source: `${attackerDetachment?.name || RAD_ZONE_CORPS} Stratagem`,
+      text: attackerTargetInOpponentDeploymentZone
+        ? 'The target is in the opponent deployment zone, so this unit can re-roll Hit rolls for its ranged attacks.'
+        : stratagem?.effect || 'This stratagem only affects ranged attacks into a target in the opponent deployment zone.',
+    })
+  }
+
+  if (attackerLethalDosageActive) {
+    const stratagem = getDetachmentEntry(attackerDetachment, 'stratagems', 'Lethal Dosage')
+    rules.push({
+      name: 'Lethal Dosage',
+      source: `${attackerDetachment?.name || RAD_ZONE_CORPS} Stratagem`,
+      text: stratagem?.effect || 'Ranged weapons equipped by models in this unit have Lethal Hits.',
+    })
+  }
+
+  if (attackerRadBombardmentMode) {
+    const selectedMode = RAD_BOMBARDMENT_OPTIONS.find((option) => option.id === attackerRadBombardmentMode)
+    rules.push({
+      name: 'Rad-bombardment',
+      source: `${attackerDetachment?.name || RAD_ZONE_CORPS} Rule`,
+      text: `Resolved before attacks for simulation convenience. Selected mode: ${selectedMode?.label || attackerRadBombardmentMode}.`,
+    })
+  }
+
+  if (attackerExtinctionOrderActive) {
+    rules.push({
+      name: 'Extinction Order',
+      source: `${attackerDetachment?.name || RAD_ZONE_CORPS} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Extinction Order')?.effect || 'Roll one D6; on a 4+, the target suffers 1 mortal wound. Battle-shock is handled outside this attack sequence.',
+    })
+  }
+
+  if (attackerDetachment?.name === DATA_PSALM_CONCLAVE && attackerDataPsalmBenediction) {
+    const activeBenediction = DATA_PSALM_BENEDICTION_OPTIONS.find((option) => option.id === attackerDataPsalmBenediction)
+    const textByBenediction = {
+      panegyric_procession: selectedWeapon?.range !== 'Melee'
+        ? 'Panegyric Procession is active. Cult Mechanicus ranged attacks within half range improve AP by 1.'
+        : 'Panegyric Procession is active. Its effect applies to Cult Mechanicus ranged attacks within half range.',
+      citation_in_savagery: selectedWeapon?.range === 'Melee'
+        ? 'Citation in Savagery is active. Cult Mechanicus melee weapons get +1 Strength and +1 Attack if this unit charged.'
+        : 'Citation in Savagery is active. Its effect applies when Cult Mechanicus units fight after charging.',
+    }
+    rules.push({
+      name: activeBenediction?.label || 'Benedictions of the Omnissiah',
+      source: `${attackerDetachment.name} Rule`,
+      text: textByBenediction[attackerDataPsalmBenediction] || '',
+    })
+  }
+
+  if (attackerChantOfTheRemorselessFistActive) {
+    rules.push({
+      name: 'Chant of the Remorseless Fist',
+      source: `${attackerDetachment?.name || DATA_PSALM_CONCLAVE} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Chant of the Remorseless Fist')?.effect || 'Melee attacks add 1 to the Wound roll.',
+    })
+  }
+
+  if (attackerLitanyOfTheElectromancerActive) {
+    rules.push({
+      name: 'Litany of the Electromancer',
+      source: `${attackerDetachment?.name || DATA_PSALM_CONCLAVE} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Litany of the Electromancer')?.effect || 'Resolve this mortal wound effect before attacks for simulation convenience.',
+    })
+  }
+
+  if (attackerBinharicOffenceActive) {
+    rules.push({
+      name: 'Binharic Offence',
+      source: `${attackerDetachment?.name || SKITARII_HUNTER_COHORT} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Binharic Offence')?.effect || 'Improve AP by 1.',
+    })
+  }
+
+  if (attackerIsolateAndDestroyActive) {
+    rules.push({
+      name: 'Isolate and Destroy',
+      source: `${attackerDetachment?.name || SKITARII_HUNTER_COHORT} Stratagem`,
+      text: attackerTargetIsolated
+        ? 'The target is isolated, so attacks add 1 to the Wound roll.'
+        : getDetachmentEntry(attackerDetachment, 'stratagems', 'Isolate and Destroy')?.effect || 'Mark the target as isolated to apply +1 to Wound.',
+    })
+  }
+
+  if (attackerAcquisitionObjectiveActive && attackerDetachment?.name === EXPLORATOR_MANIPLE) {
+    rules.push({
+      name: 'Acquisition at any Cost',
+      source: `${attackerDetachment.name} Rule`,
+      text: 'This unit or its target is within range of an Acquisition objective marker, so attacks re-roll Wound rolls of 1.',
+    })
+  }
+
+  if (attackerAutoOracularRetrievalActive) {
+    rules.push({
+      name: 'Auto-Oracular Retrieval',
+      source: `${attackerDetachment?.name || EXPLORATOR_MANIPLE} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Auto-Oracular Retrieval')?.effect || 'Ranged attacks into a target within range of an Acquisition objective marker add 1 to the Wound roll.',
+    })
+  }
+
+  if (attackerArchNegatorActive) {
+    rules.push({
+      name: 'Arch-negator',
+      source: `${attackerDetachment?.name || COHORT_CYBERNETICA} Enhancement`,
+      text: getDetachmentEntry(attackerDetachment, 'enhancements', 'Arch-negator')?.rules_text || 'Ranged weapons equipped by the bearer have Anti-Vehicle 4+.',
+    })
+  }
+
+  if (attackerAutoDivinatoryTargetingActive) {
+    rules.push({
+      name: 'Auto-divinatory Targeting',
+      source: `${attackerDetachment?.name || COHORT_CYBERNETICA} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Auto-divinatory Targeting')?.effect || 'Ranged weapons have BS 3+ and Ignores Cover.',
+    })
+  }
+
+  if (attackerMachineSpiritResurgentActive) {
+    rules.push({
+      name: 'Machine Spirit Resurgent',
+      source: `${attackerDetachment?.name || COHORT_CYBERNETICA} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Machine Spirit Resurgent')?.effect || 'Re-roll Hit rolls; if Below Half-strength, re-roll Wound rolls as well.',
+    })
+  }
+
+  if (attackerTranscendentCogitationActive) {
+    rules.push({
+      name: 'Transcendent Cogitation',
+      source: `${attackerDetachment?.name || COHORT_CYBERNETICA} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Transcendent Cogitation')?.effect || 'Both Doctrina Imperatives are active for this unit.',
+    })
+  }
+
+  if (attackerServoDrivenChargeActive) {
+    rules.push({
+      name: 'Servo-driven Charge',
+      source: `${attackerDetachment?.name || ERADICATION_COHORT} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Servo-driven Charge')?.effect || 'Melee weapons have Lance.',
+    })
+  }
+
+  if (attackerUnshackledWrathMode) {
+    const selectedMode = UNSHACKLED_WRATH_OPTIONS.find((option) => option.id === attackerUnshackledWrathMode)
+    rules.push({
+      name: 'Unshackled Wrath',
+      source: `${attackerDetachment?.name || ERADICATION_COHORT} Stratagem`,
+      text: selectedMode?.label ? `Selected: ${selectedMode.label}.` : getDetachmentEntry(attackerDetachment, 'stratagems', 'Unshackled Wrath')?.effect || '',
+    })
+  }
+
+  if (attackerThreatCogitationTargetersActive) {
+    rules.push({
+      name: 'Threat-cogitation Targeters',
+      source: `${attackerDetachment?.name || ERADICATION_COHORT} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Threat-cogitation Targeters')?.effect || 'Ranged attacks allocated to Monster or Vehicle models can re-roll Damage rolls.',
+    })
+  }
+
+  if (attackerPrecisionOnslaughtActive) {
+    rules.push({
+      name: 'Precision Onslaught',
+      source: `${attackerDetachment?.name || ERADICATION_COHORT} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Precision Onslaught')?.effect || 'Resolve the charge-phase mortal wound roll before attacks for simulation convenience.',
+    })
+  }
+
+  if (attackerDetachment?.name === HALOSCREED_BATTLE_CLADE && attackerHaloOverrideMode) {
+    const selectedMode = HALO_OVERRIDE_OPTIONS.find((option) => option.id === attackerHaloOverrideMode)
+    rules.push({
+      name: 'Noospheric Transference',
+      source: `${attackerDetachment.name} Rule`,
+      text: `Halo Override selected: ${selectedMode?.label || attackerHaloOverrideMode}.`,
+    })
+  }
+
+  if (attackerEradicationProtocolsActive) {
+    rules.push({
+      name: 'Eradication Protocols',
+      source: `${attackerDetachment?.name || HALOSCREED_BATTLE_CLADE} Stratagem`,
+      text: attackerHaloOverrideActive
+        ? 'This unit re-rolls Wound rolls of 1 and, because it has Halo Override, re-rolls Hit rolls of 1.'
+        : getDetachmentEntry(attackerDetachment, 'stratagems', 'Eradication Protocols')?.effect || 'This unit re-rolls Wound rolls of 1.',
+    })
+  }
+
+  if (attackerTargetingOverrideActive) {
+    rules.push({
+      name: 'Targeting Override',
+      source: `${attackerDetachment?.name || HALOSCREED_BATTLE_CLADE} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Targeting Override')?.effect || 'Unmodified Hit rolls of 5+ score Critical Hits.',
+    })
+  }
+
+  if (attackerDefectScrutinyActive) {
+    rules.push({
+      name: 'Defect Scrutiny',
+      source: `${attackerDetachment?.name || COHORT_ACQUISITUS} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Defect Scrutiny')?.effect || 'Ranged attacks have Ignores Cover against the analysed target.',
+    })
+  }
+
+  if (attackerCanticThrallnetActive) {
+    rules.push({
+      name: 'Cantic Thrallnet',
+      source: `${attackerDetachment?.name || SKITARII_HUNTER_COHORT} Enhancement`,
+      text: getDetachmentEntry(attackerDetachment, 'enhancements', 'Cantic Thrallnet')?.rules_text || 'Both Doctrina Imperatives are active for this Skitarii unit.',
+    })
+  }
+
+  if (attackerMartialSignatumAmplificatorActive) {
+    rules.push({
+      name: 'Martial Signatum Amplificator',
+      source: `${attackerDetachment?.name || ERADICATION_COHORT} Enhancement`,
+      text: getDetachmentEntry(attackerDetachment, 'enhancements', 'Martial Signatum Amplificator')?.rules_text || 'Models in the bearer’s unit have the Skitarii keyword.',
+    })
+  }
+
+  if (attackerEchoesOfTheConduitWarsActive) {
+    rules.push({
+      name: 'Echoes of the Conduit Wars',
+      source: `${attackerDetachment?.name || LUMINEN_AUTO_CHOIR} Stratagem`,
+      text: defenderOnObjective
+        ? 'The target is within range of an objective, so this unit re-rolls Hit rolls of 1 and Wound rolls of 1.'
+        : getDetachmentEntry(attackerDetachment, 'stratagems', 'Echoes of the Conduit Wars')?.effect || 'Mark the defender as on an objective to apply the rerolls.',
     })
   }
 
@@ -8000,7 +8604,23 @@ function buildDefenderActiveRules({
   selectedWeapon,
   selectedAttackWeapons,
   defenderDetachment,
+  defenderFactionName,
   defenderEnhancementName,
+  defenderDoctrinaImperative,
+  defenderAdmechBattlelineBonusActive,
+  defenderBalefulHaloActive,
+  defenderBulwarkImperativeActive,
+  defenderGenetorActive,
+  defenderIncenseExhaustsActive,
+  defenderNecromechanicActive,
+  defenderLordOfMachinesActive,
+  defenderBenevolenceOfTheOmnissiahActive,
+  defenderHaloOverrideMode,
+  defenderScripturalPrognosisActive,
+  defenderMantleOfTheGnosticarchActive,
+  defenderTributeOfEmphaticVenerationActive,
+  defenderLuminescentBlessingActive,
+  defenderBionicEnduranceActive,
   defenderRighteousActive,
   defenderHagiomnifexMode,
   defenderSynapticImperative,
@@ -8043,6 +8663,127 @@ function buildDefenderActiveRules({
 
   if (psychicWeaponSelected) {
     rules.push(...getNamedActiveRules(defenderUnits, ['Psychic Hood']))
+  }
+
+  if (
+    String(defenderFactionName || '').toLowerCase() === ADEPTUS_MECHANICUS.toLowerCase()
+    && defenderDoctrinaImperative === 'protector'
+  ) {
+    const battlelineActive = unitHasKeyword(defenderUnitDetails, 'battleline') || defenderAdmechBattlelineBonusActive
+    rules.push({
+      name: 'Protector Imperative',
+      source: `${ADEPTUS_MECHANICUS} Army Rule`,
+      text: battlelineActive && selectedAttackWeapons.some((weapon) => weapon.range === 'Melee')
+        ? 'This Adeptus Mechanicus defender selected Protector Imperative and has its Battleline proximity bonus active, so incoming melee attacks subtract 1 from the Hit roll.'
+        : 'This Adeptus Mechanicus defender selected Protector Imperative. The defensive hit penalty applies to incoming melee attacks while the unit is Battleline or within 6" of friendly Adeptus Mechanicus Battleline.',
+    })
+  }
+
+  if (defenderBalefulHaloActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Baleful Halo')
+    rules.push({
+      name: 'Baleful Halo',
+      source: `${defenderDetachment?.name || RAD_ZONE_CORPS} Stratagem`,
+      text: stratagem?.effect || 'Incoming attacks subtract 1 from the Wound roll.',
+    })
+  }
+
+  if (defenderBulwarkImperativeActive) {
+    const stratagem = getDetachmentEntry(defenderDetachment, 'stratagems', 'Bulwark Imperative')
+    rules.push({
+      name: 'Bulwark Imperative',
+      source: `${defenderDetachment?.name || RAD_ZONE_CORPS} Stratagem`,
+      text: stratagem?.effect || 'Models in this unit have a 4+ invulnerable save.',
+    })
+  }
+
+  if (defenderMantleOfTheGnosticarchActive) {
+    rules.push({
+      name: 'Mantle of the Gnosticarch',
+      source: `${defenderDetachment?.name || DATA_PSALM_CONCLAVE} Enhancement`,
+      text: getDetachmentEntry(defenderDetachment, 'enhancements', 'Mantle of the Gnosticarch')?.rules_text || 'Attacks allocated to the bearer have their Damage characteristic changed to 1.',
+    })
+  }
+
+  if (defenderTributeOfEmphaticVenerationActive) {
+    rules.push({
+      name: 'Tribute of Emphatic Veneration',
+      source: `${defenderDetachment?.name || DATA_PSALM_CONCLAVE} Stratagem`,
+      text: getDetachmentEntry(defenderDetachment, 'stratagems', 'Tribute of Emphatic Veneration')?.effect || 'The attacking enemy unit subtracts 1 from Hit rolls.',
+    })
+  }
+
+  if (defenderLuminescentBlessingActive) {
+    rules.push({
+      name: 'Luminescent Blessing',
+      source: `${defenderDetachment?.name || DATA_PSALM_CONCLAVE} Stratagem`,
+      text: getDetachmentEntry(defenderDetachment, 'stratagems', 'Luminescent Blessing')?.effect || 'Models in this unit have a 4+ invulnerable save.',
+    })
+  }
+
+  if (defenderBionicEnduranceActive) {
+    rules.push({
+      name: 'Bionic Endurance',
+      source: `${defenderDetachment?.name || SKITARII_HUNTER_COHORT} Stratagem`,
+      text: getDetachmentEntry(defenderDetachment, 'stratagems', 'Bionic Endurance')?.effect || 'Models in this unit have Feel No Pain 5+.',
+    })
+  }
+
+  if (defenderGenetorActive) {
+    rules.push({
+      name: 'Genetor',
+      source: `${defenderDetachment?.name || EXPLORATOR_MANIPLE} Enhancement`,
+      text: getDetachmentEntry(defenderDetachment, 'enhancements', 'Genetor')?.rules_text || 'Models in this unit have a 4+ invulnerable save while within range of the Acquisition objective marker.',
+    })
+  }
+
+  if (defenderIncenseExhaustsActive) {
+    rules.push({
+      name: 'Incense Exhausts',
+      source: `${defenderDetachment?.name || EXPLORATOR_MANIPLE} Stratagem`,
+      text: getDetachmentEntry(defenderDetachment, 'stratagems', 'Incense Exhausts')?.effect || 'This unit has Stealth and the Benefit of Cover.',
+    })
+  }
+
+  if (defenderNecromechanicActive) {
+    rules.push({
+      name: 'Necromechanic',
+      source: `${defenderDetachment?.name || COHORT_CYBERNETICA} Enhancement`,
+      text: getDetachmentEntry(defenderDetachment, 'enhancements', 'Necromechanic')?.rules_text || 'Change the Damage characteristic of this attack to 0.',
+    })
+  }
+
+  if (defenderLordOfMachinesActive) {
+    rules.push({
+      name: 'Lord of Machines',
+      source: `${defenderDetachment?.name || COHORT_CYBERNETICA} Enhancement`,
+      text: getDetachmentEntry(defenderDetachment, 'enhancements', 'Lord of Machines')?.rules_text || 'Assuming the Leadership test passed, this attacking Vehicle subtracts 1 from Hit rolls.',
+    })
+  }
+
+  if (defenderBenevolenceOfTheOmnissiahActive) {
+    rules.push({
+      name: 'Benevolence of the Omnissiah',
+      source: `${defenderDetachment?.name || COHORT_CYBERNETICA} Stratagem`,
+      text: getDetachmentEntry(defenderDetachment, 'stratagems', 'Benevolence of the Omnissiah')?.effect || 'Models in this unit have Feel No Pain 6+.',
+    })
+  }
+
+  if (defenderDetachment?.name === HALOSCREED_BATTLE_CLADE && defenderHaloOverrideMode) {
+    const selectedMode = HALO_OVERRIDE_OPTIONS.find((option) => option.id === defenderHaloOverrideMode)
+    rules.push({
+      name: 'Noospheric Transference',
+      source: `${defenderDetachment.name} Rule`,
+      text: `Halo Override selected: ${selectedMode?.label || defenderHaloOverrideMode}.`,
+    })
+  }
+
+  if (defenderScripturalPrognosisActive) {
+    rules.push({
+      name: 'Scriptural Prognosis',
+      source: `${defenderDetachment?.name || LORDS_OF_THE_FORGE} Stratagem`,
+      text: getDetachmentEntry(defenderDetachment, 'stratagems', 'Scriptural Prognosis')?.effect || 'Attacks that target this unit worsen their AP by 1.',
+    })
   }
 
   if (defenderDetachment?.name === CHAMPIONS_OF_FAITH && defenderRighteousActive) {
@@ -9020,6 +9761,54 @@ function App() {
   const [attackerWaaaghActive, setAttackerWaaaghActive] = useState(() => combatInitial('attacker_waaagh_active', initialOptions.attacker_waaagh_active))
   const [defenderWaaaghActive, setDefenderWaaaghActive] = useState(() => combatInitial('defender_waaagh_active', initialOptions.defender_waaagh_active))
   const [attackerTemplarVow, setAttackerTemplarVow] = useState(() => combatInitial('attacker_templar_vow', initialOptions.attacker_templar_vow))
+  const [attackerMartialKatah, setAttackerMartialKatah] = useState(() => combatInitial('attacker_martial_katah', initialOptions.attacker_martial_katah))
+  const [attackerDoctrinaImperative, setAttackerDoctrinaImperative] = useState(() => combatInitial('attacker_doctrina_imperative', initialOptions.attacker_doctrina_imperative))
+  const [defenderDoctrinaImperative, setDefenderDoctrinaImperative] = useState(() => combatInitial('defender_doctrina_imperative', initialOptions.defender_doctrina_imperative))
+  const [attackerAdmechBattlelineBonusActive, setAttackerAdmechBattlelineBonusActive] = useState(() => combatInitial('attacker_admech_battleline_bonus_active', initialOptions.attacker_admech_battleline_bonus_active))
+  const [defenderAdmechBattlelineBonusActive, setDefenderAdmechBattlelineBonusActive] = useState(() => combatInitial('defender_admech_battleline_bonus_active', initialOptions.defender_admech_battleline_bonus_active))
+  const [attackerTargetInOpponentDeploymentZone, setAttackerTargetInOpponentDeploymentZone] = useState(() => combatInitial('attacker_target_in_opponent_deployment_zone', initialOptions.attacker_target_in_opponent_deployment_zone))
+  const [attackerPreCalibratedPurgeSolutionActive, setAttackerPreCalibratedPurgeSolutionActive] = useState(() => combatInitial('attacker_pre_calibrated_purge_solution_active', initialOptions.attacker_pre_calibrated_purge_solution_active))
+  const [attackerLethalDosageActive, setAttackerLethalDosageActive] = useState(() => combatInitial('attacker_lethal_dosage_active', initialOptions.attacker_lethal_dosage_active))
+  const [attackerRadBombardmentMode, setAttackerRadBombardmentMode] = useState(() => combatInitial('attacker_rad_bombardment_mode', initialOptions.attacker_rad_bombardment_mode))
+  const [attackerExtinctionOrderActive, setAttackerExtinctionOrderActive] = useState(() => combatInitial('attacker_extinction_order_active', initialOptions.attacker_extinction_order_active))
+  const [defenderBalefulHaloActive, setDefenderBalefulHaloActive] = useState(() => combatInitial('defender_baleful_halo_active', initialOptions.defender_baleful_halo_active))
+  const [defenderBulwarkImperativeActive, setDefenderBulwarkImperativeActive] = useState(() => combatInitial('defender_bulwark_imperative_active', initialOptions.defender_bulwark_imperative_active))
+  const [attackerDataPsalmBenediction, setAttackerDataPsalmBenediction] = useState(() => combatInitial('attacker_data_psalm_benediction', initialOptions.attacker_data_psalm_benediction))
+  const [attackerChantOfTheRemorselessFistActive, setAttackerChantOfTheRemorselessFistActive] = useState(() => combatInitial('attacker_chant_of_the_remorseless_fist_active', initialOptions.attacker_chant_of_the_remorseless_fist_active))
+  const [attackerLitanyOfTheElectromancerActive, setAttackerLitanyOfTheElectromancerActive] = useState(() => combatInitial('attacker_litany_of_the_electromancer_active', initialOptions.attacker_litany_of_the_electromancer_active))
+  const [attackerLitanyOfTheElectromancerElectroPriest, setAttackerLitanyOfTheElectromancerElectroPriest] = useState(() => combatInitial('attacker_litany_of_the_electromancer_electro_priest', initialOptions.attacker_litany_of_the_electromancer_electro_priest))
+  const [attackerBinharicOffenceActive, setAttackerBinharicOffenceActive] = useState(() => combatInitial('attacker_binharic_offence_active', initialOptions.attacker_binharic_offence_active))
+  const [attackerIsolateAndDestroyActive, setAttackerIsolateAndDestroyActive] = useState(() => combatInitial('attacker_isolate_and_destroy_active', initialOptions.attacker_isolate_and_destroy_active))
+  const [attackerTargetIsolated, setAttackerTargetIsolated] = useState(() => combatInitial('attacker_target_isolated', initialOptions.attacker_target_isolated))
+  const [attackerAcquisitionObjectiveActive, setAttackerAcquisitionObjectiveActive] = useState(() => combatInitial('attacker_acquisition_objective_active', initialOptions.attacker_acquisition_objective_active))
+  const [attackerAutoOracularRetrievalActive, setAttackerAutoOracularRetrievalActive] = useState(() => combatInitial('attacker_auto_oracular_retrieval_active', initialOptions.attacker_auto_oracular_retrieval_active))
+  const [attackerArchNegatorActive, setAttackerArchNegatorActive] = useState(() => combatInitial('attacker_arch_negator_active', initialOptions.attacker_arch_negator_active))
+  const [attackerAutoDivinatoryTargetingActive, setAttackerAutoDivinatoryTargetingActive] = useState(() => combatInitial('attacker_auto_divinatory_targeting_active', initialOptions.attacker_auto_divinatory_targeting_active))
+  const [attackerMachineSpiritResurgentActive, setAttackerMachineSpiritResurgentActive] = useState(() => combatInitial('attacker_machine_spirit_resurgent_active', initialOptions.attacker_machine_spirit_resurgent_active))
+  const [attackerTranscendentCogitationActive, setAttackerTranscendentCogitationActive] = useState(() => combatInitial('attacker_transcendent_cogitation_active', initialOptions.attacker_transcendent_cogitation_active))
+  const [attackerServoDrivenChargeActive, setAttackerServoDrivenChargeActive] = useState(() => combatInitial('attacker_servo_driven_charge_active', initialOptions.attacker_servo_driven_charge_active))
+  const [attackerUnshackledWrathMode, setAttackerUnshackledWrathMode] = useState(() => combatInitial('attacker_unshackled_wrath_mode', initialOptions.attacker_unshackled_wrath_mode))
+  const [attackerThreatCogitationTargetersActive, setAttackerThreatCogitationTargetersActive] = useState(() => combatInitial('attacker_threat_cogitation_targeters_active', initialOptions.attacker_threat_cogitation_targeters_active))
+  const [attackerPrecisionOnslaughtActive, setAttackerPrecisionOnslaughtActive] = useState(() => combatInitial('attacker_precision_onslaught_active', initialOptions.attacker_precision_onslaught_active))
+  const [attackerHaloOverrideActive, setAttackerHaloOverrideActive] = useState(() => combatInitial('attacker_halo_override_active', initialOptions.attacker_halo_override_active))
+  const [attackerHaloOverrideMode, setAttackerHaloOverrideMode] = useState(() => combatInitial('attacker_halo_override_mode', initialOptions.attacker_halo_override_mode))
+  const [attackerEradicationProtocolsActive, setAttackerEradicationProtocolsActive] = useState(() => combatInitial('attacker_eradication_protocols_active', initialOptions.attacker_eradication_protocols_active))
+  const [attackerTargetingOverrideActive, setAttackerTargetingOverrideActive] = useState(() => combatInitial('attacker_targeting_override_active', initialOptions.attacker_targeting_override_active))
+  const [attackerDefectScrutinyActive, setAttackerDefectScrutinyActive] = useState(() => combatInitial('attacker_defect_scrutiny_active', initialOptions.attacker_defect_scrutiny_active))
+  const [attackerEchoesOfTheConduitWarsActive, setAttackerEchoesOfTheConduitWarsActive] = useState(() => combatInitial('attacker_echoes_of_the_conduit_wars_active', initialOptions.attacker_echoes_of_the_conduit_wars_active))
+  const [attackerCanticThrallnetActive, setAttackerCanticThrallnetActive] = useState(() => combatInitial('attacker_cantic_thrallnet_active', initialOptions.attacker_cantic_thrallnet_active))
+  const [attackerMartialSignatumAmplificatorActive, setAttackerMartialSignatumAmplificatorActive] = useState(() => combatInitial('attacker_martial_signatum_amplificator_active', initialOptions.attacker_martial_signatum_amplificator_active))
+  const [defenderGenetorActive, setDefenderGenetorActive] = useState(() => combatInitial('defender_genetor_active', initialOptions.defender_genetor_active))
+  const [defenderIncenseExhaustsActive, setDefenderIncenseExhaustsActive] = useState(() => combatInitial('defender_incense_exhausts_active', initialOptions.defender_incense_exhausts_active))
+  const [defenderNecromechanicActive, setDefenderNecromechanicActive] = useState(() => combatInitial('defender_necromechanic_active', initialOptions.defender_necromechanic_active))
+  const [defenderLordOfMachinesActive, setDefenderLordOfMachinesActive] = useState(() => combatInitial('defender_lord_of_machines_active', initialOptions.defender_lord_of_machines_active))
+  const [defenderBenevolenceOfTheOmnissiahActive, setDefenderBenevolenceOfTheOmnissiahActive] = useState(() => combatInitial('defender_benevolence_of_the_omnissiah_active', initialOptions.defender_benevolence_of_the_omnissiah_active))
+  const [defenderHaloOverrideMode, setDefenderHaloOverrideMode] = useState(() => combatInitial('defender_halo_override_mode', initialOptions.defender_halo_override_mode))
+  const [defenderScripturalPrognosisActive, setDefenderScripturalPrognosisActive] = useState(() => combatInitial('defender_scriptural_prognosis_active', initialOptions.defender_scriptural_prognosis_active))
+  const [defenderMantleOfTheGnosticarchActive, setDefenderMantleOfTheGnosticarchActive] = useState(() => combatInitial('defender_mantle_of_the_gnosticarch_active', initialOptions.defender_mantle_of_the_gnosticarch_active))
+  const [defenderTributeOfEmphaticVenerationActive, setDefenderTributeOfEmphaticVenerationActive] = useState(() => combatInitial('defender_tribute_of_emphatic_veneration_active', initialOptions.defender_tribute_of_emphatic_veneration_active))
+  const [defenderLuminescentBlessingActive, setDefenderLuminescentBlessingActive] = useState(() => combatInitial('defender_luminescent_blessing_active', initialOptions.defender_luminescent_blessing_active))
+  const [defenderBionicEnduranceActive, setDefenderBionicEnduranceActive] = useState(() => combatInitial('defender_bionic_endurance_active', initialOptions.defender_bionic_endurance_active))
   const [attackerHyperAdaptation, setAttackerHyperAdaptation] = useState(() => combatInitial('attacker_hyper_adaptation', initialOptions.attacker_hyper_adaptation))
   const [attackerBlackSpearMissionTactic, setAttackerBlackSpearMissionTactic] = useState(() => combatInitial('attacker_black_spear_mission_tactic', initialOptions.attacker_black_spear_mission_tactic))
   const [attackerPenitentVow, setAttackerPenitentVow] = useState(() => combatInitial('attacker_penitent_vow', initialOptions.attacker_penitent_vow))
@@ -9387,6 +10176,54 @@ function App() {
       attacker_waaagh_active: attackerWaaaghActive,
       defender_waaagh_active: defenderWaaaghActive,
       attacker_templar_vow: attackerTemplarVow,
+      attacker_martial_katah: attackerMartialKatah,
+      attacker_doctrina_imperative: attackerDoctrinaImperative,
+      defender_doctrina_imperative: defenderDoctrinaImperative,
+      attacker_admech_battleline_bonus_active: attackerAdmechBattlelineBonusActive,
+      defender_admech_battleline_bonus_active: defenderAdmechBattlelineBonusActive,
+      attacker_target_in_opponent_deployment_zone: attackerTargetInOpponentDeploymentZone,
+      attacker_pre_calibrated_purge_solution_active: attackerPreCalibratedPurgeSolutionActive,
+      attacker_lethal_dosage_active: attackerLethalDosageActive,
+      attacker_rad_bombardment_mode: attackerRadBombardmentMode,
+      attacker_extinction_order_active: attackerExtinctionOrderActive,
+      defender_baleful_halo_active: defenderBalefulHaloActive,
+      defender_bulwark_imperative_active: defenderBulwarkImperativeActive,
+      attacker_data_psalm_benediction: attackerDataPsalmBenediction,
+      attacker_chant_of_the_remorseless_fist_active: attackerChantOfTheRemorselessFistActive,
+      attacker_litany_of_the_electromancer_active: attackerLitanyOfTheElectromancerActive,
+      attacker_litany_of_the_electromancer_electro_priest: attackerLitanyOfTheElectromancerElectroPriest,
+      attacker_binharic_offence_active: attackerBinharicOffenceActive,
+      attacker_isolate_and_destroy_active: attackerIsolateAndDestroyActive,
+      attacker_target_isolated: attackerTargetIsolated,
+      attacker_acquisition_objective_active: attackerAcquisitionObjectiveActive,
+      attacker_auto_oracular_retrieval_active: attackerAutoOracularRetrievalActive,
+      attacker_arch_negator_active: attackerArchNegatorActive,
+      attacker_auto_divinatory_targeting_active: attackerAutoDivinatoryTargetingActive,
+      attacker_machine_spirit_resurgent_active: attackerMachineSpiritResurgentActive,
+      attacker_transcendent_cogitation_active: attackerTranscendentCogitationActive,
+      attacker_servo_driven_charge_active: attackerServoDrivenChargeActive,
+      attacker_unshackled_wrath_mode: attackerUnshackledWrathMode,
+      attacker_threat_cogitation_targeters_active: attackerThreatCogitationTargetersActive,
+      attacker_precision_onslaught_active: attackerPrecisionOnslaughtActive,
+      attacker_halo_override_active: attackerHaloOverrideActive,
+      attacker_halo_override_mode: attackerHaloOverrideMode,
+      attacker_eradication_protocols_active: attackerEradicationProtocolsActive,
+      attacker_targeting_override_active: attackerTargetingOverrideActive,
+      attacker_defect_scrutiny_active: attackerDefectScrutinyActive,
+      attacker_echoes_of_the_conduit_wars_active: attackerEchoesOfTheConduitWarsActive,
+      attacker_cantic_thrallnet_active: attackerCanticThrallnetActive,
+      attacker_martial_signatum_amplificator_active: attackerMartialSignatumAmplificatorActive,
+      defender_genetor_active: defenderGenetorActive,
+      defender_incense_exhausts_active: defenderIncenseExhaustsActive,
+      defender_necromechanic_active: defenderNecromechanicActive,
+      defender_lord_of_machines_active: defenderLordOfMachinesActive,
+      defender_benevolence_of_the_omnissiah_active: defenderBenevolenceOfTheOmnissiahActive,
+      defender_halo_override_mode: defenderHaloOverrideMode,
+      defender_scriptural_prognosis_active: defenderScripturalPrognosisActive,
+      defender_mantle_of_the_gnosticarch_active: defenderMantleOfTheGnosticarchActive,
+      defender_tribute_of_emphatic_veneration_active: defenderTributeOfEmphaticVenerationActive,
+      defender_luminescent_blessing_active: defenderLuminescentBlessingActive,
+      defender_bionic_endurance_active: defenderBionicEnduranceActive,
       attacker_hyper_adaptation: attackerHyperAdaptation,
       attacker_penitent_vow: attackerPenitentVow,
       attacker_miracle_dice_policy: attackerMiracleDicePolicy,
@@ -10963,6 +11800,9 @@ function App() {
     || selectedAttackWeapons.some((weapon) => getWeaponKeywordValue(weapon, 'Melta') > 0)
   )
   const attackerArmyIsBlackTemplars = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === BLACK_TEMPLARS.toLowerCase()
+  const attackerArmyIsAdeptusCustodes = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === ADEPTUS_CUSTODES.toLowerCase()
+  const attackerArmyIsAdeptusMechanicus = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === ADEPTUS_MECHANICUS.toLowerCase()
+  const defenderArmyIsAdeptusMechanicus = String(defenderFactionDetails?.name || defenderFaction || '').toLowerCase() === ADEPTUS_MECHANICUS.toLowerCase()
   const hasOathOfMoment = unitHasOathOfMoment(attackerUnitDetails) && !attackerArmyIsBlackTemplars
   const attackerEnhancementBearerUnit = attackerAttachedLeaderUnitDetails || attackerAttachedSupportUnitDetails || attackerUnitDetails
   const defenderEnhancementBearerUnit = attachedCharacterUnitDetails || attachedSupportUnitDetails || defenderUnitDetails
@@ -11124,6 +11964,9 @@ function App() {
   const canUseAttackerPrey = selectedAttackerDetachment?.name === DA_BIG_HUNT
   const canUseAttackerCombatDoctrine = selectedAttackerDetachment?.name === GLADIUS_TASK_FORCE
   const canUseAttackerTemplarVow = attackerArmyIsBlackTemplars
+  const canUseAttackerMartialKatah = attackerArmyIsAdeptusCustodes && isMeleeWeapon
+  const canUseAttackerDoctrinaImperative = attackerArmyIsAdeptusMechanicus
+  const canUseDefenderDoctrinaImperative = defenderArmyIsAdeptusMechanicus && isMeleeWeapon
   const canUseAttackerHyperAdaptation = selectedAttackerDetachment?.name === INVASION_FLEET
   const canUseAttackerBlackSpearMissionTactic = selectedAttackerDetachment?.name === BLACK_SPEAR_TASK_FORCE
   const canUseAttackerPenitentVow = selectedAttackerDetachment?.name === PENITENT_HOST
@@ -11141,7 +11984,48 @@ function App() {
   const canUseAttackerHarmonisedExorcism = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Harmonised Exorcism')
   const canUseAttackerDevastatingReprise = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Devastating Reprise')
   const canUseAttackerPassionOfThePenitent = attackerCanBeTargetedByStratagems && isMeleeWeapon && attackerStratagemOptions.some((item) => item.name === 'Passion of the Penitent')
+  const canUseAttackerPreCalibratedPurgeSolution = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Pre-calibrated Purge Solution')
+  const canUseAttackerLethalDosage = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Lethal Dosage')
+  const canUseAttackerRadBombardment = selectedAttackerDetachment?.name === RAD_ZONE_CORPS
+  const canUseAttackerExtinctionOrder = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Extinction Order')
+  const canUseAttackerTargetInOpponentDeploymentZone = canUseAttackerPreCalibratedPurgeSolution
+  const canUseAttackerDataPsalmBenediction = selectedAttackerDetachment?.name === DATA_PSALM_CONCLAVE
+  const canUseAttackerChantOfTheRemorselessFist = attackerCanBeTargetedByStratagems && isMeleeWeapon && attackerStratagemOptions.some((item) => item.name === 'Chant of the Remorseless Fist')
+  const canUseAttackerLitanyOfTheElectromancer = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Litany of the Electromancer')
+  const canUseAttackerBinharicOffence = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Binharic Offence')
+  const canUseAttackerIsolateAndDestroy = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Isolate and Destroy')
+  const canUseAttackerTargetIsolated = canUseAttackerIsolateAndDestroy
+  const canUseAttackerAcquisitionObjective = selectedAttackerDetachment?.name === EXPLORATOR_MANIPLE || attackerEnhancementName === 'Logis'
+  const canUseAttackerAutoOracularRetrieval = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Auto-Oracular Retrieval')
+  const canUseAttackerArchNegator = attackerEnhancementName === 'Arch-negator' && isRangedWeapon
+  const canUseAttackerAutoDivinatoryTargeting = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Auto-divinatory Targeting')
+  const canUseAttackerMachineSpiritResurgent = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Machine Spirit Resurgent')
+  const canUseAttackerTranscendentCogitation = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Transcendent Cogitation')
+  const canUseAttackerServoDrivenCharge = attackerCanBeTargetedByStratagems && isMeleeWeapon && attackerStratagemOptions.some((item) => item.name === 'Servo-driven Charge')
+  const canUseAttackerUnshackledWrath = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Unshackled Wrath')
+  const canUseAttackerThreatCogitationTargeters = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Threat-cogitation Targeters')
+  const canUseAttackerPrecisionOnslaught = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Precision Onslaught')
+  const canUseAttackerHaloOverride = selectedAttackerDetachment?.name === HALOSCREED_BATTLE_CLADE
+  const canUseAttackerEradicationProtocols = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Eradication Protocols')
+  const canUseAttackerTargetingOverride = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Targeting Override')
+  const canUseAttackerDefectScrutiny = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Defect Scrutiny')
+  const canUseAttackerEchoesOfTheConduitWars = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Echoes of the Conduit Wars')
+  const canUseAttackerCanticThrallnet = attackerEnhancementName === 'Cantic Thrallnet'
+  const canUseAttackerMartialSignatumAmplificator = attackerEnhancementName === 'Martial Signatum Amplificator'
   const canUseDefenderPurityOfSuffering = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Purity of Suffering')
+  const canUseDefenderBalefulHalo = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Baleful Halo')
+  const canUseDefenderBulwarkImperative = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Bulwark Imperative')
+  const canUseDefenderGenetor = defenderEnhancementName === 'Genetor'
+  const canUseDefenderIncenseExhausts = defenderCanBeTargetedByStratagems && isRangedWeapon && defenderStratagemOptions.some((item) => item.name === 'Incense Exhausts')
+  const canUseDefenderNecromechanic = defenderEnhancementName === 'Necromechanic'
+  const canUseDefenderLordOfMachines = defenderEnhancementName === 'Lord of Machines' && isRangedWeapon && unitHasKeyword(attackerUnitDetails, 'vehicle')
+  const canUseDefenderBenevolenceOfTheOmnissiah = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Benevolence of the Omnissiah')
+  const canUseDefenderHaloOverride = selectedDefenderDetachment?.name === HALOSCREED_BATTLE_CLADE
+  const canUseDefenderScripturalPrognosis = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Scriptural Prognosis')
+  const canUseDefenderMantleOfTheGnosticarch = defenderEnhancementName === 'Mantle of the Gnosticarch'
+  const canUseDefenderTributeOfEmphaticVeneration = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Tribute of Emphatic Veneration')
+  const canUseDefenderLuminescentBlessing = defenderCanBeTargetedByStratagems && isRangedWeapon && defenderStratagemOptions.some((item) => item.name === 'Luminescent Blessing')
+  const canUseDefenderBionicEndurance = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Bionic Endurance')
   const canUseAttackerSynapticImperative = selectedAttackerDetachment?.name === SYNAPTIC_NEXUS
   const canUseDefenderSynapticImperative = selectedDefenderDetachment?.name === SYNAPTIC_NEXUS
   const canUseAttackerWithinSynapseRange = canUseAttackerSynapticImperative || canUseAttackerIrresistibleWill
@@ -11970,6 +12854,8 @@ function App() {
   const attackerPreyTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Da Hunt Is On')?.rules_text || ''
   const attackerCombatDoctrineTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Combat Doctrines')?.rules_text || ''
   const attackerTemplarVowTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Templar Vows')?.rules_text || ''
+  const attackerDoctrinaImperativeTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Doctrina Imperatives')?.rules_text || ''
+  const defenderDoctrinaImperativeTooltip = defenderFactionDetails?.army_rules?.find((rule) => rule.name === 'Doctrina Imperatives')?.rules_text || ''
   const attackerPenitentVowTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Desperate for Redemption')?.rules_text || ''
   const attackerRighteousTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Righteous Purpose')?.rules_text || ''
   const defenderRighteousTooltip = getDetachmentEntry(selectedDefenderDetachment, 'rule', 'Righteous Purpose')?.rules_text || ''
@@ -11982,6 +12868,45 @@ function App() {
   const attackerToTheHeartOfHeresyTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'To the Heart of Heresy')?.effect || ''
   const attackerSanctifiedBlowsTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Sanctified Blows')?.effect || ''
   const defenderFaithfulFortitudeTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Faithful Fortitude')?.effect || ''
+  const attackerPreCalibratedPurgeSolutionTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Pre-calibrated Purge Solution')?.effect || ''
+  const attackerLethalDosageTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Lethal Dosage')?.effect || ''
+  const attackerRadBombardmentTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Rad-bombardment')?.rules_text || ''
+  const attackerExtinctionOrderTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Extinction Order')?.effect || ''
+  const defenderBalefulHaloTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Baleful Halo')?.effect || ''
+  const defenderBulwarkImperativeTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Bulwark Imperative')?.effect || ''
+  const attackerDataPsalmBenedictionTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Benedictions of the Omnissiah')?.rules_text || ''
+  const attackerChantOfTheRemorselessFistTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Chant of the Remorseless Fist')?.effect || ''
+  const attackerLitanyOfTheElectromancerTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Litany of the Electromancer')?.effect || ''
+  const attackerBinharicOffenceTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Binharic Offence')?.effect || ''
+  const attackerIsolateAndDestroyTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Isolate and Destroy')?.effect || ''
+  const attackerAcquisitionObjectiveTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Acquisition at any Cost')?.rules_text || ''
+  const attackerAutoOracularRetrievalTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Auto-Oracular Retrieval')?.effect || ''
+  const attackerArchNegatorTooltip = getDetachmentEntry(selectedAttackerDetachment, 'enhancements', 'Arch-negator')?.rules_text || ''
+  const attackerAutoDivinatoryTargetingTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Auto-divinatory Targeting')?.effect || ''
+  const attackerMachineSpiritResurgentTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Machine Spirit Resurgent')?.effect || ''
+  const attackerTranscendentCogitationTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Transcendent Cogitation')?.effect || ''
+  const attackerServoDrivenChargeTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Servo-driven Charge')?.effect || ''
+  const attackerUnshackledWrathTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Unshackled Wrath')?.effect || ''
+  const attackerThreatCogitationTargetersTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Threat-cogitation Targeters')?.effect || ''
+  const attackerPrecisionOnslaughtTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Precision Onslaught')?.effect || ''
+  const attackerHaloOverrideTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Noospheric Transference')?.rules_text || ''
+  const attackerEradicationProtocolsTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Eradication Protocols')?.effect || ''
+  const attackerTargetingOverrideTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Targeting Override')?.effect || ''
+  const attackerDefectScrutinyTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Defect Scrutiny')?.effect || ''
+  const attackerEchoesOfTheConduitWarsTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Echoes of the Conduit Wars')?.effect || ''
+  const attackerCanticThrallnetTooltip = getDetachmentEntry(selectedAttackerDetachment, 'enhancements', 'Cantic Thrallnet')?.rules_text || ''
+  const attackerMartialSignatumAmplificatorTooltip = getDetachmentEntry(selectedAttackerDetachment, 'enhancements', 'Martial Signatum Amplificator')?.rules_text || ''
+  const defenderGenetorTooltip = getDetachmentEntry(selectedDefenderDetachment, 'enhancements', 'Genetor')?.rules_text || ''
+  const defenderIncenseExhaustsTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Incense Exhausts')?.effect || ''
+  const defenderNecromechanicTooltip = getDetachmentEntry(selectedDefenderDetachment, 'enhancements', 'Necromechanic')?.rules_text || ''
+  const defenderLordOfMachinesTooltip = getDetachmentEntry(selectedDefenderDetachment, 'enhancements', 'Lord of Machines')?.rules_text || ''
+  const defenderBenevolenceOfTheOmnissiahTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Benevolence of the Omnissiah')?.effect || ''
+  const defenderHaloOverrideTooltip = getDetachmentEntry(selectedDefenderDetachment, 'rule', 'Noospheric Transference')?.rules_text || ''
+  const defenderScripturalPrognosisTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Scriptural Prognosis')?.effect || ''
+  const defenderMantleOfTheGnosticarchTooltip = getDetachmentEntry(selectedDefenderDetachment, 'enhancements', 'Mantle of the Gnosticarch')?.rules_text || ''
+  const defenderTributeOfEmphaticVenerationTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Tribute of Emphatic Veneration')?.effect || ''
+  const defenderLuminescentBlessingTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Luminescent Blessing')?.effect || ''
+  const defenderBionicEnduranceTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Bionic Endurance')?.effect || ''
   const attackerHarmonisedExorcismTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Harmonised Exorcism')?.effect || ''
   const attackerDevastatingRepriseTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Devastating Reprise')?.effect || ''
   const attackerPassionOfThePenitentTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Passion of the Penitent')?.effect || ''
@@ -12033,6 +12958,38 @@ function App() {
       attackerEnhancementName,
       attackerCombatDoctrine,
       attackerTemplarVow,
+      attackerMartialKatah,
+      attackerDoctrinaImperative,
+      attackerAdmechBattlelineBonusActive,
+      attackerTargetInOpponentDeploymentZone,
+      attackerPreCalibratedPurgeSolutionActive,
+      attackerLethalDosageActive,
+      attackerRadBombardmentMode,
+      attackerExtinctionOrderActive,
+      attackerDataPsalmBenediction,
+      attackerChantOfTheRemorselessFistActive,
+      attackerLitanyOfTheElectromancerActive,
+      attackerBinharicOffenceActive,
+      attackerIsolateAndDestroyActive,
+      attackerTargetIsolated,
+      attackerAcquisitionObjectiveActive,
+      attackerAutoOracularRetrievalActive,
+      attackerArchNegatorActive,
+      attackerAutoDivinatoryTargetingActive,
+      attackerMachineSpiritResurgentActive,
+      attackerTranscendentCogitationActive,
+      attackerServoDrivenChargeActive,
+      attackerUnshackledWrathMode,
+      attackerThreatCogitationTargetersActive,
+      attackerPrecisionOnslaughtActive,
+      attackerHaloOverrideActive,
+      attackerHaloOverrideMode,
+      attackerEradicationProtocolsActive,
+      attackerTargetingOverrideActive,
+      attackerDefectScrutinyActive,
+      attackerEchoesOfTheConduitWarsActive,
+      attackerCanticThrallnetActive,
+      attackerMartialSignatumAmplificatorActive,
       attackerHyperAdaptation,
       attackerBlackSpearMissionTactic,
       attackerPenitentVow,
@@ -12148,6 +13105,38 @@ function App() {
       attackerEnhancementName,
       attackerCombatDoctrine,
       attackerTemplarVow,
+      attackerMartialKatah,
+      attackerDoctrinaImperative,
+      attackerAdmechBattlelineBonusActive,
+      attackerTargetInOpponentDeploymentZone,
+      attackerPreCalibratedPurgeSolutionActive,
+      attackerLethalDosageActive,
+      attackerRadBombardmentMode,
+      attackerExtinctionOrderActive,
+      attackerDataPsalmBenediction,
+      attackerChantOfTheRemorselessFistActive,
+      attackerLitanyOfTheElectromancerActive,
+      attackerBinharicOffenceActive,
+      attackerIsolateAndDestroyActive,
+      attackerTargetIsolated,
+      attackerAcquisitionObjectiveActive,
+      attackerAutoOracularRetrievalActive,
+      attackerArchNegatorActive,
+      attackerAutoDivinatoryTargetingActive,
+      attackerMachineSpiritResurgentActive,
+      attackerTranscendentCogitationActive,
+      attackerServoDrivenChargeActive,
+      attackerUnshackledWrathMode,
+      attackerThreatCogitationTargetersActive,
+      attackerPrecisionOnslaughtActive,
+      attackerHaloOverrideActive,
+      attackerHaloOverrideMode,
+      attackerEradicationProtocolsActive,
+      attackerTargetingOverrideActive,
+      attackerDefectScrutinyActive,
+      attackerEchoesOfTheConduitWarsActive,
+      attackerCanticThrallnetActive,
+      attackerMartialSignatumAmplificatorActive,
       attackerHyperAdaptation,
       attackerBlackSpearMissionTactic,
       attackerPenitentVow,
@@ -12255,7 +13244,23 @@ function App() {
       selectedWeapon,
       selectedAttackWeapons,
       defenderDetachment: selectedDefenderDetachment,
+      defenderFactionName: defenderFactionDetails?.name || defenderFaction,
       defenderEnhancementName,
+      defenderDoctrinaImperative,
+      defenderAdmechBattlelineBonusActive,
+      defenderBalefulHaloActive,
+      defenderBulwarkImperativeActive,
+      defenderGenetorActive,
+      defenderIncenseExhaustsActive,
+      defenderNecromechanicActive,
+      defenderLordOfMachinesActive,
+      defenderBenevolenceOfTheOmnissiahActive,
+      defenderHaloOverrideMode,
+      defenderScripturalPrognosisActive,
+      defenderMantleOfTheGnosticarchActive,
+      defenderTributeOfEmphaticVenerationActive,
+      defenderLuminescentBlessingActive,
+      defenderBionicEnduranceActive,
       defenderRighteousActive,
       defenderHagiomnifexMode,
       defenderSynapticImperative,
@@ -12295,7 +13300,24 @@ function App() {
       selectedWeapon,
       selectedAttackWeapons,
       selectedDefenderDetachment,
+      defenderFactionDetails?.name,
+      defenderFaction,
       defenderEnhancementName,
+      defenderDoctrinaImperative,
+      defenderAdmechBattlelineBonusActive,
+      defenderBalefulHaloActive,
+      defenderBulwarkImperativeActive,
+      defenderGenetorActive,
+      defenderIncenseExhaustsActive,
+      defenderNecromechanicActive,
+      defenderLordOfMachinesActive,
+      defenderBenevolenceOfTheOmnissiahActive,
+      defenderHaloOverrideMode,
+      defenderScripturalPrognosisActive,
+      defenderMantleOfTheGnosticarchActive,
+      defenderTributeOfEmphaticVenerationActive,
+      defenderLuminescentBlessingActive,
+      defenderBionicEnduranceActive,
       defenderRighteousActive,
       defenderHagiomnifexMode,
       defenderSynapticImperative,
@@ -12372,6 +13394,135 @@ function App() {
     if (!canUseAttackerPassionOfThePenitent && attackerPassionOfThePenitentActive) {
       setAttackerPassionOfThePenitentActive(false)
     }
+    if (!canUseAttackerPreCalibratedPurgeSolution && attackerPreCalibratedPurgeSolutionActive) {
+      setAttackerPreCalibratedPurgeSolutionActive(false)
+    }
+    if (!canUseAttackerTargetInOpponentDeploymentZone && attackerTargetInOpponentDeploymentZone) {
+      setAttackerTargetInOpponentDeploymentZone(false)
+    }
+    if (!canUseAttackerLethalDosage && attackerLethalDosageActive) {
+      setAttackerLethalDosageActive(false)
+    }
+    if (!canUseAttackerRadBombardment && attackerRadBombardmentMode) {
+      setAttackerRadBombardmentMode('')
+    }
+    if (!canUseAttackerExtinctionOrder && attackerExtinctionOrderActive) {
+      setAttackerExtinctionOrderActive(false)
+    }
+    if (!canUseDefenderBalefulHalo && defenderBalefulHaloActive) {
+      setDefenderBalefulHaloActive(false)
+    }
+    if (!canUseDefenderBulwarkImperative && defenderBulwarkImperativeActive) {
+      setDefenderBulwarkImperativeActive(false)
+    }
+    if (!canUseAttackerDataPsalmBenediction && attackerDataPsalmBenediction) {
+      setAttackerDataPsalmBenediction(initialOptions.attacker_data_psalm_benediction)
+    }
+    if (!canUseAttackerChantOfTheRemorselessFist && attackerChantOfTheRemorselessFistActive) {
+      setAttackerChantOfTheRemorselessFistActive(false)
+    }
+    if (!canUseAttackerLitanyOfTheElectromancer && attackerLitanyOfTheElectromancerActive) {
+      setAttackerLitanyOfTheElectromancerActive(false)
+    }
+    if (!canUseAttackerLitanyOfTheElectromancer && attackerLitanyOfTheElectromancerElectroPriest) {
+      setAttackerLitanyOfTheElectromancerElectroPriest(false)
+    }
+    if (!canUseAttackerBinharicOffence && attackerBinharicOffenceActive) {
+      setAttackerBinharicOffenceActive(false)
+    }
+    if (!canUseAttackerIsolateAndDestroy && attackerIsolateAndDestroyActive) {
+      setAttackerIsolateAndDestroyActive(false)
+    }
+    if (!canUseAttackerTargetIsolated && attackerTargetIsolated) {
+      setAttackerTargetIsolated(false)
+    }
+    if (!canUseAttackerAcquisitionObjective && attackerAcquisitionObjectiveActive) {
+      setAttackerAcquisitionObjectiveActive(false)
+    }
+    if (!canUseAttackerAutoOracularRetrieval && attackerAutoOracularRetrievalActive) {
+      setAttackerAutoOracularRetrievalActive(false)
+    }
+    if (!canUseAttackerArchNegator && attackerArchNegatorActive) {
+      setAttackerArchNegatorActive(false)
+    }
+    if (!canUseAttackerAutoDivinatoryTargeting && attackerAutoDivinatoryTargetingActive) {
+      setAttackerAutoDivinatoryTargetingActive(false)
+    }
+    if (!canUseAttackerMachineSpiritResurgent && attackerMachineSpiritResurgentActive) {
+      setAttackerMachineSpiritResurgentActive(false)
+    }
+    if (!canUseAttackerTranscendentCogitation && attackerTranscendentCogitationActive) {
+      setAttackerTranscendentCogitationActive(false)
+    }
+    if (!canUseAttackerServoDrivenCharge && attackerServoDrivenChargeActive) {
+      setAttackerServoDrivenChargeActive(false)
+    }
+    if (!canUseAttackerUnshackledWrath && attackerUnshackledWrathMode) {
+      setAttackerUnshackledWrathMode('')
+    }
+    if (!canUseAttackerThreatCogitationTargeters && attackerThreatCogitationTargetersActive) {
+      setAttackerThreatCogitationTargetersActive(false)
+    }
+    if (!canUseAttackerPrecisionOnslaught && attackerPrecisionOnslaughtActive) {
+      setAttackerPrecisionOnslaughtActive(false)
+    }
+    if (!canUseAttackerHaloOverride && attackerHaloOverrideMode) {
+      setAttackerHaloOverrideMode('')
+    }
+    if (!canUseAttackerEradicationProtocols && attackerEradicationProtocolsActive) {
+      setAttackerEradicationProtocolsActive(false)
+    }
+    if (!canUseAttackerEradicationProtocols && attackerHaloOverrideActive) {
+      setAttackerHaloOverrideActive(false)
+    }
+    if (!canUseAttackerTargetingOverride && attackerTargetingOverrideActive) {
+      setAttackerTargetingOverrideActive(false)
+    }
+    if (!canUseAttackerDefectScrutiny && attackerDefectScrutinyActive) {
+      setAttackerDefectScrutinyActive(false)
+    }
+    if (!canUseAttackerEchoesOfTheConduitWars && attackerEchoesOfTheConduitWarsActive) {
+      setAttackerEchoesOfTheConduitWarsActive(false)
+    }
+    if (!canUseAttackerCanticThrallnet && attackerCanticThrallnetActive) {
+      setAttackerCanticThrallnetActive(false)
+    }
+    if (!canUseAttackerMartialSignatumAmplificator && attackerMartialSignatumAmplificatorActive) {
+      setAttackerMartialSignatumAmplificatorActive(false)
+    }
+    if (!canUseDefenderGenetor && defenderGenetorActive) {
+      setDefenderGenetorActive(false)
+    }
+    if (!canUseDefenderIncenseExhausts && defenderIncenseExhaustsActive) {
+      setDefenderIncenseExhaustsActive(false)
+    }
+    if (!canUseDefenderNecromechanic && defenderNecromechanicActive) {
+      setDefenderNecromechanicActive(false)
+    }
+    if (!canUseDefenderLordOfMachines && defenderLordOfMachinesActive) {
+      setDefenderLordOfMachinesActive(false)
+    }
+    if (!canUseDefenderBenevolenceOfTheOmnissiah && defenderBenevolenceOfTheOmnissiahActive) {
+      setDefenderBenevolenceOfTheOmnissiahActive(false)
+    }
+    if (!canUseDefenderHaloOverride && defenderHaloOverrideMode) {
+      setDefenderHaloOverrideMode('')
+    }
+    if (!canUseDefenderScripturalPrognosis && defenderScripturalPrognosisActive) {
+      setDefenderScripturalPrognosisActive(false)
+    }
+    if (!canUseDefenderMantleOfTheGnosticarch && defenderMantleOfTheGnosticarchActive) {
+      setDefenderMantleOfTheGnosticarchActive(false)
+    }
+    if (!canUseDefenderTributeOfEmphaticVeneration && defenderTributeOfEmphaticVenerationActive) {
+      setDefenderTributeOfEmphaticVenerationActive(false)
+    }
+    if (!canUseDefenderLuminescentBlessing && defenderLuminescentBlessingActive) {
+      setDefenderLuminescentBlessingActive(false)
+    }
+    if (!canUseDefenderBionicEndurance && defenderBionicEnduranceActive) {
+      setDefenderBionicEnduranceActive(false)
+    }
     if (!canUseDefenderPurityOfSuffering && defenderPurityOfSufferingActive) {
       setDefenderPurityOfSufferingActive(false)
     }
@@ -12382,6 +13533,36 @@ function App() {
     attackerHagiomnifexMode,
     attackerHarmonisedExorcismActive,
     attackerPassionOfThePenitentActive,
+    attackerPreCalibratedPurgeSolutionActive,
+    attackerTargetInOpponentDeploymentZone,
+    attackerLethalDosageActive,
+    attackerRadBombardmentMode,
+    attackerExtinctionOrderActive,
+    attackerDataPsalmBenediction,
+    attackerChantOfTheRemorselessFistActive,
+    attackerLitanyOfTheElectromancerActive,
+    attackerLitanyOfTheElectromancerElectroPriest,
+    attackerBinharicOffenceActive,
+    attackerIsolateAndDestroyActive,
+    attackerTargetIsolated,
+    attackerAcquisitionObjectiveActive,
+    attackerAutoOracularRetrievalActive,
+    attackerArchNegatorActive,
+    attackerAutoDivinatoryTargetingActive,
+    attackerMachineSpiritResurgentActive,
+    attackerTranscendentCogitationActive,
+    attackerServoDrivenChargeActive,
+    attackerUnshackledWrathMode,
+    attackerThreatCogitationTargetersActive,
+    attackerPrecisionOnslaughtActive,
+    attackerHaloOverrideActive,
+    attackerHaloOverrideMode,
+    attackerEradicationProtocolsActive,
+    attackerTargetingOverrideActive,
+    attackerDefectScrutinyActive,
+    attackerEchoesOfTheConduitWarsActive,
+    attackerCanticThrallnetActive,
+    attackerMartialSignatumAmplificatorActive,
     attackerRighteousActive,
     attackerSanctifiedBlowsActive,
     attackerSufferNotTheUnfaithfulMode,
@@ -12392,16 +13573,70 @@ function App() {
     canUseAttackerHagiomnifex,
     canUseAttackerHarmonisedExorcism,
     canUseAttackerPassionOfThePenitent,
+    canUseAttackerPreCalibratedPurgeSolution,
+    canUseAttackerTargetInOpponentDeploymentZone,
+    canUseAttackerLethalDosage,
+    canUseAttackerRadBombardment,
+    canUseAttackerExtinctionOrder,
+    canUseAttackerDataPsalmBenediction,
+    canUseAttackerChantOfTheRemorselessFist,
+    canUseAttackerLitanyOfTheElectromancer,
+    canUseAttackerBinharicOffence,
+    canUseAttackerIsolateAndDestroy,
+    canUseAttackerTargetIsolated,
+    canUseAttackerAcquisitionObjective,
+    canUseAttackerAutoOracularRetrieval,
+    canUseAttackerArchNegator,
+    canUseAttackerAutoDivinatoryTargeting,
+    canUseAttackerMachineSpiritResurgent,
+    canUseAttackerTranscendentCogitation,
+    canUseAttackerServoDrivenCharge,
+    canUseAttackerUnshackledWrath,
+    canUseAttackerThreatCogitationTargeters,
+    canUseAttackerPrecisionOnslaught,
+    canUseAttackerHaloOverride,
+    canUseAttackerEradicationProtocols,
+    canUseAttackerTargetingOverride,
+    canUseAttackerDefectScrutiny,
+    canUseAttackerEchoesOfTheConduitWars,
+    canUseAttackerCanticThrallnet,
+    canUseAttackerMartialSignatumAmplificator,
     canUseAttackerRighteous,
     canUseAttackerSanctifiedBlows,
     canUseAttackerSufferNotTheUnfaithful,
     canUseAttackerToTheHeartOfHeresy,
     canUseDefenderBlindingRadiance,
     canUseDefenderFaithfulFortitude,
+    canUseDefenderBalefulHalo,
+    canUseDefenderBulwarkImperative,
+    canUseDefenderGenetor,
+    canUseDefenderIncenseExhausts,
+    canUseDefenderNecromechanic,
+    canUseDefenderLordOfMachines,
+    canUseDefenderBenevolenceOfTheOmnissiah,
+    canUseDefenderHaloOverride,
+    canUseDefenderScripturalPrognosis,
+    canUseDefenderMantleOfTheGnosticarch,
+    canUseDefenderTributeOfEmphaticVeneration,
+    canUseDefenderLuminescentBlessing,
+    canUseDefenderBionicEndurance,
     canUseDefenderHagiomnifex,
     canUseDefenderPurityOfSuffering,
     canUseDefenderRighteous,
     defenderBlindingRadianceActive,
+    defenderBalefulHaloActive,
+    defenderBulwarkImperativeActive,
+    defenderGenetorActive,
+    defenderIncenseExhaustsActive,
+    defenderNecromechanicActive,
+    defenderLordOfMachinesActive,
+    defenderBenevolenceOfTheOmnissiahActive,
+    defenderHaloOverrideMode,
+    defenderScripturalPrognosisActive,
+    defenderMantleOfTheGnosticarchActive,
+    defenderTributeOfEmphaticVenerationActive,
+    defenderLuminescentBlessingActive,
+    defenderBionicEnduranceActive,
     defenderFaithfulFortitudeActive,
     defenderHagiomnifexMode,
     defenderPurityOfSufferingActive,
@@ -14189,6 +15424,21 @@ function App() {
     if (!canUseAttackerTemplarVow && attackerTemplarVow) {
       setAttackerTemplarVow(initialOptions.attacker_templar_vow)
     }
+    if (!canUseAttackerMartialKatah && attackerMartialKatah) {
+      setAttackerMartialKatah(initialOptions.attacker_martial_katah)
+    }
+    if (!canUseAttackerDoctrinaImperative && attackerDoctrinaImperative) {
+      setAttackerDoctrinaImperative(initialOptions.attacker_doctrina_imperative)
+    }
+    if (!canUseDefenderDoctrinaImperative && defenderDoctrinaImperative) {
+      setDefenderDoctrinaImperative(initialOptions.defender_doctrina_imperative)
+    }
+    if (!(canUseAttackerDoctrinaImperative && attackerDoctrinaImperative === 'conqueror') && attackerAdmechBattlelineBonusActive) {
+      setAttackerAdmechBattlelineBonusActive(initialOptions.attacker_admech_battleline_bonus_active)
+    }
+    if (!(canUseDefenderDoctrinaImperative && defenderDoctrinaImperative === 'protector') && defenderAdmechBattlelineBonusActive) {
+      setDefenderAdmechBattlelineBonusActive(initialOptions.defender_admech_battleline_bonus_active)
+    }
     if (canUseAttackerHyperAdaptation && !attackerHyperAdaptation) {
       setAttackerHyperAdaptation(initialOptions.attacker_hyper_adaptation)
     } else if (!canUseAttackerHyperAdaptation && attackerHyperAdaptation !== initialOptions.attacker_hyper_adaptation) {
@@ -14616,6 +15866,11 @@ function App() {
     attackerBlitzaFireActive,
     attackerCombatDoctrine,
     attackerTemplarVow,
+    attackerMartialKatah,
+    attackerDoctrinaImperative,
+    defenderDoctrinaImperative,
+    attackerAdmechBattlelineBonusActive,
+    defenderAdmechBattlelineBonusActive,
     attackerCeramiteEntrenchedActive,
     attackerEyeOfThePackActive,
     attackerFerociousStrikeLethalActive,
@@ -15782,6 +17037,11 @@ function App() {
       attackerUnbridledFerocityActive,
       attackerAdrenalSurgeActive,
       attackerTemplarVow,
+      attackerMartialKatah,
+      attackerDoctrinaImperative,
+      defenderDoctrinaImperative,
+      attackerAdmechBattlelineBonusActive,
+      defenderAdmechBattlelineBonusActive,
       attackerPenitentVow,
       attackerBlackSpearMissionTactic,
       attackerMiracleDicePolicy,
@@ -15971,6 +17231,54 @@ function App() {
         attacker_eligible_model_count: selectedBattlefieldEligibleAttackerModelCount,
         attacker_combat_doctrine: battlefieldAttackerSide === 'attacker' ? attackerCombatDoctrine || null : null,
         attacker_hyper_adaptation: battlefieldAttackerSide === 'attacker' ? attackerHyperAdaptation || null : null,
+        attacker_martial_katah: battlefieldAttackerSide === 'attacker' ? attackerMartialKatah || null : null,
+        attacker_doctrina_imperative: battlefieldAttackerSide === 'attacker' ? attackerDoctrinaImperative || null : null,
+        defender_doctrina_imperative: battlefieldDefenderSide === 'defender' ? defenderDoctrinaImperative || null : null,
+        attacker_admech_battleline_bonus_active: battlefieldAttackerSide === 'attacker' ? attackerAdmechBattlelineBonusActive : false,
+        defender_admech_battleline_bonus_active: battlefieldDefenderSide === 'defender' ? defenderAdmechBattlelineBonusActive : false,
+        attacker_target_in_opponent_deployment_zone: battlefieldAttackerSide === 'attacker' ? attackerTargetInOpponentDeploymentZone : false,
+        attacker_pre_calibrated_purge_solution_active: battlefieldAttackerSide === 'attacker' ? attackerPreCalibratedPurgeSolutionActive : false,
+        attacker_lethal_dosage_active: battlefieldAttackerSide === 'attacker' ? attackerLethalDosageActive : false,
+        attacker_rad_bombardment_mode: battlefieldAttackerSide === 'attacker' ? attackerRadBombardmentMode || null : null,
+        attacker_extinction_order_active: battlefieldAttackerSide === 'attacker' ? attackerExtinctionOrderActive : false,
+        defender_baleful_halo_active: battlefieldDefenderSide === 'defender' ? defenderBalefulHaloActive : false,
+        defender_bulwark_imperative_active: battlefieldDefenderSide === 'defender' ? defenderBulwarkImperativeActive : false,
+        attacker_data_psalm_benediction: battlefieldAttackerSide === 'attacker' ? attackerDataPsalmBenediction || null : null,
+        attacker_chant_of_the_remorseless_fist_active: battlefieldAttackerSide === 'attacker' ? attackerChantOfTheRemorselessFistActive : false,
+        attacker_litany_of_the_electromancer_active: battlefieldAttackerSide === 'attacker' ? attackerLitanyOfTheElectromancerActive : false,
+        attacker_litany_of_the_electromancer_electro_priest: battlefieldAttackerSide === 'attacker' ? attackerLitanyOfTheElectromancerElectroPriest : false,
+        attacker_binharic_offence_active: battlefieldAttackerSide === 'attacker' ? attackerBinharicOffenceActive : false,
+        attacker_isolate_and_destroy_active: battlefieldAttackerSide === 'attacker' ? attackerIsolateAndDestroyActive : false,
+        attacker_target_isolated: battlefieldAttackerSide === 'attacker' ? attackerTargetIsolated : false,
+        attacker_acquisition_objective_active: battlefieldAttackerSide === 'attacker' ? attackerAcquisitionObjectiveActive : false,
+        attacker_auto_oracular_retrieval_active: battlefieldAttackerSide === 'attacker' ? attackerAutoOracularRetrievalActive : false,
+        attacker_arch_negator_active: battlefieldAttackerSide === 'attacker' ? attackerArchNegatorActive : false,
+        attacker_auto_divinatory_targeting_active: battlefieldAttackerSide === 'attacker' ? attackerAutoDivinatoryTargetingActive : false,
+        attacker_machine_spirit_resurgent_active: battlefieldAttackerSide === 'attacker' ? attackerMachineSpiritResurgentActive : false,
+        attacker_transcendent_cogitation_active: battlefieldAttackerSide === 'attacker' ? attackerTranscendentCogitationActive : false,
+        attacker_servo_driven_charge_active: battlefieldAttackerSide === 'attacker' ? attackerServoDrivenChargeActive : false,
+        attacker_unshackled_wrath_mode: battlefieldAttackerSide === 'attacker' ? attackerUnshackledWrathMode || null : null,
+        attacker_threat_cogitation_targeters_active: battlefieldAttackerSide === 'attacker' ? attackerThreatCogitationTargetersActive : false,
+        attacker_precision_onslaught_active: battlefieldAttackerSide === 'attacker' ? attackerPrecisionOnslaughtActive : false,
+        attacker_halo_override_active: battlefieldAttackerSide === 'attacker' ? attackerHaloOverrideActive : false,
+        attacker_halo_override_mode: battlefieldAttackerSide === 'attacker' ? attackerHaloOverrideMode || null : null,
+        attacker_eradication_protocols_active: battlefieldAttackerSide === 'attacker' ? attackerEradicationProtocolsActive : false,
+        attacker_targeting_override_active: battlefieldAttackerSide === 'attacker' ? attackerTargetingOverrideActive : false,
+        attacker_defect_scrutiny_active: battlefieldAttackerSide === 'attacker' ? attackerDefectScrutinyActive : false,
+        attacker_echoes_of_the_conduit_wars_active: battlefieldAttackerSide === 'attacker' ? attackerEchoesOfTheConduitWarsActive : false,
+        attacker_cantic_thrallnet_active: battlefieldAttackerSide === 'attacker' ? attackerCanticThrallnetActive : false,
+        attacker_martial_signatum_amplificator_active: battlefieldAttackerSide === 'attacker' ? attackerMartialSignatumAmplificatorActive : false,
+        defender_genetor_active: battlefieldDefenderSide === 'defender' ? defenderGenetorActive : false,
+        defender_incense_exhausts_active: battlefieldDefenderSide === 'defender' ? defenderIncenseExhaustsActive : false,
+        defender_necromechanic_active: battlefieldDefenderSide === 'defender' ? defenderNecromechanicActive : false,
+        defender_lord_of_machines_active: battlefieldDefenderSide === 'defender' ? defenderLordOfMachinesActive : false,
+        defender_benevolence_of_the_omnissiah_active: battlefieldDefenderSide === 'defender' ? defenderBenevolenceOfTheOmnissiahActive : false,
+        defender_halo_override_mode: battlefieldDefenderSide === 'defender' ? defenderHaloOverrideMode || null : null,
+        defender_scriptural_prognosis_active: battlefieldDefenderSide === 'defender' ? defenderScripturalPrognosisActive : false,
+        defender_mantle_of_the_gnosticarch_active: battlefieldDefenderSide === 'defender' ? defenderMantleOfTheGnosticarchActive : false,
+        defender_tribute_of_emphatic_veneration_active: battlefieldDefenderSide === 'defender' ? defenderTributeOfEmphaticVenerationActive : false,
+        defender_luminescent_blessing_active: battlefieldDefenderSide === 'defender' ? defenderLuminescentBlessingActive : false,
+        defender_bionic_endurance_active: battlefieldDefenderSide === 'defender' ? defenderBionicEnduranceActive : false,
         attacker_penitent_vow: battlefieldAttackerSide === 'attacker' ? attackerPenitentVow || null : null,
         attacker_righteous_active: battlefieldAttackerSide === 'attacker' ? attackerRighteousActive : defenderRighteousActive,
         defender_righteous_active: battlefieldDefenderSide === 'defender' ? defenderRighteousActive : attackerRighteousActive,
@@ -18068,6 +19376,54 @@ function App() {
     setHazardousBearerCurrentWounds(initialOptions.hazardous_bearer_current_wounds)
     setAttackerCombatDoctrine(initialOptions.attacker_combat_doctrine)
     setAttackerTemplarVow(initialOptions.attacker_templar_vow)
+    setAttackerMartialKatah(initialOptions.attacker_martial_katah)
+    setAttackerDoctrinaImperative(initialOptions.attacker_doctrina_imperative)
+    setDefenderDoctrinaImperative(initialOptions.defender_doctrina_imperative)
+    setAttackerAdmechBattlelineBonusActive(initialOptions.attacker_admech_battleline_bonus_active)
+    setDefenderAdmechBattlelineBonusActive(initialOptions.defender_admech_battleline_bonus_active)
+    setAttackerTargetInOpponentDeploymentZone(initialOptions.attacker_target_in_opponent_deployment_zone)
+    setAttackerPreCalibratedPurgeSolutionActive(initialOptions.attacker_pre_calibrated_purge_solution_active)
+    setAttackerLethalDosageActive(initialOptions.attacker_lethal_dosage_active)
+    setAttackerRadBombardmentMode(initialOptions.attacker_rad_bombardment_mode)
+    setAttackerExtinctionOrderActive(initialOptions.attacker_extinction_order_active)
+    setDefenderBalefulHaloActive(initialOptions.defender_baleful_halo_active)
+    setDefenderBulwarkImperativeActive(initialOptions.defender_bulwark_imperative_active)
+    setAttackerDataPsalmBenediction(initialOptions.attacker_data_psalm_benediction)
+    setAttackerChantOfTheRemorselessFistActive(initialOptions.attacker_chant_of_the_remorseless_fist_active)
+    setAttackerLitanyOfTheElectromancerActive(initialOptions.attacker_litany_of_the_electromancer_active)
+    setAttackerLitanyOfTheElectromancerElectroPriest(initialOptions.attacker_litany_of_the_electromancer_electro_priest)
+    setAttackerBinharicOffenceActive(initialOptions.attacker_binharic_offence_active)
+    setAttackerIsolateAndDestroyActive(initialOptions.attacker_isolate_and_destroy_active)
+    setAttackerTargetIsolated(initialOptions.attacker_target_isolated)
+    setAttackerAcquisitionObjectiveActive(initialOptions.attacker_acquisition_objective_active)
+    setAttackerAutoOracularRetrievalActive(initialOptions.attacker_auto_oracular_retrieval_active)
+    setAttackerArchNegatorActive(initialOptions.attacker_arch_negator_active)
+    setAttackerAutoDivinatoryTargetingActive(initialOptions.attacker_auto_divinatory_targeting_active)
+    setAttackerMachineSpiritResurgentActive(initialOptions.attacker_machine_spirit_resurgent_active)
+    setAttackerTranscendentCogitationActive(initialOptions.attacker_transcendent_cogitation_active)
+    setAttackerServoDrivenChargeActive(initialOptions.attacker_servo_driven_charge_active)
+    setAttackerUnshackledWrathMode(initialOptions.attacker_unshackled_wrath_mode)
+    setAttackerThreatCogitationTargetersActive(initialOptions.attacker_threat_cogitation_targeters_active)
+    setAttackerPrecisionOnslaughtActive(initialOptions.attacker_precision_onslaught_active)
+    setAttackerHaloOverrideActive(initialOptions.attacker_halo_override_active)
+    setAttackerHaloOverrideMode(initialOptions.attacker_halo_override_mode)
+    setAttackerEradicationProtocolsActive(initialOptions.attacker_eradication_protocols_active)
+    setAttackerTargetingOverrideActive(initialOptions.attacker_targeting_override_active)
+    setAttackerDefectScrutinyActive(initialOptions.attacker_defect_scrutiny_active)
+    setAttackerEchoesOfTheConduitWarsActive(initialOptions.attacker_echoes_of_the_conduit_wars_active)
+    setAttackerCanticThrallnetActive(initialOptions.attacker_cantic_thrallnet_active)
+    setAttackerMartialSignatumAmplificatorActive(initialOptions.attacker_martial_signatum_amplificator_active)
+    setDefenderGenetorActive(initialOptions.defender_genetor_active)
+    setDefenderIncenseExhaustsActive(initialOptions.defender_incense_exhausts_active)
+    setDefenderNecromechanicActive(initialOptions.defender_necromechanic_active)
+    setDefenderLordOfMachinesActive(initialOptions.defender_lord_of_machines_active)
+    setDefenderBenevolenceOfTheOmnissiahActive(initialOptions.defender_benevolence_of_the_omnissiah_active)
+    setDefenderHaloOverrideMode(initialOptions.defender_halo_override_mode)
+    setDefenderScripturalPrognosisActive(initialOptions.defender_scriptural_prognosis_active)
+    setDefenderMantleOfTheGnosticarchActive(initialOptions.defender_mantle_of_the_gnosticarch_active)
+    setDefenderTributeOfEmphaticVenerationActive(initialOptions.defender_tribute_of_emphatic_veneration_active)
+    setDefenderLuminescentBlessingActive(initialOptions.defender_luminescent_blessing_active)
+    setDefenderBionicEnduranceActive(initialOptions.defender_bionic_endurance_active)
     setAttackerHyperAdaptation(initialOptions.attacker_hyper_adaptation)
     setAttackerBlackSpearMissionTactic(initialOptions.attacker_black_spear_mission_tactic)
     setAttackerPenitentVow(initialOptions.attacker_penitent_vow)
@@ -19001,6 +20357,34 @@ function App() {
                 </label>
               ) : null}
 
+              {canUseDefenderDoctrinaImperative ? (
+                <label className="combat-option-defender" title={defenderDoctrinaImperativeTooltip}>
+                  <span>Defender Doctrina</span>
+                  <select
+                    title={defenderDoctrinaImperativeTooltip}
+                    value={defenderDoctrinaImperative}
+                    onChange={(event) => setDefenderDoctrinaImperative(event.target.value)}
+                  >
+                    {DOCTRINA_IMPERATIVE_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseDefenderDoctrinaImperative && defenderDoctrinaImperative === 'protector' ? (
+                <label className="checkbox-row combat-option-defender" title="Use when the defender is not itself Battleline but is within 6&quot; of a friendly Adeptus Mechanicus Battleline unit.">
+                  <input
+                    type="checkbox"
+                    checked={defenderAdmechBattlelineBonusActive}
+                    onChange={(event) => setDefenderAdmechBattlelineBonusActive(event.target.checked)}
+                  />
+                  <span>Defender near AdMech Battleline</span>
+                </label>
+              ) : null}
+
               {canUseAttackerCombatDoctrine ? (
                 <label className="combat-option-attacker" title={attackerCombatDoctrineTooltip}>
                   <span>Attacker Combat Doctrine</span>
@@ -19032,6 +20416,360 @@ function App() {
                       </option>
                     ))}
                   </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerMartialKatah ? (
+                <label className="combat-option-attacker" title={attackerFactionDetails?.army_rules?.find((rule) => rule.name === "Martial Ka'tah")?.rules_text || ''}>
+                  <span>Attacker Martial Ka'tah</span>
+                  <select
+                    title={attackerFactionDetails?.army_rules?.find((rule) => rule.name === "Martial Ka'tah")?.rules_text || ''}
+                    value={attackerMartialKatah}
+                    onChange={(event) => setAttackerMartialKatah(event.target.value)}
+                  >
+                    {MARTIAL_KATAH_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerDoctrinaImperative ? (
+                <label className="combat-option-attacker" title={attackerDoctrinaImperativeTooltip}>
+                  <span>Attacker Doctrina</span>
+                  <select
+                    title={attackerDoctrinaImperativeTooltip}
+                    value={attackerDoctrinaImperative}
+                    onChange={(event) => setAttackerDoctrinaImperative(event.target.value)}
+                  >
+                    {DOCTRINA_IMPERATIVE_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerDoctrinaImperative && attackerDoctrinaImperative === 'conqueror' ? (
+                <label className="checkbox-row combat-option-attacker" title="Use when the attacker is not itself Battleline but is within 6&quot; of a friendly Adeptus Mechanicus Battleline unit.">
+                  <input
+                    type="checkbox"
+                    checked={attackerAdmechBattlelineBonusActive}
+                    onChange={(event) => setAttackerAdmechBattlelineBonusActive(event.target.checked)}
+                  />
+                  <span>Attacker near AdMech Battleline</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerDataPsalmBenediction ? (
+                <label className="combat-option-attacker" title={attackerDataPsalmBenedictionTooltip}>
+                  <span>Attacker Benediction</span>
+                  <select
+                    title={attackerDataPsalmBenedictionTooltip}
+                    value={attackerDataPsalmBenediction}
+                    onChange={(event) => setAttackerDataPsalmBenediction(event.target.value)}
+                  >
+                    {DATA_PSALM_BENEDICTION_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerAcquisitionObjective ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerAcquisitionObjectiveTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerAcquisitionObjectiveActive}
+                    onChange={(event) => setAttackerAcquisitionObjectiveActive(event.target.checked)}
+                  />
+                  <span>Acquisition objective applies</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerArchNegator ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerArchNegatorTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerArchNegatorActive}
+                    onChange={(event) => setAttackerArchNegatorActive(event.target.checked)}
+                  />
+                  <span>Use Arch-negator</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerCanticThrallnet ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerCanticThrallnetTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerCanticThrallnetActive}
+                    onChange={(event) => setAttackerCanticThrallnetActive(event.target.checked)}
+                  />
+                  <span>Use Cantic Thrallnet</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerMartialSignatumAmplificator ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerMartialSignatumAmplificatorTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerMartialSignatumAmplificatorActive}
+                    onChange={(event) => setAttackerMartialSignatumAmplificatorActive(event.target.checked)}
+                  />
+                  <span>Use Martial Signatum</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerAutoOracularRetrieval ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerAutoOracularRetrievalTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerAutoOracularRetrievalActive}
+                    onChange={(event) => setAttackerAutoOracularRetrievalActive(event.target.checked)}
+                  />
+                  <span>Use Auto-Oracular Retrieval</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerAutoDivinatoryTargeting ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerAutoDivinatoryTargetingTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerAutoDivinatoryTargetingActive}
+                    onChange={(event) => setAttackerAutoDivinatoryTargetingActive(event.target.checked)}
+                  />
+                  <span>Use Auto-divinatory Targeting</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerMachineSpiritResurgent ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerMachineSpiritResurgentTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerMachineSpiritResurgentActive}
+                    onChange={(event) => setAttackerMachineSpiritResurgentActive(event.target.checked)}
+                  />
+                  <span>Use Machine Spirit Resurgent</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerTranscendentCogitation ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerTranscendentCogitationTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerTranscendentCogitationActive}
+                    onChange={(event) => setAttackerTranscendentCogitationActive(event.target.checked)}
+                  />
+                  <span>Use Transcendent Cogitation</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerServoDrivenCharge ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerServoDrivenChargeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerServoDrivenChargeActive}
+                    onChange={(event) => setAttackerServoDrivenChargeActive(event.target.checked)}
+                  />
+                  <span>Use Servo-driven Charge</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerUnshackledWrath ? (
+                <label className="combat-option-attacker" title={attackerUnshackledWrathTooltip}>
+                  <span>Unshackled Wrath</span>
+                  <select
+                    title={attackerUnshackledWrathTooltip}
+                    value={attackerUnshackledWrathMode}
+                    onChange={(event) => setAttackerUnshackledWrathMode(event.target.value)}
+                  >
+                    {UNSHACKLED_WRATH_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerThreatCogitationTargeters ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerThreatCogitationTargetersTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerThreatCogitationTargetersActive}
+                    onChange={(event) => setAttackerThreatCogitationTargetersActive(event.target.checked)}
+                  />
+                  <span>Use Threat-cogitation Targeters</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerPrecisionOnslaught ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerPrecisionOnslaughtTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerPrecisionOnslaughtActive}
+                    onChange={(event) => setAttackerPrecisionOnslaughtActive(event.target.checked)}
+                  />
+                  <span>Use Precision Onslaught</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerHaloOverride ? (
+                <label className="combat-option-attacker" title={attackerHaloOverrideTooltip}>
+                  <span>Attacker Halo Override</span>
+                  <select
+                    title={attackerHaloOverrideTooltip}
+                    value={attackerHaloOverrideMode}
+                    onChange={(event) => setAttackerHaloOverrideMode(event.target.value)}
+                  >
+                    {HALO_OVERRIDE_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerEradicationProtocols ? (
+                <Fragment>
+                  <label className="checkbox-row combat-option-attacker" title={attackerEradicationProtocolsTooltip}>
+                    <input
+                      type="checkbox"
+                      checked={attackerEradicationProtocolsActive}
+                      onChange={(event) => setAttackerEradicationProtocolsActive(event.target.checked)}
+                    />
+                    <span>Use Eradication Protocols</span>
+                  </label>
+                  <label className="checkbox-row combat-option-attacker" title="Check if the selected unit has the Halo Override keyword for the extra Hit re-rolls.">
+                    <input
+                      type="checkbox"
+                      checked={attackerHaloOverrideActive}
+                      onChange={(event) => setAttackerHaloOverrideActive(event.target.checked)}
+                    />
+                    <span>Attacker has Halo Override</span>
+                  </label>
+                </Fragment>
+              ) : null}
+
+              {canUseAttackerTargetingOverride ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerTargetingOverrideTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerTargetingOverrideActive}
+                    onChange={(event) => setAttackerTargetingOverrideActive(event.target.checked)}
+                  />
+                  <span>Use Targeting Override</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerDefectScrutiny ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerDefectScrutinyTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerDefectScrutinyActive}
+                    onChange={(event) => setAttackerDefectScrutinyActive(event.target.checked)}
+                  />
+                  <span>Use Defect Scrutiny</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerEchoesOfTheConduitWars ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerEchoesOfTheConduitWarsTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerEchoesOfTheConduitWarsActive}
+                    onChange={(event) => setAttackerEchoesOfTheConduitWarsActive(event.target.checked)}
+                  />
+                  <span>Use Echoes of the Conduit Wars</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderHaloOverride ? (
+                <label className="combat-option-defender" title={defenderHaloOverrideTooltip}>
+                  <span>Defender Halo Override</span>
+                  <select
+                    title={defenderHaloOverrideTooltip}
+                    value={defenderHaloOverrideMode}
+                    onChange={(event) => setDefenderHaloOverrideMode(event.target.value)}
+                  >
+                    {HALO_OVERRIDE_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseDefenderScripturalPrognosis ? (
+                <label className="checkbox-row combat-option-defender" title={defenderScripturalPrognosisTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderScripturalPrognosisActive}
+                    onChange={(event) => setDefenderScripturalPrognosisActive(event.target.checked)}
+                  />
+                  <span>Use Scriptural Prognosis</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderGenetor ? (
+                <label className="checkbox-row combat-option-defender" title={defenderGenetorTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderGenetorActive}
+                    onChange={(event) => setDefenderGenetorActive(event.target.checked)}
+                  />
+                  <span>Use Genetor</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderIncenseExhausts ? (
+                <label className="checkbox-row combat-option-defender" title={defenderIncenseExhaustsTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderIncenseExhaustsActive}
+                    onChange={(event) => setDefenderIncenseExhaustsActive(event.target.checked)}
+                  />
+                  <span>Use Incense Exhausts</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderNecromechanic ? (
+                <label className="checkbox-row combat-option-defender" title={defenderNecromechanicTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderNecromechanicActive}
+                    onChange={(event) => setDefenderNecromechanicActive(event.target.checked)}
+                  />
+                  <span>Use Necromechanic</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderLordOfMachines ? (
+                <label className="checkbox-row combat-option-defender" title={defenderLordOfMachinesTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderLordOfMachinesActive}
+                    onChange={(event) => setDefenderLordOfMachinesActive(event.target.checked)}
+                  />
+                  <span>Lord of Machines passed</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderBenevolenceOfTheOmnissiah ? (
+                <label className="checkbox-row combat-option-defender" title={defenderBenevolenceOfTheOmnissiahTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderBenevolenceOfTheOmnissiahActive}
+                    onChange={(event) => setDefenderBenevolenceOfTheOmnissiahActive(event.target.checked)}
+                  />
+                  <span>Use Benevolence of the Omnissiah</span>
                 </label>
               ) : null}
 
@@ -19312,6 +21050,198 @@ function App() {
                     onChange={(event) => setDefenderFaithfulFortitudeActive(event.target.checked)}
                   />
                   <span>Use Faithful Fortitude</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerPreCalibratedPurgeSolution ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerPreCalibratedPurgeSolutionTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerPreCalibratedPurgeSolutionActive}
+                    onChange={(event) => setAttackerPreCalibratedPurgeSolutionActive(event.target.checked)}
+                  />
+                  <span>Use Pre-calibrated Purge Solution</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerTargetInOpponentDeploymentZone ? (
+                <label className="checkbox-row combat-option-attacker" title="Required for Pre-calibrated Purge Solution rerolls.">
+                  <input
+                    type="checkbox"
+                    checked={attackerTargetInOpponentDeploymentZone}
+                    onChange={(event) => setAttackerTargetInOpponentDeploymentZone(event.target.checked)}
+                  />
+                  <span>Target is in opponent deployment zone</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerLethalDosage ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerLethalDosageTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerLethalDosageActive}
+                    onChange={(event) => setAttackerLethalDosageActive(event.target.checked)}
+                  />
+                  <span>Use Lethal Dosage</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerRadBombardment ? (
+                <label className="combat-option-attacker" title={attackerRadBombardmentTooltip}>
+                  <span>Rad-bombardment</span>
+                  <select
+                    title={attackerRadBombardmentTooltip}
+                    value={attackerRadBombardmentMode}
+                    onChange={(event) => setAttackerRadBombardmentMode(event.target.value)}
+                  >
+                    {RAD_BOMBARDMENT_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerExtinctionOrder ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerExtinctionOrderTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerExtinctionOrderActive}
+                    onChange={(event) => setAttackerExtinctionOrderActive(event.target.checked)}
+                  />
+                  <span>Use Extinction Order</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderBalefulHalo ? (
+                <label className="checkbox-row combat-option-defender" title={defenderBalefulHaloTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderBalefulHaloActive}
+                    onChange={(event) => setDefenderBalefulHaloActive(event.target.checked)}
+                  />
+                  <span>Use Baleful Halo</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderBulwarkImperative ? (
+                <label className="checkbox-row combat-option-defender" title={defenderBulwarkImperativeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderBulwarkImperativeActive}
+                    onChange={(event) => setDefenderBulwarkImperativeActive(event.target.checked)}
+                  />
+                  <span>Use Bulwark Imperative</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderMantleOfTheGnosticarch ? (
+                <label className="checkbox-row combat-option-defender" title={defenderMantleOfTheGnosticarchTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderMantleOfTheGnosticarchActive}
+                    onChange={(event) => setDefenderMantleOfTheGnosticarchActive(event.target.checked)}
+                  />
+                  <span>Allocate to Mantle bearer</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerChantOfTheRemorselessFist ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerChantOfTheRemorselessFistTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerChantOfTheRemorselessFistActive}
+                    onChange={(event) => setAttackerChantOfTheRemorselessFistActive(event.target.checked)}
+                  />
+                  <span>Use Chant of the Remorseless Fist</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerLitanyOfTheElectromancer ? (
+                <>
+                  <label className="checkbox-row combat-option-attacker" title={attackerLitanyOfTheElectromancerTooltip}>
+                    <input
+                      type="checkbox"
+                      checked={attackerLitanyOfTheElectromancerActive}
+                      onChange={(event) => setAttackerLitanyOfTheElectromancerActive(event.target.checked)}
+                    />
+                    <span>Use Litany of the Electromancer</span>
+                  </label>
+                  <label className="checkbox-row combat-option-attacker" title="Adds 1 to the Litany roll when the selected Cult Mechanicus model is an Electro-priest.">
+                    <input
+                      type="checkbox"
+                      checked={attackerLitanyOfTheElectromancerElectroPriest}
+                      onChange={(event) => setAttackerLitanyOfTheElectromancerElectroPriest(event.target.checked)}
+                    />
+                    <span>Litany model is Electro-priest</span>
+                  </label>
+                </>
+              ) : null}
+
+              {canUseAttackerBinharicOffence ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerBinharicOffenceTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerBinharicOffenceActive}
+                    onChange={(event) => setAttackerBinharicOffenceActive(event.target.checked)}
+                  />
+                  <span>Use Binharic Offence</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerIsolateAndDestroy ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerIsolateAndDestroyTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerIsolateAndDestroyActive}
+                    onChange={(event) => setAttackerIsolateAndDestroyActive(event.target.checked)}
+                  />
+                  <span>Use Isolate and Destroy</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerTargetIsolated ? (
+                <label className="checkbox-row combat-option-attacker" title="Use when there are no other enemy units within 6&quot; of the target.">
+                  <input
+                    type="checkbox"
+                    checked={attackerTargetIsolated}
+                    onChange={(event) => setAttackerTargetIsolated(event.target.checked)}
+                  />
+                  <span>Target is isolated</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderTributeOfEmphaticVeneration ? (
+                <label className="checkbox-row combat-option-defender" title={defenderTributeOfEmphaticVenerationTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderTributeOfEmphaticVenerationActive}
+                    onChange={(event) => setDefenderTributeOfEmphaticVenerationActive(event.target.checked)}
+                  />
+                  <span>Use Tribute of Emphatic Veneration</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderLuminescentBlessing ? (
+                <label className="checkbox-row combat-option-defender" title={defenderLuminescentBlessingTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderLuminescentBlessingActive}
+                    onChange={(event) => setDefenderLuminescentBlessingActive(event.target.checked)}
+                  />
+                  <span>Use Luminescent Blessing</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderBionicEndurance ? (
+                <label className="checkbox-row combat-option-defender" title={defenderBionicEnduranceTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderBionicEnduranceActive}
+                    onChange={(event) => setDefenderBionicEnduranceActive(event.target.checked)}
+                  />
+                  <span>Use Bionic Endurance</span>
                 </label>
               ) : null}
 

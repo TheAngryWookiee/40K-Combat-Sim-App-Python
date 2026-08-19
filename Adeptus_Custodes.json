@@ -1,0 +1,5947 @@
+{
+  "faction": {
+    "name": "Adeptus Custodes",
+    "parent_faction": "",
+    "army_rules": [
+      {
+        "name": "Martial Ka'tah",
+        "rules_text": "Each time a unit from your army with this ability is selected to fight, select one of the Ka'tah Stances below. Until that unit has finished making its attacks, the selected stance is active for it and it gains the relevant ability: Dacatarai Stance, melee weapons equipped by models in this unit have the [SUSTAINED HITS 1] ability; Rendax Stance, melee weapons equipped by models in this unit have the [LETHAL HITS] ability.",
+        "implemented": true,
+        "options": [
+          {
+            "name": "Dacatarai Stance",
+            "rules_text": "Melee weapons equipped by models in this unit have the [SUSTAINED HITS 1] ability."
+          },
+          {
+            "name": "Rendax Stance",
+            "rules_text": "Melee weapons equipped by models in this unit have the [LETHAL HITS] ability."
+          }
+        ]
+      }
+    ],
+    "chapter_rules": [],
+    "derived_keywords": [],
+    "detachments": [
+      {
+        "name": "Talons of the Emperor",
+        "rule": {
+          "name": "Revered Companions",
+          "rules_text": "ANATHEMA PSYKANA units from your army gain the following ability:\n\nNull Aegis (Aura): While an ADEPTUS CUSTODES unit is within 6\" of this unit, models in that unit have the Feel No Pain 5+ ability against Psychic Attacks and mortal wounds.\n\nAll other ADEPTUS CUSTODES units from your army gain the following ability:\n\nDeadly Unity (Aura): While an ANATHEMA PSYKANA unit is within 6\" of this unit, each time a model in that ANATHEMA PSYKANA unit makes an attack, add 1 to the Hit roll.",
+          "implemented": true
+        },
+        "restrictions": [],
+        "enhancements": [
+          {
+            "name": "Aegis Projector",
+            "rules_text": "ADEPTUS CUSTODES model only. Once per turn, the first time a saving throw is failed for the bearer's unit, change the Damage characteristic of that attack to 0.",
+            "restrictions": [
+              "ADEPTUS CUSTODES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Champion of the Imperium",
+            "rules_text": "ADEPTUS CUSTODES model only. The range of the bearer's Null Aegis or Deadly Unity ability is increased to 9\".",
+            "restrictions": [
+              "ADEPTUS CUSTODES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Gift of Terran Artifice",
+            "rules_text": "ADEPTUS CUSTODES model only. Each time the bearer makes a melee attack, add 1 to the Wound roll.",
+            "restrictions": [
+              "ADEPTUS CUSTODES model only."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "Radiant Mantle",
+            "rules_text": "ADEPTUS CUSTODES model only. Each time an attack targets the bearer's unit, if the attacking model is within 12\", subtract 1 from the Hit roll.",
+            "restrictions": [
+              "ADEPTUS CUSTODES model only."
+            ],
+            "implemented": true
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Hunt as One",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Start of your Movement phase.",
+            "target": "Up to two ADEPTUS CUSTODES units from your army.",
+            "effect": "Until the end of the turn, your units are eligible to shoot and/or declare a charge in a turn in which they Fell Back.",
+            "restrictions": [
+              "You can only select two units if one (and only one) of them is an ANATHEMA PSYKANA unit and both are within 6\" of each other."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Talons Interlocked",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase.",
+            "target": "Up to two ADEPTUS CUSTODES INFANTRY units from your army, and one enemy unit that is an eligible target for all of those units.",
+            "effect": "Until the end of the phase, your units can only target that enemy unit, but each time a model in one of your units makes a ranged attack, improve the Strength and Armour Penetration characteristics of that attack by 1.",
+            "restrictions": [
+              "You can only select two units if one (and only one) of them is an ANATHEMA PSYKANA unit and both are within 6\" of each other."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "Empyric Severance",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One ADEPTUS CUSTODES unit from your army that was selected as the target of one or more of the attacking unit's attacks, and one friendly ANATHEMA PSYKANA unit within 6\" of that ADEPTUS CUSTODES unit.",
+            "effect": "Until the end of the phase, your unit has the Feel No Pain 4+ ability against Psychic attacks and mortal wounds.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Emperor's Executioners",
+            "type": "Battle Tactic",
+            "cp_cost": 2,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Start of the Fight phase.",
+            "target": "Up to two ADEPTUS CUSTODES units from your army.",
+            "effect": "Until the end of the phase, each time a model in one of your units targets an enemy unit that is below its Starting Strength, add 1 to the Wound roll.",
+            "restrictions": [
+              "You can only select two units if one (and only one) of them is an ANATHEMA PSYKANA unit and both are within 6\" of each other."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Taloned Pincer",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Movement phase, just after an enemy unit ends a Normal, Advance or Fall Back move.",
+            "target": "Up to two ADEPTUS CUSTODES units from your army that are within 8\" of that enemy unit.",
+            "effect": "Your units can each make a Normal move of up to 6\".",
+            "restrictions": [
+              "You cannot select units that are within Engagement Range of one or more enemy units. You can only select two units if one (and only one) of them is an ANATHEMA PSYKANA unit and both are within 6\" of each other."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Shield of Honour",
+            "type": "Epic Deed",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Shooting phase, just after an enemy unit has selected its targets.",
+            "target": "One ANATHEMA PSYKANA INFANTRY unit from your army that was selected as the target of one or more of the attacking unit's attacks, and one other friendly ADEPTUS CUSTODES INFANTRY unit (excluding ANATHEMA PSYKANA units) within 6\" of that ANATHEMA PSYKANA INFANTRY unit.",
+            "effect": "Until the end of the phase, any attack that targets your ANATHEMA PSYKANA unit must instead target your other ADEPTUS CUSTODES unit (unless it is not an eligible target).",
+            "restrictions": [],
+            "implemented": false
+          }
+        ]
+      },
+      {
+        "name": "Shield Host",
+        "rule": {
+          "name": "Martial Mastery",
+          "rules_text": "At the start of the battle round, you can select one of the bullet points below. If you do, until the start of the next battle round, that bullet point's effects apply:\n\n• Each time an ADEPTUS CUSTODES model from your army with the Martial Katah ability makes a melee attack, a successful unmodified Hit roll of 5+ scores a Critical Hit.\n• Improve the Armour Penetration characteristic of melee weapons equipped by ADEPTUS CUSTODES models from your army with the Martial Katah ability by 1.",
+          "implemented": true
+        },
+        "restrictions": [],
+        "enhancements": [
+          {
+            "name": "Auric Mantle",
+            "rules_text": "SHIELD-CAPTAIN or BLADE CHAMPION model only. Add 2 to the bearer's Wounds characteristic.",
+            "restrictions": [
+              "SHIELD-CAPTAIN or BLADE CHAMPION model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Castellan's Mark",
+            "rules_text": "SHIELD-CAPTAIN model only. After both players have deployed their armies, you can select up to two ADEPTUS CUSTODES units from your army (excluding ANATHEMA PSYKANA units) and redeploy all of those units. When doing so, any of those units can be placed into Strategic Reserves, regardless of how many units are already in Strategic Reserves.",
+            "restrictions": [
+              "SHIELD-CAPTAIN model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "From the Hall of Armouries",
+            "rules_text": "SHIELD-CAPTAIN model only. Add 1 to the Strength and Damage characteristics of the bearer's melee weapons.",
+            "restrictions": [
+              "SHIELD-CAPTAIN model only."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "Panoptispex",
+            "rules_text": "SHIELD-CAPTAIN or BLADE CHAMPION model only. While the bearer is leading a unit, ranged weapons equipped by models in that unit have the [IGNORES COVER] ability.",
+            "restrictions": [
+              "SHIELD-CAPTAIN or BLADE CHAMPION model only."
+            ],
+            "implemented": true
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Arcane Genetic Alchemy",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Any phase, just after a mortal wound has been allocated to an ADEPTUS CUSTODES model from your army (excluding ANATHEMA PSYKANA models).",
+            "target": "That ADEPTUS CUSTODES model's unit.",
+            "effect": "Until the end of the phase, models in your unit have the Feel No Pain 4+ ability against mortal wounds.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Avenge the Fallen",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Start of the Fight phase.",
+            "target": "One ADEPTUS CUSTODES unit from your army (excluding ANATHEMA PSYKANA units) that is below its Starting Strength.",
+            "effect": "Until the end of the phase, add 1 to the Attacks characteristic of melee weapons equipped by models in that unit. If your unit is Below Half-strength, until the end of the phase, add 2 to the Attacks characteristic of those melee weapons instead.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Unwavering Sentinels",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One ADEPTUS CUSTODES INFANTRY unit from your army (excluding ANATHEMA PSYKANA units) that is within range of an objective marker you control and that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Until the end of the phase, each time a melee attack targets your unit, subtract 1 from the Hit roll.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Multipotentiality",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase.",
+            "target": "One ADEPTUS CUSTODES unit from your army that Fell Back this phase.",
+            "effect": "Until the end of your turn, that unit is eligible to shoot and declare a charge in a turn in which it Fell Back.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Vigilance Eternal",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase.",
+            "target": "One ADEPTUS CUSTODES BATTLELINE unit from your army (excluding ANATHEMA PSYKANA units) within range of an objective marker you control.",
+            "effect": "That objective marker remains under your control even if you have no models within range of it, until your opponent controls it at the start or end of any turn.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Archaeotech Munitions",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase.",
+            "target": "One ADEPTUS CUSTODES unit from your army (excluding ANATHEMA PSYKANA units) that has not been selected to shoot this phase.",
+            "effect": "Select either the [LETHAL HITS] or [SUSTAINED HITS 1] ability. Until the end of the phase, ranged weapons equipped by models in your unit have the selected ability.",
+            "restrictions": [],
+            "implemented": true
+          }
+        ]
+      },
+      {
+        "name": "Null Maiden Vigil",
+        "rule": {
+          "name": "Creeping Dread (Aura)",
+          "rules_text": "In the Battle-shock step of your opponent's Command phase, if an enemy unit that is either a PSYKER unit or below its Starting Strength is within 12\" of one or more ANATHEMA PSYKANA models from your army, that enemy unit must take a Battle-shock test. If that unit is Below Half-strength, it must subtract 1 from its Battle-shock test this phase instead.\n\nDesigner's Note: This means that all enemy PSYKER units within range of this Aura ability and all enemy units within range of this Aura ability that have lost one or more models must take a Battle-shock test in your opponent's Command phase, not just those that are Below Half-strength.",
+          "implemented": false
+        },
+        "keywords": [
+          "If you select this Detachment, PROSECUTORS units from your army have the BATTLELINE keyword."
+        ],
+        "restrictions": [],
+        "enhancements": [
+          {
+            "name": "Enhanced Voidsheen Cloak",
+            "rules_text": "ANATHEMA PSYKANA model only. Each time an attack is allocated to the bearer, subtract 1 from the Damage characteristic of that attack. If that attack was made by a PSYKER or Battle-shocked model, change the Damage characteristic of that attack to 1 instead.",
+            "restrictions": [
+              "ANATHEMA PSYKANA model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Huntress' Eye",
+            "rules_text": "ANATHEMA PSYKANA model only. In your Command phase, select one enemy unit within 12\" of the bearer. That unit must take a Battle-shock test.",
+            "restrictions": [
+              "ANATHEMA PSYKANA model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Oblivion Knight",
+            "rules_text": "ANATHEMA PSYKANA model only. While the bearer is leading a unit, each time a model in that unit makes an attack, add 1 to the Hit roll. If that attack targeted an enemy PSYKER unit, add 1 to the Wound roll as well.",
+            "restrictions": [
+              "ANATHEMA PSYKANA model only."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "Raptor Blade",
+            "rules_text": "ANATHEMA PSYKANA model only. Add 1 to the Attacks, Strength and Damage characteristics of the bearer's melee weapons. While the bearer is within Engagement Range of one or more enemy PSYKER units that are Battle-shocked, add 2 to the Attacks, Strength and Damage characteristics of the bearer's melee weapons instead.",
+            "restrictions": [
+              "ANATHEMA PSYKANA model only."
+            ],
+            "implemented": true
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Desperation's Price",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Any phase, just after an enemy PSYKER unit has either finished using a Psychic ability that targets a unit, or finished making Psychic Attacks.",
+            "target": "One ANATHEMA PSYKANA unit from your army.",
+            "effect": "That enemy PSYKER unit must take a Leadership test. If the test is passed, that PSYKER unit is Battle-shocked; if the test is failed that PSYKER unit suffers 3 mortal wounds and is Battle-shocked.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Witch Hunters",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase or the Fight phase.",
+            "target": "One ANATHEMA PSYKANA unit from your army that has not been selected to shoot or fight this phase.",
+            "effect": "Select either the [LETHAL HITS] or [SUSTAINED HITS 1] ability. Until the end of the phase, weapons equipped by models in your unit have the selected ability, but models in your unit can only target PSYKER units with their attacks.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Anathema Blademastery",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Fight phase.",
+            "target": "One VIGILATORS unit from your army that has not been selected to fight this phase.",
+            "effect": "Until the end of the phase, each time a model in your unit makes a melee attack, you can re-roll the Hit roll if the target of that attack is Battle-shocked or a PSYKER, and you can re-roll the Wound roll as well.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Psy-Chaff Volley",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase.",
+            "target": "One PROSECUTORS unit from your army that has just shot.",
+            "effect": "Select one enemy unit hit by one or more of those attacks. Until the start of your next turn, while your unit is on the battlefield, that enemy unit is prosecuted. While a unit is prosecuted, each time an ANATHEMA PSYKANA model makes an attack against that unit, improve the Armour Penetration characteristic of that attack by 1. While a PSYKER or Battle-shocked unit is prosecuted, each time a model in that unit makes an attack, subtract 1 from the Hit roll.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Purgation Sweep",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase.",
+            "target": "One WITCHSEEKERS unit from your army that has not been selected to shoot this phase.",
+            "effect": "Until the end of the phase, add 1 to the Attacks characteristic of Torrent weapons equipped by models in your unit. If such a weapon targets a PSYKER or Battle-shocked unit this phase, add 2 to its Attacks characteristic instead.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Psychic Abominations",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Shooting phase, just after an enemy unit has selected its targets.",
+            "target": "One ANATHEMA PSYKANA INFANTRY unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Until the end of the phase, your unit has the Stealth ability, and Battle-shocked and PSYKER models can only select your unit as a target of a ranged attack if they are within 12\".",
+            "restrictions": [],
+            "implemented": true
+          }
+        ]
+      },
+      {
+        "name": "Auric Champions",
+        "rule": {
+          "name": "Assemblage of Might",
+          "rules_text": "At the start of your Command phase, select one unit from your opponent's army. Until the start of your next Command phase, each time a model in an ADEPTUS CUSTODES CHARACTER unit from your army makes an attack that targets that enemy unit, add 1 to the Wound roll.",
+          "implemented": true
+        },
+        "restrictions": [],
+        "enhancements": [
+          {
+            "name": "Blade Imperator",
+            "rules_text": "ADEPTUS CUSTODES model only. Each time the bearer's unit ends a Charge move, select one enemy unit within Engagement Range of the bearer and roll one D6: on a 4+, that enemy unit suffers D3 mortal wounds. Once per battle, after the bearer's unit ends a Charge move, all enemy units within 6\" of the bearer must take a Battle-shock test.",
+            "restrictions": [
+              "ADEPTUS CUSTODES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Inspirational Exemplar",
+            "rules_text": "ADEPTUS CUSTODES model only. The bearer has a Leadership characteristic of 5+. Once per battle, at the start of any phase, you can select one friendly ADEPTUS CUSTODES unit that is Battle-shocked and within 12\" of the bearer; that unit is no longer Battle-shocked.",
+            "restrictions": [
+              "ADEPTUS CUSTODES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Martial Philosopher",
+            "rules_text": "ADEPTUS CUSTODES model only. The bearer's unit is eligible to shoot and/or declare a charge in a turn in which it Fell Back. Once per battle, in your opponent's Movement phase, when an enemy unit ends a Normal, Advance or Fall Back move within 8\" of the bearer, if the bearer's unit is not within Engagement Range of one or more enemy units, it can make a Normal move of up to 6\".",
+            "restrictions": [
+              "ADEPTUS CUSTODES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Veiled Blade",
+            "rules_text": "ADEPTUS CUSTODES model only. Add 2 to the Attacks characteristic of the bearer's melee weapons. Once per battle, at the start of any Command phase, triple the bearer's Objective Control characteristic until the end of the turn.",
+            "restrictions": [
+              "ADEPTUS CUSTODES model only."
+            ],
+            "implemented": true
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Slayer of Champions",
+            "type": "Epic Deed",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Any phase.",
+            "target": "One ADEPTUS CUSTODES CHARACTER unit from your army that has just destroyed the unit you selected at the start of your Command phase as the target of your Assemblage of Might ability.",
+            "effect": "Select one enemy unit on the battlefield. Until the start of your next Command phase, each time an ADEPTUS CUSTODES CHARACTER model from your army makes an attack that targets that enemy unit, add 1 to the Wound roll. In addition, if the destroyed unit was a CHARACTER unit, gain 1CP.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Superhuman Reserves",
+            "type": "Epic Deed",
+            "cp_cost": 2,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Any phase, just after an ADEPTUS CUSTODES WARLORD model from your army has used an ability on its datasheet or from an Enhancement that says it can only be used Once per battle.",
+            "target": "That ADEPTUS CUSTODES WARLORD model.",
+            "effect": "Your model can use its 'Once per battle' ability one additional time during this battle (but not in the same phase).",
+            "restrictions": [
+              "You cannot use this Stratagem more than once per battle."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "The Emperor's Auspice",
+            "type": "Epic Deed",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One ADEPTUS CUSTODES CHARACTER unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Until the end of the phase, CHARACTER models in your unit have the Feel No Pain 4+ ability.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Earning of a Name",
+            "type": "Epic Deed",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Fight phase.",
+            "target": "Up to two ADEPTUS CUSTODES CHARACTER units from your army that have not been selected to fight this phase.",
+            "effect": "Until the end of the phase, each time a CHARACTER model in either of your units makes an attack that targets a MONSTER or VEHICLE unit, you can re-roll the Hit roll and you can re-roll the Wound roll.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Vigil Unending",
+            "type": "Epic Deed",
+            "cp_cost": 2,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Fight phase.",
+            "target": "One ADEPTUS CUSTODES CHARACTER model from your army that was just destroyed and has not fought this phase. You can use this Stratagem on that unit even though it was just destroyed.",
+            "effect": "Do not remove your destroyed model from play. The destroyed model can fight after the attacking unit has finished making attacks, and is then removed from play.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Shoulder the Mantle",
+            "type": "Epic Deed",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase, before the Reinforcements step.",
+            "target": "One ADEPTUS CUSTODES CHARACTER model from your army that is not leading a unit.",
+            "effect": "Select one friendly unit (excluding Battle-shocked and Attached units) within 2\" horizontally and 5\" vertically of your model that it could lead (as described in the Leader section of its datasheet). Your model attaches to that unit as a Leader. Change that unit's Starting Strength accordingly.",
+            "restrictions": [],
+            "implemented": false
+          }
+        ]
+      },
+      {
+        "name": "Solar Spearhead",
+        "rule": {
+          "name": "Auric Armour",
+          "rules_text": "While an ADEPTUS CUSTODES VEHICLE unit from your army is at Starting Strength, unless that unit is an AIRCRAFT or it is Battle-shocked, add 2 to the Objective Control characteristic of models in that unit.\n\nWhile an ADEPTUS CUSTODES VEHICLE unit from your army is Below Starting Strength, each time a model in that unit makes an attack, re-roll a Hit roll of 1.\n\nWhile an ADEPTUS CUSTODES VEHICLE unit from your army is Below Half-strength, each time a model in that unit makes an attack, re-roll a Hit roll of 1 and re-roll a Wound roll of 1.",
+          "implemented": true
+        },
+        "additional_rules": [
+          {
+            "name": "MORITOI ANCIENTS",
+            "rules_text": "The ADEPTUS CUSTODES honoured fallen are ever eager for battle. Add 2\" to the Move characteristic of models in ADEPTUS CUSTODES WALKER units from your army and add 1 to Advance and Charge rolls made for such units.",
+            "implemented": false
+          }
+        ],
+        "keywords": [
+          "In the Muster Armies step, you can select up to 2 ADEPTUS CUSTODES WALKER models from your army. The selected units gain the CHARACTER keyword.",
+          "Designer's Note: This means that the selected models can be given Enhancements and one of them can be selected as your WARLORD."
+        ],
+        "restrictions": [],
+        "enhancements": [
+          {
+            "name": "Adamantine Talisman",
+            "rules_text": "ADEPTUS CUSTODES model only. Improve the Attacks, Strength and Damage characteristics of melee weapons equipped by the bearer by 1.",
+            "restrictions": [
+              "ADEPTUS CUSTODES model only."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "Augury Uplink",
+            "rules_text": "ADEPTUS CUSTODES model only. The bearer has the Feel No Pain 5+ ability.",
+            "restrictions": [
+              "ADEPTUS CUSTODES model only."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "Honoured Fallen (Aura)",
+            "rules_text": "ADEPTUS CUSTODES VEHICLE model only. While a friendly ADEPTUS CUSTODES INFANTRY or ADEPTUS CUSTODES MOUNTED unit is within 6\" of the bearer, each time a model in that unit makes an attack, re-roll a Hit roll of 1.",
+            "restrictions": [
+              "ADEPTUS CUSTODES VEHICLE model only."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "Veteran of the Kataphraktoi",
+            "rules_text": "ADEPTUS CUSTODES INFANTRY or ADEPTUS CUSTODES MOUNTED model only. In your Command phase, select one ADEPTUS CUSTODES VEHICLE or ADEPTUS CUSTODES MOUNTED unit within 6\" of the bearer. Until the start of your next Command phase, that unit is eligible to shoot in a turn in which it Fell Back.",
+            "restrictions": [
+              "ADEPTUS CUSTODES INFANTRY or ADEPTUS CUSTODES MOUNTED model only."
+            ],
+            "implemented": false
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Flawless Construction",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One ADEPTUS CUSTODES VEHICLE unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Until the end of the phase, each time an attack targets a model in your unit, if the Strength characteristic of that attack is greater than the Toughness characteristic of your unit, subtract 1 from the Wound roll.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Emperor's Vengeance",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One ADEPTUS CUSTODES unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Until the end of the phase, each time a model in your unit is destroyed, if that model has not fought this phase, roll one D6, adding 1 to the result if your unit has the WALKER keyword. On a 4+, do not remove it from play. The destroyed model can fight after the attacking unit has finished making its attacks (when doing so, it is assumed to have 1 wound remaining), and is then removed from play.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Wrathful Advance",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Fight phase, just before an ADEPTUS CUSTODES unit from your army Piles In.",
+            "target": "That ADEPTUS CUSTODES unit.",
+            "effect": "Until the end of the phase, each time a model in your unit makes a Pile-in move, it can move up to D3+3\" instead of up to 3\".",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Unstoppable",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase or your Charge phase.",
+            "target": "One ADEPTUS CUSTODES VEHICLE or ADEPTUS CUSTODES MOUNTED unit from your army.",
+            "effect": "Until the end of the phase, each time a model in your unit makes a move, it can move through terrain features.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Relentless Persecution",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase, just after an ADEPTUS CUSTODES VEHICLE unit from your army Advances.",
+            "target": "That ADEPTUS CUSTODES VEHICLE unit.",
+            "effect": "Until the end of the turn, your unit is eligible to shoot in a turn in which it Advanced. If your unit has the WALKER keyword, until the end of the turn, your unit is eligible to shoot and declare a charge in a turn in which it Advanced instead.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Punishment Inescapable",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase.",
+            "target": "One ADEPTUS CUSTODES unit from your army that has not been selected to shoot this phase.",
+            "effect": "Until the end of the phase, ranged weapons equipped by models in your unit have the [IGNORES COVER] ability, and until the end of the phase, each time a model in your unit makes an attack, you can ignore any or all modifiers to that attack's Ballistic Skill characteristic and/or any or all modifiers to the Hit roll.",
+            "restrictions": [],
+            "implemented": true
+          }
+        ]
+      },
+      {
+        "name": "Lions of the Emperor",
+        "rule": {
+          "name": "Against All Odds",
+          "rules_text": "Each time a model in an ADEPTUS CUSTODES unit from your army (excluding VEHICLES) makes an attack, if there are no other friendly units within 6\" of that unit, add 1 to the Hit roll and add 1 to the Wound roll.",
+          "implemented": true
+        },
+        "restrictions": [],
+        "enhancements": [
+          {
+            "name": "Superior Creation",
+            "rules_text": "ADEPTUS CUSTODES INFANTRY model only. The first time the bearer is destroyed, roll one D6 at the end of the phase. On a 2+, set the bearer back up on the battlefield, as close as possible to where it was destroyed and not within Engagement Range of one or more enemy units, with its full wounds remaining.",
+            "restrictions": [
+              "ADEPTUS CUSTODES INFANTRY model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Praesidius",
+            "rules_text": "ADEPTUS CUSTODES model only. The bearer has the Lone Operative and Stealth abilities.",
+            "restrictions": [
+              "ADEPTUS CUSTODES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Fierce Conqueror",
+            "rules_text": "SHIELD-CAPTAIN model only. At the start of the Fight phase, until the end of the phase, add 2 to the Attacks characteristic of melee weapons equipped by the bearer for every 5 enemy models within 6\" of the bearer (rounding down).",
+            "restrictions": [
+              "SHIELD-CAPTAIN model only."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "Admonimortis",
+            "rules_text": "SHIELD-CAPTAIN model only. Improve the Strength characteristic of melee weapons equipped by the bearer by 3 and improve the Armour Penetration and Damage characteristics of those weapons by 1.",
+            "restrictions": [
+              "SHIELD-CAPTAIN model only."
+            ],
+            "implemented": true
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Gilded Champion",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Any phase, just after an ADEPTUS CUSTODES CHARACTER model from your army has used an ability on its datasheet that states it can only be used once per battle.",
+            "target": "That ADEPTUS CUSTODES CHARACTER model.",
+            "effect": "Your model can use that once per battle ability one additional time during this battle (but not in the same phase).",
+            "restrictions": [
+              "You cannot use this Stratagem on the same ADEPTUS CUSTODES CHARACTER model more than once per battle."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Defiant to the Last",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Fight phase, just after an enemy unit has selected its targets.",
+            "target": "One ADEPTUS CUSTODES unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Until the end of the phase, each time a model in your unit is destroyed, if that model has not fought this phase, roll one D6, adding 2 to the result if that model has the CHARACTER keyword. On a 4+, do not remove it from play; the destroyed model can fight after the attacking unit has finished making its attacks (when doing so, it is treated as having 1 wound remaining), and is then removed from play.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Peerless Warrior",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Fight phase.",
+            "target": "One ADEPTUS CUSTODES unit from your army that has not been selected to fight this phase.",
+            "effect": "Until the end of the phase, melee weapons equipped by models in your unit have the [PRECISION] ability.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Unleash the Lions",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Command phase.",
+            "target": "One ALLARUS CUSTODIANS or AQUILON CUSTODIANS unit from your army that is on the battlefield.",
+            "effect": "That unit is split into separate units, each containing one model. These new units each have a Starting Strength of 1.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Manoeuvre and Fire",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase, just after an ADEPTUS CUSTODES unit from your army Falls Back.",
+            "target": "That ADEPTUS CUSTODES unit.",
+            "effect": "Until the end of the turn, your unit is eligible to shoot and declare a charge in a turn in which it Fell Back.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Swift as the Eagle",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Shooting phase, just after an enemy unit has shot.",
+            "target": "One ADEPTUS CUSTODES unit from your army (excluding VEHICLE units) that was selected as the target of one or more of the attacking unit's attacks.",
+            "effect": "Your unit can make a Normal move of up to D6\".",
+            "restrictions": [],
+            "implemented": false
+          }
+        ]
+      },
+      {
+        "name": "Might of the Morito",
+        "rule": {
+          "name": "March of the Honoured Dead",
+          "rules_text": "Friendly ADEPTUS CUSTODES WALKER units:\n\n? Have +2\" M.\n? Have +1 to Advance rolls and Charge rolls.\n\nThis detachment has the ARMOURY tag and cannot be taken with another ARMOURY detachment.",
+          "implemented": false
+        },
+        "restrictions": [],
+        "enhancements": [
+          {
+            "name": "Interred Expertise",
+            "rules_text": "ADEPTUS CUSTODES WALKER unit only. This unit's attacks can:\n\n? Re-roll Hit rolls of 1.\n? Re-roll Wound rolls of 1.",
+            "restrictions": [
+              "ADEPTUS CUSTODES WALKER unit only."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "Auramite Sarcophagus",
+            "rules_text": "ADEPTUS CUSTODES WALKER unit only. When you target this unit with the Crushing Impact Stratagem, that use is -1CP.",
+            "restrictions": [
+              "ADEPTUS CUSTODES WALKER unit only."
+            ],
+            "implemented": false
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Flawless Construction",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Shooting phase or the Fight phase, when an enemy unit targets a friendly ADEPTUS CUSTODES WALKER unit.",
+            "target": "That ADEPTUS CUSTODES WALKER unit.",
+            "effect": "Attacks that target your unit with a S greater than your unit's T have -1 to Wound rolls.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Unstoppable Advance",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Movement phase, when a friendly ADEPTUS CUSTODES WALKER unit is selected to move.",
+            "target": "That ADEPTUS CUSTODES WALKER unit.",
+            "effect": "Your unit has MOBILE.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Prioritised Eradication",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase, when a friendly TELEMON HEAVY DREADNOUGHT unit is selected to shoot.",
+            "target": "That TELEMON HEAVY DREADNOUGHT unit.",
+            "effect": "Your unit's:\n\n? Arachnus Storm Cannon weapons have [RAPID FIRE 6].\n? Iliastus Accelerator Culverin weapons have [RAPID FIRE 2].",
+            "restrictions": [],
+            "implemented": true
+          }
+        ]
+      },
+      {
+        "name": "Silent Hunters",
+        "rule": {
+          "name": "Skin-Crawling Disorientation",
+          "rules_text": "? When a friendly ANATHEMA PSYKANA unit is selected to make an Advance move, that Advance move does not prevent that unit from being eligible to start an Action.\n\n? Friendly ANATHEMA PSYKANA units have the following ability:\n\nCeaseless Vigilance: In your Shooting phase, this unit can select one visible enemy unit within 12\". That enemy unit is mulled:\n\n? While a unit is mulled, that unit has +3\" detection range.",
+          "implemented": false
+        },
+        "restrictions": [],
+        "enhancements": [
+          {
+            "name": "Encircling Hunter",
+            "rules_text": "ANATHEMA PSYKANA model only. When both players have deployed their armies, you can redeploy up to three friendly ANATHEMA PSYKANA INFANTRY units. When doing so, you can set those units up in Strategic Reserves, regardless of how many units are already in Strategic Reserves.",
+            "restrictions": [
+              "ANATHEMA PSYKANA model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Psyk-Out Grenades",
+            "rules_text": "ANATHEMA PSYKANA unit only.\n\n? This unit has [EXPLOSIVES].\n? When you target this unit with the Explosives Stratagem, if you select an enemy PSYKER unit, you can re-roll rolls to determine whether that enemy unit suffers a mortal wound.",
+            "restrictions": [
+              "ANATHEMA PSYKANA unit only."
+            ],
+            "implemented": false
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Deathsong Scythes",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "either",
+            "timing_color": "green",
+            "timing": "Fight phase, when a friendly VIGILATORS unit is selected to fight.",
+            "target": "That VIGILATORS unit.",
+            "effect": "Your unit's melee attacks have [LANCE]. Your unit's melee attacks that target a PSYKER unit have +1 A.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Umbral Prosecution",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase, when a friendly PROSECUTORS unit is selected to shoot.",
+            "target": "That PROSECUTORS unit.",
+            "effect": "Your unit's Boltgun weapons have:\n\n? [RAPID FIRE 2].\n? +1 AP.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Synchronised Inferno",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase, when a friendly WITCHSEEKERS unit is selected to shoot.",
+            "target": "That WITCHSEEKERS unit.",
+            "effect": "Your unit's [TORRENT] ranged attacks have [BLAST].",
+            "restrictions": [],
+            "implemented": true
+          }
+        ]
+      },
+      {
+        "name": "Tharanatoi Hammerblow",
+        "rule": {
+          "name": "The Hammer Falls",
+          "rules_text": "If a friendly ADEPTUS CUSTODES TERMINATOR unit made an ingress move this turn, that unit can re-roll Charge rolls.\n\nThis detachment has the LIONS tag and cannot be taken with another LIONS detachment.",
+          "implemented": false
+        },
+        "restrictions": [],
+        "enhancements": [
+          {
+            "name": "Mnemo-Locked Shrine Cipher",
+            "rules_text": "ADEPTUS CUSTODES TERMINATOR model only. In your first Movement phase, this unit can make an ingress move.",
+            "restrictions": [
+              "ADEPTUS CUSTODES TERMINATOR model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Efficient Aggression",
+            "rules_text": "ADEPTUS CUSTODES TERMINATOR model only. (Once per turn, per army) In your opponent's Shooting phase, when an enemy unit has shot, if this unit was a target of one or more attacks, this unit can make a surge move of up to D6+1\".",
+            "restrictions": [
+              "ADEPTUS CUSTODES TERMINATOR model only."
+            ],
+            "implemented": false
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Hardened Resolve",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "opponent_turn",
+            "timing_color": "red",
+            "timing": "Your opponent's Shooting phase or the Fight phase, when an enemy unit targets a friendly ADEPTUS CUSTODES TERMINATOR unit.",
+            "target": "That ADEPTUS CUSTODES TERMINATOR unit.",
+            "effect": "Your unit has +1 T.",
+            "restrictions": [],
+            "implemented": true
+          },
+          {
+            "name": "Unleash the Lions",
+            "type": "Strategic Ploy",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Command phase.",
+            "target": "One friendly ALLARUS CUSTODIANS/AQUILON CUSTODIANS unit that is on the battlefield.",
+            "effect": "Your unit is split into separate units, each containing one model. These new units each have a Starting Strength of 1.",
+            "restrictions": [],
+            "implemented": false
+          },
+          {
+            "name": "Electroexorcist Saturation",
+            "type": "Battle Tactic",
+            "cp_cost": 1,
+            "turn_timing": "your_turn",
+            "timing_color": "blue",
+            "timing": "Your Shooting phase, when a friendly ADEPTUS CUSTODES TERMINATOR unit is selected to shoot.",
+            "target": "That ADEPTUS CUSTODES TERMINATOR unit.",
+            "effect": "Your unit's Ballistus Grenade Launcher weapons have D3+3 A.",
+            "restrictions": [],
+            "implemented": true
+          }
+        ]
+      }
+    ],
+    "category": "Imperium"
+  },
+  "units": [
+    {
+      "name": "Agamatus Custodians",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "3 models": 225,
+        "6 models": 450
+      },
+      "base_size": "60mm flying base",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 6
+      },
+      "models": [
+        {
+          "name": "Agamatus Custodian",
+          "count": {
+            "min": 3,
+            "max": 6
+          },
+          "default_wargear": [
+            "Lastrum bolt cannon - Ranged",
+            "Interceptor lance - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Mounted",
+        "Fly",
+        "Frame",
+        "Imperium",
+        "Agamatus Custodians"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Turbo-boost",
+          "rules_text": "Each time this unit Advances, do not make an Advance roll. Instead, until the end of the phase, add 6\" to the Move characteristic of models in this unit.",
+          "implemented": false
+        },
+        {
+          "name": "Implacable Vanguard",
+          "rules_text": "Once per battle, in your Shooting phase, after this unit has shot, if it is not within Engagement Range of one or more enemy units, it can make a Normal move of up to 6\". If it does, until the end of the turn, this unit is not eligible to declare a charge.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "Any number of models can each have their lastrum bolt cannon replaced with one of the following: 1 adrathic devastator; 1 twin las-pulsar."
+      ],
+      "loadout_options": [
+        {
+          "id": "agamatus_custodians_lastrum_bolt_cannon_replacements",
+          "label": "Lastrum bolt cannon replacements",
+          "selection_type": "count",
+          "target_model": "Agamatus Custodian",
+          "max_total": 6,
+          "options": [
+            {
+              "id": "1_adrathic_devastator",
+              "label": "adrathic devastator",
+              "remove_wargear": [
+                "Lastrum bolt cannon - Ranged"
+              ],
+              "add_wargear": [
+                "Adrathic devastator - Ranged"
+              ],
+              "enabled_weapons": [
+                "Adrathic devastator - Ranged"
+              ],
+              "enabled_wargear_abilities": [],
+              "weapon_bearer_changes": {
+                "Lastrum bolt cannon - Ranged": -1,
+                "Adrathic devastator - Ranged": 1
+              },
+              "max_count": 6
+            },
+            {
+              "id": "1_twin_las_pulsar",
+              "label": "twin las-pulsar",
+              "remove_wargear": [
+                "Lastrum bolt cannon - Ranged"
+              ],
+              "add_wargear": [
+                "Twin las-pulsar - Ranged"
+              ],
+              "enabled_weapons": [
+                "Twin las-pulsar - Ranged"
+              ],
+              "enabled_wargear_abilities": [],
+              "weapon_bearer_changes": {
+                "Lastrum bolt cannon - Ranged": -1,
+                "Twin las-pulsar - Ranged": 1
+              },
+              "max_count": 6
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 12,
+        "toughness": 6,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 4,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Adrathic devastator - Ranged",
+          "range": "18\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "3",
+          "keywords": []
+        },
+        {
+          "name": "Lastrum bolt cannon - Ranged",
+          "range": "36\"",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Sustained Hits 1"
+          ]
+        },
+        {
+          "name": "Twin las-pulsar - Ranged",
+          "range": "18\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "9",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Interceptor lance - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": [
+            "Lance"
+          ]
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Aleya",
+      "faction": "Adeptus Custodes",
+      "points": 55,
+      "base_size": "32mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Aleya",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Somnus - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Imperium",
+        "Anathema Psykana",
+        "Aleya"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Feel No Pain 5+"
+        },
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Core",
+          "rules_text": "Scouts 6\""
+        },
+        {
+          "name": "Tactical Perception",
+          "rules_text": "While this model is leading a unit, models in that unit have the Fights First ability.",
+          "implemented": false
+        },
+        {
+          "name": "Tenacious Spirit",
+          "rules_text": "While this model is leading a unit, each time a model in that unit makes an attack, add 1 to the Hit roll if that unit is below its Starting Strength, and add 1 to the Wound roll as well if that unit is Below Half-strength.",
+          "implemented": true
+        },
+        {
+          "name": "Daughter of the Abyss",
+          "rules_text": "This model has the Feel No Pain 3+ ability against Psychic Attacks and mortal wounds.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Prosecutors",
+          "Vigilators",
+          "Witchseekers"
+        ],
+        "rules_text": "This model can be attached to the following units: Prosecutors; Vigilators; Witchseekers."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 3,
+        "save": "3+",
+        "invulnerable_save": "5+",
+        "wounds": 4,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Somnus - Melee",
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-3",
+          "damage": "3",
+          "keywords": [
+            "Anti-Psyker 5+",
+            "Devastating Wounds"
+          ]
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Allarus Custodians",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "2 models": 110,
+        "3 models": 165,
+        "5 models": 275,
+        "6 models": 330
+      },
+      "base_size": "40mm",
+      "unit_composition": {
+        "min_models": 2,
+        "max_models": 6
+      },
+      "models": [
+        {
+          "name": "Allarus Custodian",
+          "count": {
+            "min": 2,
+            "max": 6
+          },
+          "default_wargear": [
+            "Ballistus grenade launcher - Ranged",
+            "Guardian spear - Ranged",
+            "Guardian spear - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Terminator",
+        "Imperium",
+        "Allarus Custodians"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Slayers of Tyrants",
+          "rules_text": "Each time a model in this unit makes an attack that targets a CHARACTER, MONSTER or VEHICLE unit, you can re-roll the Wound roll.",
+          "implemented": true
+        },
+        {
+          "name": "From Golden Light",
+          "rules_text": "Once per battle, at the end of your opponent's turn, if this unit is not within Engagement Range of one or more enemy units, you can remove it from the battlefield and place it into Strategic Reserves.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [
+        {
+          "name": "Vexilla",
+          "rules_text": "Add 1 to the Objective Control characteristic of models in the bearer's unit.",
+          "implemented": false
+        }
+      ],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "Any number of models can each have their guardian spear replaced with 1 castellan axe.",
+        "1 model's guardian spear can be replaced with 1 vexilla and 1 misericordia."
+      ],
+      "loadout_options": [
+        {
+          "id": "allarus_custodians_guardian_spear_replacements",
+          "label": "Guardian spear replacements",
+          "selection_type": "count",
+          "target_model": "Allarus Custodian",
+          "max_total": 6,
+          "options": [
+            {
+              "id": "castellan_axe",
+              "label": "castellan axe",
+              "remove_wargear": [
+                "Guardian spear - Ranged",
+                "Guardian spear - Melee"
+              ],
+              "add_wargear": [
+                "Castellan axe - Ranged",
+                "Castellan axe - Melee"
+              ],
+              "enabled_weapons": [
+                "Castellan axe - Ranged",
+                "Castellan axe - Melee"
+              ],
+              "enabled_wargear_abilities": [],
+              "weapon_bearer_changes": {
+                "Guardian spear - Ranged": -1,
+                "Guardian spear - Melee": -1,
+                "Castellan axe - Ranged": 1,
+                "Castellan axe - Melee": 1
+              },
+              "max_count": 6
+            }
+          ]
+        },
+        {
+          "id": "allarus_custodians_guardian_spear_single_replacement",
+          "label": "Guardian spear single-model replacement",
+          "target_model": "Allarus Custodian",
+          "default_option_id": "default",
+          "options": [
+            {
+              "id": "default",
+              "label": "No single-model replacement",
+              "description": "Default loadout."
+            },
+            {
+              "id": "vexilla_misericordia",
+              "label": "vexilla and misericordia",
+              "enabled_weapons": [
+                "Misericordia - Melee"
+              ],
+              "enabled_wargear_abilities": [
+                "Vexilla"
+              ],
+              "weapon_bearer_changes": {
+                "Guardian spear - Ranged": -1,
+                "Guardian spear - Melee": -1,
+                "Misericordia - Melee": 1
+              }
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 5,
+        "toughness": 7,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 4,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Ballistus grenade launcher - Ranged",
+          "range": "18\"",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Blast"
+          ]
+        },
+        {
+          "name": "Castellan axe - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault"
+          ]
+        },
+        {
+          "name": "Guardian spear - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault"
+          ]
+        },
+        {
+          "name": "Castellan axe - Melee",
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "9",
+          "armor_piercing": "-1",
+          "damage": "3",
+          "keywords": []
+        },
+        {
+          "name": "Guardian spear - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": []
+        },
+        {
+          "name": "Misericordia - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Anathema Psykana Rhino",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_to_3rd_units": {
+          "1 model": 65
+        },
+        "4th_plus_units": {
+          "1 model": 75
+        }
+      },
+      "base_size": "Use model",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Anathema Psykana Rhino",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Storm bolter - Ranged",
+            "Armoured tracks - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Transport",
+        "Dedicated Transport",
+        "Frame",
+        "Smoke",
+        "Imperium",
+        "Anathema Psykana",
+        "Rhino"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise D3"
+        },
+        {
+          "name": "Core",
+          "rules_text": "Firing Deck 2"
+        },
+        {
+          "name": "Daughters of the Abyss",
+          "rules_text": "This model has the Feel No Pain 3+ ability against Psychic Attacks and mortal wounds.",
+          "implemented": true
+        },
+        {
+          "name": "Self Repair",
+          "rules_text": "At the start of your Command phase, this model regains 1 lost wound.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "This model can be equipped with 1 hunter-killer missile."
+      ],
+      "loadout_options": [
+        {
+          "id": "anathema_psykana_rhino_hunter_killer_missile_optional",
+          "label": "Hunter-killer missile optional wargear",
+          "target_model": "Anathema Psykana Rhino",
+          "default_option_id": "none",
+          "options": [
+            {
+              "id": "none",
+              "label": "No hunter-killer missile",
+              "description": "Default loadout."
+            },
+            {
+              "id": "hunter_killer_missile",
+              "label": "hunter-killer missile",
+              "add_wargear": [
+                "Hunter-killer missile - Ranged"
+              ],
+              "enabled_weapons": [
+                "Hunter-killer missile - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 12,
+        "toughness": 9,
+        "save": "3+",
+        "invulnerable_save": "",
+        "wounds": 10,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Hunter-killer missile - Ranged",
+          "range": "48\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "14",
+          "armor_piercing": "-3",
+          "damage": "D6",
+          "keywords": [
+            "One Shot"
+          ]
+        },
+        {
+          "name": "Storm bolter - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": [
+            "Rapid Fire 2"
+          ]
+        },
+        {
+          "name": "Armoured tracks - Melee",
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "6",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Aquilon Custodians",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "3 models": 195,
+        "6 models": 390
+      },
+      "base_size": "50mm",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 6
+      },
+      "models": [
+        {
+          "name": "Aquilon Custodian",
+          "count": {
+            "min": 3,
+            "max": 6
+          },
+          "default_wargear": [
+            "Lastrum storm bolter - Ranged",
+            "Solarite power gauntlet - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Terminator",
+        "Imperium",
+        "Aquilon Custodians"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Heavy Assault Infantry",
+          "rules_text": "Each time a model in this unit makes a ranged attack that targets the closest eligible target, re-roll a Wound roll of 1.",
+          "implemented": true
+        },
+        {
+          "name": "From Golden Light",
+          "rules_text": "Once per battle, at the end of your opponent's turn, if this unit is not within Engagement Range of one or more enemy units, you can remove it from the battlefield and place it into Strategic Reserves.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "Any number of models can each have their lastrum storm bolter replaced with one of the following: 1 infernus firepike; 1 twin adrathic destructor.",
+        "Any number of models can each have their solarite power gauntlet replaced with 1 solarite power talon."
+      ],
+      "loadout_options": [
+        {
+          "id": "aquilon_custodians_lastrum_storm_bolter_replacements",
+          "label": "Lastrum storm bolter replacements",
+          "selection_type": "count",
+          "target_model": "Aquilon Custodian",
+          "max_total": 6,
+          "options": [
+            {
+              "id": "infernus_firepike",
+              "label": "infernus firepike",
+              "remove_wargear": [
+                "Lastrum storm bolter - Ranged"
+              ],
+              "add_wargear": [
+                "Infernus firepike - Ranged"
+              ],
+              "enabled_weapons": [
+                "Infernus firepike - Ranged"
+              ],
+              "enabled_wargear_abilities": [],
+              "weapon_bearer_changes": {
+                "Lastrum storm bolter - Ranged": -1,
+                "Infernus firepike - Ranged": 1
+              },
+              "max_count": 6
+            },
+            {
+              "id": "twin_adrathic_destructor",
+              "label": "twin adrathic destructor",
+              "remove_wargear": [
+                "Lastrum storm bolter - Ranged"
+              ],
+              "add_wargear": [
+                "Twin adrathic destructor - Ranged"
+              ],
+              "enabled_weapons": [
+                "Twin adrathic destructor - Ranged"
+              ],
+              "enabled_wargear_abilities": [],
+              "weapon_bearer_changes": {
+                "Lastrum storm bolter - Ranged": -1,
+                "Twin adrathic destructor - Ranged": 1
+              },
+              "max_count": 6
+            }
+          ]
+        },
+        {
+          "id": "aquilon_custodians_solarite_power_gauntlet_replacements",
+          "label": "Solarite power gauntlet replacements",
+          "selection_type": "count",
+          "target_model": "Aquilon Custodian",
+          "max_total": 6,
+          "options": [
+            {
+              "id": "solarite_power_talon",
+              "label": "solarite power talon",
+              "remove_wargear": [
+                "Solarite power gauntlet - Melee"
+              ],
+              "add_wargear": [
+                "Solarite power talon - Melee"
+              ],
+              "enabled_weapons": [
+                "Solarite power talon - Melee"
+              ],
+              "enabled_wargear_abilities": [],
+              "weapon_bearer_changes": {
+                "Solarite power gauntlet - Melee": -1,
+                "Solarite power talon - Melee": 1
+              },
+              "max_count": 6
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 5,
+        "toughness": 7,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 4,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Infernus firepike - Ranged",
+          "range": "12\"",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Ignores Cover",
+            "Torrent"
+          ]
+        },
+        {
+          "name": "Lastrum storm bolter - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Rapid Fire 2"
+          ]
+        },
+        {
+          "name": "Twin adrathic destructor - Ranged",
+          "range": "18\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-2",
+          "damage": "3",
+          "keywords": [
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Solarite power gauntlet - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": []
+        },
+        {
+          "name": "Solarite power talon - Melee",
+          "range": "Melee",
+          "attacks": "7",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Ares Gunship",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_unit": {
+          "1 model": 580
+        },
+        "2nd_plus_units": {
+          "1 model": 610
+        }
+      },
+      "base_size": "160mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Ares Gunship",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "2 Arachnus heavy blaze cannon - Ranged",
+            "Arachnus magna-blaze cannon - Ranged",
+            "Armoured hull - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Aircraft",
+        "Fly",
+        "Imperium",
+        "Ares Gunship"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise D6"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Infernus Firebombs",
+          "rules_text": "At the end of your Movement phase, select one visible enemy unit (excluding AIRCRAFT/Lone Operative units) within 24\" of this unit: that enemy unit cannot have the Benefit of Cover until the end of your next Shooting phase; roll one D6 for each model in that enemy unit, for each 6, that enemy unit suffers 1 mortal wound.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "None."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "movement": 0,
+        "toughness": 12,
+        "save": "2+",
+        "invulnerable_save": "5+",
+        "wounds": 22,
+        "leadership": "6+",
+        "objective_control": "-"
+      },
+      "weapons": [
+        {
+          "name": "Arachnus heavy blaze cannon - Ranged",
+          "range": "36\"",
+          "attacks": "4",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "12",
+          "armor_piercing": "-3",
+          "damage": "D6+1",
+          "keywords": []
+        },
+        {
+          "name": "Arachnus magna-blaze cannon - Ranged",
+          "range": "48\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "18",
+          "armor_piercing": "-4",
+          "damage": "D6+6",
+          "keywords": []
+        },
+        {
+          "name": "Armoured hull - Melee",
+          "range": "Melee",
+          "attacks": "9",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "9",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Blade Champion",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_unit": 110,
+        "2nd_plus_units": 125
+      },
+      "base_size": "40mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Blade Champion",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Vaultswords"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Imperium",
+        "Blade Champion"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Swift Onslaught",
+          "rules_text": "While this model is leading a unit, you can re-roll Charge rolls made for that unit.",
+          "implemented": false
+        },
+        {
+          "name": "Martial Inspiration",
+          "rules_text": "Once per battle, in your Charge phase, this model's unit is eligible to declare a charge in a turn in which it Advanced.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Custodian Guard",
+          "Custodian Wardens",
+          "Sagittarum Custodians"
+        ],
+        "rules_text": "This model can be attached to the following units: Custodian Guard; Custodian Wardens; Sagittarum Custodians."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 6,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 6,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Vaultswords – Behemor - Melee",
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": [
+            "Precision"
+          ]
+        },
+        {
+          "name": "Vaultswords – Hurricanus - Melee",
+          "range": "Melee",
+          "attacks": "9",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Sustained Hits 1"
+          ]
+        },
+        {
+          "name": "Vaultswords – Victus - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-3",
+          "damage": "3",
+          "keywords": [
+            "Devastating Wounds"
+          ]
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Caladius Grav-tank",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_to_2nd_units": {
+          "1 model": 210
+        },
+        "3rd_plus_units": {
+          "1 model": 225
+        },
+        "wargear_options": {
+          "per Twin arachnus heavy blaze cannon": 15
+        }
+      },
+      "base_size": "170 x 109mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Caladius Grav-tank",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Twin iliastus accelerator cannon - Ranged",
+            "Twin lastrum bolt cannon - Ranged",
+            "Armoured hull - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Fly",
+        "Frame",
+        "Imperium",
+        "Caladius Grav-tank"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise D3"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Advanced Firepower",
+          "rules_text": "Each time this model makes an attack with its twin iliastus accelerator cannon that targets an enemy unit (excluding MONSTERS and VEHICLES), that attack has the Lethal Hits ability. Each time this model makes an attack with its twin arachnus heavy blaze cannon that targets an enemy MONSTER or VEHICLE unit, that attack has the Lethal Hits ability.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "This model's twin iliastus accelerator cannon can be replaced with 1 twin arachnus heavy blaze cannon."
+      ],
+      "loadout_options": [
+        {
+          "id": "caladius_grav_tank_twin_iliastus_accelerator_cannon_replacement",
+          "label": "Twin iliastus accelerator cannon replacement",
+          "target_model": "Caladius Grav-tank",
+          "default_option_id": "default",
+          "options": [
+            {
+              "id": "default",
+              "label": "twin iliastus accelerator cannon",
+              "description": "Default loadout."
+            },
+            {
+              "id": "1_twin_arachnus_heavy_blaze_cannon",
+              "label": "twin arachnus heavy blaze cannon",
+              "remove_wargear": [
+                "Twin iliastus accelerator cannon - Ranged"
+              ],
+              "add_wargear": [
+                "Twin arachnus heavy blaze cannon - Ranged"
+              ],
+              "enabled_weapons": [
+                "Twin arachnus heavy blaze cannon - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 10,
+        "toughness": 11,
+        "save": "2+",
+        "invulnerable_save": "5+",
+        "wounds": 14,
+        "leadership": "6+",
+        "objective_control": 4
+      },
+      "weapons": [
+        {
+          "name": "Twin arachnus heavy blaze cannon - Ranged",
+          "range": "48\"",
+          "attacks": "4",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "12",
+          "armor_piercing": "-3",
+          "damage": "D6+2",
+          "keywords": [
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Twin iliastus accelerator cannon - Ranged",
+          "range": "48\"",
+          "attacks": "4",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "10",
+          "armor_piercing": "-1",
+          "damage": "3",
+          "keywords": [
+            "Rapid Fire 4",
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Twin lastrum bolt cannon - Ranged",
+          "range": "36\"",
+          "attacks": "6",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Sustained Hits 1"
+          ]
+        },
+        {
+          "name": "Armoured hull - Melee",
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "6",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Contemptor-Achillus Dreadnought",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_to_2nd_units": {
+          "1 model": 155
+        },
+        "3rd_plus_units": {
+          "1 model": 170
+        }
+      },
+      "base_size": "60mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Contemptor-Achillus Dreadnought",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "2 Lastrum storm bolter - Ranged",
+            "Achillus dreadspear - Ranged",
+            "Achillus dreadspear - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Walker",
+        "Imperium",
+        "Contemptor-Achillus Dreadnought"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise 1"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Dread Foe",
+          "rules_text": "Each time this model is selected to fight, you can select one enemy unit within Engagement Range of it and roll one D6, adding 2 to the result if this model made a Charge move this turn: on a 4-5, that enemy unit suffers D3 mortal wounds; on a 6+, that enemy unit suffers 3 mortal wounds.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "This model's 2 lastrum storm bolters can be replaced with one of the following: 2 infernus incinerators; 2 twin adrathic destructors; 1 lastrum storm bolter and 1 infernus incinerator; 1 lastrum storm bolter and 1 twin adrathic destructor; 1 infernus incinerator and 1 twin adrathic destructor."
+      ],
+      "loadout_options": [
+        {
+          "id": "contemptor_achillus_dreadnought_lastrum_storm_bolter_replacement",
+          "label": "Lastrum storm bolter replacement",
+          "target_model": "Contemptor-Achillus Dreadnought",
+          "default_option_id": "default",
+          "options": [
+            {
+              "id": "default",
+              "label": "lastrum storm bolter",
+              "description": "Default loadout."
+            },
+            {
+              "id": "2_infernus_incinerator",
+              "label": "infernus incinerator",
+              "remove_wargear": [
+                "2 Lastrum storm bolter - Ranged"
+              ],
+              "add_wargear": [
+                "2 Infernus incinerator - Ranged"
+              ],
+              "enabled_weapons": [
+                "Infernus incinerator - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            },
+            {
+              "id": "2_twin_adrathic_destructor",
+              "label": "twin adrathic destructor",
+              "remove_wargear": [
+                "2 Lastrum storm bolter - Ranged"
+              ],
+              "add_wargear": [
+                "2 Twin adrathic destructor - Ranged"
+              ],
+              "enabled_weapons": [
+                "Twin adrathic destructor - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            },
+            {
+              "id": "1_lastrum_storm_bolter_1_infernus_incinerator",
+              "label": "lastrum storm bolter and infernus incinerator",
+              "remove_wargear": [
+                "2 Lastrum storm bolter - Ranged"
+              ],
+              "add_wargear": [
+                "Lastrum storm bolter - Ranged",
+                "Infernus incinerator - Ranged"
+              ],
+              "enabled_weapons": [
+                "Infernus incinerator - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            },
+            {
+              "id": "1_lastrum_storm_bolter_1_twin_adrathic_destructor",
+              "label": "lastrum storm bolter and twin adrathic destructor",
+              "remove_wargear": [
+                "2 Lastrum storm bolter - Ranged"
+              ],
+              "add_wargear": [
+                "Lastrum storm bolter - Ranged",
+                "Twin adrathic destructor - Ranged"
+              ],
+              "enabled_weapons": [
+                "Twin adrathic destructor - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            },
+            {
+              "id": "1_infernus_incinerator_1_twin_adrathic_destructor",
+              "label": "infernus incinerator and twin adrathic destructor",
+              "remove_wargear": [
+                "2 Lastrum storm bolter - Ranged"
+              ],
+              "add_wargear": [
+                "Infernus incinerator - Ranged",
+                "Twin adrathic destructor - Ranged"
+              ],
+              "enabled_weapons": [
+                "Infernus incinerator - Ranged",
+                "Twin adrathic destructor - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 6,
+        "toughness": 9,
+        "save": "2+",
+        "invulnerable_save": "5+",
+        "wounds": 10,
+        "leadership": "6+",
+        "objective_control": 3
+      },
+      "weapons": [
+        {
+          "name": "Achillus dreadspear - Ranged",
+          "range": "12\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "9",
+          "armor_piercing": "-2",
+          "damage": "3",
+          "keywords": []
+        },
+        {
+          "name": "Infernus incinerator - Ranged",
+          "range": "12\"",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Torrent",
+            "Ignores Cover"
+          ]
+        },
+        {
+          "name": "Lastrum storm bolter - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Rapid Fire 2"
+          ]
+        },
+        {
+          "name": "Twin adrathic destructor - Ranged",
+          "range": "18\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-2",
+          "damage": "3",
+          "keywords": [
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Achillus dreadspear - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "12",
+          "armor_piercing": "-2",
+          "damage": "D6+1",
+          "keywords": [
+            "Lance"
+          ]
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Contemptor-Galatus Dreadnought",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_to_2nd_units": {
+          "1 model": 165
+        },
+        "3rd_plus_units": {
+          "1 model": 180
+        }
+      },
+      "base_size": "60mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Contemptor-Galatus Dreadnought",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Galatus warblade - Ranged",
+            "Galatus warblade - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Walker",
+        "Imperium",
+        "Contemptor-Galatus Dreadnought"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise 1"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Galatus Shield",
+          "rules_text": "Each time a melee attack targets this model, subtract 1 from the Wound roll.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "None."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 9,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 10,
+        "leadership": "6+",
+        "objective_control": 3
+      },
+      "weapons": [
+        {
+          "name": "Galatus warblade - Ranged",
+          "range": "12\"",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Ignores Cover",
+            "Torrent",
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Galatus warblade - Melee",
+          "range": "Melee",
+          "attacks": "8",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "8",
+          "armor_piercing": "-2",
+          "damage": "3",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Coronus Grav-carrier",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_to_2nd_units": {
+          "1 model": 180
+        },
+        "3rd_plus_units": {
+          "1 model": 200
+        }
+      },
+      "base_size": "Use model",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Coronus Grav-carrier",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Twin arachnus blaze cannon - Ranged",
+            "Twin lastrum bolt cannon - Ranged",
+            "Armoured hull - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Transport",
+        "Fly",
+        "Frame",
+        "Imperium",
+        "Coronus Grav-carrier"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise D6"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Fire Support",
+          "rules_text": "In your Shooting phase, after this model has shot, select one enemy unit hit by one or more of those attacks. Until the end of the phase, each time a friendly model that disembarked from this TRANSPORT this turn makes an attack that targets that enemy unit, you can re-roll the Wound roll.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "None."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "movement": 12,
+        "toughness": 12,
+        "save": "2+",
+        "invulnerable_save": "5+",
+        "wounds": 16,
+        "leadership": "6+",
+        "objective_control": 5
+      },
+      "weapons": [
+        {
+          "name": "Twin arachnus blaze cannon - Ranged",
+          "range": "24\"",
+          "attacks": "8",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Devastating Wounds",
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Twin lastrum bolt cannon - Ranged",
+          "range": "36\"",
+          "attacks": "6",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Sustained Hits 1"
+          ]
+        },
+        {
+          "name": "Armoured hull - Melee",
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "8",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Custodian Guard",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_to_3rd_units": {
+          "4 models": 170,
+          "5 models": 215
+        },
+        "4th_plus_units": {
+          "4 models": 180,
+          "5 models": 225
+        }
+      },
+      "base_size": "40mm",
+      "unit_composition": {
+        "min_models": 4,
+        "max_models": 5
+      },
+      "models": [
+        {
+          "name": "Custodian Guard",
+          "count": {
+            "min": 4,
+            "max": 5
+          },
+          "default_wargear": [
+            "Guardian spear - Ranged",
+            "Guardian spear - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Battleline",
+        "Imperium",
+        "Custodian Guard"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Stand Vigil",
+          "rules_text": "Each time a model in this unit makes an attack, re-roll a Wound roll of 1. While this unit is within range of an objective marker you control, you can re-roll the Wound roll instead.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [
+        {
+          "name": "Sentinel Storm",
+          "rules_text": "Once per battle, in your Shooting phase, after this unit has shot, it can shoot again.",
+          "implemented": false
+        }
+      ],
+      "wargear_abilities": [
+        {
+          "name": "Praesidium Shield",
+          "rules_text": "Add 1 to the bearer's Wounds characteristic.",
+          "implemented": false
+        },
+        {
+          "name": "Vexilla",
+          "rules_text": "Add 1 to the Objective Control characteristic of models in the bearer's unit.",
+          "implemented": false
+        }
+      ],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "Any number of models can each have their guardian spear replaced with 1 sentinel blade and 1 praesidium shield.",
+        "1 model's guardian spear can be replaced with one of the following: 1 vexilla and 1 misericordia; 1 vexilla, 1 misericordia and 1 praesidium shield."
+      ],
+      "loadout_options": [
+        {
+          "id": "custodian_guard_guardian_spear_replacements",
+          "label": "Guardian spear replacements",
+          "selection_type": "count",
+          "target_model": "Custodian Guard",
+          "max_total": 5,
+          "options": [
+            {
+              "id": "sentinel_blade_praesidium_shield",
+              "label": "sentinel blade and praesidium shield",
+              "remove_wargear": [
+                "Guardian spear - Ranged",
+                "Guardian spear - Melee"
+              ],
+              "add_wargear": [
+                "Sentinel blade - Ranged",
+                "Sentinel blade - Melee",
+                "Praesidium Shield"
+              ],
+              "enabled_weapons": [
+                "Sentinel blade - Ranged",
+                "Sentinel blade - Melee"
+              ],
+              "enabled_wargear_abilities": [
+                "Praesidium Shield"
+              ],
+              "weapon_bearer_changes": {
+                "Guardian spear - Ranged": -1,
+                "Guardian spear - Melee": -1,
+                "Sentinel blade - Ranged": 1,
+                "Sentinel blade - Melee": 1
+              },
+              "max_count": 5
+            }
+          ]
+        },
+        {
+          "id": "custodian_guard_guardian_spear_single_replacement",
+          "label": "Guardian spear single-model replacement",
+          "target_model": "Custodian Guard",
+          "default_option_id": "default",
+          "options": [
+            {
+              "id": "default",
+              "label": "No single-model replacement",
+              "description": "Default loadout."
+            },
+            {
+              "id": "vexilla_misericordia",
+              "label": "vexilla and misericordia",
+              "enabled_weapons": [
+                "Misericordia - Melee"
+              ],
+              "enabled_wargear_abilities": [
+                "Vexilla"
+              ],
+              "weapon_bearer_changes": {
+                "Guardian spear - Ranged": -1,
+                "Guardian spear - Melee": -1,
+                "Misericordia - Melee": 1
+              }
+            },
+            {
+              "id": "vexilla_misericordia_praesidium_shield",
+              "label": "vexilla and misericordia and praesidium shield",
+              "enabled_weapons": [
+                "Misericordia - Melee"
+              ],
+              "enabled_wargear_abilities": [
+                "Vexilla",
+                "Praesidium Shield"
+              ],
+              "weapon_bearer_changes": {
+                "Guardian spear - Ranged": -1,
+                "Guardian spear - Melee": -1,
+                "Misericordia - Melee": 1
+              }
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 6,
+        "toughness": 6,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 3,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Guardian spear - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault"
+          ]
+        },
+        {
+          "name": "Sentinel blade - Ranged",
+          "range": "12\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault",
+            "Pistol"
+          ]
+        },
+        {
+          "name": "Guardian spear - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": []
+        },
+        {
+          "name": "Misericordia - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1",
+          "keywords": []
+        },
+        {
+          "name": "Sentinel blade - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-2",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Custodian Guard with Adrasite and Pyrithite Spears",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_to_3rd_units": {
+          "5 models": 250
+        },
+        "4th_plus_units": {
+          "5 models": 260
+        }
+      },
+      "base_size": "40mm",
+      "unit_composition": {
+        "min_models": 5,
+        "max_models": 5
+      },
+      "models": [
+        {
+          "name": "Custodian Guard with Adrasite and Pyrithite Spears",
+          "count": {
+            "min": 5,
+            "max": 5
+          },
+          "default_wargear": [
+            "Adrasite spear - Ranged",
+            "Adrasite spear - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Imperium",
+        "Custodian Guard with Adrasite and Pyrithite Spears"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Stand Vigil",
+          "rules_text": "Each time a model in this unit makes an attack, re-roll a Wound roll of 1. While this unit is within range of an objective marker you control, you can re-roll the Wound roll instead.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [
+        {
+          "name": "No Foe Shall Stand",
+          "rules_text": "Once per battle, at the start of your Shooting phase, this unit can use this ability. If it does, until the end of the phase, ranged weapons equipped by models in this unit have the Lethal Hits and Ignores Cover abilities.",
+          "implemented": true
+        }
+      ],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "Any number of models can each have their adrasite spear replaced with 1 pyrithite spear."
+      ],
+      "loadout_options": [
+        {
+          "id": "custodian_guard_with_adrasite_and_pyrithite_spears_adrasite_spear_replacements",
+          "label": "Adrasite spear replacements",
+          "selection_type": "count",
+          "target_model": "Custodian Guard with Adrasite and Pyrithite Spears",
+          "max_total": 5,
+          "options": [
+            {
+              "id": "pyrithite_spear",
+              "label": "pyrithite spear",
+              "remove_wargear": [
+                "Adrasite spear - Ranged",
+                "Adrasite spear - Melee"
+              ],
+              "add_wargear": [
+                "Pyrithite spear - Ranged",
+                "Pyrithite spear - Melee"
+              ],
+              "enabled_weapons": [
+                "Pyrithite spear - Ranged",
+                "Pyrithite spear - Melee"
+              ],
+              "enabled_wargear_abilities": [],
+              "weapon_bearer_changes": {
+                "Adrasite spear - Ranged": -1,
+                "Adrasite spear - Melee": -1,
+                "Pyrithite spear - Ranged": 1,
+                "Pyrithite spear - Melee": 1
+              },
+              "max_count": 5
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 6,
+        "toughness": 6,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 3,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Adrasite spear - Ranged",
+          "range": "18\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "3",
+          "keywords": []
+        },
+        {
+          "name": "Pyrithite spear - Ranged",
+          "range": "12\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "9",
+          "armor_piercing": "-4",
+          "damage": "D6",
+          "keywords": [
+            "Melta 2"
+          ]
+        },
+        {
+          "name": "Adrasite spear - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": []
+        },
+        {
+          "name": "Pyrithite spear - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Custodian Wardens",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_unit": {
+          "4 models": 200,
+          "5 models": 250
+        },
+        "2nd_plus_units": {
+          "4 models": 220,
+          "5 models": 270
+        }
+      },
+      "base_size": "40mm",
+      "unit_composition": {
+        "min_models": 4,
+        "max_models": 5
+      },
+      "models": [
+        {
+          "name": "Custodian Warden",
+          "count": {
+            "min": 4,
+            "max": 5
+          },
+          "default_wargear": [
+            "Guardian spear - Ranged",
+            "Guardian spear - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Imperium",
+        "Custodian Wardens"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Resolute Will",
+          "rules_text": "While a CHARACTER is leading this unit, each time an attack targets this unit, if the Strength characteristic of that attack is greater than the Toughness characteristic of this unit, subtract 1 from the Wound roll.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [
+        {
+          "name": "Living Fortress",
+          "rules_text": "Once per battle, at the start of any phase, this unit can use this ability. If it does, until the end of the phase, models in this unit have the Feel No Pain 4+ ability.",
+          "implemented": true
+        }
+      ],
+      "wargear_abilities": [
+        {
+          "name": "Vexilla",
+          "rules_text": "Add 1 to the Objective Control characteristic of models in the bearer's unit.",
+          "implemented": false
+        }
+      ],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "Any number of models can each have their guardian spear replaced with 1 castellan axe.",
+        "1 model can be equipped with 1 vexilla."
+      ],
+      "loadout_options": [
+        {
+          "id": "custodian_wardens_guardian_spear_replacements",
+          "label": "Guardian spear replacements",
+          "selection_type": "count",
+          "target_model": "Custodian Warden",
+          "max_total": 5,
+          "options": [
+            {
+              "id": "castellan_axe",
+              "label": "castellan axe",
+              "remove_wargear": [
+                "Guardian spear - Ranged",
+                "Guardian spear - Melee"
+              ],
+              "add_wargear": [
+                "Castellan axe - Ranged",
+                "Castellan axe - Melee"
+              ],
+              "enabled_weapons": [
+                "Castellan axe - Ranged",
+                "Castellan axe - Melee"
+              ],
+              "enabled_wargear_abilities": [],
+              "weapon_bearer_changes": {
+                "Guardian spear - Ranged": -1,
+                "Guardian spear - Melee": -1,
+                "Castellan axe - Ranged": 1,
+                "Castellan axe - Melee": 1
+              },
+              "max_count": 5
+            }
+          ]
+        },
+        {
+          "id": "custodian_wardens_vexilla_optional",
+          "label": "Vexilla optional wargear",
+          "target_model": "Custodian Warden",
+          "default_option_id": "none",
+          "options": [
+            {
+              "id": "none",
+              "label": "No vexilla",
+              "description": "Default loadout."
+            },
+            {
+              "id": "vexilla",
+              "label": "vexilla",
+              "add_wargear": [
+                "Vexilla"
+              ],
+              "enabled_wargear_abilities": [
+                "Vexilla"
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 6,
+        "toughness": 6,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 3,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Castellan axe - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault"
+          ]
+        },
+        {
+          "name": "Guardian spear - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault"
+          ]
+        },
+        {
+          "name": "Castellan axe - Melee",
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "9",
+          "armor_piercing": "-1",
+          "damage": "3",
+          "keywords": []
+        },
+        {
+          "name": "Guardian spear - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Knight-Centura",
+      "faction": "Adeptus Custodes",
+      "points": 55,
+      "base_size": "32mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Knight-Centura",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Executioner greatblade - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Imperium",
+        "Anathema Psykana",
+        "Knight-Centura"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Core",
+          "rules_text": "Scouts 6\""
+        },
+        {
+          "name": "Seeker's Instincts",
+          "rules_text": "While this model is leading a unit, add 2\" to the Move characteristic of models in that unit and add 2 to Advance and Charge rolls made for that unit.",
+          "implemented": false
+        },
+        {
+          "name": "Daughter of the Abyss",
+          "rules_text": "This model has the Feel No Pain 3+ ability against Psychic Attacks and mortal wounds.",
+          "implemented": true
+        },
+        {
+          "name": "Corner the Quarry",
+          "rules_text": "Each time an enemy unit (excluding MONSTERS and VEHICLES) that is within Engagement Range of this model's unit Falls Back, all models in that enemy unit must take a Desperate Escape test. If that enemy unit is Battle-shocked, subtract 1 from each of those tests.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Prosecutors",
+          "Vigilators",
+          "Witchseekers"
+        ],
+        "rules_text": "This model can be attached to the following units: Prosecutors; Vigilators; Witchseekers."
+      },
+      "support": null,
+      "wargear_options": [
+        "This model's executioner greatblade can be replaced with one of the following: 1 master-crafted boltgun and 1 close combat weapon; 1 Witchseeker flamer and 1 close combat weapon."
+      ],
+      "loadout_options": [
+        {
+          "id": "knight_centura_executioner_greatblade_replacement",
+          "label": "Executioner greatblade replacement",
+          "target_model": "Knight-Centura",
+          "default_option_id": "default",
+          "options": [
+            {
+              "id": "default",
+              "label": "Executioner greatblade",
+              "description": "Default loadout.",
+              "remove_wargear": [],
+              "add_wargear": []
+            },
+            {
+              "id": "master_crafted_boltgun_close_combat_weapon",
+              "label": "Master-crafted boltgun and Close combat weapon",
+              "remove_wargear": [
+                "Executioner greatblade - Melee"
+              ],
+              "add_wargear": [
+                "Master-crafted boltgun - Ranged",
+                "Close combat weapon - Melee"
+              ],
+              "enabled_weapons": [
+                "Master-crafted boltgun - Ranged",
+                "Close combat weapon - Melee"
+              ]
+            },
+            {
+              "id": "witchseeker_flamer_close_combat_weapon",
+              "label": "Witchseeker flamer and Close combat weapon",
+              "remove_wargear": [
+                "Executioner greatblade - Melee"
+              ],
+              "add_wargear": [
+                "Witchseeker flamer - Ranged",
+                "Close combat weapon - Melee"
+              ],
+              "enabled_weapons": [
+                "Witchseeker flamer - Ranged",
+                "Close combat weapon - Melee"
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 6,
+        "toughness": 3,
+        "save": "3+",
+        "invulnerable_save": "5+",
+        "wounds": 4,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Master-crafted boltgun - Ranged",
+          "range": "24\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "2",
+          "keywords": [
+            "Rapid Fire 1"
+          ]
+        },
+        {
+          "name": "Witchseeker flamer - Ranged",
+          "range": "12\"",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": [
+            "Ignores Cover",
+            "Torrent"
+          ]
+        },
+        {
+          "name": "Close combat weapon - Melee",
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "3",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": []
+        },
+        {
+          "name": "Executioner greatblade - Melee",
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": [
+            "Anti-Psyker 5+",
+            "Devastating Wounds"
+          ]
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Orion Assault Dropship",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_unit": {
+          "1 model": 690
+        },
+        "2nd_plus_units": {
+          "1 model": 740
+        }
+      },
+      "base_size": "160mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Orion Assault Dropship",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "2 Arachnus heavy blaze cannon - Ranged",
+            "2 Twin lastrum bolt cannon - Ranged",
+            "2 Spiculus heavy bolt launcher - Ranged",
+            "Armoured hull - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Transport",
+        "Fly",
+        "Imperium",
+        "Orion Assault Dropship"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise D6"
+        },
+        {
+          "name": "Core",
+          "rules_text": "Hover"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Assault Dropship",
+          "rules_text": "If a unit disembarks from this TRANSPORT before it moves, until the end of the turn, that unit is eligible to charge in a turn in which it Advanced.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "None."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "movement": 14,
+        "toughness": 12,
+        "save": "2+",
+        "invulnerable_save": "5+",
+        "wounds": 22,
+        "leadership": "6+",
+        "objective_control": 0
+      },
+      "weapons": [
+        {
+          "name": "Arachnus heavy blaze cannon - Ranged",
+          "range": "36\"",
+          "attacks": "4",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "12",
+          "armor_piercing": "-3",
+          "damage": "D6+1",
+          "keywords": []
+        },
+        {
+          "name": "Spiculus heavy bolt launcher - Ranged",
+          "range": "36\"",
+          "attacks": "D6+6",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Blast"
+          ]
+        },
+        {
+          "name": "Twin lastrum bolt cannon - Ranged",
+          "range": "36\"",
+          "attacks": "6",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Sustained Hits 1"
+          ]
+        },
+        {
+          "name": "Armoured hull - Melee",
+          "range": "Melee",
+          "attacks": "9",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "9",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Pallas Grav-attack",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1 model": 100
+      },
+      "base_size": "105 x 70mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Pallas Grav-attack",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Twin arachnus blaze cannon - Ranged",
+            "Armoured hull - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Fly",
+        "Frame",
+        "Imperium",
+        "Pallas Grav-attack"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise D3"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Merciless Hunter",
+          "rules_text": "In your Shooting phase, each time this model makes an attack that targets an enemy unit that is Below Half-strength, add 1 to the Wound roll.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "None."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "movement": 12,
+        "toughness": 8,
+        "save": "2+",
+        "invulnerable_save": "5+",
+        "wounds": 9,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Twin arachnus blaze cannon - Ranged",
+          "range": "24\"",
+          "attacks": "8",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Devastating Wounds",
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Armoured hull - Melee",
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "6",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Prosecutors",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "4 models": 45,
+        "5 models": 50,
+        "9 models": 75,
+        "10 models": 85
+      },
+      "base_size": "32mm",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 9
+      },
+      "models": [
+        {
+          "name": "Prosecutor",
+          "count": {
+            "min": 3,
+            "max": 9
+          },
+          "default_wargear": [
+            "Boltgun - Ranged",
+            "Close combat weapon - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Imperium",
+        "Anathema Psykana",
+        "Prosecutors"
+      ],
+      "abilities": [
+        {
+          "name": "Daughters of the Abyss",
+          "rules_text": "Models in this unit have the Feel No Pain 3+ ability against Psychic Attacks and mortal wounds.",
+          "implemented": true
+        },
+        {
+          "name": "Purity of Execution",
+          "rules_text": "Each time a model in this unit makes a ranged attack that targets a PSYKER unit, that attack has the Precision and Devastating Wounds abilities.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 3,
+        "save": "3+",
+        "invulnerable_save": "",
+        "wounds": 1,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Boltgun - Ranged",
+          "range": "24\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": [
+            "Rapid Fire 1"
+          ]
+        },
+        {
+          "name": "Close combat weapon - Melee",
+          "range": "Melee",
+          "attacks": "2",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "3",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Sagittarum Custodians",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "5 models": 225
+      },
+      "base_size": "40mm",
+      "unit_composition": {
+        "min_models": 5,
+        "max_models": 5
+      },
+      "models": [
+        {
+          "name": "Sagittarum Custodian",
+          "count": {
+            "min": 5,
+            "max": 5
+          },
+          "default_wargear": [
+            "Adrastus bolt caliver - Ranged",
+            "Misericordia - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Imperium",
+        "Sagittarum Custodians"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Saturation Volleys",
+          "rules_text": "In your Shooting phase, after this unit has shot, select one enemy unit (excluding MONSTERS and VEHICLES) hit by one or more of those attacks. Until the start of your next turn, while this unit is on the battlefield, that enemy unit is suppressed. While a unit is suppressed, each time a model in that unit makes an attack, subtract 1 from the Hit roll.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [
+        {
+          "name": "Disintegration Beams",
+          "rules_text": "Once per battle, at the start of your Shooting phase, this unit can use this ability. If it does, until the end of the phase, ranged weapons equipped by models in this unit have the Devastating Wounds ability.",
+          "implemented": true
+        }
+      ],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "None."
+      ],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 6,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 3,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Adrastus bolt caliver - Ranged",
+          "range": "36\"",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Sustained Hits 1"
+          ]
+        },
+        {
+          "name": "Misericordia - Melee",
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Shield-Captain",
+      "faction": "Adeptus Custodes",
+      "points": 110,
+      "base_size": "40mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Shield-Captain",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Guardian spear - Ranged",
+            "Guardian spear - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Imperium",
+        "Shield-Captain"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Strategic Mastery",
+          "rules_text": "Once per battle round, you can select one model from your army with this ability; that model's unit can be targeted with a Stratagem. If it does, reduce the CP cost of that use of that Stratagem by 1CP.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [
+        {
+          "name": "Master of the Stances",
+          "rules_text": "Once per battle, when this model's unit is selected to fight, it can use this ability. If it does, until that fight is resolved, both Ka'tah Stances are active for that unit, instead of only one.",
+          "implemented": true
+        }
+      ],
+      "wargear_abilities": [
+        {
+          "name": "Praesidium Shield",
+          "rules_text": "Add 1 to the bearer's Wounds characteristic.",
+          "implemented": true
+        }
+      ],
+      "leader": {
+        "can_lead": [
+          "Custodian Guard",
+          "Custodian Wardens",
+          "Sagittarum Custodians"
+        ],
+        "rules_text": "This model can be attached to the following units: Custodian Guard; Custodian Wardens; Sagittarum Custodians."
+      },
+      "support": null,
+      "wargear_options": [
+        "This model's guardian spear can be replaced with one of the following: 1 castellan axe; 1 sentinel blade; 1 sentinel blade and 1 praesidium shield; 1 pyrithite spear and 1 praesidium shield."
+      ],
+      "loadout_options": [
+        {
+          "id": "shield_captain_guardian_spear_replacement",
+          "label": "Guardian spear replacement",
+          "target_model": "Shield-Captain",
+          "default_option_id": "default",
+          "options": [
+            {
+              "id": "default",
+              "label": "Guardian spear",
+              "description": "Default loadout.",
+              "remove_wargear": [],
+              "add_wargear": []
+            },
+            {
+              "id": "castellan_axe",
+              "label": "Castellan axe",
+              "remove_wargear": [
+                "Guardian spear - Ranged",
+                "Guardian spear - Melee"
+              ],
+              "add_wargear": [
+                "Castellan axe - Ranged",
+                "Castellan axe - Melee"
+              ],
+              "enabled_weapons": [
+                "Castellan axe - Ranged",
+                "Castellan axe - Melee"
+              ]
+            },
+            {
+              "id": "sentinel_blade",
+              "label": "Sentinel blade",
+              "remove_wargear": [
+                "Guardian spear - Ranged",
+                "Guardian spear - Melee"
+              ],
+              "add_wargear": [
+                "Sentinel blade - Ranged",
+                "Sentinel blade - Melee"
+              ],
+              "enabled_weapons": [
+                "Sentinel blade - Ranged",
+                "Sentinel blade - Melee"
+              ]
+            },
+            {
+              "id": "sentinel_blade_praesidium_shield",
+              "label": "Sentinel blade and Praesidium Shield",
+              "remove_wargear": [
+                "Guardian spear - Ranged",
+                "Guardian spear - Melee"
+              ],
+              "add_wargear": [
+                "Sentinel blade - Ranged",
+                "Sentinel blade - Melee",
+                "Praesidium Shield"
+              ],
+              "enabled_weapons": [
+                "Sentinel blade - Ranged",
+                "Sentinel blade - Melee"
+              ],
+              "enabled_wargear_abilities": [
+                "Praesidium Shield"
+              ],
+              "stat_overrides": {
+                "wounds": 7
+              }
+            },
+            {
+              "id": "pyrithite_spear_praesidium_shield",
+              "label": "Pyrithite spear and Praesidium Shield",
+              "remove_wargear": [
+                "Guardian spear - Ranged",
+                "Guardian spear - Melee"
+              ],
+              "add_wargear": [
+                "Pyrithite spear - Ranged",
+                "Pyrithite spear - Melee",
+                "Praesidium Shield"
+              ],
+              "enabled_weapons": [
+                "Pyrithite spear - Ranged",
+                "Pyrithite spear - Melee"
+              ],
+              "enabled_wargear_abilities": [
+                "Praesidium Shield"
+              ],
+              "stat_overrides": {
+                "wounds": 7
+              }
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 6,
+        "toughness": 6,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 6,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Castellan axe - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault"
+          ]
+        },
+        {
+          "name": "Guardian spear - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault"
+          ]
+        },
+        {
+          "name": "Pyrithite spear - Ranged",
+          "range": "12\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "9",
+          "armor_piercing": "-4",
+          "damage": "D6",
+          "keywords": [
+            "Melta 2"
+          ]
+        },
+        {
+          "name": "Sentinel blade - Ranged",
+          "range": "12\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault",
+            "Pistol"
+          ]
+        },
+        {
+          "name": "Castellan axe - Melee",
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "9",
+          "armor_piercing": "-1",
+          "damage": "3",
+          "keywords": []
+        },
+        {
+          "name": "Guardian spear - Melee",
+          "range": "Melee",
+          "attacks": "7",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": []
+        },
+        {
+          "name": "Pyrithite spear - Melee",
+          "range": "Melee",
+          "attacks": "7",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": []
+        },
+        {
+          "name": "Sentinel blade - Melee",
+          "range": "Melee",
+          "attacks": "7",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-2",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Shield-Captain in Allarus Terminator Armour",
+      "faction": "Adeptus Custodes",
+      "points": 130,
+      "base_size": "40mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Shield-Captain in Allarus Terminator Armour",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Ballistus grenade launcher - Ranged",
+            "Guardian spear - Ranged",
+            "Guardian spear - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Terminator",
+        "Imperium",
+        "Shield-Captain"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Strategic Mastery",
+          "rules_text": "Once per battle round, you can select one model from your army with this ability; that model's unit can be targeted with a Stratagem. If it does, reduce the CP cost of that use of that Stratagem by 1CP.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [
+        {
+          "name": "Auramite and Adamantine",
+          "rules_text": "Once per battle, at the start of any phase, this model can use this ability. If it does, until the end of the phase, each time an attack is allocated to this model, change the Damage characteristic of that attack to 1.",
+          "implemented": true
+        }
+      ],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Allarus Custodians",
+          "Aquilon Custodians"
+        ],
+        "rules_text": "This model can be attached to the following units: Allarus Custodians; Aquilon Custodians."
+      },
+      "support": null,
+      "wargear_options": [
+        "This model's guardian spear can be replaced with 1 castellan axe."
+      ],
+      "loadout_options": [
+        {
+          "id": "shield_captain_in_allarus_terminator_armour_guardian_spear_replacement",
+          "label": "Guardian spear replacement",
+          "target_model": "Shield-Captain in Allarus Terminator Armour",
+          "default_option_id": "default",
+          "options": [
+            {
+              "id": "default",
+              "label": "Guardian spear",
+              "description": "Default loadout.",
+              "remove_wargear": [],
+              "add_wargear": []
+            },
+            {
+              "id": "castellan_axe",
+              "label": "Castellan axe",
+              "remove_wargear": [
+                "Guardian spear - Ranged",
+                "Guardian spear - Melee"
+              ],
+              "add_wargear": [
+                "Castellan axe - Ranged",
+                "Castellan axe - Melee"
+              ],
+              "enabled_weapons": [
+                "Castellan axe - Ranged",
+                "Castellan axe - Melee"
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 5,
+        "toughness": 7,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 7,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Ballistus grenade launcher - Ranged",
+          "range": "18\"",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Blast"
+          ]
+        },
+        {
+          "name": "Castellan axe - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault"
+          ]
+        },
+        {
+          "name": "Guardian spear - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault"
+          ]
+        },
+        {
+          "name": "Castellan axe - Melee",
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "9",
+          "armor_piercing": "-1",
+          "damage": "3",
+          "keywords": []
+        },
+        {
+          "name": "Guardian spear - Melee",
+          "range": "Melee",
+          "attacks": "7",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Shield-Captain on Dawneagle Jetbike",
+      "faction": "Adeptus Custodes",
+      "points": 140,
+      "base_size": "75 x 42mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Shield-Captain on Dawneagle Jetbike",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Salvo launcher - Ranged",
+            "Interceptor lance - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Mounted",
+        "Character",
+        "Fly",
+        "Imperium",
+        "Dawneagle Jetbike",
+        "Shield-Captain"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Sweeping Advance",
+          "rules_text": "Once per battle, at the end of the Fight phase, if this model's unit has fought this phase, if it is within Engagement Range of one or more enemy units, it can make a Fall Back move or, if it is not within Engagement Range of one or more enemy units, it can make a Normal move.",
+          "implemented": false
+        },
+        {
+          "name": "Strategic Mastery",
+          "rules_text": "Once per battle round, you can select one model from your army with this ability and target that model's unit with a Stratagem. If it does, reduce the CP cost of that use of that Stratagem by 1CP.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Agamatus Custodians",
+          "Vertus Praetors"
+        ],
+        "rules_text": "This model can be attached to the following units: Agamatus Custodians; Vertus Praetors."
+      },
+      "support": null,
+      "wargear_options": [
+        "This model's salvo launcher can be replaced with 1 Vertus hurricane bolter."
+      ],
+      "loadout_options": [
+        {
+          "id": "shield_captain_on_dawneagle_jetbike_salvo_launcher_replacement",
+          "label": "Salvo launcher replacement",
+          "target_model": "Shield-Captain on Dawneagle Jetbike",
+          "default_option_id": "default",
+          "options": [
+            {
+              "id": "default",
+              "label": "Salvo launcher",
+              "description": "Default loadout.",
+              "remove_wargear": [],
+              "add_wargear": []
+            },
+            {
+              "id": "vertus_hurricane_bolter",
+              "label": "Vertus hurricane bolter",
+              "remove_wargear": [
+                "Salvo launcher - Ranged"
+              ],
+              "add_wargear": [
+                "Vertus hurricane bolter - Ranged"
+              ],
+              "enabled_weapons": [
+                "Vertus hurricane bolter - Ranged"
+              ]
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 12,
+        "toughness": 7,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 8,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Vertus hurricane bolter - Ranged",
+          "range": "18\"",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Rapid Fire 3",
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Salvo launcher - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "10",
+          "armor_piercing": "-3",
+          "damage": "D6+1",
+          "keywords": [
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Interceptor lance - Melee",
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": [
+            "Lance"
+          ]
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Telemon Heavy Dreadnought",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_unit": {
+          "1 model": 225
+        },
+        "2nd_plus_units": {
+          "1 model": 245
+        }
+      },
+      "base_size": "100mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Telemon Heavy Dreadnought",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "2 Iliastus accelerator culverin - Ranged",
+            "Spiculus bolt launcher - Ranged",
+            "Armoured feet - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Walker",
+        "Imperium",
+        "Telemon Heavy Dreadnought"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise D3"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Guardian Eternal",
+          "rules_text": "Each time an attack is allocated to this model, subtract 1 from the Damage characteristic of that attack.",
+          "implemented": true
+        },
+        {
+          "name": "Devoted to Destruction",
+          "rules_text": "If this model is equipped with 2 Telemon caestus weapons in addition to its armoured feet weapon, add 2 to the Attacks characteristic of those Telemon caestus weapons.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "This model's 2 iliastus accelerator culverins can be replaced with one of the following: 2 arachnus storm cannons; 2 Telemon caestus and 2 twin plasma projectors; 1 iliastus accelerator culverin and 1 arachnus storm cannon; 1 iliastus accelerator culverin, 1 Telemon caestus and 1 twin plasma projector; 1 arachnus storm cannon, 1 Telemon caestus and 1 twin plasma projector."
+      ],
+      "loadout_options": [
+        {
+          "id": "telemon_heavy_dreadnought_iliastus_accelerator_culverin_replacement",
+          "label": "Iliastus accelerator culverin replacement",
+          "target_model": "Telemon Heavy Dreadnought",
+          "default_option_id": "default",
+          "options": [
+            {
+              "id": "default",
+              "label": "iliastus accelerator culverin",
+              "description": "Default loadout."
+            },
+            {
+              "id": "2_arachnus_storm_cannon",
+              "label": "arachnus storm cannon",
+              "remove_wargear": [
+                "2 Iliastus accelerator culverin - Ranged"
+              ],
+              "add_wargear": [
+                "2 Arachnus storm cannon - Ranged"
+              ],
+              "enabled_weapons": [
+                "Arachnus storm cannon - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            },
+            {
+              "id": "2_telemon_caestus_2_twin_plasma_projector",
+              "label": "Telemon caestus and twin plasma projector",
+              "remove_wargear": [
+                "2 Iliastus accelerator culverin - Ranged"
+              ],
+              "add_wargear": [
+                "2 Telemon caestus - Melee",
+                "2 Twin plasma projector - Ranged"
+              ],
+              "enabled_weapons": [
+                "Telemon caestus - Melee",
+                "Twin plasma projector - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            },
+            {
+              "id": "1_iliastus_accelerator_culverin_1_arachnus_storm_cannon",
+              "label": "iliastus accelerator culverin and arachnus storm cannon",
+              "remove_wargear": [
+                "2 Iliastus accelerator culverin - Ranged"
+              ],
+              "add_wargear": [
+                "Iliastus accelerator culverin - Ranged",
+                "Arachnus storm cannon - Ranged"
+              ],
+              "enabled_weapons": [
+                "Arachnus storm cannon - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            },
+            {
+              "id": "1_iliastus_accelerator_culverin_1_telemon_caestus_1_twin_plasma_projector",
+              "label": "iliastus accelerator culverin and Telemon caestus and twin plasma projector",
+              "remove_wargear": [
+                "2 Iliastus accelerator culverin - Ranged"
+              ],
+              "add_wargear": [
+                "Iliastus accelerator culverin - Ranged",
+                "Telemon caestus - Melee",
+                "Twin plasma projector - Ranged"
+              ],
+              "enabled_weapons": [
+                "Telemon caestus - Melee",
+                "Twin plasma projector - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            },
+            {
+              "id": "1_arachnus_storm_cannon_1_telemon_caestus_1_twin_plasma_projector",
+              "label": "arachnus storm cannon and Telemon caestus and twin plasma projector",
+              "remove_wargear": [
+                "2 Iliastus accelerator culverin - Ranged"
+              ],
+              "add_wargear": [
+                "Arachnus storm cannon - Ranged",
+                "Telemon caestus - Melee",
+                "Twin plasma projector - Ranged"
+              ],
+              "enabled_weapons": [
+                "Arachnus storm cannon - Ranged",
+                "Telemon caestus - Melee",
+                "Twin plasma projector - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 8,
+        "toughness": 10,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 12,
+        "leadership": "6+",
+        "objective_control": 4
+      },
+      "weapons": [
+        {
+          "name": "Arachnus storm cannon - Ranged",
+          "range": "24\"",
+          "attacks": "12",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Devastating Wounds"
+          ]
+        },
+        {
+          "name": "Iliastus accelerator culverin - Ranged",
+          "range": "48\"",
+          "attacks": "4",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "9",
+          "armor_piercing": "-1",
+          "damage": "3",
+          "keywords": []
+        },
+        {
+          "name": "Spiculus bolt launcher - Ranged",
+          "range": "36\"",
+          "attacks": "D6+3",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": [
+            "Blast"
+          ]
+        },
+        {
+          "name": "Twin plasma projector - Ranged",
+          "range": "12\"",
+          "attacks": "2D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "1",
+          "keywords": [
+            "Torrent",
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Armoured feet - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": []
+        },
+        {
+          "name": "Telemon caestus - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "12",
+          "armor_piercing": "-2",
+          "damage": "3",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Trajann Valoris",
+      "faction": "Adeptus Custodes",
+      "points": 135,
+      "base_size": "40mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Trajann Valoris",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Watcher's Axe - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Imperium",
+        "Trajann Valoris"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Core",
+          "rules_text": "Feel No Pain 5+"
+        },
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Captain-General",
+          "rules_text": "While this model is leading a unit, each time a model in this unit makes an attack, you can ignore any or all modifiers to that attack's Ballistic Skill or Weapon Skill characteristics and/or all modifiers to the Hit roll.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [
+        {
+          "name": "Moment Shackle",
+          "rules_text": "Once per battle, at the start of the Fight phase, select one: this model's Watcher's Axe melee weapon has an Attacks characteristic of 12; or this model has a 2+ invulnerable save. The selected effect lasts until the end of the phase.",
+          "implemented": true
+        }
+      ],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Custodian Guard",
+          "Custodian Wardens",
+          "Sagittarum Custodians"
+        ],
+        "rules_text": "This model can be attached to the following units: Custodian Guard; Custodian Wardens; Sagittarum Custodians."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 6,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 7,
+        "leadership": "5+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Eagle's Scream - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "3",
+          "keywords": [
+            "Assault"
+          ]
+        },
+        {
+          "name": "Watcher's Axe - Melee",
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "10",
+          "armor_piercing": "-2",
+          "damage": "3",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Valerian",
+      "faction": "Adeptus Custodes",
+      "points": 110,
+      "base_size": "40mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Valerian",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Gnosis - Ranged",
+            "Gnosis - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Imperium",
+        "Shield-Captain",
+        "Valerian"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Core",
+          "rules_text": "Feel No Pain 5+"
+        },
+        {
+          "name": "Core",
+          "rules_text": "Leader"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Golden Laurels",
+          "rules_text": "While this model is leading a unit, each time a melee attack targets that unit, worsen the Armour Penetration characteristic of that attack by 1.",
+          "implemented": true
+        },
+        {
+          "name": "Hero of Lion's Gate",
+          "rules_text": "Once per battle, after making a Hit roll, Wound roll or saving throw for this model, you can change the result of that roll to an unmodified 6.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {
+        "can_lead": [
+          "Custodian Guard",
+          "Custodian Wardens",
+          "Sagittarum Custodians"
+        ],
+        "rules_text": "This model can be attached to the following units: Custodian Guard; Custodian Wardens; Sagittarum Custodians."
+      },
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 6,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 6,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Gnosis - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault"
+          ]
+        },
+        {
+          "name": "Gnosis - Melee",
+          "range": "Melee",
+          "attacks": "7",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "2",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Venatari Custodians",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_to_2nd_units": {
+          "3 models": 150,
+          "6 models": 300
+        },
+        "3rd_plus_units": {
+          "3 models": 160,
+          "6 models": 310
+        },
+        "wargear_options": {
+          "per Venatari lance": 5
+        }
+      },
+      "base_size": "40mm",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 6
+      },
+      "models": [
+        {
+          "name": "Venatari Custodian",
+          "count": {
+            "min": 3,
+            "max": 6
+          },
+          "default_wargear": [
+            "Venatari lance - Ranged",
+            "Venatari lance - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Fly",
+        "Jump Pack",
+        "Imperium",
+        "Venatari Custodians"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Strike from the Skies",
+          "rules_text": "This unit is eligible to shoot and declare a charge in a turn in which it Fell Back.",
+          "implemented": false
+        },
+        {
+          "name": "Swooping Dive",
+          "rules_text": "Once per battle, you can target this unit with the Rapid Ingress Stratagem for 0CP, and can do so even if you have already targeted a different unit with that Stratagem this phase.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [
+        {
+          "name": "Tarsis Buckler",
+          "rules_text": "The bearer has a Wounds characteristic of 4.",
+          "implemented": false
+        }
+      ],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "Any number of models can each have their Venatari lance replaced with 1 kinetic destroyer and 1 Tarsis buckler."
+      ],
+      "loadout_options": [
+        {
+          "id": "venatari_custodians_venatari_lance_replacements",
+          "label": "Venatari lance replacements",
+          "selection_type": "count",
+          "target_model": "Venatari Custodian",
+          "max_total": 6,
+          "options": [
+            {
+              "id": "kinetic_destroyer_tarsis_buckler",
+              "label": "kinetic destroyer and Tarsis buckler",
+              "remove_wargear": [
+                "Venatari lance - Ranged",
+                "Venatari lance - Melee"
+              ],
+              "add_wargear": [
+                "Kinetic destroyer - Ranged",
+                "Tarsis Buckler"
+              ],
+              "enabled_weapons": [
+                "Kinetic destroyer - Ranged"
+              ],
+              "enabled_wargear_abilities": [
+                "Tarsis Buckler"
+              ],
+              "weapon_bearer_changes": {
+                "Venatari lance - Ranged": -1,
+                "Venatari lance - Melee": -1,
+                "Kinetic destroyer - Ranged": 1
+              },
+              "max_count": 6
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 10,
+        "toughness": 6,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 3,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Kinetic destroyer - Ranged",
+          "range": "12\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "6",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Pistol",
+            "Sustained Hits 1"
+          ]
+        },
+        {
+          "name": "Venatari lance - Ranged",
+          "range": "12\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Assault"
+          ]
+        },
+        {
+          "name": "Tarsis buckler - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "1",
+          "keywords": []
+        },
+        {
+          "name": "Venatari lance - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": [
+            "Lance"
+          ]
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Venerable Contemptor Dreadnought",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_to_2nd_units": {
+          "1 model": 170
+        },
+        "3rd_plus_units": {
+          "1 model": 185
+        }
+      },
+      "base_size": "60mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Venerable Contemptor Dreadnought",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Combi-bolter - Ranged",
+            "Multi-melta - Ranged",
+            "Contemptor combat weapon - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Walker",
+        "Imperium",
+        "Venerable Contemptor Dreadnought"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise 1"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Unyielding Ancient",
+          "rules_text": "The first time this model is destroyed, remove it from play without resolving its Deadly Demise ability. Then, at the end of the phase, roll one D6: on a 2+, set this model back up on the battlefield as close as possible to where it was destroyed and not within Engagement Range of any enemy units, with D6 wounds remaining.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "This model's multi-melta can be replaced with 1 Kheres-pattern assault cannon."
+      ],
+      "loadout_options": [
+        {
+          "id": "venerable_contemptor_dreadnought_multi_melta_replacement",
+          "label": "Multi-melta replacement",
+          "target_model": "Venerable Contemptor Dreadnought",
+          "default_option_id": "default",
+          "options": [
+            {
+              "id": "default",
+              "label": "multi-melta",
+              "description": "Default loadout."
+            },
+            {
+              "id": "1_kheres_pattern_assault_cannon",
+              "label": "Kheres-pattern assault cannon",
+              "remove_wargear": [
+                "Multi-melta - Ranged"
+              ],
+              "add_wargear": [
+                "Kheres-pattern assault cannon - Ranged"
+              ],
+              "enabled_weapons": [
+                "Kheres-pattern assault cannon - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 6,
+        "toughness": 9,
+        "save": "2+",
+        "invulnerable_save": "5+",
+        "wounds": 10,
+        "leadership": "6+",
+        "objective_control": 3
+      },
+      "weapons": [
+        {
+          "name": "Combi-bolter - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": [
+            "Rapid Fire 2"
+          ]
+        },
+        {
+          "name": "Kheres-pattern assault cannon - Ranged",
+          "range": "24\"",
+          "attacks": "6",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-1",
+          "damage": "1",
+          "keywords": [
+            "Devastating Wounds"
+          ]
+        },
+        {
+          "name": "Multi-melta - Ranged",
+          "range": "18\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "9",
+          "armor_piercing": "-4",
+          "damage": "D6",
+          "keywords": [
+            "Melta 2"
+          ]
+        },
+        {
+          "name": "Contemptor combat weapon - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "12",
+          "armor_piercing": "-2",
+          "damage": "3",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Venerable Land Raider",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "1st_unit": {
+          "1 model": 220
+        },
+        "2nd_plus_units": {
+          "1 model": 240
+        }
+      },
+      "base_size": "Use model",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Venerable Land Raider",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "2 Godhammer lascannon - Ranged",
+            "Twin heavy bolter - Ranged",
+            "Armoured tracks - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Vehicle",
+        "Frame",
+        "Imperium",
+        "Transport",
+        "Smoke",
+        "Venerable Land Raider"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deadly Demise D6"
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Assault Ramp",
+          "rules_text": "Each time a unit disembarks from this model after it has made a Normal move, that unit is still eligible to declare a charge this turn.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "This model can be equipped with 1 hunter-killer missile.",
+        "This model can be equipped with 1 storm bolter."
+      ],
+      "loadout_options": [
+        {
+          "id": "venerable_land_raider_hunter_killer_missile_optional",
+          "label": "Hunter-killer missile optional wargear",
+          "target_model": "Venerable Land Raider",
+          "default_option_id": "none",
+          "options": [
+            {
+              "id": "none",
+              "label": "No hunter-killer missile",
+              "description": "Default loadout."
+            },
+            {
+              "id": "hunter_killer_missile",
+              "label": "hunter-killer missile",
+              "add_wargear": [
+                "Hunter-killer missile - Ranged"
+              ],
+              "enabled_weapons": [
+                "Hunter-killer missile - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            }
+          ]
+        },
+        {
+          "id": "venerable_land_raider_storm_bolter_optional",
+          "label": "Storm bolter optional wargear",
+          "target_model": "Venerable Land Raider",
+          "default_option_id": "none",
+          "options": [
+            {
+              "id": "none",
+              "label": "No storm bolter",
+              "description": "Default loadout."
+            },
+            {
+              "id": "storm_bolter",
+              "label": "storm bolter",
+              "add_wargear": [
+                "Storm bolter - Ranged"
+              ],
+              "enabled_weapons": [
+                "Storm bolter - Ranged"
+              ],
+              "enabled_wargear_abilities": []
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 10,
+        "toughness": 12,
+        "save": "2+",
+        "invulnerable_save": "",
+        "wounds": 16,
+        "leadership": "6+",
+        "objective_control": 5
+      },
+      "weapons": [
+        {
+          "name": "Godhammer lascannon - Ranged",
+          "range": "48\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "12",
+          "armor_piercing": "-3",
+          "damage": "D6+1",
+          "keywords": []
+        },
+        {
+          "name": "Hunter-killer missile - Ranged",
+          "range": "48\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "14",
+          "armor_piercing": "-3",
+          "damage": "D6",
+          "keywords": [
+            "One Shot"
+          ]
+        },
+        {
+          "name": "Storm bolter - Ranged",
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": [
+            "Rapid Fire 2"
+          ]
+        },
+        {
+          "name": "Twin heavy bolter - Ranged",
+          "range": "36\"",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Sustained Hits 1",
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Armoured tracks - Melee",
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "8",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Vertus Praetors",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "2 models": 145,
+        "3 models": 215
+      },
+      "base_size": "75 x 42mm",
+      "unit_composition": {
+        "min_models": 2,
+        "max_models": 3
+      },
+      "models": [
+        {
+          "name": "Vertus Praetor",
+          "count": {
+            "min": 2,
+            "max": 3
+          },
+          "default_wargear": [
+            "Salvo launcher - Ranged",
+            "Interceptor lance - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Mounted",
+        "Fly",
+        "Imperium",
+        "Vertus Praetors"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Martial Ka'tah"
+        },
+        {
+          "name": "Turbo-boost",
+          "rules_text": "Each time this unit Advances, do not make an Advance roll. Instead, until the end of the phase, add 6\" to the Move characteristic of models in this unit.",
+          "implemented": false
+        },
+        {
+          "name": "Quicksilver Execution",
+          "rules_text": "Once per battle, after this unit ends a Normal Move or Advance move, you can select one enemy unit (excluding MONSTER and VEHICLE units) that it moved over during that move, then roll one D6 for each model in this unit: for each 2+, that enemy unit suffers 2 mortal wounds.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [
+        "Any number of models can each have their salvo launcher replaced with 1 Vertus hurricane bolter."
+      ],
+      "loadout_options": [
+        {
+          "id": "vertus_praetors_salvo_launcher_replacements",
+          "label": "Salvo launcher replacements",
+          "selection_type": "count",
+          "target_model": "Vertus Praetor",
+          "max_total": 3,
+          "options": [
+            {
+              "id": "1_vertus_hurricane_bolter",
+              "label": "Vertus hurricane bolter",
+              "remove_wargear": [
+                "Salvo launcher - Ranged"
+              ],
+              "add_wargear": [
+                "Vertus hurricane bolter - Ranged"
+              ],
+              "enabled_weapons": [
+                "Vertus hurricane bolter - Ranged"
+              ],
+              "enabled_wargear_abilities": [],
+              "weapon_bearer_changes": {
+                "Salvo launcher - Ranged": -1,
+                "Vertus hurricane bolter - Ranged": 1
+              },
+              "max_count": 3
+            }
+          ]
+        }
+      ],
+      "stats": {
+        "movement": 12,
+        "toughness": 7,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 5,
+        "leadership": "6+",
+        "objective_control": 2
+      },
+      "weapons": [
+        {
+          "name": "Salvo launcher - Ranged",
+          "range": "24\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "10",
+          "armor_piercing": "-3",
+          "damage": "D6+1",
+          "keywords": [
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Vertus hurricane bolter - Ranged",
+          "range": "18\"",
+          "attacks": "3",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2",
+          "keywords": [
+            "Rapid Fire 3",
+            "Twin-linked"
+          ]
+        },
+        {
+          "name": "Interceptor lance - Melee",
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": [
+            "Lance"
+          ]
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Vigilators",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "4 models": 50,
+        "5 models": 55,
+        "9 models": 90,
+        "10 models": 100
+      },
+      "base_size": "32mm",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 9
+      },
+      "models": [
+        {
+          "name": "Vigilator",
+          "count": {
+            "min": 3,
+            "max": 9
+          },
+          "default_wargear": [
+            "Executioner greatblade - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Imperium",
+        "Anathema Psykana",
+        "Vigilators"
+      ],
+      "abilities": [
+        {
+          "name": "Daughters of the Abyss",
+          "rules_text": "Models in this unit have the Feel No Pain 3+ ability against Psychic Attacks and mortal wounds.",
+          "implemented": true
+        },
+        {
+          "name": "Deft Parry",
+          "rules_text": "Each time a melee attack targets this unit, subtract 1 from the Hit roll.",
+          "implemented": true
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 3,
+        "save": "3+",
+        "invulnerable_save": "",
+        "wounds": 1,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Executioner greatblade - Melee",
+          "range": "Melee",
+          "attacks": "2",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "2",
+          "keywords": [
+            "Anti-Psyker 5+",
+            "Devastating Wounds"
+          ]
+        }
+      ],
+      "implemented": false
+    },
+    {
+      "name": "Witchseekers",
+      "faction": "Adeptus Custodes",
+      "points": {
+        "4 models": 50,
+        "5 models": 55,
+        "9 models": 90,
+        "10 models": 100
+      },
+      "base_size": "32mm",
+      "unit_composition": {
+        "min_models": 3,
+        "max_models": 9
+      },
+      "models": [
+        {
+          "name": "Witchseeker",
+          "count": {
+            "min": 3,
+            "max": 9
+          },
+          "default_wargear": [
+            "Witchseeker flamer - Ranged",
+            "Close combat weapon - Melee"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Custodes"
+      ],
+      "keywords": [
+        "Infantry",
+        "Imperium",
+        "Anathema Psykana",
+        "Witchseekers"
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Scouts 6\""
+        },
+        {
+          "name": "Daughters of the Abyss",
+          "rules_text": "Models in this unit have the Feel No Pain 3+ ability against Psychic Attacks and mortal wounds.",
+          "implemented": true
+        },
+        {
+          "name": "Sanctified Flames",
+          "rules_text": "In your Shooting phase, after this unit has shot, select one enemy unit hit by one or more of those attacks. That enemy unit must take a Battle-shock test.",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "support": null,
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 6,
+        "toughness": 3,
+        "save": "3+",
+        "invulnerable_save": "",
+        "wounds": 1,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Witchseeker flamer - Ranged",
+          "range": "12\"",
+          "attacks": "D6",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": [
+            "Ignores Cover",
+            "Torrent"
+          ]
+        },
+        {
+          "name": "Close combat weapon - Melee",
+          "range": "Melee",
+          "attacks": "2",
+          "skill": {
+            "type": "WS",
+            "value": "3+"
+          },
+          "strength": "3",
+          "armor_piercing": "0",
+          "damage": "1",
+          "keywords": []
+        }
+      ],
+      "implemented": false
+    }
+  ]
+}

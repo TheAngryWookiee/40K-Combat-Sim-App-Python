@@ -157,6 +157,94 @@ class SimulationOptions(BaseModel):
     attacker_waaagh_active: bool = False
     defender_waaagh_active: bool = False
     attacker_templar_vow: str | None = None
+    attacker_martial_katah: str | None = None
+    attacker_doctrina_imperative: str | None = None
+    defender_doctrina_imperative: str | None = None
+    attacker_admech_battleline_bonus_active: bool = False
+    defender_admech_battleline_bonus_active: bool = False
+    attacker_target_in_opponent_deployment_zone: bool = False
+    attacker_pre_calibrated_purge_solution_active: bool = False
+    attacker_lethal_dosage_active: bool = False
+    attacker_rad_bombardment_mode: str | None = None
+    attacker_extinction_order_active: bool = False
+    attacker_data_psalm_benediction: str | None = None
+    attacker_chant_of_the_remorseless_fist_active: bool = False
+    attacker_litany_of_the_electromancer_active: bool = False
+    attacker_litany_of_the_electromancer_electro_priest: bool = False
+    attacker_binharic_offence_active: bool = False
+    attacker_isolate_and_destroy_active: bool = False
+    attacker_target_isolated: bool = False
+    attacker_acquisition_objective_active: bool = False
+    attacker_auto_oracular_retrieval_active: bool = False
+    attacker_arch_negator_active: bool = False
+    attacker_auto_divinatory_targeting_active: bool = False
+    attacker_machine_spirit_resurgent_active: bool = False
+    attacker_transcendent_cogitation_active: bool = False
+    attacker_servo_driven_charge_active: bool = False
+    attacker_unshackled_wrath_mode: str | None = None
+    attacker_threat_cogitation_targeters_active: bool = False
+    attacker_precision_onslaught_active: bool = False
+    attacker_halo_override_active: bool = False
+    attacker_halo_override_mode: str | None = None
+    attacker_eradication_protocols_active: bool = False
+    attacker_targeting_override_active: bool = False
+    attacker_defect_scrutiny_active: bool = False
+    attacker_echoes_of_the_conduit_wars_active: bool = False
+    attacker_cantic_thrallnet_active: bool = False
+    attacker_martial_signatum_amplificator_active: bool = False
+    defender_genetor_active: bool = False
+    defender_incense_exhausts_active: bool = False
+    defender_necromechanic_active: bool = False
+    defender_lord_of_machines_active: bool = False
+    defender_benevolence_of_the_omnissiah_active: bool = False
+    defender_halo_override_mode: str | None = None
+    defender_scriptural_prognosis_active: bool = False
+    defender_baleful_halo_active: bool = False
+    defender_bulwark_imperative_active: bool = False
+    defender_mantle_of_the_gnosticarch_active: bool = False
+    defender_tribute_of_emphatic_veneration_active: bool = False
+    defender_luminescent_blessing_active: bool = False
+    defender_bionic_endurance_active: bool = False
+    attacker_shield_host_martial_mastery: str | None = None
+    attacker_archaeotech_munitions_mode: str | None = None
+    attacker_witch_hunters_mode: str | None = None
+    attacker_raptor_blade_mode: str | None = None
+    attacker_deadly_unity_active: bool = False
+    attacker_talons_interlocked_active: bool = False
+    attacker_emperors_executioners_active: bool = False
+    attacker_gift_of_terran_artifice_active: bool = False
+    attacker_from_the_hall_of_armouries_active: bool = False
+    attacker_panoptispex_active: bool = False
+    attacker_avenge_the_fallen_active: bool = False
+    attacker_oblivion_knight_active: bool = False
+    attacker_anathema_blademastery_active: bool = False
+    attacker_psy_chaff_volley_active: bool = False
+    attacker_purgation_sweep_active: bool = False
+    attacker_assemblage_of_might_active: bool = False
+    attacker_earning_of_a_name_active: bool = False
+    attacker_veiled_blade_active: bool = False
+    attacker_auric_armour_active: bool = False
+    attacker_adamantine_talisman_active: bool = False
+    attacker_honoured_fallen_active: bool = False
+    attacker_punishment_inescapable_active: bool = False
+    attacker_interred_expertise_active: bool = False
+    attacker_prioritised_eradication_active: bool = False
+    attacker_against_all_odds_active: bool = False
+    attacker_fierce_conqueror_bonus: int = Field(default=0, ge=0)
+    attacker_admonimortis_active: bool = False
+    attacker_peerless_warrior_active: bool = False
+    attacker_deathsong_scythes_active: bool = False
+    attacker_umbral_prosecution_active: bool = False
+    attacker_synchronised_inferno_active: bool = False
+    attacker_electroexorcist_saturation_active: bool = False
+    defender_radiant_mantle_active: bool = False
+    defender_unwavering_sentinels_active: bool = False
+    defender_psy_chaff_volley_active: bool = False
+    defender_psychic_abominations_active: bool = False
+    defender_emperors_auspice_active: bool = False
+    defender_augury_uplink_active: bool = False
+    defender_flawless_construction_active: bool = False
+    defender_hardened_resolve_active: bool = False
     attacker_hyper_adaptation: str | None = None
     attacker_black_spear_mission_tactic: str | None = None
     attacker_penitent_vow: str | None = None
@@ -637,6 +725,22 @@ ATTACKER_STRATAGEM_OPTION_KEYS = {
     "attacker_rage_fuelled_warrior_active",
     "attacker_red_rampage_mode",
     "attacker_savage_echoes_mode",
+    "attacker_talons_interlocked_active",
+    "attacker_emperors_executioners_active",
+    "attacker_archaeotech_munitions_mode",
+    "attacker_witch_hunters_mode",
+    "attacker_avenge_the_fallen_active",
+    "attacker_anathema_blademastery_active",
+    "attacker_psy_chaff_volley_active",
+    "attacker_purgation_sweep_active",
+    "attacker_earning_of_a_name_active",
+    "attacker_punishment_inescapable_active",
+    "attacker_prioritised_eradication_active",
+    "attacker_peerless_warrior_active",
+    "attacker_deathsong_scythes_active",
+    "attacker_umbral_prosecution_active",
+    "attacker_synchronised_inferno_active",
+    "attacker_electroexorcist_saturation_active",
     "attacker_surgical_strikes_active",
     "attacker_competitive_streak_active",
     "attacker_armed_to_da_teef_active",
@@ -645,6 +749,25 @@ ATTACKER_STRATAGEM_OPTION_KEYS = {
     "attacker_surprise_assault_active",
     "attacker_assassin_beasts_active",
     "attacker_irresistible_will_active",
+    "attacker_pre_calibrated_purge_solution_active",
+    "attacker_lethal_dosage_active",
+    "attacker_extinction_order_active",
+    "attacker_chant_of_the_remorseless_fist_active",
+    "attacker_litany_of_the_electromancer_active",
+    "attacker_binharic_offence_active",
+    "attacker_isolate_and_destroy_active",
+    "attacker_auto_oracular_retrieval_active",
+    "attacker_auto_divinatory_targeting_active",
+    "attacker_machine_spirit_resurgent_active",
+    "attacker_transcendent_cogitation_active",
+    "attacker_servo_driven_charge_active",
+    "attacker_unshackled_wrath_mode",
+    "attacker_threat_cogitation_targeters_active",
+    "attacker_precision_onslaught_active",
+    "attacker_eradication_protocols_active",
+    "attacker_targeting_override_active",
+    "attacker_defect_scrutiny_active",
+    "attacker_echoes_of_the_conduit_wars_active",
 }
 
 DEFENDER_STRATAGEM_OPTION_KEYS = {
@@ -670,6 +793,20 @@ DEFENDER_STRATAGEM_OPTION_KEYS = {
     "defender_unbreakable_lines_active",
     "defender_recitation_of_the_revered_active",
     "defender_blessed_hull_active",
+    "defender_unwavering_sentinels_active",
+    "defender_psy_chaff_volley_active",
+    "defender_psychic_abominations_active",
+    "defender_emperors_auspice_active",
+    "defender_flawless_construction_active",
+    "defender_hardened_resolve_active",
+    "defender_baleful_halo_active",
+    "defender_bulwark_imperative_active",
+    "defender_tribute_of_emphatic_veneration_active",
+    "defender_luminescent_blessing_active",
+    "defender_bionic_endurance_active",
+    "defender_incense_exhausts_active",
+    "defender_benevolence_of_the_omnissiah_active",
+    "defender_scriptural_prognosis_active",
 }
 
 

@@ -780,12 +780,13 @@ def apply_unit_loadout(
             if target_model_names
             else selected_model_count
         )
-        for weapon_name in selected_option.get("enabled_weapons", []):
-            normalized_weapon_name = normalize_wargear_name(weapon_name)
-            selected_weapon_bearer_minimums[normalized_weapon_name] = max(
-                selected_weapon_bearer_minimums.get(normalized_weapon_name, 0),
-                selected_bearer_count,
-            )
+        if not selected_option.get("weapon_bearer_changes"):
+            for weapon_name in selected_option.get("enabled_weapons", []):
+                normalized_weapon_name = normalize_wargear_name(weapon_name)
+                selected_weapon_bearer_minimums[normalized_weapon_name] = max(
+                    selected_weapon_bearer_minimums.get(normalized_weapon_name, 0),
+                    selected_bearer_count,
+                )
         selected_wargear_ability_names.update(
             str(ability_name)
             for ability_name in selected_option.get("enabled_wargear_abilities", [])
@@ -802,6 +803,8 @@ def apply_unit_loadout(
         for target_model_name in target_model_names:
             model = models_by_name.get(target_model_name)
             if model is not None:
+                if selected_option.get("weapon_bearer_changes"):
+                    continue
                 default_wargear = list(model.get("default_wargear", []))
                 remove_wargear = {
                     str(item)
