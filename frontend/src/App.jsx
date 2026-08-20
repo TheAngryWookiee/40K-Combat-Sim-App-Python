@@ -88,6 +88,43 @@ const initialOptions = {
   attacker_templar_vow: '',
   attacker_martial_katah: '',
   attacker_doctrina_imperative: '',
+  attacker_astra_militarum_order: '',
+  defender_astra_militarum_order: '',
+  attacker_fields_of_fire_active: false,
+  defender_stalwart_protector_active: false,
+  attacker_incendiary_bombardment_active: false,
+  defender_smoke_shells_active: false,
+  attacker_flare_burst_active: false,
+  attacker_furious_fusillade_active: false,
+  attacker_sacred_unguents_active: false,
+  attacker_clear_and_secure_active: false,
+  defender_smoke_grenades_active: false,
+  attacker_final_hour_active: false,
+  attacker_furious_cannonade_active: false,
+  defender_ablative_plating_active: false,
+  attacker_crack_shots_active: false,
+  defender_tripwires_active: false,
+  defender_courageous_diversion_active: false,
+  defender_masters_camouflage_extra_cover_active: false,
+  attacker_veteran_sharpshooters_active: false,
+  attacker_purging_fire_active: false,
+  attacker_mordian_minute_active: false,
+  defender_additional_armour_active: false,
+  attacker_aquilan_eye_order_active: false,
+  defender_spec_ops_order_active: false,
+  attacker_titan_killer_active: false,
+  attacker_engine_of_wrath_active: false,
+  attacker_shattering_salvo_active: false,
+  attacker_accuracy_under_pressure_active: false,
+  defender_omnissian_unguents_active: false,
+  attacker_supporting_ordnance_active: false,
+  attacker_combined_fire_active: false,
+  attacker_opening_salvo_active: false,
+  defender_thick_skulled_obdurance_active: false,
+  defender_sump_smog_screen_active: false,
+  attacker_firing_hot_active: false,
+  attacker_servo_designators_active: false,
+  attacker_on_my_position_active: false,
   defender_doctrina_imperative: '',
   attacker_admech_battleline_bonus_active: false,
   defender_admech_battleline_bonus_active: false,
@@ -354,7 +391,17 @@ const SYNAPTIC_NEXUS = 'Synaptic Nexus'
 const ADEPTA_SORORITAS = 'Adepta Sororitas'
 const ADEPTUS_CUSTODES = 'Adeptus Custodes'
 const ADEPTUS_MECHANICUS = 'Adeptus Mechanicus'
+const ASTRA_MILITARUM = 'Astra Militarum'
 const BLACK_TEMPLARS = 'Black Templars'
+const ASTRA_MILITARUM_ORDER_OPTIONS = [
+  { id: '', label: 'No Order' },
+  { id: 'move_move_move', label: 'Move! Move! Move!' },
+  { id: 'fix_bayonets', label: 'Fix Bayonets!' },
+  { id: 'take_aim', label: 'Take Aim!' },
+  { id: 'first_rank_fire_second_rank_fire', label: 'First Rank, Fire! Second Rank, Fire!' },
+  { id: 'take_cover', label: 'Take Cover!' },
+  { id: 'duty_and_honour', label: 'Duty and Honour!' },
+]
 const RAD_ZONE_CORPS = 'Rad-Zone Corps'
 const DATA_PSALM_CONCLAVE = 'Data-psalm Conclave'
 const SKITARII_HUNTER_COHORT = 'Skitarii Hunter Cohort'
@@ -2871,6 +2918,43 @@ function buildSimulationPayload(state) {
     attacker_templar_vow: state.attackerTemplarVow || null,
     attacker_martial_katah: state.attackerMartialKatah || null,
     attacker_doctrina_imperative: state.attackerDoctrinaImperative || null,
+    attacker_astra_militarum_order: state.attackerAstraMilitarumOrder || null,
+    defender_astra_militarum_order: state.defenderAstraMilitarumOrder || null,
+    attacker_fields_of_fire_active: Boolean(state.attackerFieldsOfFireActive),
+    defender_stalwart_protector_active: Boolean(state.defenderStalwartProtectorActive),
+    attacker_incendiary_bombardment_active: Boolean(state.attackerIncendiaryBombardmentActive),
+    defender_smoke_shells_active: Boolean(state.defenderSmokeShellsActive),
+    attacker_flare_burst_active: Boolean(state.attackerFlareBurstActive),
+    attacker_furious_fusillade_active: Boolean(state.attackerFuriousFusilladeActive),
+    attacker_sacred_unguents_active: Boolean(state.attackerSacredUnguentsActive),
+    attacker_clear_and_secure_active: Boolean(state.attackerClearAndSecureActive),
+    defender_smoke_grenades_active: Boolean(state.defenderSmokeGrenadesActive),
+    attacker_final_hour_active: Boolean(state.attackerFinalHourActive),
+    attacker_furious_cannonade_active: Boolean(state.attackerFuriousCannonadeActive),
+    defender_ablative_plating_active: Boolean(state.defenderAblativePlatingActive),
+    attacker_crack_shots_active: Boolean(state.attackerCrackShotsActive),
+    defender_tripwires_active: Boolean(state.defenderTripwiresActive),
+    defender_courageous_diversion_active: Boolean(state.defenderCourageousDiversionActive),
+    defender_masters_camouflage_extra_cover_active: Boolean(state.defenderMastersCamouflageExtraCoverActive),
+    attacker_veteran_sharpshooters_active: Boolean(state.attackerVeteranSharpshootersActive),
+    attacker_purging_fire_active: Boolean(state.attackerPurgingFireActive),
+    attacker_mordian_minute_active: Boolean(state.attackerMordianMinuteActive),
+    defender_additional_armour_active: Boolean(state.defenderAdditionalArmourActive),
+    attacker_aquilan_eye_order_active: Boolean(state.attackerAquilanEyeOrderActive),
+    defender_spec_ops_order_active: Boolean(state.defenderSpecOpsOrderActive),
+    attacker_titan_killer_active: Boolean(state.attackerTitanKillerActive),
+    attacker_engine_of_wrath_active: Boolean(state.attackerEngineOfWrathActive),
+    attacker_shattering_salvo_active: Boolean(state.attackerShatteringSalvoActive),
+    attacker_accuracy_under_pressure_active: Boolean(state.attackerAccuracyUnderPressureActive),
+    defender_omnissian_unguents_active: Boolean(state.defenderOmnissianUnguentsActive),
+    attacker_supporting_ordnance_active: Boolean(state.attackerSupportingOrdnanceActive),
+    attacker_combined_fire_active: Boolean(state.attackerCombinedFireActive),
+    attacker_opening_salvo_active: Boolean(state.attackerOpeningSalvoActive),
+    defender_thick_skulled_obdurance_active: Boolean(state.defenderThickSkulledObduranceActive),
+    defender_sump_smog_screen_active: Boolean(state.defenderSumpSmogScreenActive),
+    attacker_firing_hot_active: Boolean(state.attackerFiringHotActive),
+    attacker_servo_designators_active: Boolean(state.attackerServoDesignatorsActive),
+    attacker_on_my_position_active: Boolean(state.attackerOnMyPositionActive),
     defender_doctrina_imperative: state.defenderDoctrinaImperative || null,
     attacker_admech_battleline_bonus_active: Boolean(state.attackerAdmechBattlelineBonusActive),
     defender_admech_battleline_bonus_active: Boolean(state.defenderAdmechBattlelineBonusActive),
@@ -6681,6 +6765,30 @@ function buildAttackerActiveRules({
   attackerTemplarVow,
   attackerMartialKatah,
   attackerDoctrinaImperative,
+  attackerAstraMilitarumOrder,
+  attackerFieldsOfFireActive,
+  attackerIncendiaryBombardmentActive,
+  attackerFlareBurstActive,
+  attackerFuriousFusilladeActive,
+  attackerSacredUnguentsActive,
+  attackerClearAndSecureActive,
+  attackerFinalHourActive,
+  attackerFuriousCannonadeActive,
+  attackerCrackShotsActive,
+  attackerVeteranSharpshootersActive,
+  attackerPurgingFireActive,
+  attackerMordianMinuteActive,
+  attackerAquilanEyeOrderActive,
+  attackerTitanKillerActive,
+  attackerEngineOfWrathActive,
+  attackerShatteringSalvoActive,
+  attackerAccuracyUnderPressureActive,
+  attackerSupportingOrdnanceActive,
+  attackerCombinedFireActive,
+  attackerOpeningSalvoActive,
+  attackerFiringHotActive,
+  attackerServoDesignatorsActive,
+  attackerOnMyPositionActive,
   attackerAdmechBattlelineBonusActive,
   attackerTargetInOpponentDeploymentZone,
   attackerPreCalibratedPurgeSolutionActive,
@@ -6862,6 +6970,7 @@ function buildAttackerActiveRules({
   const activeTemplarVow = TEMPLAR_VOW_OPTIONS.find((option) => option.id === attackerTemplarVow)
   const activeMartialKatah = MARTIAL_KATAH_OPTIONS.find((option) => option.id === attackerMartialKatah)
   const activeDoctrinaImperative = DOCTRINA_IMPERATIVE_OPTIONS.find((option) => option.id === attackerDoctrinaImperative)
+  const activeAstraMilitarumOrder = ASTRA_MILITARUM_ORDER_OPTIONS.find((option) => option.id === attackerAstraMilitarumOrder)
 
   if (oathOfMomentActive && unitHasOathOfMoment(attackerUnitDetails)) {
     const woundBonusText = unitGetsOathWoundBonus(attackerUnitDetails)
@@ -6970,6 +7079,225 @@ function buildAttackerActiveRules({
       name: activeDoctrinaImperative.label,
       source: `${ADEPTUS_MECHANICUS} Army Rule`,
       text: textByImperative[activeDoctrinaImperative.id] || '',
+    })
+  }
+  if (String(attackerFactionName || '').toLowerCase() === ASTRA_MILITARUM.toLowerCase() && activeAstraMilitarumOrder?.id) {
+    const orderTextById = {
+      move_move_move: 'Add 3" to the Move characteristic of models in this unit.',
+      fix_bayonets: 'Improve the Weapon Skill characteristic of melee weapons equipped by models in this unit by 1.',
+      take_aim: 'Improve the Ballistic Skill characteristic of ranged weapons equipped by models in this unit by 1.',
+      first_rank_fire_second_rank_fire: 'Improve the Attacks characteristic of Rapid Fire weapons equipped by models in this unit by 1.',
+      take_cover: "Improve the Save characteristic of models in this unit by 1. This cannot improve a model's Save better than 3+.",
+      duty_and_honour: 'Improve the Leadership and Objective Control characteristics of models in this unit by 1.',
+    }
+    rules.push({
+      name: activeAstraMilitarumOrder.label,
+      source: `${ASTRA_MILITARUM} Army Rule`,
+      text: orderTextById[activeAstraMilitarumOrder.id] || '',
+    })
+  }
+
+  if (attackerFieldsOfFireActive) {
+    rules.push({
+      name: 'Fields of Fire',
+      source: `${attackerDetachment?.name || 'Combined Arms'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Fields of Fire')?.effect || 'Ranged attacks against the selected enemy unit improve their Armour Penetration characteristic by 1.',
+    })
+  }
+
+  if (attackerIncendiaryBombardmentActive) {
+    rules.push({
+      name: 'Incendiary Bombardment',
+      source: `${attackerDetachment?.name || 'Siege Regiment'} Rule`,
+      text: 'The target is scattered by Artillery Support and cannot have the Benefit of Cover against this ranged attack.',
+    })
+  }
+
+  if (attackerFlareBurstActive) {
+    rules.push({
+      name: 'Flare Burst',
+      source: `${attackerDetachment?.name || 'Siege Regiment'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Flare Burst')?.effect || 'Visible enemy units within 12" can be attacked with re-rolled Hit rolls.',
+    })
+  }
+
+  if (attackerFuriousFusilladeActive) {
+    rules.push({
+      name: 'Furious Fusillade',
+      source: `${attackerDetachment?.name || 'Siege Regiment'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Furious Fusillade')?.effect || 'Ranged weapons gain +1 Attack while targeting an enemy unit within half range.',
+    })
+  }
+
+  if (attackerDetachment?.name === 'Mechanised Assault' && attackerDisembarkedFromTransport && selectedWeapon?.range !== 'Melee') {
+    rules.push({
+      name: 'Armoured Fist',
+      source: 'Mechanised Assault Rule',
+      text: getDetachmentEntry(attackerDetachment, 'rule', 'Armoured Fist')?.rules_text || 'This ranged attack adds 1 to the Wound roll because the unit disembarked from a Transport this turn.',
+    })
+  }
+
+  if (attackerSacredUnguentsActive) {
+    rules.push({
+      name: 'Sacred Unguents',
+      source: `${attackerDetachment?.name || 'Mechanised Assault'} Enhancement`,
+      text: getDetachmentEntry(attackerDetachment, 'enhancements', 'Sacred Unguents')?.rules_text || 'The selected Transport can re-roll Hit rolls for its attacks.',
+    })
+  }
+
+  if (attackerClearAndSecureActive) {
+    rules.push({
+      name: 'Clear and Secure',
+      source: `${attackerDetachment?.name || 'Mechanised Assault'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Clear and Secure')?.effect || 'A disembarked unit can re-roll Hit and Wound rolls against a unit within range of an objective marker.',
+    })
+  }
+
+  if (attackerFinalHourActive) {
+    rules.push({
+      name: 'Final Hour',
+      source: `${attackerDetachment?.name || 'Hammer of the Emperor'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Final Hour')?.effect || 'Ranged weapons gain Hazardous and ignore modifiers to Ballistic Skill and Hit rolls.',
+    })
+  }
+
+  if (attackerFuriousCannonadeActive) {
+    rules.push({
+      name: 'Furious Cannonade',
+      source: `${attackerDetachment?.name || 'Hammer of the Emperor'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Furious Cannonade')?.effect || 'Ranged attacks against a target within 12" improve AP by 1.',
+    })
+  }
+
+  if (attackerCrackShotsActive) {
+    rules.push({
+      name: 'Crack Shots',
+      source: `${attackerDetachment?.name || 'Recon Element'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Crack Shots')?.effect || 'Ranged weapons have Precision.',
+    })
+  }
+
+  if (attackerVeteranSharpshootersActive) {
+    rules.push({
+      name: 'Veteran Sharpshooters',
+      source: `${attackerDetachment?.name || 'Grizzled Company'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Veteran Sharpshooters')?.effect || 'Ranged weapons have Ignores Cover.',
+    })
+  }
+
+  if (attackerPurgingFireActive) {
+    rules.push({
+      name: 'Purging Fire',
+      source: `${attackerDetachment?.name || 'Grizzled Company'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Purging Fire')?.effect || 'Ordered unit ranged weapons have Lethal Hits while within range of an objective marker.',
+    })
+  }
+
+  if (attackerMordianMinuteActive) {
+    rules.push({
+      name: 'Mordian Minute',
+      source: `${attackerDetachment?.name || 'Grizzled Company'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Mordian Minute')?.effect || 'Attacks improve Strength by 1 while affected by First Rank, Fire! Second Rank, Fire!.',
+    })
+  }
+
+  if (attackerAquilanEyeOrderActive) {
+    rules.push({
+      name: 'Target Weak Spot',
+      source: `${attackerDetachment?.name || 'Grizzled Company'} Enhancement Order`,
+      text: getDetachmentEntry(attackerDetachment, 'enhancements', 'Aquilan Eye')?.rules_text || 'Ranged attacks targeting an enemy unit within 12" improve AP by 1.',
+    })
+  }
+
+  if (attackerTitanKillerActive) {
+    rules.push({
+      name: 'Titan Killer',
+      source: `${attackerDetachment?.name || 'Steel Hammer'} Enhancement`,
+      text: getDetachmentEntry(attackerDetachment, 'enhancements', 'Titan Killer')?.rules_text || 'This model can re-roll Damage rolls for its ranged attacks.',
+    })
+  }
+
+  if (attackerEngineOfWrathActive) {
+    rules.push({
+      name: 'Engine of Wrath',
+      source: `${attackerDetachment?.name || 'Steel Hammer'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Engine of Wrath')?.effect || 'Melee weapons get +6 Attacks and improve AP by 2.',
+    })
+  }
+
+  if (attackerShatteringSalvoActive) {
+    rules.push({
+      name: 'Shattering Salvo',
+      source: `${attackerDetachment?.name || 'Steel Hammer'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Shattering Salvo')?.effect || 'The selected target cannot have the Benefit of Cover.',
+    })
+  }
+
+  if (attackerAccuracyUnderPressureActive) {
+    rules.push({
+      name: 'Accuracy Under Pressure',
+      source: `${attackerDetachment?.name || 'Steel Hammer'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Accuracy Under Pressure')?.effect || 'This unit can re-roll Hit rolls.',
+    })
+  }
+
+  if (attackerSupportingOrdnanceActive) {
+    rules.push({
+      name: 'Supporting Ordnance',
+      source: `${attackerDetachment?.name || 'Armoured Infantry'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Supporting Ordnance')?.effect || 'Ranged attacks against visible Monster or Vehicle units can re-roll Hit rolls.',
+    })
+  }
+
+  if (attackerCombinedFireActive) {
+    rules.push({
+      name: 'Combined Fire',
+      source: `${attackerDetachment?.name || 'Armoured Infantry'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Combined Fire')?.effect || 'The target cannot have cover and Armoured Skirmisher attacks improve Strength by 2.',
+    })
+  }
+
+  if (attackerOpeningSalvoActive) {
+    rules.push({
+      name: 'Opening Salvo',
+      source: `${attackerDetachment?.name || 'Armoured Infantry'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Opening Salvo')?.effect || 'A disembarked unit adds 1 to Wound rolls.',
+    })
+  }
+
+  if (
+    attackerDetachment?.name === 'Bridgehead Strike'
+    && attackerSetUpOnBattlefieldThisTurn
+    && unitHasKeyword(attackerUnitDetails, 'militarum tempestus')
+  ) {
+    rules.push({
+      name: 'Fire Zone Purge',
+      source: 'Bridgehead Strike Rule',
+      text: getDetachmentEntry(attackerDetachment, 'rule', 'Fire Zone Purge')?.rules_text || 'Militarum Tempestus ranged attacks get +1 to Hit if the unit was set up this turn.',
+    })
+  }
+
+  if (attackerFiringHotActive) {
+    rules.push({
+      name: 'Firing Hot',
+      source: `${attackerDetachment?.name || 'Bridgehead Strike'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Firing Hot')?.effect || 'Hot-shot weapons targeting a unit within 12" get +1 Strength and +1 AP.',
+    })
+  }
+
+  if (attackerServoDesignatorsActive) {
+    rules.push({
+      name: 'Servo-designators',
+      source: `${attackerDetachment?.name || 'Bridgehead Strike'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'Servo-designators')?.effect || 'Militarum Tempestus ranged attacks targeting the marked unit have Ignores Cover.',
+    })
+  }
+
+  if (attackerOnMyPositionActive) {
+    rules.push({
+      name: 'On My Position',
+      source: `${attackerDetachment?.name || 'Bridgehead Strike'} Stratagem`,
+      text: getDetachmentEntry(attackerDetachment, 'stratagems', 'On My Position')?.effect || 'Resolved before attacks for simulation convenience: on a 2+, the enemy unit suffers D6 mortal wounds; friendly self-damage is noted in the log.',
     })
   }
 
@@ -8607,6 +8935,19 @@ function buildDefenderActiveRules({
   defenderFactionName,
   defenderEnhancementName,
   defenderDoctrinaImperative,
+  defenderAstraMilitarumOrder,
+  defenderStalwartProtectorActive,
+  defenderSmokeShellsActive,
+  defenderSmokeGrenadesActive,
+  defenderAblativePlatingActive,
+  defenderTripwiresActive,
+  defenderCourageousDiversionActive,
+  defenderMastersCamouflageExtraCoverActive,
+  defenderAdditionalArmourActive,
+  defenderSpecOpsOrderActive,
+  defenderOmnissianUnguentsActive,
+  defenderThickSkulledObduranceActive,
+  defenderSumpSmogScreenActive,
   defenderAdmechBattlelineBonusActive,
   defenderBalefulHaloActive,
   defenderBulwarkImperativeActive,
@@ -8676,6 +9017,142 @@ function buildDefenderActiveRules({
       text: battlelineActive && selectedAttackWeapons.some((weapon) => weapon.range === 'Melee')
         ? 'This Adeptus Mechanicus defender selected Protector Imperative and has its Battleline proximity bonus active, so incoming melee attacks subtract 1 from the Hit roll.'
         : 'This Adeptus Mechanicus defender selected Protector Imperative. The defensive hit penalty applies to incoming melee attacks while the unit is Battleline or within 6" of friendly Adeptus Mechanicus Battleline.',
+    })
+  }
+
+  const activeDefenderAstraMilitarumOrder = ASTRA_MILITARUM_ORDER_OPTIONS.find((option) => option.id === defenderAstraMilitarumOrder)
+  if (String(defenderFactionName || '').toLowerCase() === ASTRA_MILITARUM.toLowerCase() && activeDefenderAstraMilitarumOrder?.id) {
+    const orderTextById = {
+      move_move_move: 'Add 3" to the Move characteristic of models in this unit.',
+      fix_bayonets: 'Improve the Weapon Skill characteristic of melee weapons equipped by models in this unit by 1.',
+      take_aim: 'Improve the Ballistic Skill characteristic of ranged weapons equipped by models in this unit by 1.',
+      first_rank_fire_second_rank_fire: 'Improve the Attacks characteristic of Rapid Fire weapons equipped by models in this unit by 1.',
+      take_cover: "Improve the Save characteristic of models in this unit by 1. This cannot improve a model's Save better than 3+.",
+      duty_and_honour: 'Improve the Leadership and Objective Control characteristics of models in this unit by 1.',
+    }
+    rules.push({
+      name: activeDefenderAstraMilitarumOrder.label,
+      source: `${ASTRA_MILITARUM} Army Rule`,
+      text: orderTextById[activeDefenderAstraMilitarumOrder.id] || '',
+    })
+  }
+
+  if (defenderStalwartProtectorActive) {
+    rules.push({
+      name: 'Stalwart Protector',
+      source: `${defenderDetachment?.name || 'Combined Arms'} Stratagem`,
+      text: getDetachmentEntry(defenderDetachment, 'stratagems', 'Stalwart Protector')?.effect || 'The defender has the Benefit of Cover against this ranged attack.',
+    })
+  }
+
+  if (defenderSmokeShellsActive) {
+    rules.push({
+      name: 'Smoke Shells',
+      source: `${defenderDetachment?.name || 'Siege Regiment'} Rule`,
+      text: 'This unit was selected for Smoke Shells and has Stealth against this ranged attack.',
+    })
+  }
+
+  if (defenderSmokeGrenadesActive) {
+    rules.push({
+      name: 'Smoke Grenades',
+      source: `${defenderDetachment?.name || 'Mechanised Assault'} Enhancement`,
+      text: getDetachmentEntry(defenderDetachment, 'enhancements', 'Smoke Grenades')?.rules_text || 'The bearer unit has the Benefit of Cover and Stealth while wholly within 3" of a friendly Transport.',
+    })
+  }
+
+  if (defenderAblativePlatingActive) {
+    rules.push({
+      name: 'Ablative Plating',
+      source: `${defenderDetachment?.name || 'Hammer of the Emperor'} Stratagem`,
+      text: getDetachmentEntry(defenderDetachment, 'stratagems', 'Ablative Plating')?.effect || 'Subtract 1 from the Damage characteristic of attacks allocated to this unit.',
+    })
+  }
+
+  if (
+    defenderDetachment?.name === 'Recon Element'
+    && selectedAttackWeapons.some((weapon) => weapon.range !== 'Melee')
+    && (
+      unitHasKeyword(defenderUnitDetails, 'walker')
+      || unitHasKeyword(defenderUnitDetails, 'regiment')
+    )
+  ) {
+    rules.push({
+      name: 'Masters of Camouflage',
+      source: `${defenderDetachment.name} Rule`,
+      text: getDetachmentEntry(defenderDetachment, 'rule', 'Masters of Camouflage')?.rules_text || 'Walker and Regiment units have the Benefit of Cover.',
+    })
+  }
+
+  if (defenderMastersCamouflageExtraCoverActive) {
+    rules.push({
+      name: 'Masters of Camouflage extra cover',
+      source: `${defenderDetachment?.name || 'Recon Element'} Rule`,
+      text: 'This unit already has the Benefit of Cover from another source, so its Save is improved by 1, to a maximum of 3+.',
+    })
+  }
+
+  if (defenderTripwiresActive) {
+    rules.push({
+      name: 'Tripwires',
+      source: `${defenderDetachment?.name || 'Recon Element'} Enhancement`,
+      text: getDetachmentEntry(defenderDetachment, 'enhancements', 'Tripwires')?.rules_text || 'The attacking unit is stunned and subtracts 1 from Hit rolls.',
+    })
+  }
+
+  if (defenderCourageousDiversionActive) {
+    rules.push({
+      name: 'Courageous Diversion',
+      source: `${defenderDetachment?.name || 'Recon Element'} Stratagem`,
+      text: getDetachmentEntry(defenderDetachment, 'stratagems', 'Courageous Diversion')?.effect || 'The defender has Feel No Pain 6+; if it is the closest eligible target, the attacker subtracts 1 from Hit rolls.',
+    })
+  }
+
+  if (defenderAdditionalArmourActive) {
+    rules.push({
+      name: 'Additional Armour',
+      source: `${defenderDetachment?.name || 'Grizzled Company'} Stratagem`,
+      text: getDetachmentEntry(defenderDetachment, 'stratagems', 'Additional Armour')?.effect || 'Incoming attacks worsen AP by 1.',
+    })
+  }
+
+  if (defenderSpecOpsOrderActive) {
+    rules.push({
+      name: 'Move to the Shadows',
+      source: `${defenderDetachment?.name || 'Grizzled Company'} Enhancement Order`,
+      text: getDetachmentEntry(defenderDetachment, 'enhancements', 'Spec Ops Veteran')?.rules_text || 'This unit has Stealth against ranged attacks.',
+    })
+  }
+
+  if (defenderOmnissianUnguentsActive) {
+    rules.push({
+      name: 'Omnissian Unguents',
+      source: `${defenderDetachment?.name || 'Armoured Infantry'} Enhancement Aura`,
+      text: getDetachmentEntry(defenderDetachment, 'enhancements', 'Omnissian Unguents (Aura)')?.rules_text || 'This Armoured Skirmisher unit has Feel No Pain 5+.',
+    })
+  }
+
+  if (defenderEnhancementName === 'Exemplar of Duty') {
+    rules.push({
+      name: 'Exemplar of Duty',
+      source: `${defenderDetachment?.name || 'Abhuman Auxiliaries'} Enhancement`,
+      text: getDetachmentEntry(defenderDetachment, 'enhancements', 'Exemplar of Duty')?.rules_text || 'This model has Feel No Pain 4+.',
+    })
+  }
+
+  if (defenderThickSkulledObduranceActive) {
+    rules.push({
+      name: 'Thick-skulled Obdurance',
+      source: `${defenderDetachment?.name || 'Abhuman Auxiliaries'} Stratagem`,
+      text: getDetachmentEntry(defenderDetachment, 'stratagems', 'Thick-skulled Obdurance')?.effect || 'Attacks that target this unit worsen AP by 1.',
+    })
+  }
+
+  if (defenderSumpSmogScreenActive) {
+    rules.push({
+      name: 'Sump-smog Screen',
+      source: `${defenderDetachment?.name || 'Designation Force'} Stratagem`,
+      text: getDetachmentEntry(defenderDetachment, 'stratagems', 'Sump-smog Screen')?.effect || 'The target has the Benefit of Cover against this ranged attack.',
     })
   }
 
@@ -9763,6 +10240,43 @@ function App() {
   const [attackerTemplarVow, setAttackerTemplarVow] = useState(() => combatInitial('attacker_templar_vow', initialOptions.attacker_templar_vow))
   const [attackerMartialKatah, setAttackerMartialKatah] = useState(() => combatInitial('attacker_martial_katah', initialOptions.attacker_martial_katah))
   const [attackerDoctrinaImperative, setAttackerDoctrinaImperative] = useState(() => combatInitial('attacker_doctrina_imperative', initialOptions.attacker_doctrina_imperative))
+  const [attackerAstraMilitarumOrder, setAttackerAstraMilitarumOrder] = useState(() => combatInitial('attacker_astra_militarum_order', initialOptions.attacker_astra_militarum_order))
+  const [defenderAstraMilitarumOrder, setDefenderAstraMilitarumOrder] = useState(() => combatInitial('defender_astra_militarum_order', initialOptions.defender_astra_militarum_order))
+  const [attackerFieldsOfFireActive, setAttackerFieldsOfFireActive] = useState(() => combatInitial('attacker_fields_of_fire_active', initialOptions.attacker_fields_of_fire_active))
+  const [defenderStalwartProtectorActive, setDefenderStalwartProtectorActive] = useState(() => combatInitial('defender_stalwart_protector_active', initialOptions.defender_stalwart_protector_active))
+  const [attackerIncendiaryBombardmentActive, setAttackerIncendiaryBombardmentActive] = useState(() => combatInitial('attacker_incendiary_bombardment_active', initialOptions.attacker_incendiary_bombardment_active))
+  const [defenderSmokeShellsActive, setDefenderSmokeShellsActive] = useState(() => combatInitial('defender_smoke_shells_active', initialOptions.defender_smoke_shells_active))
+  const [attackerFlareBurstActive, setAttackerFlareBurstActive] = useState(() => combatInitial('attacker_flare_burst_active', initialOptions.attacker_flare_burst_active))
+  const [attackerFuriousFusilladeActive, setAttackerFuriousFusilladeActive] = useState(() => combatInitial('attacker_furious_fusillade_active', initialOptions.attacker_furious_fusillade_active))
+  const [attackerSacredUnguentsActive, setAttackerSacredUnguentsActive] = useState(() => combatInitial('attacker_sacred_unguents_active', initialOptions.attacker_sacred_unguents_active))
+  const [attackerClearAndSecureActive, setAttackerClearAndSecureActive] = useState(() => combatInitial('attacker_clear_and_secure_active', initialOptions.attacker_clear_and_secure_active))
+  const [defenderSmokeGrenadesActive, setDefenderSmokeGrenadesActive] = useState(() => combatInitial('defender_smoke_grenades_active', initialOptions.defender_smoke_grenades_active))
+  const [attackerFinalHourActive, setAttackerFinalHourActive] = useState(() => combatInitial('attacker_final_hour_active', initialOptions.attacker_final_hour_active))
+  const [attackerFuriousCannonadeActive, setAttackerFuriousCannonadeActive] = useState(() => combatInitial('attacker_furious_cannonade_active', initialOptions.attacker_furious_cannonade_active))
+  const [defenderAblativePlatingActive, setDefenderAblativePlatingActive] = useState(() => combatInitial('defender_ablative_plating_active', initialOptions.defender_ablative_plating_active))
+  const [attackerCrackShotsActive, setAttackerCrackShotsActive] = useState(() => combatInitial('attacker_crack_shots_active', initialOptions.attacker_crack_shots_active))
+  const [defenderTripwiresActive, setDefenderTripwiresActive] = useState(() => combatInitial('defender_tripwires_active', initialOptions.defender_tripwires_active))
+  const [defenderCourageousDiversionActive, setDefenderCourageousDiversionActive] = useState(() => combatInitial('defender_courageous_diversion_active', initialOptions.defender_courageous_diversion_active))
+  const [defenderMastersCamouflageExtraCoverActive, setDefenderMastersCamouflageExtraCoverActive] = useState(() => combatInitial('defender_masters_camouflage_extra_cover_active', initialOptions.defender_masters_camouflage_extra_cover_active))
+  const [attackerVeteranSharpshootersActive, setAttackerVeteranSharpshootersActive] = useState(() => combatInitial('attacker_veteran_sharpshooters_active', initialOptions.attacker_veteran_sharpshooters_active))
+  const [attackerPurgingFireActive, setAttackerPurgingFireActive] = useState(() => combatInitial('attacker_purging_fire_active', initialOptions.attacker_purging_fire_active))
+  const [attackerMordianMinuteActive, setAttackerMordianMinuteActive] = useState(() => combatInitial('attacker_mordian_minute_active', initialOptions.attacker_mordian_minute_active))
+  const [defenderAdditionalArmourActive, setDefenderAdditionalArmourActive] = useState(() => combatInitial('defender_additional_armour_active', initialOptions.defender_additional_armour_active))
+  const [attackerAquilanEyeOrderActive, setAttackerAquilanEyeOrderActive] = useState(() => combatInitial('attacker_aquilan_eye_order_active', initialOptions.attacker_aquilan_eye_order_active))
+  const [defenderSpecOpsOrderActive, setDefenderSpecOpsOrderActive] = useState(() => combatInitial('defender_spec_ops_order_active', initialOptions.defender_spec_ops_order_active))
+  const [attackerTitanKillerActive, setAttackerTitanKillerActive] = useState(() => combatInitial('attacker_titan_killer_active', initialOptions.attacker_titan_killer_active))
+  const [attackerEngineOfWrathActive, setAttackerEngineOfWrathActive] = useState(() => combatInitial('attacker_engine_of_wrath_active', initialOptions.attacker_engine_of_wrath_active))
+  const [attackerShatteringSalvoActive, setAttackerShatteringSalvoActive] = useState(() => combatInitial('attacker_shattering_salvo_active', initialOptions.attacker_shattering_salvo_active))
+  const [attackerAccuracyUnderPressureActive, setAttackerAccuracyUnderPressureActive] = useState(() => combatInitial('attacker_accuracy_under_pressure_active', initialOptions.attacker_accuracy_under_pressure_active))
+  const [defenderOmnissianUnguentsActive, setDefenderOmnissianUnguentsActive] = useState(() => combatInitial('defender_omnissian_unguents_active', initialOptions.defender_omnissian_unguents_active))
+  const [attackerSupportingOrdnanceActive, setAttackerSupportingOrdnanceActive] = useState(() => combatInitial('attacker_supporting_ordnance_active', initialOptions.attacker_supporting_ordnance_active))
+  const [attackerCombinedFireActive, setAttackerCombinedFireActive] = useState(() => combatInitial('attacker_combined_fire_active', initialOptions.attacker_combined_fire_active))
+  const [attackerOpeningSalvoActive, setAttackerOpeningSalvoActive] = useState(() => combatInitial('attacker_opening_salvo_active', initialOptions.attacker_opening_salvo_active))
+  const [defenderThickSkulledObduranceActive, setDefenderThickSkulledObduranceActive] = useState(() => combatInitial('defender_thick_skulled_obdurance_active', initialOptions.defender_thick_skulled_obdurance_active))
+  const [defenderSumpSmogScreenActive, setDefenderSumpSmogScreenActive] = useState(() => combatInitial('defender_sump_smog_screen_active', initialOptions.defender_sump_smog_screen_active))
+  const [attackerFiringHotActive, setAttackerFiringHotActive] = useState(() => combatInitial('attacker_firing_hot_active', initialOptions.attacker_firing_hot_active))
+  const [attackerServoDesignatorsActive, setAttackerServoDesignatorsActive] = useState(() => combatInitial('attacker_servo_designators_active', initialOptions.attacker_servo_designators_active))
+  const [attackerOnMyPositionActive, setAttackerOnMyPositionActive] = useState(() => combatInitial('attacker_on_my_position_active', initialOptions.attacker_on_my_position_active))
   const [defenderDoctrinaImperative, setDefenderDoctrinaImperative] = useState(() => combatInitial('defender_doctrina_imperative', initialOptions.defender_doctrina_imperative))
   const [attackerAdmechBattlelineBonusActive, setAttackerAdmechBattlelineBonusActive] = useState(() => combatInitial('attacker_admech_battleline_bonus_active', initialOptions.attacker_admech_battleline_bonus_active))
   const [defenderAdmechBattlelineBonusActive, setDefenderAdmechBattlelineBonusActive] = useState(() => combatInitial('defender_admech_battleline_bonus_active', initialOptions.defender_admech_battleline_bonus_active))
@@ -10178,6 +10692,43 @@ function App() {
       attacker_templar_vow: attackerTemplarVow,
       attacker_martial_katah: attackerMartialKatah,
       attacker_doctrina_imperative: attackerDoctrinaImperative,
+      attacker_astra_militarum_order: attackerAstraMilitarumOrder,
+      defender_astra_militarum_order: defenderAstraMilitarumOrder,
+      attacker_fields_of_fire_active: attackerFieldsOfFireActive,
+      defender_stalwart_protector_active: defenderStalwartProtectorActive,
+      attacker_incendiary_bombardment_active: attackerIncendiaryBombardmentActive,
+      defender_smoke_shells_active: defenderSmokeShellsActive,
+      attacker_flare_burst_active: attackerFlareBurstActive,
+      attacker_furious_fusillade_active: attackerFuriousFusilladeActive,
+      attacker_sacred_unguents_active: attackerSacredUnguentsActive,
+      attacker_clear_and_secure_active: attackerClearAndSecureActive,
+      defender_smoke_grenades_active: defenderSmokeGrenadesActive,
+      attacker_final_hour_active: attackerFinalHourActive,
+      attacker_furious_cannonade_active: attackerFuriousCannonadeActive,
+      defender_ablative_plating_active: defenderAblativePlatingActive,
+      attacker_crack_shots_active: attackerCrackShotsActive,
+      defender_tripwires_active: defenderTripwiresActive,
+      defender_courageous_diversion_active: defenderCourageousDiversionActive,
+      defender_masters_camouflage_extra_cover_active: defenderMastersCamouflageExtraCoverActive,
+      attacker_veteran_sharpshooters_active: attackerVeteranSharpshootersActive,
+      attacker_purging_fire_active: attackerPurgingFireActive,
+      attacker_mordian_minute_active: attackerMordianMinuteActive,
+      defender_additional_armour_active: defenderAdditionalArmourActive,
+      attacker_aquilan_eye_order_active: attackerAquilanEyeOrderActive,
+      defender_spec_ops_order_active: defenderSpecOpsOrderActive,
+      attacker_titan_killer_active: attackerTitanKillerActive,
+      attacker_engine_of_wrath_active: attackerEngineOfWrathActive,
+      attacker_shattering_salvo_active: attackerShatteringSalvoActive,
+      attacker_accuracy_under_pressure_active: attackerAccuracyUnderPressureActive,
+      defender_omnissian_unguents_active: defenderOmnissianUnguentsActive,
+      attacker_supporting_ordnance_active: attackerSupportingOrdnanceActive,
+      attacker_combined_fire_active: attackerCombinedFireActive,
+      attacker_opening_salvo_active: attackerOpeningSalvoActive,
+      defender_thick_skulled_obdurance_active: defenderThickSkulledObduranceActive,
+      defender_sump_smog_screen_active: defenderSumpSmogScreenActive,
+      attacker_firing_hot_active: attackerFiringHotActive,
+      attacker_servo_designators_active: attackerServoDesignatorsActive,
+      attacker_on_my_position_active: attackerOnMyPositionActive,
       defender_doctrina_imperative: defenderDoctrinaImperative,
       attacker_admech_battleline_bonus_active: attackerAdmechBattlelineBonusActive,
       defender_admech_battleline_bonus_active: defenderAdmechBattlelineBonusActive,
@@ -11802,7 +12353,9 @@ function App() {
   const attackerArmyIsBlackTemplars = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === BLACK_TEMPLARS.toLowerCase()
   const attackerArmyIsAdeptusCustodes = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === ADEPTUS_CUSTODES.toLowerCase()
   const attackerArmyIsAdeptusMechanicus = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === ADEPTUS_MECHANICUS.toLowerCase()
+  const attackerArmyIsAstraMilitarum = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === ASTRA_MILITARUM.toLowerCase()
   const defenderArmyIsAdeptusMechanicus = String(defenderFactionDetails?.name || defenderFaction || '').toLowerCase() === ADEPTUS_MECHANICUS.toLowerCase()
+  const defenderArmyIsAstraMilitarum = String(defenderFactionDetails?.name || defenderFaction || '').toLowerCase() === ASTRA_MILITARUM.toLowerCase()
   const hasOathOfMoment = unitHasOathOfMoment(attackerUnitDetails) && !attackerArmyIsBlackTemplars
   const attackerEnhancementBearerUnit = attackerAttachedLeaderUnitDetails || attackerAttachedSupportUnitDetails || attackerUnitDetails
   const defenderEnhancementBearerUnit = attachedCharacterUnitDetails || attachedSupportUnitDetails || defenderUnitDetails
@@ -11859,6 +12412,61 @@ function App() {
   const canUseAttackerReclaimOurHonour = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Reclaim Our Honour!')
   const canUseAttackerCondemnatoryInfoScreed = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Condemnatory Info-screed')
   const canUseAttackerSlayersOfAbominations = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Slayers of Abominations')
+  const canUseAttackerFieldsOfFire = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Fields of Fire')
+  const canUseAttackerIncendiaryBombardment = selectedAttackerDetachment?.name === 'Siege Regiment' && isRangedWeapon
+  const canUseAttackerFlareBurst = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Flare Burst')
+  const canUseAttackerFuriousFusillade = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Furious Fusillade')
+  const canUseAttackerSacredUnguents = attackerEnhancementName === 'Sacred Unguents' && isRangedWeapon
+  const canUseAttackerClearAndSecure = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Clear and Secure')
+  const canUseAttackerFinalHour = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Final Hour')
+  const canUseAttackerFuriousCannonade = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Furious Cannonade')
+  const canUseAttackerCrackShots = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Crack Shots')
+  const canUseAttackerVeteranSharpshooters = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Veteran Sharpshooters')
+  const canUseAttackerPurgingFire = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Purging Fire')
+  const canUseAttackerMordianMinute = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Mordian Minute')
+  const canUseAttackerAquilanEyeOrder = attackerEnhancementName === 'Aquilan Eye' && isRangedWeapon
+  const canUseAttackerTitanKiller = attackerEnhancementName === 'Titan Killer' && isRangedWeapon
+  const canUseAttackerEngineOfWrath = attackerCanBeTargetedByStratagems && isMeleeWeapon && unitHasKeyword(attackerUnitDetails, 'titanic') && attackerStratagemOptions.some((item) => item.name === 'Engine of Wrath')
+  const canUseAttackerShatteringSalvo = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Shattering Salvo')
+  const canUseAttackerAccuracyUnderPressure = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Accuracy Under Pressure')
+  const canUseDefenderOmnissianUnguents = defenderEnhancementName === 'Omnissian Unguents (Aura)'
+  const canUseAttackerSupportingOrdnance = (
+    attackerCanBeTargetedByStratagems
+    && isRangedWeapon
+    && (unitHasKeyword(defenderUnitDetails, 'monster') || unitHasKeyword(defenderUnitDetails, 'vehicle'))
+    && attackerStratagemOptions.some((item) => item.name === 'Supporting Ordnance')
+  )
+  const canUseAttackerCombinedFire = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Combined Fire')
+  const canUseAttackerOpeningSalvo = attackerCanBeTargetedByStratagems && attackerStratagemOptions.some((item) => item.name === 'Opening Salvo')
+  const attackerHasHotShotWeaponSelected = selectedAttackWeapons.some((weapon) => {
+    const weaponName = String(weapon?.name || '').toLowerCase()
+    return weapon.range !== 'Melee' && (
+      weaponName.includes('hot-shot lascarbine')
+      || weaponName.includes('hot-shot lasgun')
+      || weaponName.includes('hot-shot laspistol')
+      || weaponName.includes('hot-shot marksman rifle')
+      || weaponName.includes('hot-shot volley gun')
+      || weaponName.includes('sentry hot-shot volley gun')
+    )
+  })
+  const canUseAttackerFiringHot = (
+    attackerCanBeTargetedByStratagems
+    && attackerHasHotShotWeaponSelected
+    && attackerStratagemOptions.some((item) => item.name === 'Firing Hot')
+  )
+  const canUseAttackerServoDesignators = attackerCanBeTargetedByStratagems && isRangedWeapon && attackerStratagemOptions.some((item) => item.name === 'Servo-designators')
+  const canUseAttackerOnMyPosition = (
+    attackerCanBeTargetedByStratagems
+    && attackerInEngagementRange
+    && unitHasKeyword(attackerUnitDetails, 'regiment')
+    && attackerStratagemOptions.some((item) => item.name === 'On My Position')
+  )
+  const canUseDefenderThickSkulledObdurance = (
+    defenderCanBeTargetedByStratagems
+    && defenderOnObjective
+    && defenderStratagemOptions.some((item) => item.name === 'Thick-skulled Obdurance')
+  )
+  const canUseDefenderSumpSmogScreen = defenderCanBeTargetedByStratagems && isRangedWeapon && defenderStratagemOptions.some((item) => item.name === 'Sump-smog Screen')
   const canUseAttackerAnointedChampion = (
     selectedAttackerDetachment?.name === THE_LIVING_MIRACLE
     && isMeleeWeapon
@@ -11928,6 +12536,22 @@ function App() {
   const canUseDefenderStalkinTaktiks = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === "Stalkin' Taktiks")
   const canUseDefenderSpeediestFreeks = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Speediest Freeks')
   const canUseDefenderReinforcedHiveNode = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Reinforced Hive Node')
+  const canUseDefenderStalwartProtector = defenderCanBeTargetedByStratagems && isRangedWeapon && defenderStratagemOptions.some((item) => item.name === 'Stalwart Protector')
+  const canUseDefenderSmokeShells = selectedDefenderDetachment?.name === 'Siege Regiment' && isRangedWeapon
+  const canUseDefenderSmokeGrenades = defenderEnhancementName === 'Smoke Grenades' && isRangedWeapon
+  const canUseDefenderAblativePlating = defenderCanBeTargetedByStratagems && isRangedWeapon && defenderStratagemOptions.some((item) => item.name === 'Ablative Plating')
+  const canUseDefenderTripwires = defenderEnhancementName === 'Tripwires'
+  const canUseDefenderCourageousDiversion = defenderCanBeTargetedByStratagems && isRangedWeapon && defenderStratagemOptions.some((item) => item.name === 'Courageous Diversion')
+  const canUseDefenderMastersCamouflageExtraCover = (
+    selectedDefenderDetachment?.name === 'Recon Element'
+    && isRangedWeapon
+    && (
+      unitHasKeyword(defenderUnitDetails, 'walker')
+      || unitHasKeyword(defenderUnitDetails, 'regiment')
+    )
+  )
+  const canUseDefenderAdditionalArmour = defenderCanBeTargetedByStratagems && isRangedWeapon && defenderStratagemOptions.some((item) => item.name === 'Additional Armour')
+  const canUseDefenderSpecOpsOrder = defenderEnhancementName === 'Spec Ops Veteran' && isRangedWeapon
   const canUseDefenderExtraGubbinz = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Extra Gubbinz')
   const canUseDefenderHulkingBrutes = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Hulking Brutes')
   const canUseDefenderSavageRoar = defenderCanBeTargetedByStratagems && defenderStratagemOptions.some((item) => item.name === 'Savage Roar')
@@ -11966,7 +12590,9 @@ function App() {
   const canUseAttackerTemplarVow = attackerArmyIsBlackTemplars
   const canUseAttackerMartialKatah = attackerArmyIsAdeptusCustodes && isMeleeWeapon
   const canUseAttackerDoctrinaImperative = attackerArmyIsAdeptusMechanicus
+  const canUseAttackerAstraMilitarumOrder = attackerArmyIsAstraMilitarum
   const canUseDefenderDoctrinaImperative = defenderArmyIsAdeptusMechanicus && isMeleeWeapon
+  const canUseDefenderAstraMilitarumOrder = defenderArmyIsAstraMilitarum
   const canUseAttackerHyperAdaptation = selectedAttackerDetachment?.name === INVASION_FLEET
   const canUseAttackerBlackSpearMissionTactic = selectedAttackerDetachment?.name === BLACK_SPEAR_TASK_FORCE
   const canUseAttackerPenitentVow = selectedAttackerDetachment?.name === PENITENT_HOST
@@ -12037,6 +12663,11 @@ function App() {
       || selectedDefenderDetachment?.name === VANGUARD_SPEARHEAD
       || canUseAttackerStrikeFromTheShadows
       || canUseAttackerIlluminatingFire
+      || selectedAttackerDetachment?.name === 'Mechanised Assault'
+      || canUseAttackerFlareBurst
+      || canUseAttackerFuriousCannonade
+      || canUseAttackerAquilanEyeOrder
+      || canUseAttackerFiringHot
       || attackerEnhancementName === 'Augur Servo-host'
       || (
         selectedAttackerDetachment?.name === LIBRARIUS_CONCLAVE
@@ -12045,16 +12676,28 @@ function App() {
     )
   )
   const canUseTargetClosestEligible = (
-    isRangedWeapon
-    && unitHasAbility(attackerUnitDetails, 'Indomitor Doctrines')
+    (
+      isRangedWeapon
+      && unitHasAbility(attackerUnitDetails, 'Indomitor Doctrines')
+    )
+    || canUseDefenderCourageousDiversion
   )
   const canUseTargetClosestEligibleWithinSix = canUseAttackerCrucibleOfBattle
-  const canUseAttackerSetUpOnBattlefieldThisTurn = unitHasAbility(attackerUnitDetails, 'Talonstrike Doctrines')
+  const canUseAttackerSetUpOnBattlefieldThisTurn = (
+    unitHasAbility(attackerUnitDetails, 'Talonstrike Doctrines')
+    || (
+      selectedAttackerDetachment?.name === 'Bridgehead Strike'
+      && unitHasKeyword(attackerUnitDetails, 'militarum tempestus')
+      && isRangedWeapon
+    )
+  )
   const canUseAttackerDisembarkedFromTransport = (
     canUseAttackerOnslaughtOfFire
+    || selectedAttackerDetachment?.name === 'Mechanised Assault'
     || selectedAttackerDetachment?.name === GODHAMMER_ASSAULT_FORCE
     || attackerEnhancementName === 'Paragon of Fury'
     || canUseAttackerCondemnatoryInfoScreed
+    || canUseAttackerOpeningSalvo
   )
   const canUseAttackerDisembarkedFromLandRaider = canUseAttackerCondemnatoryInfoScreed && attackerDisembarkedFromTransport
   const canUseTargetBelowStartingStrength = (
@@ -12855,7 +13498,44 @@ function App() {
   const attackerCombatDoctrineTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Combat Doctrines')?.rules_text || ''
   const attackerTemplarVowTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Templar Vows')?.rules_text || ''
   const attackerDoctrinaImperativeTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Doctrina Imperatives')?.rules_text || ''
+  const attackerAstraMilitarumOrderTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Voice of Command')?.rules_text || ''
   const defenderDoctrinaImperativeTooltip = defenderFactionDetails?.army_rules?.find((rule) => rule.name === 'Doctrina Imperatives')?.rules_text || ''
+  const defenderAstraMilitarumOrderTooltip = defenderFactionDetails?.army_rules?.find((rule) => rule.name === 'Voice of Command')?.rules_text || ''
+  const attackerFieldsOfFireTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Fields of Fire')?.effect || ''
+  const defenderStalwartProtectorTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Stalwart Protector')?.effect || ''
+  const attackerIncendiaryBombardmentTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Artillery Support')?.rules_text || ''
+  const defenderSmokeShellsTooltip = getDetachmentEntry(selectedDefenderDetachment, 'rule', 'Artillery Support')?.rules_text || ''
+  const attackerFlareBurstTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Flare Burst')?.effect || ''
+  const attackerFuriousFusilladeTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Furious Fusillade')?.effect || ''
+  const attackerSacredUnguentsTooltip = getDetachmentEntry(selectedAttackerDetachment, 'enhancements', 'Sacred Unguents')?.rules_text || ''
+  const attackerClearAndSecureTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Clear and Secure')?.effect || ''
+  const defenderSmokeGrenadesTooltip = getDetachmentEntry(selectedDefenderDetachment, 'enhancements', 'Smoke Grenades')?.rules_text || ''
+  const attackerFinalHourTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Final Hour')?.effect || ''
+  const attackerFuriousCannonadeTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Furious Cannonade')?.effect || ''
+  const defenderAblativePlatingTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Ablative Plating')?.effect || ''
+  const attackerCrackShotsTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Crack Shots')?.effect || ''
+  const defenderTripwiresTooltip = getDetachmentEntry(selectedDefenderDetachment, 'enhancements', 'Tripwires')?.rules_text || ''
+  const defenderCourageousDiversionTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Courageous Diversion')?.effect || ''
+  const defenderMastersCamouflageTooltip = getDetachmentEntry(selectedDefenderDetachment, 'rule', 'Masters of Camouflage')?.rules_text || ''
+  const attackerVeteranSharpshootersTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Veteran Sharpshooters')?.effect || ''
+  const attackerPurgingFireTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Purging Fire')?.effect || ''
+  const attackerMordianMinuteTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Mordian Minute')?.effect || ''
+  const defenderAdditionalArmourTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Additional Armour')?.effect || ''
+  const attackerAquilanEyeTooltip = getDetachmentEntry(selectedAttackerDetachment, 'enhancements', 'Aquilan Eye')?.rules_text || ''
+  const defenderSpecOpsVeteranTooltip = getDetachmentEntry(selectedDefenderDetachment, 'enhancements', 'Spec Ops Veteran')?.rules_text || ''
+  const attackerTitanKillerTooltip = getDetachmentEntry(selectedAttackerDetachment, 'enhancements', 'Titan Killer')?.rules_text || ''
+  const attackerEngineOfWrathTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Engine of Wrath')?.effect || ''
+  const attackerShatteringSalvoTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Shattering Salvo')?.effect || ''
+  const attackerAccuracyUnderPressureTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Accuracy Under Pressure')?.effect || ''
+  const defenderOmnissianUnguentsTooltip = getDetachmentEntry(selectedDefenderDetachment, 'enhancements', 'Omnissian Unguents (Aura)')?.rules_text || ''
+  const attackerSupportingOrdnanceTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Supporting Ordnance')?.effect || ''
+  const attackerCombinedFireTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Combined Fire')?.effect || ''
+  const attackerOpeningSalvoTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Opening Salvo')?.effect || ''
+  const defenderThickSkulledObduranceTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Thick-skulled Obdurance')?.effect || ''
+  const defenderSumpSmogScreenTooltip = getDetachmentEntry(selectedDefenderDetachment, 'stratagems', 'Sump-smog Screen')?.effect || ''
+  const attackerFiringHotTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Firing Hot')?.effect || ''
+  const attackerServoDesignatorsTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'Servo-designators')?.effect || ''
+  const attackerOnMyPositionTooltip = getDetachmentEntry(selectedAttackerDetachment, 'stratagems', 'On My Position')?.effect || ''
   const attackerPenitentVowTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Desperate for Redemption')?.rules_text || ''
   const attackerRighteousTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Righteous Purpose')?.rules_text || ''
   const defenderRighteousTooltip = getDetachmentEntry(selectedDefenderDetachment, 'rule', 'Righteous Purpose')?.rules_text || ''
@@ -12960,6 +13640,30 @@ function App() {
       attackerTemplarVow,
       attackerMartialKatah,
       attackerDoctrinaImperative,
+      attackerAstraMilitarumOrder,
+      attackerFieldsOfFireActive,
+      attackerIncendiaryBombardmentActive,
+      attackerFlareBurstActive,
+      attackerFuriousFusilladeActive,
+      attackerSacredUnguentsActive,
+      attackerClearAndSecureActive,
+      attackerFinalHourActive,
+      attackerFuriousCannonadeActive,
+      attackerCrackShotsActive,
+      attackerVeteranSharpshootersActive,
+      attackerPurgingFireActive,
+      attackerMordianMinuteActive,
+      attackerAquilanEyeOrderActive,
+      attackerTitanKillerActive,
+      attackerEngineOfWrathActive,
+      attackerShatteringSalvoActive,
+      attackerAccuracyUnderPressureActive,
+      attackerSupportingOrdnanceActive,
+      attackerCombinedFireActive,
+      attackerOpeningSalvoActive,
+      attackerFiringHotActive,
+      attackerServoDesignatorsActive,
+      attackerOnMyPositionActive,
       attackerAdmechBattlelineBonusActive,
       attackerTargetInOpponentDeploymentZone,
       attackerPreCalibratedPurgeSolutionActive,
@@ -13107,6 +13811,30 @@ function App() {
       attackerTemplarVow,
       attackerMartialKatah,
       attackerDoctrinaImperative,
+      attackerAstraMilitarumOrder,
+      attackerFieldsOfFireActive,
+      attackerIncendiaryBombardmentActive,
+      attackerFlareBurstActive,
+      attackerFuriousFusilladeActive,
+      attackerSacredUnguentsActive,
+      attackerClearAndSecureActive,
+      attackerFinalHourActive,
+      attackerFuriousCannonadeActive,
+      attackerCrackShotsActive,
+      attackerVeteranSharpshootersActive,
+      attackerPurgingFireActive,
+      attackerMordianMinuteActive,
+      attackerAquilanEyeOrderActive,
+      attackerTitanKillerActive,
+      attackerEngineOfWrathActive,
+      attackerShatteringSalvoActive,
+      attackerAccuracyUnderPressureActive,
+      attackerSupportingOrdnanceActive,
+      attackerCombinedFireActive,
+      attackerOpeningSalvoActive,
+      attackerFiringHotActive,
+      attackerServoDesignatorsActive,
+      attackerOnMyPositionActive,
       attackerAdmechBattlelineBonusActive,
       attackerTargetInOpponentDeploymentZone,
       attackerPreCalibratedPurgeSolutionActive,
@@ -13247,6 +13975,19 @@ function App() {
       defenderFactionName: defenderFactionDetails?.name || defenderFaction,
       defenderEnhancementName,
       defenderDoctrinaImperative,
+      defenderAstraMilitarumOrder,
+      defenderStalwartProtectorActive,
+      defenderSmokeShellsActive,
+      defenderSmokeGrenadesActive,
+      defenderAblativePlatingActive,
+      defenderTripwiresActive,
+      defenderCourageousDiversionActive,
+      defenderMastersCamouflageExtraCoverActive,
+      defenderAdditionalArmourActive,
+      defenderSpecOpsOrderActive,
+      defenderOmnissianUnguentsActive,
+      defenderThickSkulledObduranceActive,
+      defenderSumpSmogScreenActive,
       defenderAdmechBattlelineBonusActive,
       defenderBalefulHaloActive,
       defenderBulwarkImperativeActive,
@@ -13304,6 +14045,19 @@ function App() {
       defenderFaction,
       defenderEnhancementName,
       defenderDoctrinaImperative,
+      defenderAstraMilitarumOrder,
+      defenderStalwartProtectorActive,
+      defenderSmokeShellsActive,
+      defenderSmokeGrenadesActive,
+      defenderAblativePlatingActive,
+      defenderTripwiresActive,
+      defenderCourageousDiversionActive,
+      defenderMastersCamouflageExtraCoverActive,
+      defenderAdditionalArmourActive,
+      defenderSpecOpsOrderActive,
+      defenderOmnissianUnguentsActive,
+      defenderThickSkulledObduranceActive,
+      defenderSumpSmogScreenActive,
       defenderAdmechBattlelineBonusActive,
       defenderBalefulHaloActive,
       defenderBulwarkImperativeActive,
@@ -15430,6 +16184,117 @@ function App() {
     if (!canUseAttackerDoctrinaImperative && attackerDoctrinaImperative) {
       setAttackerDoctrinaImperative(initialOptions.attacker_doctrina_imperative)
     }
+    if (!canUseAttackerAstraMilitarumOrder && attackerAstraMilitarumOrder) {
+      setAttackerAstraMilitarumOrder(initialOptions.attacker_astra_militarum_order)
+    }
+    if (!canUseDefenderAstraMilitarumOrder && defenderAstraMilitarumOrder) {
+      setDefenderAstraMilitarumOrder(initialOptions.defender_astra_militarum_order)
+    }
+    if (!canUseAttackerFieldsOfFire && attackerFieldsOfFireActive) {
+      setAttackerFieldsOfFireActive(initialOptions.attacker_fields_of_fire_active)
+    }
+    if (!canUseDefenderStalwartProtector && defenderStalwartProtectorActive) {
+      setDefenderStalwartProtectorActive(initialOptions.defender_stalwart_protector_active)
+    }
+    if (!canUseAttackerIncendiaryBombardment && attackerIncendiaryBombardmentActive) {
+      setAttackerIncendiaryBombardmentActive(initialOptions.attacker_incendiary_bombardment_active)
+    }
+    if (!canUseDefenderSmokeShells && defenderSmokeShellsActive) {
+      setDefenderSmokeShellsActive(initialOptions.defender_smoke_shells_active)
+    }
+    if (!canUseAttackerFlareBurst && attackerFlareBurstActive) {
+      setAttackerFlareBurstActive(initialOptions.attacker_flare_burst_active)
+    }
+    if (!canUseAttackerFuriousFusillade && attackerFuriousFusilladeActive) {
+      setAttackerFuriousFusilladeActive(initialOptions.attacker_furious_fusillade_active)
+    }
+    if (!canUseAttackerSacredUnguents && attackerSacredUnguentsActive) {
+      setAttackerSacredUnguentsActive(initialOptions.attacker_sacred_unguents_active)
+    }
+    if (!canUseAttackerClearAndSecure && attackerClearAndSecureActive) {
+      setAttackerClearAndSecureActive(initialOptions.attacker_clear_and_secure_active)
+    }
+    if (!canUseDefenderSmokeGrenades && defenderSmokeGrenadesActive) {
+      setDefenderSmokeGrenadesActive(initialOptions.defender_smoke_grenades_active)
+    }
+    if (!canUseAttackerFinalHour && attackerFinalHourActive) {
+      setAttackerFinalHourActive(initialOptions.attacker_final_hour_active)
+    }
+    if (!canUseAttackerFuriousCannonade && attackerFuriousCannonadeActive) {
+      setAttackerFuriousCannonadeActive(initialOptions.attacker_furious_cannonade_active)
+    }
+    if (!canUseDefenderAblativePlating && defenderAblativePlatingActive) {
+      setDefenderAblativePlatingActive(initialOptions.defender_ablative_plating_active)
+    }
+    if (!canUseAttackerCrackShots && attackerCrackShotsActive) {
+      setAttackerCrackShotsActive(initialOptions.attacker_crack_shots_active)
+    }
+    if (!canUseAttackerVeteranSharpshooters && attackerVeteranSharpshootersActive) {
+      setAttackerVeteranSharpshootersActive(initialOptions.attacker_veteran_sharpshooters_active)
+    }
+    if (!canUseAttackerPurgingFire && attackerPurgingFireActive) {
+      setAttackerPurgingFireActive(initialOptions.attacker_purging_fire_active)
+    }
+    if (!canUseAttackerMordianMinute && attackerMordianMinuteActive) {
+      setAttackerMordianMinuteActive(initialOptions.attacker_mordian_minute_active)
+    }
+    if (!canUseAttackerAquilanEyeOrder && attackerAquilanEyeOrderActive) {
+      setAttackerAquilanEyeOrderActive(initialOptions.attacker_aquilan_eye_order_active)
+    }
+    if (!canUseDefenderTripwires && defenderTripwiresActive) {
+      setDefenderTripwiresActive(initialOptions.defender_tripwires_active)
+    }
+    if (!canUseDefenderCourageousDiversion && defenderCourageousDiversionActive) {
+      setDefenderCourageousDiversionActive(initialOptions.defender_courageous_diversion_active)
+    }
+    if (!canUseDefenderMastersCamouflageExtraCover && defenderMastersCamouflageExtraCoverActive) {
+      setDefenderMastersCamouflageExtraCoverActive(initialOptions.defender_masters_camouflage_extra_cover_active)
+    }
+    if (!canUseDefenderAdditionalArmour && defenderAdditionalArmourActive) {
+      setDefenderAdditionalArmourActive(initialOptions.defender_additional_armour_active)
+    }
+    if (!canUseDefenderSpecOpsOrder && defenderSpecOpsOrderActive) {
+      setDefenderSpecOpsOrderActive(initialOptions.defender_spec_ops_order_active)
+    }
+    if (!canUseAttackerTitanKiller && attackerTitanKillerActive) {
+      setAttackerTitanKillerActive(initialOptions.attacker_titan_killer_active)
+    }
+    if (!canUseAttackerEngineOfWrath && attackerEngineOfWrathActive) {
+      setAttackerEngineOfWrathActive(initialOptions.attacker_engine_of_wrath_active)
+    }
+    if (!canUseAttackerShatteringSalvo && attackerShatteringSalvoActive) {
+      setAttackerShatteringSalvoActive(initialOptions.attacker_shattering_salvo_active)
+    }
+    if (!canUseAttackerAccuracyUnderPressure && attackerAccuracyUnderPressureActive) {
+      setAttackerAccuracyUnderPressureActive(initialOptions.attacker_accuracy_under_pressure_active)
+    }
+    if (!canUseDefenderOmnissianUnguents && defenderOmnissianUnguentsActive) {
+      setDefenderOmnissianUnguentsActive(initialOptions.defender_omnissian_unguents_active)
+    }
+    if (!canUseAttackerSupportingOrdnance && attackerSupportingOrdnanceActive) {
+      setAttackerSupportingOrdnanceActive(initialOptions.attacker_supporting_ordnance_active)
+    }
+    if (!canUseAttackerCombinedFire && attackerCombinedFireActive) {
+      setAttackerCombinedFireActive(initialOptions.attacker_combined_fire_active)
+    }
+    if (!canUseAttackerOpeningSalvo && attackerOpeningSalvoActive) {
+      setAttackerOpeningSalvoActive(initialOptions.attacker_opening_salvo_active)
+    }
+    if (!canUseDefenderThickSkulledObdurance && defenderThickSkulledObduranceActive) {
+      setDefenderThickSkulledObduranceActive(initialOptions.defender_thick_skulled_obdurance_active)
+    }
+    if (!canUseDefenderSumpSmogScreen && defenderSumpSmogScreenActive) {
+      setDefenderSumpSmogScreenActive(initialOptions.defender_sump_smog_screen_active)
+    }
+    if (!canUseAttackerFiringHot && attackerFiringHotActive) {
+      setAttackerFiringHotActive(initialOptions.attacker_firing_hot_active)
+    }
+    if (!canUseAttackerServoDesignators && attackerServoDesignatorsActive) {
+      setAttackerServoDesignatorsActive(initialOptions.attacker_servo_designators_active)
+    }
+    if (!canUseAttackerOnMyPosition && attackerOnMyPositionActive) {
+      setAttackerOnMyPositionActive(initialOptions.attacker_on_my_position_active)
+    }
     if (!canUseDefenderDoctrinaImperative && defenderDoctrinaImperative) {
       setDefenderDoctrinaImperative(initialOptions.defender_doctrina_imperative)
     }
@@ -15868,6 +16733,43 @@ function App() {
     attackerTemplarVow,
     attackerMartialKatah,
     attackerDoctrinaImperative,
+    attackerAstraMilitarumOrder,
+    attackerFieldsOfFireActive,
+    attackerIncendiaryBombardmentActive,
+    attackerFlareBurstActive,
+    attackerFuriousFusilladeActive,
+    attackerSacredUnguentsActive,
+    attackerClearAndSecureActive,
+    defenderSmokeGrenadesActive,
+    attackerFinalHourActive,
+    attackerFuriousCannonadeActive,
+    attackerCrackShotsActive,
+    attackerVeteranSharpshootersActive,
+    attackerPurgingFireActive,
+    attackerMordianMinuteActive,
+    attackerAquilanEyeOrderActive,
+    attackerTitanKillerActive,
+    attackerEngineOfWrathActive,
+    attackerShatteringSalvoActive,
+    attackerAccuracyUnderPressureActive,
+    attackerSupportingOrdnanceActive,
+    attackerCombinedFireActive,
+    attackerOpeningSalvoActive,
+    attackerFiringHotActive,
+    attackerServoDesignatorsActive,
+    attackerOnMyPositionActive,
+    defenderAblativePlatingActive,
+    defenderTripwiresActive,
+    defenderCourageousDiversionActive,
+    defenderMastersCamouflageExtraCoverActive,
+    defenderAdditionalArmourActive,
+    defenderSpecOpsOrderActive,
+    defenderOmnissianUnguentsActive,
+    defenderThickSkulledObduranceActive,
+    defenderSumpSmogScreenActive,
+    defenderAstraMilitarumOrder,
+    defenderStalwartProtectorActive,
+    defenderSmokeShellsActive,
     defenderDoctrinaImperative,
     attackerAdmechBattlelineBonusActive,
     defenderAdmechBattlelineBonusActive,
@@ -15990,6 +16892,43 @@ function App() {
     canUseAttackerGuidingOmensInstrument,
     canUseAttackerGuidingOmensVision,
     canUseAttackerAdaptableExecutioner,
+    canUseAttackerAstraMilitarumOrder,
+    canUseAttackerFieldsOfFire,
+    canUseAttackerIncendiaryBombardment,
+    canUseAttackerFlareBurst,
+    canUseAttackerFuriousFusillade,
+    canUseAttackerSacredUnguents,
+    canUseAttackerClearAndSecure,
+    canUseDefenderSmokeGrenades,
+    canUseAttackerFinalHour,
+    canUseAttackerFuriousCannonade,
+    canUseAttackerCrackShots,
+    canUseAttackerVeteranSharpshooters,
+    canUseAttackerPurgingFire,
+    canUseAttackerMordianMinute,
+    canUseAttackerAquilanEyeOrder,
+    canUseAttackerTitanKiller,
+    canUseAttackerEngineOfWrath,
+    canUseAttackerShatteringSalvo,
+    canUseAttackerAccuracyUnderPressure,
+    canUseAttackerSupportingOrdnance,
+    canUseAttackerCombinedFire,
+    canUseAttackerOpeningSalvo,
+    canUseAttackerFiringHot,
+    canUseAttackerServoDesignators,
+    canUseAttackerOnMyPosition,
+    canUseDefenderAstraMilitarumOrder,
+    canUseDefenderStalwartProtector,
+    canUseDefenderSmokeShells,
+    canUseDefenderAblativePlating,
+    canUseDefenderTripwires,
+    canUseDefenderCourageousDiversion,
+    canUseDefenderMastersCamouflageExtraCover,
+    canUseDefenderAdditionalArmour,
+    canUseDefenderSpecOpsOrder,
+    canUseDefenderOmnissianUnguents,
+    canUseDefenderThickSkulledObdurance,
+    canUseDefenderSumpSmogScreen,
     canUseAttackerCastigateTheDemagogues,
     canUseAttackerRiteOfPerfervidWrath,
     canUseAttackerBelowHalfStrength,
@@ -17039,6 +17978,43 @@ function App() {
       attackerTemplarVow,
       attackerMartialKatah,
       attackerDoctrinaImperative,
+      attackerAstraMilitarumOrder,
+      attackerFieldsOfFireActive,
+      attackerIncendiaryBombardmentActive,
+      attackerFlareBurstActive,
+      attackerFuriousFusilladeActive,
+      attackerSacredUnguentsActive,
+      attackerClearAndSecureActive,
+      defenderSmokeGrenadesActive,
+      attackerFinalHourActive,
+      attackerFuriousCannonadeActive,
+      attackerCrackShotsActive,
+      attackerVeteranSharpshootersActive,
+      attackerPurgingFireActive,
+      attackerMordianMinuteActive,
+      attackerAquilanEyeOrderActive,
+      attackerTitanKillerActive,
+      attackerEngineOfWrathActive,
+      attackerShatteringSalvoActive,
+      attackerAccuracyUnderPressureActive,
+      attackerSupportingOrdnanceActive,
+      attackerCombinedFireActive,
+      attackerOpeningSalvoActive,
+      defenderThickSkulledObduranceActive,
+      defenderSumpSmogScreenActive,
+      attackerFiringHotActive,
+      attackerServoDesignatorsActive,
+      attackerOnMyPositionActive,
+      defenderAblativePlatingActive,
+      defenderTripwiresActive,
+      defenderCourageousDiversionActive,
+      defenderMastersCamouflageExtraCoverActive,
+      defenderAdditionalArmourActive,
+      defenderSpecOpsOrderActive,
+      defenderOmnissianUnguentsActive,
+      defenderAstraMilitarumOrder,
+      defenderStalwartProtectorActive,
+      defenderSmokeShellsActive,
       defenderDoctrinaImperative,
       attackerAdmechBattlelineBonusActive,
       defenderAdmechBattlelineBonusActive,
@@ -17233,6 +18209,43 @@ function App() {
         attacker_hyper_adaptation: battlefieldAttackerSide === 'attacker' ? attackerHyperAdaptation || null : null,
         attacker_martial_katah: battlefieldAttackerSide === 'attacker' ? attackerMartialKatah || null : null,
         attacker_doctrina_imperative: battlefieldAttackerSide === 'attacker' ? attackerDoctrinaImperative || null : null,
+        attacker_astra_militarum_order: battlefieldAttackerSide === 'attacker' ? attackerAstraMilitarumOrder || null : null,
+        defender_astra_militarum_order: battlefieldDefenderSide === 'defender' ? defenderAstraMilitarumOrder || null : null,
+        attacker_fields_of_fire_active: battlefieldAttackerSide === 'attacker' ? attackerFieldsOfFireActive : false,
+        defender_stalwart_protector_active: battlefieldDefenderSide === 'defender' ? defenderStalwartProtectorActive : false,
+        attacker_incendiary_bombardment_active: battlefieldAttackerSide === 'attacker' ? attackerIncendiaryBombardmentActive : false,
+        defender_smoke_shells_active: battlefieldDefenderSide === 'defender' ? defenderSmokeShellsActive : false,
+        attacker_flare_burst_active: battlefieldAttackerSide === 'attacker' ? attackerFlareBurstActive : false,
+        attacker_furious_fusillade_active: battlefieldAttackerSide === 'attacker' ? attackerFuriousFusilladeActive : false,
+        attacker_sacred_unguents_active: battlefieldAttackerSide === 'attacker' ? attackerSacredUnguentsActive : false,
+        attacker_clear_and_secure_active: battlefieldAttackerSide === 'attacker' ? attackerClearAndSecureActive : false,
+        defender_smoke_grenades_active: battlefieldDefenderSide === 'defender' ? defenderSmokeGrenadesActive : false,
+        attacker_final_hour_active: battlefieldAttackerSide === 'attacker' ? attackerFinalHourActive : false,
+        attacker_furious_cannonade_active: battlefieldAttackerSide === 'attacker' ? attackerFuriousCannonadeActive : false,
+        defender_ablative_plating_active: battlefieldDefenderSide === 'defender' ? defenderAblativePlatingActive : false,
+        attacker_crack_shots_active: battlefieldAttackerSide === 'attacker' ? attackerCrackShotsActive : false,
+        defender_tripwires_active: battlefieldDefenderSide === 'defender' ? defenderTripwiresActive : false,
+        defender_courageous_diversion_active: battlefieldDefenderSide === 'defender' ? defenderCourageousDiversionActive : false,
+        defender_masters_camouflage_extra_cover_active: battlefieldDefenderSide === 'defender' ? defenderMastersCamouflageExtraCoverActive : false,
+        attacker_veteran_sharpshooters_active: battlefieldAttackerSide === 'attacker' ? attackerVeteranSharpshootersActive : false,
+        attacker_purging_fire_active: battlefieldAttackerSide === 'attacker' ? attackerPurgingFireActive : false,
+        attacker_mordian_minute_active: battlefieldAttackerSide === 'attacker' ? attackerMordianMinuteActive : false,
+        defender_additional_armour_active: battlefieldDefenderSide === 'defender' ? defenderAdditionalArmourActive : false,
+        attacker_aquilan_eye_order_active: battlefieldAttackerSide === 'attacker' ? attackerAquilanEyeOrderActive : false,
+        defender_spec_ops_order_active: battlefieldDefenderSide === 'defender' ? defenderSpecOpsOrderActive : false,
+        attacker_titan_killer_active: battlefieldAttackerSide === 'attacker' ? attackerTitanKillerActive : false,
+        attacker_engine_of_wrath_active: battlefieldAttackerSide === 'attacker' ? attackerEngineOfWrathActive : false,
+        attacker_shattering_salvo_active: battlefieldAttackerSide === 'attacker' ? attackerShatteringSalvoActive : false,
+        attacker_accuracy_under_pressure_active: battlefieldAttackerSide === 'attacker' ? attackerAccuracyUnderPressureActive : false,
+        defender_omnissian_unguents_active: battlefieldDefenderSide === 'defender' ? defenderOmnissianUnguentsActive : false,
+        attacker_supporting_ordnance_active: battlefieldAttackerSide === 'attacker' ? attackerSupportingOrdnanceActive : false,
+        attacker_combined_fire_active: battlefieldAttackerSide === 'attacker' ? attackerCombinedFireActive : false,
+        attacker_opening_salvo_active: battlefieldAttackerSide === 'attacker' ? attackerOpeningSalvoActive : false,
+        defender_thick_skulled_obdurance_active: battlefieldDefenderSide === 'defender' ? defenderThickSkulledObduranceActive : false,
+        defender_sump_smog_screen_active: battlefieldDefenderSide === 'defender' ? defenderSumpSmogScreenActive : false,
+        attacker_firing_hot_active: battlefieldAttackerSide === 'attacker' ? attackerFiringHotActive : false,
+        attacker_servo_designators_active: battlefieldAttackerSide === 'attacker' ? attackerServoDesignatorsActive : false,
+        attacker_on_my_position_active: battlefieldAttackerSide === 'attacker' ? attackerOnMyPositionActive : false,
         defender_doctrina_imperative: battlefieldDefenderSide === 'defender' ? defenderDoctrinaImperative || null : null,
         attacker_admech_battleline_bonus_active: battlefieldAttackerSide === 'attacker' ? attackerAdmechBattlelineBonusActive : false,
         defender_admech_battleline_bonus_active: battlefieldDefenderSide === 'defender' ? defenderAdmechBattlelineBonusActive : false,
@@ -19378,6 +20391,43 @@ function App() {
     setAttackerTemplarVow(initialOptions.attacker_templar_vow)
     setAttackerMartialKatah(initialOptions.attacker_martial_katah)
     setAttackerDoctrinaImperative(initialOptions.attacker_doctrina_imperative)
+    setAttackerAstraMilitarumOrder(initialOptions.attacker_astra_militarum_order)
+    setDefenderAstraMilitarumOrder(initialOptions.defender_astra_militarum_order)
+    setAttackerFieldsOfFireActive(initialOptions.attacker_fields_of_fire_active)
+    setDefenderStalwartProtectorActive(initialOptions.defender_stalwart_protector_active)
+    setAttackerIncendiaryBombardmentActive(initialOptions.attacker_incendiary_bombardment_active)
+    setDefenderSmokeShellsActive(initialOptions.defender_smoke_shells_active)
+    setAttackerFlareBurstActive(initialOptions.attacker_flare_burst_active)
+    setAttackerFuriousFusilladeActive(initialOptions.attacker_furious_fusillade_active)
+    setAttackerSacredUnguentsActive(initialOptions.attacker_sacred_unguents_active)
+    setAttackerClearAndSecureActive(initialOptions.attacker_clear_and_secure_active)
+    setDefenderSmokeGrenadesActive(initialOptions.defender_smoke_grenades_active)
+    setAttackerFinalHourActive(initialOptions.attacker_final_hour_active)
+    setAttackerFuriousCannonadeActive(initialOptions.attacker_furious_cannonade_active)
+    setDefenderAblativePlatingActive(initialOptions.defender_ablative_plating_active)
+    setAttackerCrackShotsActive(initialOptions.attacker_crack_shots_active)
+    setDefenderTripwiresActive(initialOptions.defender_tripwires_active)
+    setDefenderCourageousDiversionActive(initialOptions.defender_courageous_diversion_active)
+    setDefenderMastersCamouflageExtraCoverActive(initialOptions.defender_masters_camouflage_extra_cover_active)
+    setAttackerVeteranSharpshootersActive(initialOptions.attacker_veteran_sharpshooters_active)
+    setAttackerPurgingFireActive(initialOptions.attacker_purging_fire_active)
+    setAttackerMordianMinuteActive(initialOptions.attacker_mordian_minute_active)
+    setDefenderAdditionalArmourActive(initialOptions.defender_additional_armour_active)
+    setAttackerAquilanEyeOrderActive(initialOptions.attacker_aquilan_eye_order_active)
+    setDefenderSpecOpsOrderActive(initialOptions.defender_spec_ops_order_active)
+    setAttackerTitanKillerActive(initialOptions.attacker_titan_killer_active)
+    setAttackerEngineOfWrathActive(initialOptions.attacker_engine_of_wrath_active)
+    setAttackerShatteringSalvoActive(initialOptions.attacker_shattering_salvo_active)
+    setAttackerAccuracyUnderPressureActive(initialOptions.attacker_accuracy_under_pressure_active)
+    setDefenderOmnissianUnguentsActive(initialOptions.defender_omnissian_unguents_active)
+    setAttackerSupportingOrdnanceActive(initialOptions.attacker_supporting_ordnance_active)
+    setAttackerCombinedFireActive(initialOptions.attacker_combined_fire_active)
+    setAttackerOpeningSalvoActive(initialOptions.attacker_opening_salvo_active)
+    setDefenderThickSkulledObduranceActive(initialOptions.defender_thick_skulled_obdurance_active)
+    setDefenderSumpSmogScreenActive(initialOptions.defender_sump_smog_screen_active)
+    setAttackerFiringHotActive(initialOptions.attacker_firing_hot_active)
+    setAttackerServoDesignatorsActive(initialOptions.attacker_servo_designators_active)
+    setAttackerOnMyPositionActive(initialOptions.attacker_on_my_position_active)
     setDefenderDoctrinaImperative(initialOptions.defender_doctrina_imperative)
     setAttackerAdmechBattlelineBonusActive(initialOptions.attacker_admech_battleline_bonus_active)
     setDefenderAdmechBattlelineBonusActive(initialOptions.defender_admech_battleline_bonus_active)
@@ -20385,6 +21435,155 @@ function App() {
                 </label>
               ) : null}
 
+              {canUseDefenderAstraMilitarumOrder ? (
+                <label className="combat-option-defender" title={defenderAstraMilitarumOrderTooltip}>
+                  <span>Defender Order</span>
+                  <select
+                    title={defenderAstraMilitarumOrderTooltip}
+                    value={defenderAstraMilitarumOrder}
+                    onChange={(event) => setDefenderAstraMilitarumOrder(event.target.value)}
+                  >
+                    {ASTRA_MILITARUM_ORDER_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseDefenderStalwartProtector ? (
+                <label className="checkbox-row combat-option-defender" title={defenderStalwartProtectorTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderStalwartProtectorActive}
+                    onChange={(event) => setDefenderStalwartProtectorActive(event.target.checked)}
+                  />
+                  <span>Use Stalwart Protector</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderSmokeShells ? (
+                <label className="checkbox-row combat-option-defender" title={defenderSmokeShellsTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderSmokeShellsActive}
+                    onChange={(event) => setDefenderSmokeShellsActive(event.target.checked)}
+                  />
+                  <span>Smoke Shells selected</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderSmokeGrenades ? (
+                <label className="checkbox-row combat-option-defender" title={defenderSmokeGrenadesTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderSmokeGrenadesActive}
+                    onChange={(event) => setDefenderSmokeGrenadesActive(event.target.checked)}
+                  />
+                  <span>Smoke Grenades active</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderAblativePlating ? (
+                <label className="checkbox-row combat-option-defender" title={defenderAblativePlatingTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderAblativePlatingActive}
+                    onChange={(event) => setDefenderAblativePlatingActive(event.target.checked)}
+                  />
+                  <span>Use Ablative Plating</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderMastersCamouflageExtraCover ? (
+                <label className="checkbox-row combat-option-defender" title={defenderMastersCamouflageTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderMastersCamouflageExtraCoverActive}
+                    onChange={(event) => setDefenderMastersCamouflageExtraCoverActive(event.target.checked)}
+                  />
+                  <span>Masters of Camouflage extra cover</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderTripwires ? (
+                <label className="checkbox-row combat-option-defender" title={defenderTripwiresTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderTripwiresActive}
+                    onChange={(event) => setDefenderTripwiresActive(event.target.checked)}
+                  />
+                  <span>Tripwires stunned attacker</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderCourageousDiversion ? (
+                <label className="checkbox-row combat-option-defender" title={defenderCourageousDiversionTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderCourageousDiversionActive}
+                    onChange={(event) => setDefenderCourageousDiversionActive(event.target.checked)}
+                  />
+                  <span>Use Courageous Diversion</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderAdditionalArmour ? (
+                <label className="checkbox-row combat-option-defender" title={defenderAdditionalArmourTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderAdditionalArmourActive}
+                    onChange={(event) => setDefenderAdditionalArmourActive(event.target.checked)}
+                  />
+                  <span>Use Additional Armour</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderSpecOpsOrder ? (
+                <label className="checkbox-row combat-option-defender" title={defenderSpecOpsVeteranTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderSpecOpsOrderActive}
+                    onChange={(event) => setDefenderSpecOpsOrderActive(event.target.checked)}
+                  />
+                  <span>Move to the Shadows active</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderOmnissianUnguents ? (
+                <label className="checkbox-row combat-option-defender" title={defenderOmnissianUnguentsTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderOmnissianUnguentsActive}
+                    onChange={(event) => setDefenderOmnissianUnguentsActive(event.target.checked)}
+                  />
+                  <span>Omnissian Unguents aura</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderThickSkulledObdurance ? (
+                <label className="checkbox-row combat-option-defender" title={defenderThickSkulledObduranceTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderThickSkulledObduranceActive}
+                    onChange={(event) => setDefenderThickSkulledObduranceActive(event.target.checked)}
+                  />
+                  <span>Use Thick-skulled Obdurance</span>
+                </label>
+              ) : null}
+
+              {canUseDefenderSumpSmogScreen ? (
+                <label className="checkbox-row combat-option-defender" title={defenderSumpSmogScreenTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={defenderSumpSmogScreenActive}
+                    onChange={(event) => setDefenderSumpSmogScreenActive(event.target.checked)}
+                  />
+                  <span>Use Sump-smog Screen</span>
+                </label>
+              ) : null}
+
               {canUseAttackerCombatDoctrine ? (
                 <label className="combat-option-attacker" title={attackerCombatDoctrineTooltip}>
                   <span>Attacker Combat Doctrine</span>
@@ -20461,6 +21660,276 @@ function App() {
                     onChange={(event) => setAttackerAdmechBattlelineBonusActive(event.target.checked)}
                   />
                   <span>Attacker near AdMech Battleline</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerAstraMilitarumOrder ? (
+                <label className="combat-option-attacker" title={attackerAstraMilitarumOrderTooltip}>
+                  <span>Attacker Order</span>
+                  <select
+                    title={attackerAstraMilitarumOrderTooltip}
+                    value={attackerAstraMilitarumOrder}
+                    onChange={(event) => setAttackerAstraMilitarumOrder(event.target.value)}
+                  >
+                    {ASTRA_MILITARUM_ORDER_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerFieldsOfFire ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerFieldsOfFireTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerFieldsOfFireActive}
+                    onChange={(event) => setAttackerFieldsOfFireActive(event.target.checked)}
+                  />
+                  <span>Use Fields of Fire</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerIncendiaryBombardment ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerIncendiaryBombardmentTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerIncendiaryBombardmentActive}
+                    onChange={(event) => setAttackerIncendiaryBombardmentActive(event.target.checked)}
+                  />
+                  <span>Target is scattered</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerFlareBurst ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerFlareBurstTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerFlareBurstActive}
+                    onChange={(event) => setAttackerFlareBurstActive(event.target.checked)}
+                  />
+                  <span>Use Flare Burst</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerFuriousFusillade ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerFuriousFusilladeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerFuriousFusilladeActive}
+                    onChange={(event) => setAttackerFuriousFusilladeActive(event.target.checked)}
+                  />
+                  <span>Use Furious Fusillade</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerSacredUnguents ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerSacredUnguentsTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerSacredUnguentsActive}
+                    onChange={(event) => setAttackerSacredUnguentsActive(event.target.checked)}
+                  />
+                  <span>Sacred Unguents selected</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerClearAndSecure ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerClearAndSecureTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerClearAndSecureActive}
+                    onChange={(event) => setAttackerClearAndSecureActive(event.target.checked)}
+                  />
+                  <span>Use Clear and Secure</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerFinalHour ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerFinalHourTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerFinalHourActive}
+                    onChange={(event) => setAttackerFinalHourActive(event.target.checked)}
+                  />
+                  <span>Use Final Hour</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerFuriousCannonade ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerFuriousCannonadeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerFuriousCannonadeActive}
+                    onChange={(event) => setAttackerFuriousCannonadeActive(event.target.checked)}
+                  />
+                  <span>Use Furious Cannonade</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerCrackShots ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerCrackShotsTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerCrackShotsActive}
+                    onChange={(event) => setAttackerCrackShotsActive(event.target.checked)}
+                  />
+                  <span>Use Crack Shots</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerVeteranSharpshooters ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerVeteranSharpshootersTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerVeteranSharpshootersActive}
+                    onChange={(event) => setAttackerVeteranSharpshootersActive(event.target.checked)}
+                  />
+                  <span>Use Veteran Sharpshooters</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerPurgingFire ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerPurgingFireTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerPurgingFireActive}
+                    onChange={(event) => setAttackerPurgingFireActive(event.target.checked)}
+                  />
+                  <span>Use Purging Fire</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerMordianMinute ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerMordianMinuteTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerMordianMinuteActive}
+                    onChange={(event) => setAttackerMordianMinuteActive(event.target.checked)}
+                  />
+                  <span>Use Mordian Minute</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerAquilanEyeOrder ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerAquilanEyeTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerAquilanEyeOrderActive}
+                    onChange={(event) => setAttackerAquilanEyeOrderActive(event.target.checked)}
+                  />
+                  <span>Target Weak Spot order</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerTitanKiller ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerTitanKillerTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerTitanKillerActive}
+                    onChange={(event) => setAttackerTitanKillerActive(event.target.checked)}
+                  />
+                  <span>Titan Killer active</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerEngineOfWrath ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerEngineOfWrathTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerEngineOfWrathActive}
+                    onChange={(event) => setAttackerEngineOfWrathActive(event.target.checked)}
+                  />
+                  <span>Use Engine of Wrath</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerShatteringSalvo ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerShatteringSalvoTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerShatteringSalvoActive}
+                    onChange={(event) => setAttackerShatteringSalvoActive(event.target.checked)}
+                  />
+                  <span>Use Shattering Salvo</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerAccuracyUnderPressure ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerAccuracyUnderPressureTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerAccuracyUnderPressureActive}
+                    onChange={(event) => setAttackerAccuracyUnderPressureActive(event.target.checked)}
+                  />
+                  <span>Use Accuracy Under Pressure</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerSupportingOrdnance ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerSupportingOrdnanceTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerSupportingOrdnanceActive}
+                    onChange={(event) => setAttackerSupportingOrdnanceActive(event.target.checked)}
+                  />
+                  <span>Use Supporting Ordnance</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerCombinedFire ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerCombinedFireTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerCombinedFireActive}
+                    onChange={(event) => setAttackerCombinedFireActive(event.target.checked)}
+                  />
+                  <span>Use Combined Fire</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerOpeningSalvo ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerOpeningSalvoTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerOpeningSalvoActive}
+                    onChange={(event) => setAttackerOpeningSalvoActive(event.target.checked)}
+                  />
+                  <span>Use Opening Salvo</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerFiringHot ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerFiringHotTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerFiringHotActive}
+                    onChange={(event) => setAttackerFiringHotActive(event.target.checked)}
+                  />
+                  <span>Use Firing Hot</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerServoDesignators ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerServoDesignatorsTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerServoDesignatorsActive}
+                    onChange={(event) => setAttackerServoDesignatorsActive(event.target.checked)}
+                  />
+                  <span>Use Servo-designators</span>
+                </label>
+              ) : null}
+
+              {canUseAttackerOnMyPosition ? (
+                <label className="checkbox-row combat-option-attacker" title={attackerOnMyPositionTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={attackerOnMyPositionActive}
+                    onChange={(event) => setAttackerOnMyPositionActive(event.target.checked)}
+                  />
+                  <span>Use On My Position</span>
                 </label>
               ) : null}
 
