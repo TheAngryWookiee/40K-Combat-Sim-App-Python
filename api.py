@@ -810,9 +810,20 @@ DEFENDER_STRATAGEM_OPTION_KEYS = {
 }
 
 
-@lru_cache(maxsize=1)
-def get_factions() -> dict[str, dict]:
+def get_faction_data_signature() -> tuple[tuple[str, int, int], ...]:
+    return tuple(
+        (data_file.name, data_file.stat().st_mtime_ns, data_file.stat().st_size)
+        for data_file in sorted(DATA_DIR.glob("*.json"))
+    )
+
+
+@lru_cache(maxsize=8)
+def get_factions_for_signature(_data_signature: tuple[tuple[str, int, int], ...]) -> dict[str, dict]:
     return load_factions(DATA_DIR)
+
+
+def get_factions() -> dict[str, dict]:
+    return get_factions_for_signature(get_faction_data_signature())
 
 
 def parse_loadout_query(loadout: str | None) -> dict[str, Any]:

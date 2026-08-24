@@ -126,9 +126,19 @@ def resolve_model_counts_by_name(
     minimum_total = 0
     maximum_total = 0
 
-    for model in model_entries:
+    unit_composition = unit_data.get("unit_composition", {})
+    minimum_models = get_default_unit_model_count(unit_composition)
+    maximum_models = parse_numeric_value(unit_composition.get("max_models", minimum_models))
+    every_model_count_missing = all(not model.get("count", {}) for model in model_entries)
+
+    for model_index, model in enumerate(model_entries):
         model_name = str(model.get("name", "")).strip()
         count_data = model.get("count", {})
+        if not count_data and len(model_entries) == 1:
+            count_data = {"min": minimum_models, "max": maximum_models}
+        elif not count_data and every_model_count_missing and minimum_models == maximum_models:
+            fixed_count = minimum_models if model_index == 0 else 0
+            count_data = {"min": fixed_count, "max": fixed_count}
         minimum_count = parse_numeric_value(count_data.get("min", 0))
         maximum_count = parse_numeric_value(count_data.get("max", minimum_count))
         minimum_counts_by_name[model_name] = minimum_count

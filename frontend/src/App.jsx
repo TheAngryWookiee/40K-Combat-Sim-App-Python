@@ -1665,6 +1665,15 @@ const GODHAMMER_ASSAULT_FORCE = 'Godhammer Assault Force'
 const MARSHALS_HOUSEHOLD = "Marshal's Household"
 const THE_LIVING_MIRACLE = 'The Living Miracle'
 const WRATHFUL_PROCESSION = 'Wrathful Procession'
+const DAEMONIC_INCURSION = 'Daemonic Incursion'
+const SHADOW_LEGION = 'Shadow Legion'
+const LEGION_OF_EXCESS = 'Legion of Excess'
+const BLOOD_LEGION = 'Blood Legion'
+const SCINTILLATING_LEGION = 'Scintillating Legion'
+const PLAGUE_LEGION = 'Plague Legion'
+const CAVALCADE_OF_CHAOS = 'Cavalcade of Chaos'
+const LORDS_OF_THE_WARP = 'Lords of the Warp'
+const WARPTIDE = 'Warptide'
 const COMBAT_DOCTRINE_OPTIONS = [
   { id: '', label: 'No active doctrine' },
   { id: 'devastator', label: 'Devastator Doctrine' },
@@ -2053,6 +2062,86 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
     ))
   }
 
+  if (detachment.name === DAEMONIC_INCURSION) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (enhancement.name === "A'rgath, the King of Blades") {
+        return selectedWeapon?.range === 'Melee' && unitHasKeyword(enhancementBearerUnit, 'khorne')
+      }
+      if (enhancement.name === 'The Everstave') {
+        return selectedWeapon?.range !== 'Melee' && unitHasKeyword(enhancementBearerUnit, 'tzeentch')
+      }
+      return enhancement.name === 'The Endless Gift' && unitHasKeyword(enhancementBearerUnit, 'nurgle')
+    })
+  }
+
+  if (detachment.name === SHADOW_LEGION) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Leaping Shadows'
+      || (
+        enhancement.name === 'Malice Made Manifest'
+        && selectedWeapon?.range === 'Melee'
+      )
+    ))
+  }
+
+  if (detachment.name === LEGION_OF_EXCESS) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (!unitHasKeyword(enhancementBearerUnit, 'slaanesh')) {
+        return false
+      }
+      if (enhancement.name === 'False Majesty (aura)' || enhancement.name === 'Dreaming Crown (aura)') {
+        return selectedWeapon?.range === 'Melee'
+      }
+      return false
+    })
+  }
+
+  if (detachment.name === BLOOD_LEGION) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (!unitHasKeyword(enhancementBearerUnit, 'khorne')) {
+        return false
+      }
+      if (enhancement.name === 'Slaughterthirst (aura)') {
+        return selectedWeapon?.range === 'Melee'
+      }
+      if (enhancement.name === "Fury's Cage") {
+        return selectedWeapon?.range === 'Melee' && unitHasKeyword(enhancementBearerUnit, 'monster')
+      }
+      return false
+    })
+  }
+
+  if (detachment.name === SCINTILLATING_LEGION) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Neverblade'
+      && selectedWeapon?.range === 'Melee'
+      && unitHasKeyword(enhancementBearerUnit, 'tzeentch')
+      && unitHasKeyword(enhancementBearerUnit, 'monster')
+    ))
+  }
+
+  if (detachment.name === PLAGUE_LEGION) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (!unitHasKeyword(enhancementBearerUnit, 'nurgle')) {
+        return false
+      }
+      if (enhancement.name === 'Maggot Maws') {
+        return true
+      }
+      if (enhancement.name === 'Font of Spores (aura)') {
+        return selectedWeapon?.range !== undefined && unitHasKeyword(enhancementBearerUnit, 'monster')
+      }
+      return false
+    })
+  }
+
+  if (detachment.name === WARPTIDE) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Bane-forged Weapons'
+      && unitHasKeyword(enhancementBearerUnit, 'battleline')
+    ))
+  }
+
   return []
 }
 
@@ -2193,6 +2282,27 @@ function getDefenderEnhancementOptions(detachment, enhancementBearerUnit) {
     return (detachment.enhancements || []).filter(
       (enhancement) => enhancement.name === 'Synaptic Control',
     )
+  }
+
+  if (detachment.name === DAEMONIC_INCURSION) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'The Endless Gift' && unitHasKeyword(enhancementBearerUnit, 'nurgle')
+    ))
+  }
+
+  if (detachment.name === BLOOD_LEGION) {
+    return []
+  }
+
+  if (detachment.name === SCINTILLATING_LEGION) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Improbable Shield (aura)'
+      && unitHasKeyword(enhancementBearerUnit, 'tzeentch')
+    ))
+  }
+
+  if (detachment.name === PLAGUE_LEGION) {
+    return []
   }
 
   return []
@@ -2547,6 +2657,41 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       return stratagem.name === 'Irresistible Will'
     }
 
+    if (detachment.name === DAEMONIC_INCURSION) {
+      return stratagem.name === 'Draught of Terror'
+    }
+
+    if (detachment.name === SHADOW_LEGION) {
+      if (stratagem.name === 'Channelled Wrath') {
+        return !isRangedWeapon
+      }
+      return stratagem.name === 'Encroaching Darkness' && isRangedWeapon
+    }
+
+    if (detachment.name === SCINTILLATING_LEGION) {
+      return (
+        stratagem.name === 'Pyrogenesis'
+        || (stratagem.name === 'Ficklefire' && isRangedWeapon)
+      )
+    }
+
+    if (detachment.name === PLAGUE_LEGION) {
+      if (stratagem.name === 'Seeping Virulence') {
+        return !isRangedWeapon
+      }
+      return stratagem.name === 'Fever Visions'
+    }
+
+    if (detachment.name === LORDS_OF_THE_WARP) {
+      if (stratagem.name === 'Call to Murder') {
+        return !isRangedWeapon && unitHasKeyword(unit, 'character') && unitHasKeyword(unit, 'khorne') && !unitHasKeyword(unit, 'monster')
+      }
+      if (stratagem.name === 'Skirling Magicks') {
+        return isRangedWeapon && unitHasKeyword(unit, 'character') && unitHasKeyword(unit, 'tzeentch') && !unitHasKeyword(unit, 'monster')
+      }
+      return stratagem.name === 'Bilious Blessing' && unitHasKeyword(unit, 'character') && unitHasKeyword(unit, 'nurgle') && !unitHasKeyword(unit, 'monster')
+    }
+
     return false
   })
 }
@@ -2705,6 +2850,22 @@ function getDefenderStratagemOptions(detachment, selectedWeapon, unit) {
 
     if (detachment.name === SYNAPTIC_NEXUS) {
       return stratagem.name === 'Reinforced Hive Node'
+    }
+
+    if (detachment.name === DAEMONIC_INCURSION) {
+      return stratagem.name === 'Daemonic Invulnerability'
+    }
+
+    if (detachment.name === SCINTILLATING_LEGION) {
+      return stratagem.name === 'Flickering Reality' && selectedWeapon?.range === 'Melee'
+    }
+
+    if (detachment.name === WARPTIDE) {
+      return (
+        stratagem.name === 'Incorporeal Entities'
+        && selectedWeapon?.range !== 'Melee'
+        && unitHasKeyword(unit, 'battleline')
+      )
     }
 
     if (detachment.name === RAD_ZONE_CORPS) {
@@ -6619,6 +6780,171 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'run them through!': ({ phaseId, selectedWeapons }) => (
     phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
   ),
+  'draught of terror': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'daemonic invulnerability': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'channelled wrath': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'encroaching darkness': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'a\'rgath, the king of blades': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'the everstave': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'penumbral puppetry': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'gloam rot': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'malice made manifest': ({ allowOutOfPhaseAbilities, phaseId, selectedWeapons }) => (
+    allowOutOfPhaseAbilities
+    && phaseId === 'fight'
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'seductive gambit': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'false majesty (aura)': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'dreaming crown (aura)': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'archagonists': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'cavalcade of blades': ({ allowOutOfPhaseAbilities, selectedWeapons, chargedThisTurn }) => (
+    allowOutOfPhaseAbilities && chargedThisTurn && selectedWeapons.length > 0
+  ),
+  'overwhelming excess': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'slaughterthirst (aura)': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'fury\'s cage': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'wrath undeniable': ({ phaseId, selectedWeapons, side }) => (
+    side === 'defender'
+    && phaseId === 'fight'
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'skulls beget blood': ({ allowOutOfPhaseAbilities, phaseId, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && phaseId === 'shooting' && selectedWeapons.length > 0
+  ),
+  'sheathed in brass': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'neverblade': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'improbable shield (aura)': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'pyrogenesis': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'flickering reality': ({ phaseId, selectedWeapons, side }) => (
+    side === 'defender'
+    && phaseId === 'fight'
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'ficklefire': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'maggot maws': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'font of spores (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'seeping virulence': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'fever visions': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'call to murder': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
+    phaseId === 'fight'
+    && chargedThisTurn
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'bilious blessing': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'skirling magicks': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'bane-forged weapons': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'incorporeal entities': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'daemon lord of khorne (aura)': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'daemon lord of slaanesh (aura)': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'daemon lord of tzeentch (aura)': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'greater daemon of nurgle (aura)': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'prince of darkness (aura)': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'shroud of flies (aura)': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'unholy vigour': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'horrible fascination (psychic)': ({ phaseId, selectedWeapons, side }) => (
+    side === 'defender' && phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'unstable position': ({ phaseId, selectedWeapons, side }) => (
+    side === 'defender' && phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'relentless carnage': ({ allowOutOfPhaseAbilities, phaseId, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'slashing dive': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'brass stampede': ({ allowOutOfPhaseAbilities, selectedWeapons, chargedThisTurn }) => (
+    allowOutOfPhaseAbilities && chargedThisTurn && selectedWeapons.length > 0
+  ),
+  'malefic destruction': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee' && getWeaponProfileGroupName(weapon) === 'hellforged weapons')
+  ),
+  'harbinger of death - lethal hits': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee' && getWeaponProfileGroupName(weapon) === 'hellforged weapons')
+  ),
+  'harbinger of death - precision': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee' && getWeaponProfileGroupName(weapon) === 'hellforged weapons')
+  ),
+  'harbinger of death - sustained hits': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee' && getWeaponProfileGroupName(weapon) === 'hellforged weapons')
+  ),
+  'master of magicks - ignores cover': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => getWeaponProfileGroupName(weapon) === 'bolt of change')
+  ),
+  'master of magicks - lethal hits': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => getWeaponProfileGroupName(weapon) === 'bolt of change')
+  ),
+  'master of magicks - sustained hits': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => getWeaponProfileGroupName(weapon) === 'bolt of change')
+  ),
+  'blood throne': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'symphony of pain (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'death\'s heads': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'tormentbringer': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
   'thunderstomp': ({ phaseId, selectedWeapons }) => (
     phaseId === 'fight'
     && (
@@ -6952,6 +7278,9 @@ const CHARGE_DEPENDENT_COMBAT_ABILITIES = new Set([
   'leading the charge',
   'thunderous charge',
   'vanguard assault',
+  'brass stampede',
+  'cutting down the foe',
+  'skullmaster\'s fury',
 ])
 
 function unitListHasAnyAbility(units, abilityNames) {
@@ -7137,6 +7466,12 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
     ...(detachment?.stratagems || []).map((ability) => ({
       ability,
       fallback: 'Stratagem',
+      unitName: detachment?.name,
+      unit: null,
+    })),
+    ...(detachment?.additional_rules || []).map((ability) => ({
+      ability,
+      fallback: 'Rule',
       unitName: detachment?.name,
       unit: null,
     })),
@@ -11561,11 +11896,23 @@ function App() {
 
   useEffect(() => {
     if (!attackerFaction) {
+      setAttackerUnits([])
+      setAttackerUnit('')
+      setAttackerUnitDetails(null)
+      setAttackerAttachedLeaderName('')
+      setAttackerDetachmentName('')
+      setAttackerEnhancementName('')
+      setAttackerActiveAbilityNames([])
+      setWeaponNames([])
+      setWeaponModelCounts({})
       return
     }
 
     let active = true
+    setAttackerUnits([])
+    setAttackerUnit('')
     setAttackerUnitDetails(null)
+    setAttackerAttachedLeaderName('')
     setWeaponNames([])
     setWeaponModelCounts({})
 
@@ -11606,6 +11953,8 @@ function App() {
     }
 
     let active = true
+    setBattlefieldAddAttackerUnits([])
+    setBattlefieldAddAttackerUnitName('')
     setBattlefieldAddAttackerUnitDetails(null)
 
     async function loadBattlefieldAttackerUnits() {
@@ -11639,10 +11988,13 @@ function App() {
   useEffect(() => {
     if (!battlefieldAddAttackerFaction) {
       setBattlefieldAddAttackerFactionDetails(null)
+      setBattlefieldAddAttackerDetachmentName('')
       return
     }
 
     let active = true
+    setBattlefieldAddAttackerFactionDetails(null)
+    setBattlefieldAddAttackerDetachmentName('')
 
     async function loadBattlefieldAttackerFactionDetails() {
       try {
@@ -11814,10 +12166,18 @@ function App() {
 
   useEffect(() => {
     if (!attackerFaction) {
+      setAttackerFactionDetails(null)
+      setAttackerDetachmentName('')
+      setAttackerEnhancementName('')
+      setAttackerActiveAbilityNames([])
       return
     }
 
     let active = true
+    setAttackerFactionDetails(null)
+    setAttackerDetachmentName('')
+    setAttackerEnhancementName('')
+    setAttackerActiveAbilityNames([])
 
     async function loadAttackerFactionDetails() {
       try {
@@ -11848,10 +12208,19 @@ function App() {
 
   useEffect(() => {
     if (!defenderFaction) {
+      setDefenderUnits([])
+      setDefenderUnit('')
+      setDefenderUnitDetails(null)
+      setAttachedCharacterName('')
+      setDefenderDetachmentName('')
+      setDefenderEnhancementName('')
+      setDefenderActiveAbilityNames([])
       return
     }
 
     let active = true
+    setDefenderUnits([])
+    setDefenderUnit('')
     setDefenderUnitDetails(null)
     setAttachedCharacterName('')
 
@@ -11892,6 +12261,8 @@ function App() {
     }
 
     let active = true
+    setBattlefieldAddDefenderUnits([])
+    setBattlefieldAddDefenderUnitName('')
     setBattlefieldAddDefenderUnitDetails(null)
 
     async function loadBattlefieldDefenderUnits() {
@@ -11925,10 +12296,13 @@ function App() {
   useEffect(() => {
     if (!battlefieldAddDefenderFaction) {
       setBattlefieldAddDefenderFactionDetails(null)
+      setBattlefieldAddDefenderDetachmentName('')
       return
     }
 
     let active = true
+    setBattlefieldAddDefenderFactionDetails(null)
+    setBattlefieldAddDefenderDetachmentName('')
 
     async function loadBattlefieldDefenderFactionDetails() {
       try {
@@ -12033,10 +12407,18 @@ function App() {
 
   useEffect(() => {
     if (!defenderFaction) {
+      setDefenderFactionDetails(null)
+      setDefenderDetachmentName('')
+      setDefenderEnhancementName('')
+      setDefenderActiveAbilityNames([])
       return
     }
 
     let active = true
+    setDefenderFactionDetails(null)
+    setDefenderDetachmentName('')
+    setDefenderEnhancementName('')
+    setDefenderActiveAbilityNames([])
 
     async function loadDefenderFactionDetails() {
       try {
@@ -12575,7 +12957,14 @@ function App() {
     selectedWeapons: selectedAttackWeapons,
     selectedEntries: selectedAttackEntries,
     attackerEnhancementName,
-    activeLanceStratagem: attackerHonourTheChapterActive || attackerShockAssaultActive || attackerTalonStrikeActive,
+    activeLanceStratagem: (
+      attackerHonourTheChapterActive
+      || attackerShockAssaultActive
+      || attackerTalonStrikeActive
+      || selectedAttackerDetachment?.name === SHADOW_LEGION
+      || selectedAttackerDetachment?.name === BLOOD_LEGION
+      || selectedAttackerDetachment?.name === LORDS_OF_THE_WARP
+    ),
   })
 
   useEffect(() => {

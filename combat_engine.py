@@ -2980,6 +2980,20 @@ class CombatSimulator:
                 if modified_hit_roll >= hit_required:
                     self.stats["hit_reroll_successes"] += 1
 
+        if attack_context.get("flickering_reality_active", False):
+            sequence_state = attack_context.get("sequence_state", {})
+            flickering_result = int(sequence_state.get("flickering_reality_result", 0) or 0)
+            if flickering_result <= 0:
+                flickering_result = self.die_roll()
+                sequence_state["flickering_reality_result"] = flickering_result
+                self.log(f"Flickering Reality result is {flickering_result}")
+            if hit_roll == flickering_result:
+                self.stats["failed_hit_attacks"] += 1
+                self.log(
+                    f"Flickering Reality ends the attack sequence on an unmodified Hit roll of {hit_roll}"
+                )
+                return 0, 0, 0, 0
+
         if modified_hit_roll < hit_required:
             self.stats["failed_hit_attacks"] += 1
             self.log(f"{unit_name} failed to hit")
@@ -3184,6 +3198,14 @@ class CombatSimulator:
         if save_roll == 1 and attack_context.get("reroll_save_rolls_of_1", False):
             reroll_save = self.die_roll()
             self.log(f"{target['name']} re-rolls the saving throw of 1 into a {reroll_save}")
+            save_roll = reroll_save
+        elif (
+            save_roll == 1
+            and save_type == "invulnerable"
+            and attack_context.get("reroll_invulnerable_save_rolls_of_1", False)
+        ):
+            reroll_save = self.die_roll()
+            self.log(f"{target['name']} re-rolls the invulnerable saving throw of 1 into a {reroll_save}")
             save_roll = reroll_save
 
         if save_roll >= required:
@@ -4220,6 +4242,159 @@ class CombatSimulator:
             rolls = [self.die_roll() for _ in range(eligible_models)]
             mortal_wounds = min(6, sum(1 for roll in rolls if roll >= 4))
             self.log(f"{ability_name} rolls against {eligible_models} engaged model{'' if eligible_models == 1 else 's'}: {rolls}")
+            if mortal_wounds > 0:
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wound{'' if mortal_wounds == 1 else 's'}")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
+        if should_resolve_pre_attack_ability("Cavalcade of Blades") and target_state["models"] > 0:
+            ability_name = "Cavalcade of Blades"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Out-of-phase ability resolved before attacks for simulation convenience. "
+                "Actual timing: Charge phase, just after this Slaanesh unit ends a Charge move."
+            )
+            roll_count = 6 if self.unit_has_keyword(attacker_unit, "monster") else max(0, int(attacker_unit.get("models", 0)))
+            rolls = [self.die_roll() for _ in range(roll_count)]
+            mortal_wounds = sum(1 for roll in rolls if roll >= 4)
+            self.log(f"{ability_name} rolls: {rolls}")
+            if mortal_wounds > 0:
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wounds")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
+        if should_resolve_pre_attack_ability("Malice Made Manifest") and target_state["models"] > 0:
+            ability_name = "Malice Made Manifest"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Activated ability resolved before attacks for simulation convenience. "
+                "Actual timing: start of the Fight phase, selecting one enemy unit within Engagement Range."
+            )
+            roll = self.die_roll()
+            self.log(f"{ability_name} roll: {roll}")
+            if roll == 6:
+                mortal_wounds = 3
+            elif roll >= 2:
+                mortal_wounds = self.roll_value("D3")
+            else:
+                mortal_wounds = 0
+            if mortal_wounds > 0:
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wound{'' if mortal_wounds == 1 else 's'}")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
+        if should_resolve_pre_attack_ability("Skulls Beget Blood") and target_state["models"] > 0:
+            ability_name = "Skulls Beget Blood"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Out-of-phase ability resolved before attacks for simulation convenience. "
+                "Actual timing: Shooting phase, selecting a visible unengaged enemy unit within 8 inches."
+            )
+            rolls = [self.die_roll() for _ in range(6)]
+            mortal_wounds = sum(1 for roll in rolls if roll >= 4)
+            self.log(f"{ability_name} rolls: {rolls}")
+            if mortal_wounds > 0:
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wounds")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
+        if should_resolve_pre_attack_ability("Maggot Maws") and target_state["models"] > 0:
+            ability_name = "Maggot Maws"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Out-of-phase ability resolved before attacks for simulation convenience. "
+                "Actual timing: Shooting phase, after selecting one enemy unit within 6 inches of the bearer."
+            )
+            self.log(f"{ability_name} forces a Battle-shock test before the mortal wound roll")
+            roll = self.die_roll()
+            self.log(f"{ability_name} roll: {roll}")
+            if roll >= 3:
+                mortal_wounds = self.roll_value("D3")
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wounds")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
+        if should_resolve_pre_attack_ability("Bilious Blessing") and target_state["models"] > 0:
+            ability_name = "Bilious Blessing"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Out-of-phase ability resolved before attacks for simulation convenience. "
+                "Actual timing: start of your Shooting phase, selecting one visible enemy unit within 8 inches."
+            )
+            rolls = [self.die_roll() for _ in range(7)]
+            mortal_wounds = sum(1 for roll in rolls if roll >= 4)
+            self.log(f"{ability_name} rolls: {rolls}")
+            if mortal_wounds > 0:
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wounds")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
+        if should_resolve_pre_attack_ability("Relentless Carnage") and target_state["models"] > 0:
+            ability_name = "Relentless Carnage"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Out-of-phase ability resolved before attacks for simulation convenience. "
+                "Actual timing: end of the Fight phase, selecting one enemy unit within Engagement Range."
+            )
+            rolls = [self.die_roll() for _ in range(8)]
+            mortal_wounds = sum(1 for roll in rolls if roll >= 4)
+            self.log(f"{ability_name} rolls: {rolls}")
+            if mortal_wounds > 0:
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wound{'' if mortal_wounds == 1 else 's'}")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
+        if should_resolve_pre_attack_ability("Slashing Dive") and target_state["models"] > 0:
+            ability_name = "Slashing Dive"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Out-of-phase ability resolved before attacks for simulation convenience. "
+                "Actual timing: Movement phase, after this unit ends a Normal move over an enemy unit."
+            )
+            roll_count = max(0, int(attacker_unit.get("models", 0)))
+            rolls = [self.die_roll() for _ in range(roll_count)]
+            mortal_wounds = sum(1 for roll in rolls if roll >= 4)
+            self.log(f"{ability_name} rolls for {roll_count} model{'' if roll_count == 1 else 's'}: {rolls}")
+            if mortal_wounds > 0:
+                self.log(f"{ability_name} inflicts {mortal_wounds} mortal wound{'' if mortal_wounds == 1 else 's'}")
+                self.stats["damage_pool"] += mortal_wounds
+                self.record_mortal_damage(ability_name, mortal_wounds)
+                self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+            else:
+                self.log(f"{ability_name} inflicts no mortal wounds")
+
+        if should_resolve_pre_attack_ability("Brass Stampede") and target_state["models"] > 0:
+            ability_name = "Brass Stampede"
+            self.log(f"\n{attacker_unit['name']} activates {ability_name}")
+            self.log(
+                "Out-of-phase ability resolved before attacks for simulation convenience. "
+                "Actual timing: after this unit ends a Charge move, selecting one enemy unit within Engagement Range."
+            )
+            roll_count = max(0, int(attacker_unit.get("models", 0)))
+            rolls = [self.die_roll() for _ in range(roll_count)]
+            mortal_wounds = sum(self.roll_value("D3") for roll in rolls if roll >= 4)
+            self.log(f"{ability_name} rolls for {roll_count} model{'' if roll_count == 1 else 's'}: {rolls}")
             if mortal_wounds > 0:
                 self.log(f"{ability_name} inflicts {mortal_wounds} mortal wound{'' if mortal_wounds == 1 else 's'}")
                 self.stats["damage_pool"] += mortal_wounds
@@ -6020,6 +6195,16 @@ class CombatSimulator:
                 {"Lance"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
             )
+        if "channelled wrath" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Lance"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if "slaughterthirst (aura)" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Lance"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
         if (
             "dauntless defenders" in attacker_active_ability_names
             and attacker_target_visible
@@ -6042,6 +6227,74 @@ class CombatSimulator:
             add_keywords_to_matching_weapons(
                 {"LH"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if "skirling magicks" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"LH"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if self.ability_names_include(attacker_or_attached_ability_names, "changecaster"):
+            add_keywords_to_matching_weapons(
+                {"SH1"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if self.ability_names_include(attacker_or_attached_ability_names, "blazing warpfire"):
+            add_keywords_to_matching_weapons(
+                {"Assault"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if self.ability_names_include(attacker_or_attached_ability_names, "fateskimmer"):
+            add_keywords_to_matching_weapons(
+                {"LH"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if self.ability_names_include(attacker_or_attached_ability_names, "keep counting"):
+            add_keywords_to_matching_weapons(
+                {"SH1"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if "tormentbringer" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"SH1"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if "harbinger of death - lethal hits" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"LH"},
+                lambda candidate_weapon: self.weapon_name_contains(candidate_weapon, "hellforged weapons"),
+            )
+        if "harbinger of death - precision" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Precision"},
+                lambda candidate_weapon: self.weapon_name_contains(candidate_weapon, "hellforged weapons"),
+            )
+        if "harbinger of death - sustained hits" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"SH1"},
+                lambda candidate_weapon: self.weapon_name_contains(candidate_weapon, "hellforged weapons"),
+            )
+        if "master of magicks - ignores cover" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Ignores Cover"},
+                lambda candidate_weapon: self.weapon_name_contains(candidate_weapon, "bolt of change"),
+            )
+        if "master of magicks - lethal hits" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"LH"},
+                lambda candidate_weapon: self.weapon_name_contains(candidate_weapon, "bolt of change"),
+            )
+        if "master of magicks - sustained hits" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"SH1"},
+                lambda candidate_weapon: self.weapon_name_contains(candidate_weapon, "bolt of change"),
+            )
+        if (
+            self.ability_names_include(attacker_or_attached_ability_names, "skullmaster's fury")
+            and bool(options.get("charged_this_turn", False))
+        ):
+            add_keywords_to_matching_weapons(
+                {"DW"},
+                lambda candidate_weapon: self.weapon_name_contains(candidate_weapon, "juggernaut's bladed horn"),
             )
         if "bearer of the judicant's helm" in attacker_active_ability_names:
             add_keywords_to_matching_weapons(
@@ -6152,6 +6405,20 @@ class CombatSimulator:
         ):
             add_keywords_to_matching_weapons(
                 {"Assault"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if (
+            attacker_detachment_name == "Warptide"
+            and self.unit_has_keyword(attacker_unit, "battleline")
+            and bool(options.get("attacker_advanced_this_turn", False))
+        ):
+            add_keywords_to_matching_weapons(
+                {"Assault"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if "encroaching darkness" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Ignores Cover"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
             )
         if (
@@ -6317,6 +6584,17 @@ class CombatSimulator:
         if "purgation's hand" in attacker_active_ability_names and weapon["range"].lower() == "melee":
             reroll_hit_rolls_of_1 = True
             reroll_wound_rolls_of_1 = True
+        if "seductive gambit" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            reroll_all_hit_rolls = True
+            reroll_wound_rolls_of_1 = True
+        if "fury's cage" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            reroll_all_hit_rolls = True
+            reroll_all_wound_rolls = True
+        if self.ability_names_include(attacker_ability_names, "tranceweaver"):
+            if bool(options.get("defender_on_objective", False)):
+                reroll_all_hit_rolls = True
+            else:
+                reroll_hit_rolls_of_1 = True
         if "steadfast superiority" in attacker_active_ability_names:
             reroll_all_hit_rolls = True
         if (
@@ -7805,6 +8083,103 @@ class CombatSimulator:
             attacker_outgoing_wound_modifier += 1
         if bool(options.get("attacker_divine_guidance_active", False)):
             attacker_ap_modifier += 1
+        if "draught of terror" in attacker_active_ability_names:
+            attacker_ap_modifier += 1
+            if bool(options.get("defender_battleshocked", False)):
+                reroll_all_wound_rolls = True
+        if (
+            self.ability_names_include(attacker_or_attached_ability_names, "bloodmaster")
+            and weapon["range"].lower() == "melee"
+        ):
+            attacker_outgoing_wound_modifier += 1
+        if (
+            "daemon lord of khorne (aura)" in attacker_active_ability_names
+            and weapon["range"].lower() == "melee"
+        ):
+            attacker_hit_modifier += 1
+        if (
+            "daemon lord of slaanesh (aura)" in attacker_active_ability_names
+            and weapon["range"].lower() == "melee"
+        ):
+            attacker_ap_modifier += 1
+        if (
+            "daemon lord of tzeentch (aura)" in attacker_active_ability_names
+            and weapon["range"].lower() != "melee"
+        ):
+            ranged_strength_bonus += 1
+        if (
+            "blood throne" in attacker_active_ability_names
+            and self.unit_has_keyword(attacker_unit, "khorne")
+        ):
+            if weapon["range"].lower() == "melee":
+                melee_strength_bonus += 1
+                melee_damage_bonus += 1
+            else:
+                ranged_strength_bonus += 1
+                ranged_damage_bonus += 1
+            attacker_ap_modifier += 1
+        if (
+            self.ability_names_include(attacker_ability_names, "champion slayer")
+            and weapon["range"].lower() == "melee"
+            and (
+                self.unit_has_keyword(target_state, "character")
+                or self.unit_has_keyword(target_state, "monster")
+            )
+        ):
+            reroll_all_wound_rolls = True
+        if (
+            "symphony of pain (psychic)" in attacker_active_ability_names
+            and self.unit_has_keyword(attacker_unit, "slaanesh")
+        ):
+            reroll_all_hit_rolls = True
+            reroll_all_wound_rolls = True
+        if "death's heads" in attacker_active_ability_names:
+            reroll_all_wound_rolls = True
+        if (
+            "malefic destruction" in attacker_active_ability_names
+            and weapon["range"].lower() == "melee"
+            and self.weapon_name_contains(weapon, "hellforged weapons")
+        ):
+            melee_attack_bonus += 3
+        if (
+            self.ability_names_include(attacker_ability_names, "cutting down the foe")
+            and bool(options.get("charged_this_turn", False))
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_strength_bonus += 1
+            melee_damage_bonus += 1
+        if (
+            "channelled wrath" in attacker_active_ability_names
+            and weapon["range"].lower() == "melee"
+            and self.unit_has_keyword(attacker_unit, "khorne")
+        ):
+            attacker_ap_modifier += 1
+        if "pyrogenesis" in attacker_active_ability_names:
+            if weapon["range"].lower() == "melee":
+                melee_strength_bonus += 2
+            else:
+                ranged_strength_bonus += 2
+        if "font of spores (aura)" in attacker_active_ability_names:
+            attacker_ap_modifier += 1
+        if "fever visions" in attacker_active_ability_names:
+            attacker_hit_modifier += 1
+        if "call to murder" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            melee_attack_bonus += 1
+        if attacker_enhancement_name == "Bane-forged Weapons":
+            if weapon["range"].lower() == "melee":
+                melee_strength_bonus += 1
+            else:
+                ranged_strength_bonus += 1
+        if "dreaming crown (aura)" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            attacker_hit_modifier += 1
+        if (
+            (
+                "false majesty (aura)" in attacker_active_ability_names
+                or "archagonists" in attacker_active_ability_names
+            )
+            and weapon["range"].lower() == "melee"
+        ):
+            attacker_outgoing_wound_modifier += 1
         if (
             bool(options.get("attacker_condemnatory_info_screed_active", False))
             and bool(options.get("attacker_disembarked_from_transport", False))
@@ -7864,6 +8239,29 @@ class CombatSimulator:
             else:
                 ranged_strength_bonus += 1
             attacker_ap_modifier += 1
+        if (
+            attacker_enhancement_name == "A'rgath, the King of Blades"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+            and weapon["range"].lower() == "melee"
+        ):
+            bonus = 2 if "a'rgath, the king of blades" in attacker_active_ability_names else 1
+            melee_attack_bonus += bonus
+            melee_strength_bonus += bonus
+        if (
+            attacker_enhancement_name == "The Everstave"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+            and weapon["range"].lower() != "melee"
+        ):
+            ranged_strength_bonus += 2 if "the everstave" in attacker_active_ability_names else 1
+        if (
+            attacker_enhancement_name == "Neverblade"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_attack_bonus += 1
+            melee_strength_bonus += 2
+            attacker_ap_modifier += 1
+            attacker_hit_modifier += 1
         if (
             attacker_enhancement_name == "Boons of Deimos"
             and attacker_unit["name"] == attacker_enhancement_bearer_name
@@ -8155,6 +8553,8 @@ class CombatSimulator:
             target_toughness_bonus += 1
         if "shield of prophecy" in defender_active_ability_names:
             target_toughness_bonus += 2
+        if "greater daemon of nurgle (aura)" in defender_active_ability_names:
+            target_toughness_bonus += 1
         if bool(options.get("defender_unbreakable_lines_active", False)):
             target_incoming_wound_modifier -= 1
         if bool(options.get("defender_ard_as_nails_active", False)):
@@ -8186,6 +8586,17 @@ class CombatSimulator:
             target_incoming_wound_modifier -= 1
         if (
             "shining resolve" in defender_active_ability_names
+            and effective_attack_strength_for_defense > target_toughness_for_defense
+        ):
+            target_incoming_wound_modifier -= 1
+        if (
+            "gloam rot" in defender_active_ability_names
+            and effective_attack_strength_for_defense > target_toughness_for_defense
+        ):
+            target_incoming_wound_modifier -= 1
+        if (
+            "incorporeal entities" in defender_active_ability_names
+            and weapon["range"].lower() != "melee"
             and effective_attack_strength_for_defense > target_toughness_for_defense
         ):
             target_incoming_wound_modifier -= 1
@@ -8255,6 +8666,34 @@ class CombatSimulator:
             and self.unit_has_keyword(target_state, "ravenwing")
         ):
             attacker_hit_modifier -= 1
+        if "overwhelming excess" in defender_active_ability_names:
+            attacker_hit_modifier -= 1
+        if "penumbral puppetry" in defender_active_ability_names:
+            attacker_hit_modifier -= 1
+        if self.target_state_has_ability(target_state, "Fluxmaster"):
+            attacker_hit_modifier -= 1
+        if (
+            (
+                "prince of darkness (aura)" in defender_active_ability_names
+                or "shroud of flies (aura)" in defender_active_ability_names
+            )
+            and weapon["range"].lower() != "melee"
+        ):
+            attacker_hit_modifier -= 1
+        if "horrible fascination (psychic)" in defender_active_ability_names:
+            attacker_hit_modifier -= 1
+        if (
+            self.target_state_has_ability(target_state, "Mischief Makers")
+            and weapon["range"].lower() == "melee"
+            and not self.unit_has_keyword(attacker_unit, "titanic")
+        ):
+            attacker_hit_modifier -= 1
+        if (
+            "unstable position" in defender_active_ability_names
+            and weapon["range"].lower() != "melee"
+            and not self.weapon_has_keyword(weapon, "Pistol")
+        ):
+            attacker_hit_modifier -= 1
         if (
             self.target_state_has_ability(target_state, "Shrouding")
             and weapon["range"].lower() != "melee"
@@ -8294,6 +8733,8 @@ class CombatSimulator:
         target_armor_save_modifier = 0
         if bool(options.get("defender_masters_camouflage_extra_cover_active", False)):
             target_armor_save_modifier -= 1
+        if "sheathed in brass" in defender_active_ability_names:
+            target_armor_save_modifier -= 99
         if defender_astra_militarum_order == "take_cover" or (
             defender_enhancement_name == "Stalwart's Honours"
             and defender_has_attached_character
@@ -8460,6 +8901,23 @@ class CombatSimulator:
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 4)
         if bool(options.get("defender_purity_of_suffering_active", False)):
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 4)
+        if defender_enhancement_name == "The Endless Gift":
+            target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 5)
+        if (
+            "improbable shield (aura)" in defender_active_ability_names
+            and self.weapon_has_keyword(weapon, "Psychic")
+        ):
+            target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 4)
+        if (
+            self.target_state_has_ability(target_state, "Swallow Energy")
+            and self.weapon_has_keyword(weapon, "Psychic")
+        ):
+            target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 4)
+        if (
+            self.target_state_has_ability(target_state, "Collar of Khorne")
+            and self.weapon_has_keyword(weapon, "Psychic")
+        ):
+            target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 3)
         target_mortal_feel_no_pain = 0
         if (
             (
@@ -8471,6 +8929,15 @@ class CombatSimulator:
             target_mortal_feel_no_pain = self.combine_feel_no_pain_values(target_mortal_feel_no_pain, 5)
         if "omnissiah's grace" in defender_active_ability_names:
             target_mortal_feel_no_pain = self.combine_feel_no_pain_values(target_mortal_feel_no_pain, 5)
+        if "improbable shield (aura)" in defender_active_ability_names:
+            target_mortal_feel_no_pain = self.combine_feel_no_pain_values(target_mortal_feel_no_pain, 4)
+        if self.target_state_has_ability(target_state, "Swallow Energy"):
+            target_mortal_feel_no_pain = self.combine_feel_no_pain_values(target_mortal_feel_no_pain, 4)
+        if (
+            self.target_state_has_ability(target_state, "Collar of Khorne")
+            and self.weapon_has_keyword(weapon, "Psychic")
+        ):
+            target_mortal_feel_no_pain = self.combine_feel_no_pain_values(target_mortal_feel_no_pain, 3)
         if (
             defender_enhancement_name == "Surly As a Squiggoth"
             and defender_has_attached_character
@@ -8567,6 +9034,8 @@ class CombatSimulator:
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 4)
         if "rotate ion shields" in defender_active_ability_names:
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 4)
+        if "unholy vigour" in defender_active_ability_names:
+            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 3)
         if defender_enhancement_name == "Sanctuary":
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 5)
         if (
@@ -8580,6 +9049,7 @@ class CombatSimulator:
             defender_detachment_name == "Green Tide"
             and defender_counts_as_ten_plus
         )
+        reroll_invulnerable_save_rolls_of_1 = "daemonic invulnerability" in defender_active_ability_names
 
         target_damage_modifier = -1 if (
             bool(options.get("defender_extra_gubbinz_active", False))
@@ -8868,6 +9338,10 @@ class CombatSimulator:
                     and weapon["range"].lower() != "melee"
                     and self.weapon_has_keyword(weapon, "Blast")
                 )
+                or (
+                    "ficklefire" in attacker_active_ability_names
+                    and weapon["range"].lower() != "melee"
+                )
             ),
             "steel_hammer_ceaseless_cannonade_active": (
                 attacker_detachment_name == "Steel Hammer"
@@ -8938,6 +9412,8 @@ class CombatSimulator:
                 and weapon["range"].lower() == "melee"
             ),
             "reroll_save_rolls_of_1": reroll_save_rolls_of_1,
+            "reroll_invulnerable_save_rolls_of_1": reroll_invulnerable_save_rolls_of_1,
+            "flickering_reality_active": "flickering reality" in defender_active_ability_names,
             "critical_hit_threshold": min(
                 6,
                 *[
@@ -8982,6 +9458,9 @@ class CombatSimulator:
                         5 if bool(options.get("attacker_passion_of_the_penitent_active", False))
                         and weapon["range"].lower() == "melee"
                         and self.unit_has_keyword(attacker_unit, "penitent") else 6,
+                        5 if "seeping virulence" in attacker_active_ability_names
+                        and weapon["range"].lower() == "melee" else 6,
+                        5 if self.ability_names_include(attacker_or_attached_ability_names, "poxbringer") else 6,
                     ]
                 ],
             ),
