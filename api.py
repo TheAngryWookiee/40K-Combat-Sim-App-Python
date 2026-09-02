@@ -158,6 +158,9 @@ class SimulationOptions(BaseModel):
     defender_waaagh_active: bool = False
     attacker_templar_vow: str | None = None
     attacker_martial_katah: str | None = None
+    attacker_imperial_knights_quality: str | None = None
+    attacker_chaos_knights_dread_ability: str | None = None
+    attacker_chaos_knights_extra_dread_ability: str | None = None
     attacker_doctrina_imperative: str | None = None
     defender_doctrina_imperative: str | None = None
     attacker_admech_battleline_bonus_active: bool = False

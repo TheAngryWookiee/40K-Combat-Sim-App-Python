@@ -88,6 +88,8 @@ const initialOptions = {
   attacker_templar_vow: '',
   attacker_martial_katah: '',
   attacker_imperial_knights_quality: '',
+  attacker_chaos_knights_dread_ability: '',
+  attacker_chaos_knights_extra_dread_ability: '',
   attacker_doctrina_imperative: '',
   attacker_astra_militarum_order: '',
   defender_astra_militarum_order: '',
@@ -394,6 +396,7 @@ const ADEPTUS_CUSTODES = 'Adeptus Custodes'
 const ADEPTUS_MECHANICUS = 'Adeptus Mechanicus'
 const ASTRA_MILITARUM = 'Astra Militarum'
 const IMPERIAL_KNIGHTS = 'Imperial Knights'
+const CHAOS_KNIGHTS = 'Chaos Knights'
 const BLACK_TEMPLARS = 'Black Templars'
 const ASTRA_MILITARUM_ORDER_OPTIONS = [
   { id: '', label: 'No Order' },
@@ -473,6 +476,27 @@ const IMPERIAL_KNIGHTS_QUALITY_OPTIONS = [
   { id: 'paragons_of_honour', label: 'Paragons of Honour' },
   { id: 'defend_the_realm', label: 'Defend the Realm' },
 ]
+const CHAOS_KNIGHTS_DREAD_OPTIONS = [
+  { id: '', label: 'Deathly Terror only' },
+  { id: 'despair', label: 'Despair' },
+  { id: 'doom', label: 'Doom' },
+  { id: 'darkness', label: 'Darkness' },
+  { id: 'dismay', label: 'Dismay' },
+  { id: 'delirium', label: 'Delirium' },
+  { id: 'dominion', label: 'Dominion' },
+]
+const CHAOS_KNIGHTS_EXTRA_DREAD_OPTIONS = [
+  { id: '', label: 'No extra Dread selected' },
+  ...CHAOS_KNIGHTS_DREAD_OPTIONS.filter((option) => option.id),
+]
+const TRAITORIS_LANCE = 'Traitoris Lance'
+const INFERNAL_LANCE = 'Infernal Lance'
+const LORDS_OF_DREAD = 'Lords of Dread'
+const HOUNDPACK_LANCE = 'Houndpack Lance'
+const HELHUNT_LANCE = 'Helhunt Lance'
+const BASTIONS_OF_TYRANNY = 'Bastions of Tyranny'
+const HUNTING_WARPACK = 'Hunting Warpack'
+const ICONOCLAST_FIEFDOM = 'Iconoclast Fiefdom'
 const DOCTRINA_IMPERATIVE_OPTIONS = [
   { id: '', label: 'No imperative selected' },
   { id: 'protector', label: 'Protector Imperative' },
@@ -2142,6 +2166,48 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
     ))
   }
 
+  if (detachment.name === INFERNAL_LANCE) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (enhancement.name === 'Knight Diabolus') {
+        return selectedWeapon?.range === 'Melee'
+      }
+      return enhancement.name === 'Bestial Aspect' && selectedWeapon?.range !== 'Melee'
+    })
+  }
+
+  if (detachment.name === LORDS_OF_DREAD) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Blade of Celerity' && selectedWeapon?.range !== 'Melee'
+    ))
+  }
+
+  if (detachment.name === HOUNDPACK_LANCE) {
+    return (detachment.enhancements || []).filter((enhancement) => {
+      if (!unitHasKeyword(enhancementBearerUnit, 'war dog')) {
+        return false
+      }
+      if (enhancement.name === 'Final Howl (Aura)') {
+        return Boolean(selectedWeapon)
+      }
+      return enhancement.name === 'Loping Predator' && selectedWeapon?.range !== 'Melee'
+    })
+  }
+
+  if (detachment.name === BASTIONS_OF_TYRANNY) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Hate-filled Dominion'
+      && unitHasKeyword(enhancementBearerUnit, 'knight tyrant')
+    ))
+  }
+
+  if (detachment.name === HUNTING_WARPACK) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Snarling Rivalry'
+      && selectedWeapon?.range !== 'Melee'
+      && unitHasKeyword(enhancementBearerUnit, 'executioner')
+    ))
+  }
+
   return []
 }
 
@@ -2303,6 +2369,37 @@ function getDefenderEnhancementOptions(detachment, enhancementBearerUnit) {
 
   if (detachment.name === PLAGUE_LEGION) {
     return []
+  }
+
+  if (detachment.name === TRAITORIS_LANCE) {
+    return (detachment.enhancements || []).filter(
+      (enhancement) => enhancement.name === 'Veil of Medrengard',
+    )
+  }
+
+  if (detachment.name === INFERNAL_LANCE) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === 'Blasphemous Engine'
+      || enhancement.name === 'Fleshmetal Fusion'
+    ))
+  }
+
+  if (detachment.name === LORDS_OF_DREAD) {
+    return (detachment.enhancements || []).filter(
+      (enhancement) => (
+        enhancement.name === 'Blessing of the Dark Master'
+        || enhancement.name === 'Putrid Carapace'
+      ),
+    )
+  }
+
+  if (detachment.name === HOUNDPACK_LANCE) {
+    return (detachment.enhancements || []).filter(
+      (enhancement) => (
+        enhancement.name === 'Panoply of the Cursed Knight'
+        && unitHasKeyword(enhancementBearerUnit, 'war dog')
+      ),
+    )
   }
 
   return []
@@ -2692,6 +2789,34 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       return stratagem.name === 'Bilious Blessing' && unitHasKeyword(unit, 'character') && unitHasKeyword(unit, 'nurgle') && !unitHasKeyword(unit, 'monster')
     }
 
+    if (detachment.name === TRAITORIS_LANCE) {
+      return stratagem.name === 'Conquerors Without Mercy' && !isRangedWeapon
+    }
+
+    if (detachment.name === INFERNAL_LANCE) {
+      return stratagem.name === 'Warp Vision' && isRangedWeapon
+    }
+
+    if (detachment.name === LORDS_OF_DREAD) {
+      return stratagem.name === 'Titanic Duel' && unitHasKeyword(unit, 'character')
+    }
+
+    if (detachment.name === HOUNDPACK_LANCE) {
+      return (
+        stratagem.name === 'Hungry for Combat'
+        && !isRangedWeapon
+        && unitHasKeyword(unit, 'war dog')
+      )
+    }
+
+    if (detachment.name === HELHUNT_LANCE) {
+      return stratagem.name === 'Merciless Fusillade'
+    }
+
+    if (detachment.name === ICONOCLAST_FIEFDOM) {
+      return stratagem.name === 'Avenge the Masters!' && unitHasKeyword(unit, 'damned')
+    }
+
     return false
   })
 }
@@ -2865,6 +2990,52 @@ function getDefenderStratagemOptions(detachment, selectedWeapon, unit) {
         stratagem.name === 'Incorporeal Entities'
         && selectedWeapon?.range !== 'Melee'
         && unitHasKeyword(unit, 'battleline')
+      )
+    }
+
+    if (detachment.name === TRAITORIS_LANCE) {
+      return stratagem.name === 'Disdain for the Weak' || stratagem.name === 'Storm of Darkness'
+    }
+
+    if (detachment.name === INFERNAL_LANCE) {
+      return (
+        stratagem.name === 'Hellforged Construction'
+        || (
+          stratagem.name === 'Diabolic Bulwark'
+          && selectedWeapon?.range !== 'Melee'
+        )
+      )
+    }
+
+    if (detachment.name === LORDS_OF_DREAD) {
+      return stratagem.name === 'Runes of Disdain' && unitHasKeyword(unit, 'character')
+    }
+
+    if (detachment.name === HELHUNT_LANCE) {
+      return (
+        stratagem.name === 'Beasthide Manifestation'
+        || stratagem.name === 'Feral Arrogance'
+      )
+    }
+
+    if (detachment.name === BASTIONS_OF_TYRANNY) {
+      return (
+        stratagem.name === 'Intimidating Reminder'
+        || (
+          stratagem.name === 'Rune-cursed Stronghold'
+          && unitHasKeyword(unit, 'knight tyrant')
+        )
+      )
+    }
+
+    if (detachment.name === HUNTING_WARPACK) {
+      if (stratagem.name === 'Insensate Bloodthirst') {
+        return selectedWeapon?.range === 'Melee' && unitHasKeyword(unit, 'war dog')
+      }
+      return (
+        stratagem.name === 'Stalking Focus'
+        && selectedWeapon?.range !== 'Melee'
+        && unitHasKeyword(unit, 'war dog')
       )
     }
 
@@ -3087,6 +3258,8 @@ function buildSimulationPayload(state) {
     attacker_templar_vow: state.attackerTemplarVow || null,
     attacker_martial_katah: state.attackerMartialKatah || null,
     attacker_imperial_knights_quality: state.attackerImperialKnightsQuality || null,
+    attacker_chaos_knights_dread_ability: state.attackerChaosKnightsDreadAbility || null,
+    attacker_chaos_knights_extra_dread_ability: state.attackerChaosKnightsExtraDreadAbility || null,
     attacker_doctrina_imperative: state.attackerDoctrinaImperative || null,
     attacker_astra_militarum_order: state.attackerAstraMilitarumOrder || null,
     defender_astra_militarum_order: state.defenderAstraMilitarumOrder || null,
@@ -6780,6 +6953,553 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'run them through!': ({ phaseId, selectedWeapons }) => (
     phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
   ),
+  'diabolic power - lethal hits': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'diabolic power - sustained hits': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'dark pacts - lethal hits': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'dark pacts - sustained hits': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'paragon of hatred (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'mark of chaos ascendant (aura)': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'enhanced warriors': ({ phaseId, selectedWeapons, side }) => (
+    (side === 'defender' && selectedWeapons.length > 0)
+    || (phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'))
+  ),
+  'surgeon acolyte': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'head taker': ({ allowOutOfPhaseAbilities, selectedWeapons, chargedThisTurn }) => (
+    allowOutOfPhaseAbilities && chargedThisTurn && selectedWeapons.length > 0
+  ),
+  'headlong destruction': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'architect of ruin': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'unholy mechanisms (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'reorder reality': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'chance for glory': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'formidably resilient': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'dark zealotry': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'malign sacrifice': ({ allowOutOfPhaseAbilities, phaseId, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && phaseId === 'fight' && selectedWeapons.length > 0
+  ),
+  'faithful flock': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'dark ritual': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'warp-sighted butcher': ({ phaseId, selectedWeapons, targetBelowStartingStrength }) => (
+    phaseId === 'fight'
+    && targetBelowStartingStrength
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'sacrificial dagger': ({ selectedWeapons }) => (
+    selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic'))
+  ),
+  'brutal raider': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
+    phaseId === 'fight' && chargedThisTurn && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'prescience (psychic)': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'death hex (psychic)': ({ allowOutOfPhaseAbilities, phaseId, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && phaseId === 'shooting' && selectedWeapons.length > 0
+  ),
+  'chaos familiar': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'mutated bodyguard': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'master of mechanisms': ({ selectedWeapons, sourceUnit }) => (
+    selectedWeapons.length > 0 && unitHasKeyword(sourceUnit, 'vehicle')
+  ),
+  'outmanoeuvre': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
+    phaseId === 'fight' && chargedThisTurn && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'annihilator': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+    && (unitHasKeyword(targetUnit, 'monster') || unitHasKeyword(targetUnit, 'vehicle'))
+  ),
+  'destructor': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+    && unitHasKeyword(targetUnit, 'infantry')
+  ),
+  'despoilers': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'siege shield': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'daemonforge': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'daemonic ordnance': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'dark ascension (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'airborne predator': ({ selectedWeapons, targetUnit }) => (
+    selectedWeapons.length > 0 && unitHasKeyword(targetUnit, 'fly')
+  ),
+  'crushing charge': ({ allowOutOfPhaseAbilities, selectedWeapons, chargedThisTurn }) => (
+    allowOutOfPhaseAbilities && chargedThisTurn && selectedWeapons.length > 0
+  ),
+  'visions of suffering (psychic)': ({ selectedWeapons, targetBelowStartingStrength }) => (
+    selectedWeapons.length > 0 && targetBelowStartingStrength
+  ),
+  'unholy bloodshed': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'twisted defence force': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'soul eater': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'focus of hatred': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'eager for vengeance': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'mark of legend - hit roll': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'mark of legend - wound roll': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'warmaster\'s gift': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'contemptuous disregard': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'bringers of despair': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'black crusade': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => {
+      const name = String(getWeaponProfileGroupName(weapon) || weapon?.name || '').toLowerCase()
+      return (
+        name.includes('bolt pistol')
+        || name.includes('bolt gun')
+        || name.includes('boltgun')
+        || name.includes('combi-bolter')
+      )
+    })
+  ),
+  'let the galaxy burn': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'cursed fang': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'shroud of obfuscation': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'pick them off': ({ phaseId, selectedWeapons, targetBelowStartingStrength }) => (
+    phaseId === 'shooting'
+    && targetBelowStartingStrength
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'iron artifice': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'bastion plate': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'ironbound enmity': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'warp tracer': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'persistent assailants': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'pitiless cannonade': ({ phaseId, selectedWeapons, targetBelowHalfStrength }) => (
+    phaseId === 'shooting'
+    && targetBelowHalfStrength
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'point-blank destruction': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => (
+      weapon.range !== 'Melee' && !weaponHasRawKeyword(weapon, 'Blast')
+    ))
+  ),
+  'steadfast determination': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'marks of chaos - khorne': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'marks of chaos - tzeentch': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'marks of chaos - nurgle': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'marks of chaos - slaanesh': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'marks of chaos - chaos undivided': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'intoxicating elixir': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'talisman of burning blood - base': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'talisman of burning blood - dark pact +1': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'talisman of burning blood - dark pact +2': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'talisman of burning blood - dark pact +3': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'eye of the gods': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'profane zeal': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'festering miasma': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'incendiary goad': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'chosen for glory - failed desperate pact': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'chosen for glory - passed desperate pact': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'infernal sacrifice - failed desperate pact': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'infernal sacrifice - passed desperate pact': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'crazed focus - failed desperate pact': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'crazed focus - passed desperate pact': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'debt to the soul forge - invoke contract': ({ selectedWeapons, sourceUnit }) => (
+    selectedWeapons.length > 0
+    && unitHasKeyword(sourceUnit, 'daemon')
+    && unitHasKeyword(sourceUnit, 'vehicle')
+  ),
+  'forge\'s blessing': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'tempting addendum': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'desperate pledge': ({ selectedWeapons, sourceUnit }) => (
+    selectedWeapons.length > 0
+    && unitHasKeyword(sourceUnit, 'daemon')
+    && unitHasKeyword(sourceUnit, 'vehicle')
+  ),
+  'experimental augmentations - cholinergic accelerants': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'experimental augmentations - paranormal reactions': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'experimental augmentations - supracutaneous chitinisation': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'experimental augmentations - macrotensile sinews': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'experimental augmentations - ophthalmic enhancement': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'surgical precision': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'living carapace': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'prime test subject': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'monstrous visages': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'specimens for the spider': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'fight'
+    && unitHasKeyword(targetUnit, 'character')
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'greyveil hex': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'talons sunk deep': ({ selectedWeapons, defenderBattleshocked, targetBelowHalfStrength }) => (
+    selectedWeapons.length > 0 && (defenderBattleshocked || targetBelowHalfStrength)
+  ),
+  'prey on the weak': ({ selectedWeapons, defenderBattleshocked, targetBelowHalfStrength }) => (
+    selectedWeapons.length > 0 && (defenderBattleshocked || targetBelowHalfStrength)
+  ),
+  'tyrannical motivation - huron\'s elite': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'voice of the tyrant': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'hardened killers - ballistic skill': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'hardened killers - rapid fire attacks': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Rapid Fire'))
+  ),
+  'hardened killers - save': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'reavers\' flurry': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
+    phaseId === 'fight'
+    && chargedThisTurn
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'vendetta': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'eyes of the hunter': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'fratricidal trophies': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'never outgunned - lethal hits': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'never outgunned - sustained hits': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'vengeful destruction': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'corrupted munitions': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'tzagulla': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'tzagulla - from reserves': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'empyric dislocation': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'armour of corruption': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'siegebreaker strike': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'cybinfernal font': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'mark of the soul forges': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'touch of the arkifane': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'balefire boon': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'soul-tally offering': ({ selectedWeapons, targetUnit }) => (
+    selectedWeapons.length > 0
+    && (
+      unitHasKeyword(targetUnit, 'character')
+      || unitHasKeyword(targetUnit, 'monster')
+      || unitHasKeyword(targetUnit, 'vehicle')
+    )
+  ),
+  'unholy fortitude': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'empyric wellspring - psyker dark pact': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'empyric wellspring - daemon prince dark pact': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'touched by the warp': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'conduit of chaos': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'wreathed in warpflame': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'ruination\'s bounty': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'undying hatred - devotees of destruction': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'shadowcowl talisman': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'pact of cursed pinions': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'plunging talons': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
+    phaseId === 'fight'
+    && chargedThisTurn
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'raiders and reavers': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'dread reaver': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'unfailingly obdurate': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'scour and seize': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'fight'
+    && unitHasObjectiveSelfRule(targetUnit)
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'ruinous raid': ({ selectedWeapons, targetUnit }) => (
+    unitHasObjectiveSelfRule(targetUnit) && selectedWeapons.length > 0
+  ),
+  'night\'s shroud': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'depthless cruelty': ({ phaseId, selectedWeapons, defenderBattleshocked, targetBelowHalfStrength }) => (
+    phaseId === 'fight'
+    && (defenderBattleshocked || targetBelowHalfStrength)
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'pitiless hunters': ({ phaseId, selectedWeapons, defenderBattleshocked, targetBelowHalfStrength }) => (
+    phaseId === 'shooting'
+    && (defenderBattleshocked || targetBelowHalfStrength)
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'unnatural fortitude - invulnerable save': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'unnatural fortitude - feel no pain': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'knight diabolus': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'bestial aspect': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'veil of medrengard': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'conquerors without mercy': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
+    phaseId === 'fight'
+    && chargedThisTurn
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'disdain for the weak': ({ phaseId, selectedWeapons, side }) => (
+    side === 'defender'
+    && phaseId === 'fight'
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'storm of darkness': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'hellforged construction': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'warp vision': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'diabolic bulwark': ({ phaseId, selectedWeapons, side }) => (
+    side === 'defender'
+    && phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'blasphemous engine': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'fleshmetal fusion': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'marked prey': ({ selectedWeapons, sourceUnit }) => (
+    selectedWeapons.length > 0 && unitHasKeyword(sourceUnit, 'war dog')
+  ),
+  'blade of celerity': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'blessing of the dark master': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'putrid carapace': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'runes of disdain': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'final howl (aura)': ({ selectedWeapons, sourceUnit }) => (
+    selectedWeapons.length > 0 && unitHasKeyword(sourceUnit, 'war dog')
+  ),
+  'loping predator': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'panoply of the cursed knight': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'hungry for combat': ({ phaseId, selectedWeapons, sourceUnit }) => (
+    phaseId === 'fight'
+    && unitHasKeyword(sourceUnit, 'war dog')
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'merciless fusillade': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'beasthide manifestation': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'feral arrogance': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'annihilate the unworthy': ({ selectedWeapons, sourceUnit }) => (
+    selectedWeapons.length > 0
+    && unitHasKeyword(sourceUnit, 'knight tyrant')
+  ),
+  'hate-filled dominion': ({ selectedWeapons, sourceUnit }) => (
+    selectedWeapons.length > 0 && unitHasKeyword(sourceUnit, 'knight tyrant')
+  ),
+  'intimidating reminder': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'rune-cursed stronghold': ({ selectedWeapons, sourceUnit, side }) => (
+    side === 'defender'
+    && selectedWeapons.length > 0
+    && unitHasKeyword(sourceUnit, 'knight tyrant')
+  ),
+  'snarling rivalry': ({ phaseId, selectedWeapons, sourceUnit }) => (
+    phaseId === 'shooting'
+    && unitHasKeyword(sourceUnit, 'executioner')
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'insensate bloodthirst': ({ phaseId, selectedWeapons, sourceUnit, side }) => (
+    side === 'defender'
+    && phaseId === 'fight'
+    && unitHasKeyword(sourceUnit, 'war dog')
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'stalking focus': ({ phaseId, selectedWeapons, sourceUnit, side }) => (
+    side === 'defender'
+    && phaseId === 'shooting'
+    && unitHasKeyword(sourceUnit, 'war dog')
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'avenge the masters!': ({ selectedWeapons, sourceUnit }) => (
+    selectedWeapons.length > 0 && unitHasKeyword(sourceUnit, 'damned')
+  ),
+  'consumed with hunger (aura)': ({ selectedWeapons, sourceUnit, targetUnit }) => (
+    selectedWeapons.length > 0
+    && unitHasKeyword(sourceUnit, 'war dog')
+    && (unitHasKeyword(targetUnit, 'titanic') || unitHasKeyword(targetUnit, 'towering'))
+  ),
+  'offerings for the dark gods (aura)': ({ phaseId, selectedWeapons, sourceUnit }) => (
+    phaseId === 'shooting'
+    && unitHasKeyword(sourceUnit, 'war dog')
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'dark favour (aura)': ({ phaseId, selectedWeapons, sourceUnit }) => (
+    phaseId === 'shooting'
+    && unitHasKeyword(sourceUnit, 'war dog')
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'huntmaster (aura)': ({ phaseId, selectedWeapons, sourceUnit }) => (
+    phaseId === 'shooting'
+    && unitHasKeyword(sourceUnit, 'war dog')
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'preysight (aura)': ({ phaseId, selectedWeapons, sourceUnit }) => (
+    phaseId === 'shooting'
+    && unitHasKeyword(sourceUnit, 'war dog')
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'taskmaster (aura)': ({ phaseId, selectedWeapons, sourceUnit }) => (
+    phaseId === 'shooting'
+    && unitHasKeyword(sourceUnit, 'war dog')
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'frenzied rampage (aura)': ({ phaseId, selectedWeapons, sourceUnit }) => (
+    phaseId === 'fight'
+    && unitHasKeyword(sourceUnit, 'war dog')
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'methodical destruction': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'close-range killers (aura)': ({ selectedWeapons, sourceUnit }) => (
+    selectedWeapons.length > 0 && unitHasKeyword(sourceUnit, 'war dog')
+  ),
+  'infernal aegis (aura)': ({ phaseId, selectedWeapons, sourceUnit, side }) => (
+    side === 'defender'
+    && phaseId === 'shooting'
+    && unitHasKeyword(sourceUnit, 'war dog')
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
   'draught of terror': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'daemonic invulnerability': ({ selectedWeapons, side }) => (
     side === 'defender' && selectedWeapons.length > 0
@@ -6872,6 +7592,15 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   ),
   'bilious blessing': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
     allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'fleshy curse': ({ allowOutOfPhaseAbilities, phaseId, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && phaseId === 'shooting' && selectedWeapons.length > 0
+  ),
+  'orbs of unlife': ({ allowOutOfPhaseAbilities, phaseId, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && phaseId === 'fight' && selectedWeapons.length > 0
+  ),
+  'orbs of unlife - dark pact passed': ({ allowOutOfPhaseAbilities, phaseId, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && phaseId === 'fight' && selectedWeapons.length > 0
   ),
   'skirling magicks': ({ phaseId, selectedWeapons }) => (
     phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
@@ -6984,8 +7713,7 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
     selectedWeapons.length > 0
     && (
       unitHasKeyword(targetUnit, 'monster')
-      || unitHasKeyword(targetUnit, 'titanic')
-      || unitHasKeyword(targetUnit, 'walker')
+      || unitHasKeyword(targetUnit, 'vehicle')
     )
   ),
   'mentor\'s pride': ({ selectedWeapons }) => selectedWeapons.length > 0,
@@ -7085,6 +7813,8 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'magaera\'s duty (bondsman)': ({ phaseId, selectedWeapons }) => (
     phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
   ),
+  'seething hatred - hit roll': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'seething hatred - wound roll': ({ selectedWeapons }) => selectedWeapons.length > 0,
 }
 
 const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
@@ -7135,6 +7865,11 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'impetuous glory',
   'knights of legend',
   'macro-extinction protocols',
+  'bloodlust',
+  'brigand',
+  'huntsman',
+  'obsessive ruthlessness',
+  'stalker',
   'punishing salvoes',
   'saturation fire',
   'seasoned noble',
@@ -7448,6 +8183,9 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
     detachment = null,
     selectedEnhancementName = '',
     armyRules = [],
+    targetBelowStartingStrength = false,
+    targetBelowHalfStrength = false,
+    defenderBattleshocked = false,
   } = context
   const selectedEnhancementNameLower = String(selectedEnhancementName || '').toLowerCase()
   const detachmentCollections = [
@@ -7477,12 +8215,20 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
     })),
     ...(detachment?.enhancements || [])
       .filter((ability) => String(ability.name || '').toLowerCase() === selectedEnhancementNameLower)
-      .map((ability) => ({
-        ability,
-        fallback: 'Enhancement',
-        unitName: detachment?.name,
-        unit: null,
-      })),
+      .flatMap((ability) => [
+        {
+          ability,
+          fallback: 'Enhancement',
+          unitName: detachment?.name,
+          unit: null,
+        },
+        ...((ability?.options || []).map((option) => ({
+          ability: option,
+          fallback: ability?.name || 'Enhancement',
+          unitName: detachment?.name,
+          unit: null,
+        }))),
+      ]),
   ]
   const armyRuleCollections = (armyRules || []).flatMap((rule) => [
     {
@@ -7515,6 +8261,7 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
       const isSupported = SUPPORTED_COMBAT_ACTIVATED_ABILITIES[name]
       return Boolean(isSupported?.({
         unit,
+        sourceUnit: unit || unitList[0],
         phaseId,
         selectedWeapons,
         selectedEntries,
@@ -7523,6 +8270,9 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
         waaaghActive,
         chargedThisTurn,
         allowOutOfPhaseAbilities,
+        targetBelowStartingStrength,
+        targetBelowHalfStrength,
+        defenderBattleshocked,
         side,
       }))
     })
@@ -7560,6 +8310,8 @@ function buildAttackerActiveRules({
   attackerTemplarVow,
   attackerMartialKatah,
   attackerImperialKnightsQuality,
+  attackerChaosKnightsDreadAbility,
+  attackerChaosKnightsExtraDreadAbility,
   attackerDoctrinaImperative,
   attackerAstraMilitarumOrder,
   attackerFieldsOfFireActive,
@@ -7735,6 +8487,9 @@ function buildAttackerActiveRules({
       detachment: attackerDetachment,
       selectedEnhancementName: attackerEnhancementName,
       armyRules: attackerArmyRules,
+      targetBelowStartingStrength,
+      targetBelowHalfStrength,
+      defenderBattleshocked,
     },
   ).forEach((ability) => {
     if (activeAbilityNameSet.has(String(ability.name || '').toLowerCase())) {
@@ -7769,6 +8524,8 @@ function buildAttackerActiveRules({
   const activeTemplarVow = TEMPLAR_VOW_OPTIONS.find((option) => option.id === attackerTemplarVow)
   const activeMartialKatah = MARTIAL_KATAH_OPTIONS.find((option) => option.id === attackerMartialKatah)
   const activeImperialKnightsQuality = IMPERIAL_KNIGHTS_QUALITY_OPTIONS.find((option) => option.id === attackerImperialKnightsQuality)
+  const activeChaosKnightsDreadAbility = CHAOS_KNIGHTS_DREAD_OPTIONS.find((option) => option.id === attackerChaosKnightsDreadAbility)
+  const activeChaosKnightsExtraDreadAbility = CHAOS_KNIGHTS_EXTRA_DREAD_OPTIONS.find((option) => option.id === attackerChaosKnightsExtraDreadAbility)
   const activeDoctrinaImperative = DOCTRINA_IMPERATIVE_OPTIONS.find((option) => option.id === attackerDoctrinaImperative)
   const activeAstraMilitarumOrder = ASTRA_MILITARUM_ORDER_OPTIONS.find((option) => option.id === attackerAstraMilitarumOrder)
 
@@ -7873,6 +8630,37 @@ function buildAttackerActiveRules({
       name: activeImperialKnightsQuality.label,
       source: `${IMPERIAL_KNIGHTS} Army Rule`,
       text: textByQuality[activeImperialKnightsQuality.id] || '',
+    })
+  }
+
+  if (String(attackerFactionName || '').toLowerCase() === CHAOS_KNIGHTS.toLowerCase()) {
+    const textByDread = {
+      despair: 'Deathly Terror is active, and Despair is also active. Enemy units within 9" worsen their Leadership by 2 total.',
+      doom: defenderBattleshocked
+        ? 'Doom is active. Because the target is Battle-shocked, this model adds 1 to the Wound roll.'
+        : 'Doom is active. It adds 1 to the Wound roll only when the target is Battle-shocked.',
+      darkness: 'Darkness is active. This model has Stealth; this matters when it is being targeted by ranged attacks.',
+      dismay: 'Dismay is active. Its Battle-shock test trigger happens in your opponent\'s Command phase, outside this attack sequence.',
+      delirium: 'Delirium is active. Its mortal wound trigger happens when a below-half-strength enemy unit within range fails a Battle-shock test.',
+      dominion: 'Dominion is active. Add 3" to this model\'s Aura abilities, making Deathly Terror and other Dread auras 12".',
+    }
+    const selectedDreadIds = new Set([
+      activeChaosKnightsDreadAbility?.id,
+      activeChaosKnightsExtraDreadAbility?.id,
+    ].filter(Boolean))
+    const selectedDreadLabels = [
+      activeChaosKnightsDreadAbility,
+      activeChaosKnightsExtraDreadAbility,
+    ].filter((option) => option?.id).map((option) => option.label)
+    const doomText = selectedDreadIds.has('doom')
+      ? (defenderBattleshocked
+        ? ' Doom is active and the target is Battle-shocked, so this model adds 1 to the Wound roll.'
+        : ' Doom is active, but it only adds 1 to the Wound roll when the target is Battle-shocked.')
+      : ''
+    rules.push({
+      name: selectedDreadLabels.length ? `Deathly Terror + ${selectedDreadLabels.join(' + ')}` : 'Deathly Terror',
+      source: `${CHAOS_KNIGHTS} Army Rule`,
+      text: `${textByDread[activeChaosKnightsDreadAbility?.id] || 'Deathly Terror is active. Enemy units within 9" worsen their Leadership by 1.'}${activeChaosKnightsExtraDreadAbility?.id ? ` Extra Dread: ${textByDread[activeChaosKnightsExtraDreadAbility.id]}` : ''}${doomText}`,
     })
   }
 
@@ -11053,6 +11841,8 @@ function App() {
   const [attackerTemplarVow, setAttackerTemplarVow] = useState(() => combatInitial('attacker_templar_vow', initialOptions.attacker_templar_vow))
   const [attackerMartialKatah, setAttackerMartialKatah] = useState(() => combatInitial('attacker_martial_katah', initialOptions.attacker_martial_katah))
   const [attackerImperialKnightsQuality, setAttackerImperialKnightsQuality] = useState(() => combatInitial('attacker_imperial_knights_quality', initialOptions.attacker_imperial_knights_quality))
+  const [attackerChaosKnightsDreadAbility, setAttackerChaosKnightsDreadAbility] = useState(() => combatInitial('attacker_chaos_knights_dread_ability', initialOptions.attacker_chaos_knights_dread_ability))
+  const [attackerChaosKnightsExtraDreadAbility, setAttackerChaosKnightsExtraDreadAbility] = useState(() => combatInitial('attacker_chaos_knights_extra_dread_ability', initialOptions.attacker_chaos_knights_extra_dread_ability))
   const [attackerDoctrinaImperative, setAttackerDoctrinaImperative] = useState(() => combatInitial('attacker_doctrina_imperative', initialOptions.attacker_doctrina_imperative))
   const [attackerAstraMilitarumOrder, setAttackerAstraMilitarumOrder] = useState(() => combatInitial('attacker_astra_militarum_order', initialOptions.attacker_astra_militarum_order))
   const [defenderAstraMilitarumOrder, setDefenderAstraMilitarumOrder] = useState(() => combatInitial('defender_astra_militarum_order', initialOptions.defender_astra_militarum_order))
@@ -11506,6 +12296,8 @@ function App() {
       attacker_templar_vow: attackerTemplarVow,
       attacker_martial_katah: attackerMartialKatah,
       attacker_imperial_knights_quality: attackerImperialKnightsQuality,
+      attacker_chaos_knights_dread_ability: attackerChaosKnightsDreadAbility,
+      attacker_chaos_knights_extra_dread_ability: attackerChaosKnightsExtraDreadAbility,
       attacker_doctrina_imperative: attackerDoctrinaImperative,
       attacker_astra_militarum_order: attackerAstraMilitarumOrder,
       defender_astra_militarum_order: defenderAstraMilitarumOrder,
@@ -12868,6 +13660,9 @@ function App() {
       detachment: selectedAttackerDetachment,
       selectedEnhancementName: attackerEnhancementName,
       armyRules: attackerFactionDetails?.army_rules || [],
+      targetBelowStartingStrength,
+      targetBelowHalfStrength,
+      defenderBattleshocked,
     }),
     [
       attackerAttachedLeaderUnitDetails,
@@ -12883,6 +13678,9 @@ function App() {
       selectedAttackerDetachment,
       attackerEnhancementName,
       attackerFactionDetails?.army_rules,
+      targetBelowStartingStrength,
+      targetBelowHalfStrength,
+      defenderBattleshocked,
     ],
   )
   const defenderCombatActivatedAbilityOptions = useMemo(
@@ -12893,6 +13691,9 @@ function App() {
       side: 'defender',
       detachment: selectedDefenderDetachment,
       selectedEnhancementName: defenderEnhancementName,
+      targetBelowStartingStrength: attackerBelowStartingStrength,
+      targetBelowHalfStrength: attackerBelowHalfStrength,
+      defenderBattleshocked: attackerBattleshocked,
     }),
     [
       attachedCharacterUnitDetails,
@@ -12904,6 +13705,9 @@ function App() {
       selectedDefenderDetachment,
       defenderEnhancementName,
       selectedCombatPhaseId,
+      attackerBelowStartingStrength,
+      attackerBelowHalfStrength,
+      attackerBattleshocked,
     ],
   )
   useEffect(() => {
@@ -13234,6 +14038,7 @@ function App() {
   const attackerArmyIsAdeptusMechanicus = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === ADEPTUS_MECHANICUS.toLowerCase()
   const attackerArmyIsAstraMilitarum = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === ASTRA_MILITARUM.toLowerCase()
   const attackerArmyIsImperialKnights = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === IMPERIAL_KNIGHTS.toLowerCase()
+  const attackerArmyIsChaosKnights = String(attackerFactionDetails?.name || attackerFaction || '').toLowerCase() === CHAOS_KNIGHTS.toLowerCase()
   const defenderArmyIsAdeptusMechanicus = String(defenderFactionDetails?.name || defenderFaction || '').toLowerCase() === ADEPTUS_MECHANICUS.toLowerCase()
   const defenderArmyIsAstraMilitarum = String(defenderFactionDetails?.name || defenderFaction || '').toLowerCase() === ASTRA_MILITARUM.toLowerCase()
   const hasOathOfMoment = unitHasOathOfMoment(attackerUnitDetails) && !attackerArmyIsBlackTemplars
@@ -13470,6 +14275,8 @@ function App() {
   const canUseAttackerTemplarVow = attackerArmyIsBlackTemplars
   const canUseAttackerMartialKatah = attackerArmyIsAdeptusCustodes && isMeleeWeapon
   const canUseAttackerImperialKnightsQuality = attackerArmyIsImperialKnights
+  const canUseAttackerChaosKnightsDreadAbility = attackerArmyIsChaosKnights
+  const canUseAttackerChaosKnightsExtraDreadAbility = attackerArmyIsChaosKnights && selectedAttackerDetachment?.name === TRAITORIS_LANCE
   const canUseAttackerDoctrinaImperative = attackerArmyIsAdeptusMechanicus
   const canUseAttackerAstraMilitarumOrder = attackerArmyIsAstraMilitarum
   const canUseDefenderDoctrinaImperative = defenderArmyIsAdeptusMechanicus && isMeleeWeapon
@@ -14379,6 +15186,7 @@ function App() {
   const attackerCombatDoctrineTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Combat Doctrines')?.rules_text || ''
   const attackerTemplarVowTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Templar Vows')?.rules_text || ''
   const attackerImperialKnightsQualityTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Code Chivalric')?.rules_text || ''
+  const attackerChaosKnightsDreadTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Harbingers of Dread')?.rules_text || ''
   const attackerDoctrinaImperativeTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Doctrina Imperatives')?.rules_text || ''
   const attackerAstraMilitarumOrderTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Voice of Command')?.rules_text || ''
   const defenderDoctrinaImperativeTooltip = defenderFactionDetails?.army_rules?.find((rule) => rule.name === 'Doctrina Imperatives')?.rules_text || ''
@@ -14523,6 +15331,8 @@ function App() {
       attackerTemplarVow,
       attackerMartialKatah,
       attackerImperialKnightsQuality,
+      attackerChaosKnightsDreadAbility,
+      attackerChaosKnightsExtraDreadAbility,
       attackerDoctrinaImperative,
       attackerAstraMilitarumOrder,
       attackerFieldsOfFireActive,
@@ -14696,6 +15506,8 @@ function App() {
       attackerTemplarVow,
       attackerMartialKatah,
       attackerImperialKnightsQuality,
+      attackerChaosKnightsDreadAbility,
+      attackerChaosKnightsExtraDreadAbility,
       attackerDoctrinaImperative,
       attackerAstraMilitarumOrder,
       attackerFieldsOfFireActive,
@@ -16428,6 +17240,9 @@ function App() {
         chargedThisTurn: battlefieldCombatAttackerCharged,
         allowOutOfPhaseAbilities: true,
         side: 'attacker',
+        targetBelowStartingStrength,
+        targetBelowHalfStrength,
+        defenderBattleshocked,
       },
     ),
     [
@@ -16435,6 +17250,9 @@ function App() {
       battlefieldAttackerWaaaghActive,
       battlefieldCombatAttackerCharged,
       attackerTargetWithinTwelve,
+      targetBelowStartingStrength,
+      targetBelowHalfStrength,
+      defenderBattleshocked,
       selectedBattlefieldCombatWeapons,
       selectedBattlefieldCombatant,
     ],
@@ -17025,6 +17843,15 @@ function App() {
   }, [canUseDefenderUnbreakableLines, defenderUnbreakableLinesActive])
 
   useEffect(() => {
+    if (
+      attackerChaosKnightsExtraDreadAbility
+      && attackerChaosKnightsExtraDreadAbility === attackerChaosKnightsDreadAbility
+    ) {
+      setAttackerChaosKnightsExtraDreadAbility(initialOptions.attacker_chaos_knights_extra_dread_ability)
+    }
+  }, [attackerChaosKnightsDreadAbility, attackerChaosKnightsExtraDreadAbility])
+
+  useEffect(() => {
     const stubbornTenacityActive = attackerEnhancementName === 'Stubborn Tenacity'
     setAttackerStubbornTenacityActive(stubbornTenacityActive)
     if (!canUseAttackerBelowStartingStrength && attackerBelowStartingStrength) {
@@ -17069,6 +17896,12 @@ function App() {
     }
     if (!canUseAttackerImperialKnightsQuality && attackerImperialKnightsQuality) {
       setAttackerImperialKnightsQuality(initialOptions.attacker_imperial_knights_quality)
+    }
+    if (!canUseAttackerChaosKnightsDreadAbility && attackerChaosKnightsDreadAbility) {
+      setAttackerChaosKnightsDreadAbility(initialOptions.attacker_chaos_knights_dread_ability)
+    }
+    if (!canUseAttackerChaosKnightsExtraDreadAbility && attackerChaosKnightsExtraDreadAbility) {
+      setAttackerChaosKnightsExtraDreadAbility(initialOptions.attacker_chaos_knights_extra_dread_ability)
     }
     if (!canUseAttackerDoctrinaImperative && attackerDoctrinaImperative) {
       setAttackerDoctrinaImperative(initialOptions.attacker_doctrina_imperative)
@@ -17622,6 +18455,8 @@ function App() {
     attackerTemplarVow,
     attackerMartialKatah,
     attackerImperialKnightsQuality,
+    attackerChaosKnightsDreadAbility,
+    attackerChaosKnightsExtraDreadAbility,
     attackerDoctrinaImperative,
     attackerAstraMilitarumOrder,
     attackerFieldsOfFireActive,
@@ -18868,6 +19703,8 @@ function App() {
       attackerTemplarVow,
       attackerMartialKatah,
       attackerImperialKnightsQuality,
+      attackerChaosKnightsDreadAbility,
+      attackerChaosKnightsExtraDreadAbility,
       attackerDoctrinaImperative,
       attackerAstraMilitarumOrder,
       attackerFieldsOfFireActive,
@@ -19100,6 +19937,8 @@ function App() {
         attacker_hyper_adaptation: battlefieldAttackerSide === 'attacker' ? attackerHyperAdaptation || null : null,
         attacker_martial_katah: battlefieldAttackerSide === 'attacker' ? attackerMartialKatah || null : null,
         attacker_imperial_knights_quality: battlefieldAttackerSide === 'attacker' ? attackerImperialKnightsQuality || null : null,
+        attacker_chaos_knights_dread_ability: battlefieldAttackerSide === 'attacker' ? attackerChaosKnightsDreadAbility || null : null,
+        attacker_chaos_knights_extra_dread_ability: battlefieldAttackerSide === 'attacker' ? attackerChaosKnightsExtraDreadAbility || null : null,
         attacker_doctrina_imperative: battlefieldAttackerSide === 'attacker' ? attackerDoctrinaImperative || null : null,
         attacker_astra_militarum_order: battlefieldAttackerSide === 'attacker' ? attackerAstraMilitarumOrder || null : null,
         defender_astra_militarum_order: battlefieldDefenderSide === 'defender' ? defenderAstraMilitarumOrder || null : null,
@@ -21283,6 +22122,8 @@ function App() {
     setAttackerTemplarVow(initialOptions.attacker_templar_vow)
     setAttackerMartialKatah(initialOptions.attacker_martial_katah)
     setAttackerImperialKnightsQuality(initialOptions.attacker_imperial_knights_quality)
+    setAttackerChaosKnightsDreadAbility(initialOptions.attacker_chaos_knights_dread_ability)
+    setAttackerChaosKnightsExtraDreadAbility(initialOptions.attacker_chaos_knights_extra_dread_ability)
     setAttackerDoctrinaImperative(initialOptions.attacker_doctrina_imperative)
     setAttackerAstraMilitarumOrder(initialOptions.attacker_astra_militarum_order)
     setDefenderAstraMilitarumOrder(initialOptions.defender_astra_militarum_order)
@@ -22538,6 +23379,44 @@ function App() {
                   >
                     {IMPERIAL_KNIGHTS_QUALITY_OPTIONS.map((option) => (
                       <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerChaosKnightsDreadAbility ? (
+                <label className="combat-option-attacker" title={attackerChaosKnightsDreadTooltip}>
+                  <span>Attacker Dread</span>
+                  <select
+                    title={attackerChaosKnightsDreadTooltip}
+                    value={attackerChaosKnightsDreadAbility}
+                    onChange={(event) => setAttackerChaosKnightsDreadAbility(event.target.value)}
+                  >
+                    {CHAOS_KNIGHTS_DREAD_OPTIONS.map((option) => (
+                      <option key={option.id || 'none'} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {canUseAttackerChaosKnightsExtraDreadAbility ? (
+                <label className="combat-option-attacker" title={selectedAttackerDetachment?.rule?.rules_text || attackerChaosKnightsDreadTooltip}>
+                  <span>Extra Dread</span>
+                  <select
+                    title={selectedAttackerDetachment?.rule?.rules_text || attackerChaosKnightsDreadTooltip}
+                    value={attackerChaosKnightsExtraDreadAbility}
+                    onChange={(event) => setAttackerChaosKnightsExtraDreadAbility(event.target.value)}
+                  >
+                    {CHAOS_KNIGHTS_EXTRA_DREAD_OPTIONS.map((option) => (
+                      <option
+                        key={option.id || 'none'}
+                        value={option.id}
+                        disabled={Boolean(option.id) && option.id === attackerChaosKnightsDreadAbility}
+                      >
                         {option.label}
                       </option>
                     ))}
