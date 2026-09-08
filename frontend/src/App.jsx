@@ -6957,6 +6957,299 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'diabolic power - sustained hits': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'dark pacts - lethal hits': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'dark pacts - sustained hits': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'nurgle\'s gift (aura)': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'skullsquirm blight': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'rattlejoint ague': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'reverberant rancidity': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'worldblight': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'miasmic bombardment': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'blighted land': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'putrid detonation': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'plaguesurge': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'leechspore eruption': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'overwhelming generosity': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'visions of virulence': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'all is rot': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'avatars of decay': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'smeared with filth': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'grip of the walking pox': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'blooming pestilence': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'signal pox': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'daemon weapon of nurgle': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'furnace of plagues': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'fell harvester': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'sorrowsyphon': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => String(getWeaponProfileGroupName(weapon) || weapon?.name || '').toLowerCase().includes('plague wind'))
+  ),
+  'talisman of burgeoning': ({ selectedWeapons, side, targetUnit }) => (
+    side === 'defender' && selectedWeapons.length > 0 && unitHasKeyword(targetUnit, 'poxwalkers')
+  ),
+  'warped and rusted animus': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'arch-contaminator': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'deadly vectors': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'blessings of filth': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'malignance magnified': ({ selectedWeapons, targetBelowStartingStrength }) => (
+    selectedWeapons.length > 0 && targetBelowStartingStrength
+  ),
+  'grotesque fortitude': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'revolting regeneration': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'disgustingly resilient': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'clutching corruption': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'grim reapers': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'fight'
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+    && !unitHasKeyword(targetUnit, 'monster')
+    && !unitHasKeyword(targetUnit, 'vehicle')
+  ),
+  'gnawing hunger': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'fresh vectors': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'bloodrust deluge': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'soulrot flux': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'insectile murmuration': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'droning horror': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'eye of the swarm': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'hypervirulent strains': ({ selectedWeapons, side }) => (
+    side === 'attacker' && selectedWeapons.length > 0
+  ),
+  'rejuvenating swarm': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'creeping blight': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'death\'s heads': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.length > 0
+  ),
+  'eye of affliction': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'tendrilous emissions': ({ phaseId, selectedWeapons, sourceUnit }) => (
+    phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+    && unitHasKeyword(sourceUnit, 'vehicle')
+  ),
+  'drawn to despair': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'font of filth': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'mortarion\'s teachings': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'sickening impact': ({ allowOutOfPhaseAbilities, selectedWeapons, chargedThisTurn }) => (
+    allowOutOfPhaseAbilities && chargedThisTurn && selectedWeapons.length > 0
+  ),
+  'steeped in suffering': ({ selectedWeapons, targetBelowStartingStrength, targetBelowHalfStrength }) => (
+    selectedWeapons.length > 0 && (targetBelowStartingStrength || targetBelowHalfStrength)
+  ),
+  'violent excess': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'combat stimms': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'capricious reactions': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'intoxicating musk': ({ phaseId, selectedWeapons, side }) => (
+    side === 'defender' && phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'exquisite swordsmanship - lethal hits': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
+    phaseId === 'fight' && chargedThisTurn && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'exquisite swordsmanship - sustained hits': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
+    phaseId === 'fight' && chargedThisTurn && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'deft parry': ({ phaseId, selectedWeapons, side }) => (
+    side === 'defender' && phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'cruel bladesman': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
+    phaseId === 'fight' && chargedThisTurn && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'distortion': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'heretek adept': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'daemonic empowerment': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'dark blessings': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'possessed blade': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'uncanny reactions': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'pledges to the dark prince - 1+ pact points': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'pledges to the dark prince - 3+ pact points': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'pledges to the dark prince - 5+ pact points': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'pledges to the dark prince - 7+ pact points': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'protection of the dark prince': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'unshakeable opponents': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'martial perfection': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'armour of abhorrence': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'internal rivalries': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'slayer of champions': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'fight'
+    && unitHasKeyword(targetUnit, 'character')
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'devoted duellists': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'heightened jealousy': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'sensational performance': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
+    phaseId === 'fight' && chargedThisTurn && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'tears of the phoenix': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'spiritsilver': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'prideful superiority': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'fight'
+    && unitHasKeyword(targetUnit, 'character')
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'close-quarters execution': ({ phaseId, selectedWeapons, targetWithinTwelve }) => (
+    phaseId === 'shooting'
+    && targetWithinTwelve
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'cacophonic accompaniment': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'frenzied ferocity': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'excessive vigour (aura)': ({ phaseId, selectedWeapons, chargedThisTurn }) => (
+    phaseId === 'fight' && chargedThisTurn && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'daemonic destruction': ({ allowOutOfPhaseAbilities, selectedWeapons, chargedThisTurn }) => (
+    allowOutOfPhaseAbilities && chargedThisTurn && selectedWeapons.length > 0
+  ),
+  'daemon lord of slaanesh (aura)': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'euphoric strikes': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'doom siren': ({ allowOutOfPhaseAbilities, phaseId, selectedWeapons, targetUnit }) => (
+    allowOutOfPhaseAbilities
+    && phaseId === 'shooting'
+    && unitHasKeyword(targetUnit, 'infantry')
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'a challenge worthy of skill': ({ selectedWeapons, targetUnit }) => (
+    selectedWeapons.length > 0
+    && (
+      unitHasKeyword(targetUnit, 'character')
+      || unitHasKeyword(targetUnit, 'monster')
+      || unitHasKeyword(targetUnit, 'walker')
+    )
+  ),
+  'monarch of the hunt': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'daemonic patrons': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'airborne predator': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
+  ),
+  'lethal obsession': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'delight in agony': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'psychedelic soulflame': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'frantic focus': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'euphoric crown': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'howling plate': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'possessive mania': ({ selectedWeapons, side }) => (
+    side === 'defender' && selectedWeapons.length > 0
+  ),
+  'honour is for fools': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
   'paragon of hatred (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'mark of chaos ascendant (aura)': ({ selectedWeapons, side }) => (
     side === 'defender' && selectedWeapons.length > 0
@@ -6970,6 +7263,9 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   ),
   'head taker': ({ allowOutOfPhaseAbilities, selectedWeapons, chargedThisTurn }) => (
     allowOutOfPhaseAbilities && chargedThisTurn && selectedWeapons.length > 0
+  ),
+  'plunder': ({ allowOutOfPhaseAbilities, selectedWeapons }) => (
+    allowOutOfPhaseAbilities && selectedWeapons.length > 0
   ),
   'headlong destruction': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'architect of ruin': ({ selectedWeapons }) => selectedWeapons.length > 0,
@@ -7042,12 +7338,15 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'daemonic ordnance': ({ phaseId, selectedWeapons }) => (
     phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
   ),
-  'dark ascension (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
-  'airborne predator': ({ selectedWeapons, targetUnit }) => (
-    selectedWeapons.length > 0 && unitHasKeyword(targetUnit, 'fly')
+  'stabilisation talons': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
   ),
+  'dark ascension (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'crushing charge': ({ allowOutOfPhaseAbilities, selectedWeapons, chargedThisTurn }) => (
     allowOutOfPhaseAbilities && chargedThisTurn && selectedWeapons.length > 0
+  ),
+  'devoted to destruction': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
   ),
   'visions of suffering (psychic)': ({ selectedWeapons, targetBelowStartingStrength }) => (
     selectedWeapons.length > 0 && targetBelowStartingStrength
@@ -7670,7 +7969,9 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
     phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
   ),
   'symphony of pain (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
-  'death\'s heads': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'death\'s heads': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.length > 0
+  ),
   'tormentbringer': ({ phaseId, selectedWeapons }) => (
     phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
   ),
