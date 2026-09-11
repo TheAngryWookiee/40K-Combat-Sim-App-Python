@@ -6566,7 +6566,136 @@ function selectedWeaponsIncludeProfileGroup(selectedWeapons, profileGroupName) {
   return selectedWeapons.some((weapon) => getWeaponProfileGroupName(weapon) === profileGroupName)
 }
 
+function weaponNameIncludes(weapon, text) {
+  return String(weapon?.name || '').toLowerCase().includes(text)
+}
+
 const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
+  "destiny's ruin": ({ selectedWeapons }) => selectedWeapons.length > 0,
+  "destiny's ruin - empowered": ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'doombolt': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'doombolt - empowered': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'twist of fate': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'twist of fate - empowered': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'martial excellence': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'warp blades': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'decapitating strikes': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'fight'
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+    && unitHasKeyword(targetUnit, 'infantry')
+  ),
+  'psychic maelstrom': ({ selectedWeapons }) => selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic')),
+  'wrath of the immaterium': ({ selectedWeapons }) => selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic')),
+  'psychic dominion': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic')),
+  'destined by fate': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'glamour of tzeentch (aura, psychic)': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'hunter of souls': ({ selectedWeapons, targetUnit }) => selectedWeapons.length > 0 && unitHasKeyword(targetUnit, 'character'),
+  'aetherstride (psychic)': ({ selectedWeapons }) => selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'dark blessing')),
+  'arcane shield (psychic)': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'malefic maelstrom (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'daemon lord of tzeentch (aura)': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'master of magicks - ignores cover': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'bolt of change'))
+  ),
+  'master of magicks - lethal hits': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'bolt of change'))
+  ),
+  'master of magicks - sustained hits d3': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'bolt of change'))
+  ),
+  'empyric guidance (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'twisted sorceries (psychic)': ({ selectedWeapons }) => selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic')),
+  'marked by fate (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'bestial prophet': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'sacrificial blessing': ({ selectedWeapons }) => selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic')),
+  'bringers of change': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'sorcerous support': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic'))
+  ),
+  'rites of coalescence': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'icon of flame': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'ensorcelled annihilation': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+    && (unitHasKeyword(targetUnit, 'monster') || unitHasKeyword(targetUnit, 'vehicle'))
+  ),
+  'ensorcelled destruction': ({ phaseId, selectedWeapons, targetUnit }) => (
+    phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+    && !unitHasKeyword(targetUnit, 'monster')
+    && !unitHasKeyword(targetUnit, 'vehicle')
+  ),
+  'ablazing salvoes': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'flames-wreathed': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'devastating sorcery': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic'))
+  ),
+  "eldritch vortex of e'taph": ({ selectedWeapons }) => selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic')),
+  'sulphurous veil': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'warpmeld sacrifice': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'diamond of distortion': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'warped vicissitude': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'all is dust': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'lord of the rubricae': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'the stave abominus': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'implacable guardians': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'unwavering phalanx': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'warpfire infusion': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'hex-marked armour': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'infernal fusillade': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => (
+      weapon.range !== 'Melee'
+      && (
+        weaponNameIncludes(weapon, 'inferno bolt pistol')
+        || weaponNameIncludes(weapon, 'inferno boltgun')
+        || weaponNameIncludes(weapon, 'inferno combi-bolter')
+        || weaponNameIncludes(weapon, 'inferno combi-weapon')
+      )
+    ))
+  ),
+  'ensorcelled infusion': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'warpflame gargoyles': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'relentless rebirth': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'mutagenic magicks': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'ensorcelled animus': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'occulus infernum': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'warp fields': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'thicket of bladed bone': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'prismatic displacement': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'flow of magic': ({ selectedWeapons }) => selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic')),
+  'flow of magic - empowered': ({ selectedWeapons }) => selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic')),
+  'arcane might': ({ selectedWeapons }) => selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic')),
+  'arcane might - flow of magic': ({ selectedWeapons }) => selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic')),
+  'tome of true names': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'empyric onslaught': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic') && weapon.range !== 'Melee')
+  ),
+  'scouring warpflame': ({ phaseId, selectedWeapons }) => (
+    phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'kaleidoscopic tempest': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
   'catechism of fire': ({ phaseId, selectedWeapons, targetWithinTwelve }) => (
     phaseId === 'shooting'
     && targetWithinTwelve
