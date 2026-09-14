@@ -139,6 +139,7 @@ class SimulationOptions(BaseModel):
     attacker_below_starting_strength: bool = False
     attacker_below_half_strength: bool = False
     attacker_battleshocked: bool = False
+    attacker_world_eaters_suppressed: bool = False
     attacker_extremis_level_threat_active: bool = False
     attacker_imperiums_sword_active: bool = False
     attacker_saga_completed: bool = False
@@ -2272,6 +2273,11 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
         "attacker_enhancement_name": request.attacker_enhancement_name,
         "attacker_enhancement_bearer_name": (
             attacker_enhancement_bearer_unit["name"]
+        ),
+        "attacker_enhancement_bearer_keywords": list(attacker_enhancement_bearer_unit.get("keywords", [])),
+        "attacker_package_has_epic_hero": any(
+            unit is not None and unit_has_keyword(unit, "epic hero")
+            for unit in (attacker_unit, attacker_attached_character_unit, attacker_attached_support_unit)
         ),
         "attacker_primary_unit_name": attacker_unit["name"],
         "attacker_faction_name": request.attacker_faction,

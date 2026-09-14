@@ -178,10 +178,20 @@ def resolve_model_counts_by_name(
                 f"Requested model breakdown total {explicit_total} is outside the supported model breakdown range "
                 f"{minimum_total}-{maximum_total} for unit '{unit_data['name']}'"
             )
+        composition_variants = unit_composition.get("model_counts_by_size", {})
+        if composition_variants and explicit_counts != composition_variants.get(str(explicit_total)):
+            raise ValueError(f"Requested model breakdown is not a valid composition for unit '{unit_data['name']}'")
         return explicit_counts
 
     if selected_model_count is None:
         selected_model_count = minimum_total
+
+    composition_variants = unit_composition.get("model_counts_by_size", {})
+    if composition_variants:
+        variant = composition_variants.get(str(selected_model_count))
+        if variant is None:
+            raise ValueError(f"Requested model count {selected_model_count} is not a valid composition for unit '{unit_data['name']}'")
+        return dict(variant)
 
     if selected_model_count < minimum_total or selected_model_count > maximum_total:
         raise ValueError(
@@ -848,6 +858,23 @@ def apply_unit_loadout(
         )
         if current_count <= 0 and minimum_count > 0:
             weapon_bearer_counts[base_weapon_name] = minimum_count
+    if resolved_unit.get("strict_weapon_replacements", False):
+        replacement_changes: dict[str, int] = {}
+        for group in loadout_groups:
+            group_id = str(group.get("id", "")).strip()
+            if group_id in suppressed_group_ids:
+                continue
+            selected = selected_loadout.get(group_id)
+            for option in group.get("options", []):
+                option_id = str(option.get("id", "")).strip()
+                count = int(selected.get(option_id, 0)) if isinstance(selected, dict) else int(selected == option_id)
+                for weapon_name, change in option.get("weapon_bearer_changes", {}).items():
+                    normalized_name = normalize_wargear_name(weapon_name)
+                    replacement_changes[normalized_name] = replacement_changes.get(normalized_name, 0) + int(change) * count
+        for weapon_name, change in replacement_changes.items():
+            if weapon_bearer_counts.get(weapon_name, 0) + change < 0:
+                raise ValueError(f"Loadout for '{unit_data['name']}' replaces more '{weapon_name}' weapons than the unit has.")
+
     for group_id, selected_option in selected_options_by_group_id.items():
         if group_id in suppressed_group_ids:
             continue
@@ -906,6 +933,10 @@ def apply_unit_loadout(
             and (
                 weapon_name not in profile_conditional_weapon_names
                 or weapon_name in selected_weapon_names
+                or (
+                    resolved_unit.get("strict_weapon_replacements", False)
+                    and normalize_wargear_name(weapon_name) in model_wargear_weapon_names
+                )
             )
             or weapon_name in selected_weapon_names
             or (
@@ -975,6 +1006,7 @@ def normalize_unit(unit_data: dict[str, Any], faction_name: str) -> dict[str, An
         "support": unit_data.get("support", {}),
         "wargear_options": unit_data.get("wargear_options", []),
         "loadout_options": unit_data.get("loadout_options", []),
+        "strict_weapon_replacements": bool(unit_data.get("strict_weapon_replacements", False)),
         "base_size": unit_data.get("base_size", ""),
         "stats": stats,
         "weapons": weapons,

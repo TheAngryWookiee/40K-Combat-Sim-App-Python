@@ -5,6 +5,8 @@ import re
 import math
 from typing import Any
 
+from world_eaters_rules import apply_world_eaters_bearer_defence, apply_world_eaters_context
+
 
 class CombatSimulationError(ValueError):
     pass
@@ -2115,6 +2117,7 @@ class CombatSimulator:
                     or self.build_allocation_label(allocation_role, profile.get("name", unit["name"]))
                 ),
                 "unit_name": unit["name"],
+                "model_keywords": list(profile.get("keywords", unit.get("display_keywords", unit.get("keywords", [])))),
                 "precision_eligible": allocation_role == "attached_character",
             }
             for profile in unit.get("target_profiles", [])
@@ -2142,6 +2145,7 @@ class CombatSimulator:
             "allocation_role": allocation_role,
             "allocation_label": self.build_allocation_label(allocation_role, unit["name"]),
             "unit_name": unit["name"],
+            "model_keywords": list(unit.get("display_keywords", unit.get("keywords", []))),
             "precision_eligible": allocation_role == "attached_character",
         }]
 
@@ -2379,6 +2383,16 @@ class CombatSimulator:
         weapon: dict[str, Any],
         attack_context: dict[str, Any],
     ) -> int:
+        if attack_context.get("world_eaters_ignore_attack_modifiers", False):
+            modifiers = [
+                *(int(effect.get("value", 0)) for effect in attacker_unit.get("effects", []) if effect.get("type") == "outgoing_wound_modifier"),
+                *(int(effect.get("value", 0)) for effect in target_state.get("effects", []) if effect.get("type") == "incoming_wound_modifier"),
+                attack_context.get("attacker_outgoing_wound_modifier", 0),
+                attack_context.get("target_incoming_wound_modifier", 0),
+                attack_context.get("oath_of_moment_wound_bonus", 0),
+                self.get_weapon_wound_bonus(weapon, attack_context),
+            ]
+            return self.clamp_hit_or_wound_roll_modifier(sum(max(0, modifier) for modifier in modifiers))
         modifier = self.get_wound_roll_modifier(attacker_unit, target_state, attack_context)
         modifier += self.get_weapon_wound_bonus(weapon, attack_context)
         if attack_context.get("ignore_negative_wound_modifiers", False) and modifier < 0:
@@ -2781,6 +2795,11 @@ class CombatSimulator:
         return self.get_keyword_value(weapon, "Melta")
 
     def get_hit_roll_modifier(self, weapon: dict[str, Any], attack_context: dict[str, Any]) -> int:
+        if attack_context.get("world_eaters_ignore_attack_modifiers", False):
+            modifier = max(0, attack_context.get("attacker_hit_modifier", 0))
+            if attack_context.get("remained_stationary", False) and self.weapon_has_keyword(weapon, "Heavy", attack_context):
+                modifier += 1
+            return self.clamp_hit_or_wound_roll_modifier(modifier)
         modifier = attack_context.get("attacker_hit_modifier", 0)
         if attack_context.get("remained_stationary", False) and self.weapon_has_keyword(weapon, "Heavy", attack_context):
             modifier += 1
@@ -2870,13 +2889,13 @@ class CombatSimulator:
         attack_context: dict[str, Any],
     ) -> tuple[int, bool]:
         rerolled_wound, reroll_used = self.maybe_reroll_wound(wound_roll, to_wound, unit_name, attack_context)
-        if rerolled_wound != wound_roll:
+        if reroll_used:
             self.stats["wound_rerolls_used"] += 1
             if rerolled_wound >= to_wound:
                 self.stats["wound_reroll_successes"] += 1
             return rerolled_wound, True
 
-        if wound_roll < to_wound and self.weapon_has_keyword(weapon, "Twin-Linked"):
+        if wound_roll < to_wound and self.weapon_has_keyword(weapon, "Twin-Linked", attack_context):
             new_roll = self.die_roll()
             self.stats["wound_rerolls_used"] += 1
             if new_roll >= to_wound:
@@ -3268,6 +3287,12 @@ class CombatSimulator:
             base_damage = rerolled_damage
 
         damage = base_damage
+        world_eaters_damage_target = attack_context.get("world_eaters_damage_target")
+        if world_eaters_damage_target and target_state is not None:
+            model_keywords = {str(keyword).lower() for keyword in target_state.get("model_keywords", target_state.get("keywords", []))}
+            is_monster_vehicle = bool(model_keywords & {"monster", "vehicle"})
+            if is_monster_vehicle == (world_eaters_damage_target == "monster_vehicle"):
+                damage += 1
         if weapon["range"].lower() == "melee":
             damage += attack_context.get("melee_damage_bonus", 0)
         else:
@@ -3276,6 +3301,8 @@ class CombatSimulator:
         if melta_bonus > 0:
             damage += melta_bonus
         damage_modifier = attack_context.get("target_damage_modifier", 0)
+        if target_state is not None:
+            damage_modifier -= int(target_state.get("world_eaters_damage_reduction", 0))
         if damage_modifier != 0 and damage > 0:
             damage = max(1, damage + damage_modifier)
         if attack_context.get("target_damage_halved", False) and damage > 0:
@@ -3884,7 +3911,8 @@ class CombatSimulator:
             else:
                 self.log(f"{ability_name} inflicts no mortal wounds")
 
-        if should_resolve_pre_attack_ability("Airborne Predator") and target_state["models"] > 0:
+        if (not self.unit_has_keyword(attacker_unit, "heldrake")
+                and should_resolve_pre_attack_ability("Airborne Predator") and target_state["models"] > 0):
             ability_name = "Airborne Predator"
             self.log(f"\n{attacker_unit['name']} activates {ability_name}")
             self.log(
@@ -4707,6 +4735,26 @@ class CombatSimulator:
             else:
                 self.log(f"{ability_name} inflicts no mortal wounds")
 
+        for world_eaters_ability in ("Swooping Predator", "Bloody Stampede"):
+            if (not self.unit_has_keyword(attacker_unit, "world eaters")
+                    or world_eaters_ability.lower() not in self.unit_ability_name_set(attacker_unit)
+                    or not should_resolve_pre_attack_ability(world_eaters_ability) or target_state["models"] <= 0):
+                continue
+            if world_eaters_ability == "Swooping Predator":
+                rolls = [self.die_roll() for _ in range(6)]
+                mortal_wounds = sum(roll >= 4 for roll in rolls)
+                timing = "after a Normal or Advance move over the selected enemy unit"
+            else:
+                rolls = [self.die_roll()]
+                mortal_wounds = (self.roll_value("D3+3") if rolls[0] == 6 else self.roll_value("D3")
+                                 if rolls[0] >= 4 else 1 if rolls[0] >= 2 else 0)
+                timing = "after a Charge move, against an enemy within this model's Engagement Range"
+            self.log(f"{world_eaters_ability}: rolls {rolls}; {mortal_wounds} mortal wounds. "
+                     f"Actual timing: {timing}; resolved before attacks in this simulation.")
+            self.stats["damage_pool"] += mortal_wounds
+            self.record_mortal_damage(world_eaters_ability, mortal_wounds)
+            self.allocate_spillover_mortal_wounds(target_state, mortal_wounds)
+
         if should_resolve_pre_attack_ability("Relentless Carnage") and target_state["models"] > 0:
             ability_name = "Relentless Carnage"
             self.log(f"\n{attacker_unit['name']} activates {ability_name}")
@@ -5218,6 +5266,8 @@ class CombatSimulator:
 
         normal_damage_events: list[dict[str, Any]] = []
         for wound_event in wound_events:
+            if target_state["models"] <= 0:
+                break
             allocation_target = self.get_precision_allocation_target(target_state, weapon, attack_context, wound_event)
             damage_target = self.get_active_target_profile(allocation_target)
             if allocation_target is not target_state:
@@ -5257,6 +5307,13 @@ class CombatSimulator:
             if self.resolve_save(damage_target, weapon, False, attack_context, wound_event["critical_wound"]):
                 damage, melta_bonus = self.roll_damage(weapon, attack_context, damage_target)
                 self.stats["damage_pool"] += damage
+                if attack_context.get("world_eaters_allocation_sensitive", False):
+                    # Re-evaluate the next save and Damage against the next
+                    # allocated model after a bodyguard or bearer is destroyed.
+                    self.apply_damage_amount(
+                        unit_name, weapon, allocation_target, "normal", attack_context, damage, melta_bonus,
+                    )
+                    continue
                 normal_damage_events.append({
                     "allocation_target": allocation_target,
                     "damage_mode": "normal",
@@ -5436,6 +5493,7 @@ class CombatSimulator:
         target_state: dict[str, Any],
         options: dict[str, Any],
     ) -> None:
+        apply_world_eaters_bearer_defence(self, target_state, options)
         defender_enhancement_name = str(options.get("defender_enhancement_name", "") or "")
         defender_enhancement_bearer_name = str(options.get("defender_enhancement_bearer_name", "") or "")
         defender_active_ability_names = {
@@ -9775,6 +9833,8 @@ class CombatSimulator:
         if (
             "daemon lord of khorne (aura)" in attacker_active_ability_names
             and weapon["range"].lower() == "melee"
+            and (self.unit_has_keyword(attacker_unit, "blood legions")
+                 or self.unit_has_keyword(attacker_unit, "legiones daemonica"))
         ):
             attacker_hit_modifier += 1
         if (
@@ -11606,6 +11666,7 @@ class CombatSimulator:
             "defender_miracle_dice_policy": str(options.get("defender_miracle_dice_policy", "never") or "never").lower(),
             "sequence_state": options.get("sequence_state", {}),
         }
+        apply_world_eaters_context(self, attacker_unit, weapon, target_state, options, attack_context)
         if attack_context["oath_of_moment_active"] and self.unit_gets_oath_wound_bonus(attacker_unit):
             attack_context["oath_of_moment_wound_bonus"] = 1
         if attached_character_unit is not None and self.unit_has_keyword(attached_character_unit, "character"):
@@ -11615,6 +11676,7 @@ class CombatSimulator:
                 *target_state.get("keywords", []),
             }, key=str.lower)
             precision_target["has_cover"] = target_has_cover
+            apply_world_eaters_bearer_defence(self, precision_target, {**options, "defender_enhancement_bearer_role": "bodyguard"})
             self.apply_temporary_target_modifiers(precision_target, attack_context)
             attack_context["precision_target"] = precision_target
         return attack_context

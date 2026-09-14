@@ -2,6 +2,9 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import { useLocation, useNavigate } from 'react-router-dom'
 import { AccountView, AuthView, SignedIn, SignedOut, UserButton } from '@neondatabase/neon-js/auth/react/ui'
 import './App.css'
+import { getWorldEatersEnhancements, worldEatersAbilitySupported, worldEatersUnitAbilitySupported, getWorldEatersAuraChoices, toggleCombatAbility } from './lib/worldEaters'
+import { activeWorldEatersEffects, canWorldEaterAdvanceAndCharge, worldEatersMoveThrough, worldEatersTransportCost, worldEatersChargeBonus, worldEatersAutomaticCombatAbilities, worldEatersStratagemError, createWorldEatersArmy, activateWorldEatersArmyRule, recordWorldEatersKill, worldEatersArmyAura, worldEatersSurgeAfterShooting } from './lib/worldEatersBattle'
+import WorldEatersArmyPanel from './lib/WorldEatersArmyPanel'
 import {
   authClient,
   clearPendingEmailVerification,
@@ -1748,6 +1751,9 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
     return []
   }
 
+  const worldEatersOptions = getWorldEatersEnhancements(detachment, enhancementBearerUnit, 'attacker', selectedWeapon)
+  if (worldEatersOptions !== null) return worldEatersOptions
+
   if (detachment.name === UNFORGIVEN_TASK_FORCE) {
     return (detachment.enhancements || []).filter((enhancement) => {
       if (enhancement.name === 'Stubborn Tenacity') {
@@ -2215,6 +2221,9 @@ function getDefenderEnhancementOptions(detachment, enhancementBearerUnit) {
   if (!detachment || !enhancementBearerUnit || unitIsEpicHero(enhancementBearerUnit)) {
     return []
   }
+
+  const worldEatersOptions = getWorldEatersEnhancements(detachment, enhancementBearerUnit, 'defender')
+  if (worldEatersOptions !== null) return worldEatersOptions
 
   if (detachment.name === UNFORGIVEN_TASK_FORCE) {
     return (detachment.enhancements || []).filter(
@@ -4005,6 +4014,7 @@ function formatEnhancementTooltip(enhancement) {
 
   return buildTooltip(
     enhancement.rules_text,
+    enhancement.implementation_note,
     restrictionText ? `Restrictions: ${restrictionText}` : '',
   ) || enhancement.name
 }
@@ -4015,7 +4025,7 @@ function formatStratagemTooltip(stratagem) {
   }
 
   return buildTooltip(
-    stratagem.type ? `${stratagem.type} Stratagem` : '',
+    stratagem.type ? `${stratagem.type} Stratagem (${stratagem.cp_cost ?? 0} CP)` : '',
     stratagem.timing ? `When: ${stratagem.timing}` : '',
     stratagem.target ? `Target: ${stratagem.target}` : '',
     stratagem.effect ? `Effect: ${stratagem.effect}` : '',
@@ -5019,7 +5029,9 @@ function validateBattlefieldModelMove({
   }
   if (moveType === 'surge') {
     effectiveMaximumDistance = Number(surgeDistance) || 0
+    if (movingUnit.worldEatersEffects?.reactionMove) effectiveMaximumDistance = Math.min(effectiveMaximumDistance, movingUnit.worldEatersEffects.reactionDistance)
   }
+  if (movingUnit.worldEatersEffects?.reactionMove && moveType !== 'surge') violations.push('reaction_requires_surge_move')
   const hoverIgnoresSkiesPenalty = unitHasAbility(movingUnit, 'Hover')
   if (takeToSkies && !hoverIgnoresSkiesPenalty && ['normal', 'advance', 'fall_back'].includes(moveType)) {
     effectiveMaximumDistance = Math.max(0, effectiveMaximumDistance - 2)
@@ -5087,6 +5099,8 @@ function validateBattlefieldModelMove({
       && !unitIsMonsterOrVehicle(enemyUnit)
     )
     const canMoveThroughEnemyModels = (
+      worldEatersMoveThrough(movingUnit, enemyUnit, moveType)
+      ||
       monsterVehicleNormalMoveThrough
       || flyingMoveThrough
       || superHeavyWalkerMoveThrough
@@ -5130,6 +5144,8 @@ function validateBattlefieldModelMove({
     rotationCountsTowardDistance: false,
     canMoveThroughFriendlyModels: true,
     canMoveThroughEnemyModels: (
+      worldEatersMoveThrough(movingUnit, enemyUnit, moveType)
+      ||
       (
         (moveType === 'normal' || moveType === 'advance')
         && unitIsMonsterOrVehicle(movingUnit)
@@ -5161,9 +5177,10 @@ function validateBattlefieldModelMove({
       && !unitIsMonsterOrVehicle(enemyUnit)
     ),
     eligibleToShootAfter: moveType !== 'fall_back',
-    eligibleToChargeAfter: moveType !== 'advance' && moveType !== 'fall_back',
+    eligibleToChargeAfter: (moveType !== 'advance' || canWorldEaterAdvanceAndCharge(movingUnit)) && moveType !== 'fall_back',
     eligibleToStartActionAfter: moveType !== 'advance' && moveType !== 'fall_back',
-    hazardRollsPerModel: moveType === 'fall_back' && fallBackMode === 'desperate_escape' ? 1 : 0,
+    hazardRollsPerModel: moveType === 'fall_back' && fallBackMode === 'desperate_escape'
+      && !unitHasAbility(movingUnit, 'Scuttling Walker') && !movingUnit.worldEatersEffects?.fireRiders ? 1 : 0,
     battleShockRollAfter: moveType === 'fall_back' && fallBackMode === 'desperate_escape' && !unitBattleShocked,
     afterMoving: {
       unitCoherencyRequired: true,
@@ -5212,7 +5229,7 @@ function validateBattlefieldChargeMove({
   if (unitEngagedBefore) {
     violations.push('unit_engaged_before_charge')
   }
-  if (advancedThisTurn) {
+  if (advancedThisTurn && !canWorldEaterAdvanceAndCharge(movingUnit)) {
     violations.push('advanced_this_turn')
   }
   if (fellBackThisTurn) {
@@ -5474,7 +5491,7 @@ function getUnitStrengthStatus(unitDetails, woundsRemaining = null) {
 function getUnitLeadershipValues(...unitDetailsList) {
   const values = unitDetailsList
     .filter(Boolean)
-    .map((unitDetails) => parsePlusValue(unitDetails?.stats?.leadership))
+    .map((unitDetails) => unitHasAbility(unitDetails, 'Daemonic Icon') ? 6 : parsePlusValue(unitDetails?.stats?.leadership))
     .filter((value) => value > 0)
   return values.length ? values : [7]
 }
@@ -8616,6 +8633,7 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
     targetBelowStartingStrength = false,
     targetBelowHalfStrength = false,
     defenderBattleshocked = false,
+    sourceBattleshocked = false,
   } = context
   const selectedEnhancementNameLower = String(selectedEnhancementName || '').toLowerCase()
   const detachmentCollections = [
@@ -8675,8 +8693,12 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
     }))),
   ])
   const collections = [
+    ...getWorldEatersAuraChoices(unitList[0]).map((ability) => ({ ability, fallback: 'Nearby friendly unit', unitName: '', unit: unitList[0] })),
     ...armyRuleCollections,
     ...detachmentCollections,
+    ...[...(detachment?.stratagems || []), ...(detachment?.additional_rules || [])].flatMap((rule) => (
+      (rule.options || []).map((ability) => ({ ability, fallback: rule.name, unitName: detachment?.name, unit: null }))
+    )),
     ...unitList.flatMap((unit) => [
     ...(unit.abilities || []).map((ability) => ({ ability, fallback: 'Datasheet Ability', unitName: unit.name, unit })),
     ...(unit.wargear_abilities || []).map((ability) => ({ ability, fallback: 'Wargear Ability', unitName: unit.name, unit })),
@@ -8689,7 +8711,7 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
     .filter(({ ability, unit }) => {
       const name = String(ability.name || '').toLowerCase()
       const isSupported = SUPPORTED_COMBAT_ACTIVATED_ABILITIES[name]
-      return Boolean(isSupported?.({
+      const abilityContext = {
         unit,
         sourceUnit: unit || unitList[0],
         phaseId,
@@ -8704,7 +8726,13 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
         targetBelowHalfStrength,
         defenderBattleshocked,
         side,
-      }))
+        units: unitList,
+        detachment,
+        selectedEnhancementName,
+        sourceBattleshocked,
+      }
+      return worldEatersUnitAbilitySupported(name, abilityContext)
+        ?? Boolean(isSupported?.(abilityContext) || worldEatersAbilitySupported(name, abilityContext))
     })
     .filter(({ ability }) => {
       const normalizedName = String(ability.name || '').toLowerCase()
@@ -8717,7 +8745,7 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
     .map(({ ability, fallback, unitName }) => ({
       name: ability.name,
       source: unitName ? `${unitName} ${getAbilitySourceLabel(ability, fallback)}` : getAbilitySourceLabel(ability, fallback),
-      text: ability.rules_text,
+      text: [ability.rules_text || (ability.effect ? formatStratagemTooltip(ability) : ''), ability.activation_hint].filter(Boolean).join('\n\n'),
     }))
 }
 
@@ -12077,6 +12105,9 @@ function App() {
     defender: 2,
   })
   const [battlefieldChargeTargets, setBattlefieldChargeTargets] = useState({})
+  const [worldEatersBattleEffects, setWorldEatersBattleEffects] = useState([])
+  const [worldEatersArmies, setWorldEatersArmies] = useState(() => ({ attacker: createWorldEatersArmy(), defender: createWorldEatersArmy() }))
+  const worldEatersTurn = gameBattleRound * 2 + (gameActivePlayer === 'Player 2' ? 1 : 0)
   const [battlefieldChargedUnits, setBattlefieldChargedUnits] = useState({})
   const [battlefieldChargedTargetUnits, setBattlefieldChargedTargetUnits] = useState({})
   const [battlefieldWoundsRemaining, setBattlefieldWoundsRemaining] = useState({
@@ -12235,6 +12266,7 @@ function App() {
   const [attackerActiveAbilityNames, setAttackerActiveAbilityNames] = useState(() => combatInitial('attackerActiveAbilityNames', []))
   const [defenderActiveAbilityNames, setDefenderActiveAbilityNames] = useState(() => combatInitial('defenderActiveAbilityNames', []))
   const [battlefieldActiveAbilityNames, setBattlefieldActiveAbilityNames] = useState([])
+  const [battlefieldDefenderActiveAbilityNames, setBattlefieldDefenderActiveAbilityNames] = useState([])
   const [oathOfMomentActive, setOathOfMomentActive] = useState(() => combatInitial('oath_of_moment_active', initialOptions.oath_of_moment_active))
   const [chargedThisTurn, setChargedThisTurn] = useState(() => combatInitial('charged_this_turn', initialOptions.charged_this_turn))
   const [remainedStationary, setRemainedStationary] = useState(() => combatInitial('remained_stationary', initialOptions.remained_stationary))
@@ -14087,6 +14119,7 @@ function App() {
       allowOutOfPhaseAbilities: true,
       selectedEntries: selectedAttackEntries,
       side: 'attacker',
+      sourceBattleshocked: attackerBattleshocked,
       detachment: selectedAttackerDetachment,
       selectedEnhancementName: attackerEnhancementName,
       armyRules: attackerFactionDetails?.army_rules || [],
@@ -14099,6 +14132,7 @@ function App() {
       attackerAttachedSupportUnitDetails,
       attackerUnitDetails,
       attackerWaaaghActive,
+      attackerBattleshocked,
       chargedThisTurn,
       defenderUnitDetails,
       selectedAttackWeapons,
@@ -14119,6 +14153,7 @@ function App() {
       waaaghActive: defenderWaaaghActive,
       chargedThisTurn: false,
       side: 'defender',
+      sourceBattleshocked: defenderBattleshocked,
       detachment: selectedDefenderDetachment,
       selectedEnhancementName: defenderEnhancementName,
       targetBelowStartingStrength: attackerBelowStartingStrength,
@@ -14132,6 +14167,7 @@ function App() {
       defenderTriggerWeapons,
       defenderUnitDetails,
       defenderWaaaghActive,
+      defenderBattleshocked,
       selectedDefenderDetachment,
       defenderEnhancementName,
       selectedCombatPhaseId,
@@ -16976,7 +17012,8 @@ function App() {
     },
   }
   const canDeployOnBattlefield = activePage === 'battlefield' && !battlefieldDeploymentComplete
-  const canMoveOnBattlefield = activePage === 'battlefield' && activeGamePhase?.id === 'movement'
+  const canMoveOnBattlefield = activePage === 'battlefield' && (activeGamePhase?.id === 'movement'
+    || activeWorldEatersEffects(worldEatersBattleEffects, selectedBattlefieldUnitId, worldEatersTurn, activeGamePhase?.id).some((effect) => effect.traits?.reactionMove))
   const canChargeOnBattlefield = activePage === 'battlefield' && activeGamePhase?.id === 'charge'
   const canRepositionBattlefieldUnits = canDeployOnBattlefield || canMoveOnBattlefield || canChargeOnBattlefield
   const battlefieldUnits = useMemo(() => {
@@ -16997,6 +17034,7 @@ function App() {
         startingModelCount,
       })
       const faction = instanceFaction || (sourceSide === 'attacker' ? attackerFaction : defenderFaction)
+      const effects = activeWorldEatersEffects(worldEatersBattleEffects, id, worldEatersTurn, activeGamePhase?.id)
       return {
         id,
         sourceSide,
@@ -17005,6 +17043,8 @@ function App() {
         name: instanceNumber > 1 ? `${unitDetails.name || unitName} ${instanceNumber}` : unitDetails.name || unitName,
         datasheetName: unitDetails.bodyguard_name || unitDetails.name || unitName,
         unitDetails,
+        worldEatersEffects: Object.assign({}, ...effects.map((effect) => effect.traits || {})),
+        worldEatersActiveAbilities: effects.map((effect) => effect.name),
         faction,
         baseMm,
         baseInches: mmToInches(baseMm),
@@ -17023,7 +17063,7 @@ function App() {
       }
     }
 
-    return [
+    const builtUnits = [
       ...(battlefieldBaseUnitDeployment.attacker
         ? [buildUnit({ id: 'attacker', sourceSide: 'attacker', role: 'Attacker', x: 20, y: 50 })]
         : []),
@@ -17032,7 +17072,23 @@ function App() {
         : []),
       ...battlefieldExtraUnits.map((unit) => buildUnit(unit)),
     ].filter(Boolean)
-  }, [attackerFaction, attackerUnitDetails, battlefieldBaseUnitDeployment, battlefieldExtraUnits, battlefieldRemovedModelIds, defenderFaction, defenderUnitDetails])
+    return builtUnits.map((unit) => {
+      const neighbours = builtUnits.filter((other) => !battlefieldEmbarkedUnits[other.id]
+        && (battlefieldReserveStatuses[other.id] || 'deployed') === 'deployed')
+        .map((other) => ({ unit: other, gap: other.id === unit.id ? 0 : getMinimumModelGapInches(
+          getBattlefieldUnitModels(unit, battlefieldPositions[unit.id] || unit, battlefieldModelOffsets[unit.id]),
+          getBattlefieldUnitModels(other, battlefieldPositions[other.id] || other, battlefieldModelOffsets[other.id]),
+        ) ?? Infinity }))
+      const burningBloodIdol = worldEatersArmyAura(unit, neighbours.filter((entry) => entry.unit.side === unit.side), worldEatersArmies[unit.side], worldEatersTurn).includes('IDOL OF BURNING WRATH (AURA)')
+      const traits = { ...unit.worldEatersEffects, burningBloodIdol }
+      const enemies = neighbours.filter((entry) => entry.unit.side !== unit.side).map((entry) => {
+        const strength = getUnitStrengthStatus(entry.unit.unitDetails, battlefieldWoundsRemaining[entry.unit.id])
+        return { gap: entry.gap, belowHalf: strength.belowHalfStrength, belowStarting: strength.belowStartingStrength }
+      })
+      return { ...unit, movementInches: unit.movementInches + (burningBloodIdol ? 1 : 0),
+        worldEatersEffects: traits, worldEatersChargeBonus: worldEatersChargeBonus(unit, enemies, traits) }
+    })
+  }, [attackerFaction, attackerUnitDetails, battlefieldBaseUnitDeployment, battlefieldExtraUnits, battlefieldRemovedModelIds, defenderFaction, defenderUnitDetails, worldEatersBattleEffects, worldEatersTurn, activeGamePhase?.id, battlefieldEmbarkedUnits, battlefieldReserveStatuses, battlefieldPositions, battlefieldModelOffsets, worldEatersArmies, battlefieldWoundsRemaining])
   const battlefieldUnitMap = useMemo(
     () => Object.fromEntries(battlefieldUnits.map((unit) => [unit.id, unit])),
     [battlefieldUnits],
@@ -17156,7 +17212,7 @@ function App() {
     ? battlefieldMoveTypes[selectedBattlefieldUnit.id] || 'normal'
     : 'normal'
   const selectedBattlefieldAdvanceRoll = selectedBattlefieldUnit
-    ? battlefieldAdvanceRolls[selectedBattlefieldUnit.id] || 1
+    ? (battlefieldAdvanceRolls[selectedBattlefieldUnit.id] || 1) + (selectedBattlefieldUnit.worldEatersEffects?.burningBloodIdol ? 1 : 0)
     : 1
   const selectedBattlefieldSurgeDistance = selectedBattlefieldUnit
     ? battlefieldSurgeDistances[selectedBattlefieldUnit.id] || 3
@@ -17165,7 +17221,7 @@ function App() {
     ? Boolean(battlefieldTakeToSkies[selectedBattlefieldUnit.id])
     : false
   const selectedBattlefieldChargeRoll = selectedBattlefieldUnit
-    ? battlefieldChargeRolls[selectedBattlefieldUnit.id] ?? 2
+    ? (battlefieldChargeRolls[selectedBattlefieldUnit.id] ?? 2) + (selectedBattlefieldUnit.worldEatersChargeBonus || 0)
     : 2
   const selectedBattlefieldChargeTargetId = selectedBattlefieldUnit
     ? battlefieldChargeTargets[selectedBattlefieldUnit.id] || ''
@@ -17670,6 +17726,13 @@ function App() {
         chargedThisTurn: battlefieldCombatAttackerCharged,
         allowOutOfPhaseAbilities: true,
         side: 'attacker',
+        sourceBattleshocked: Boolean(battlefieldBattleShockedUnits[selectedBattlefieldCombatant?.attackerId]),
+        detachment: getBattlefieldSourceSide(selectedBattlefieldCombatant?.attackerId) === 'attacker'
+          ? selectedAttackerDetachment : selectedDefenderDetachment,
+        selectedEnhancementName: getBattlefieldSourceSide(selectedBattlefieldCombatant?.attackerId) === 'attacker'
+          ? attackerEnhancementName : defenderEnhancementName,
+        armyRules: (getBattlefieldSourceSide(selectedBattlefieldCombatant?.attackerId) === 'attacker'
+          ? attackerFactionDetails : defenderFactionDetails)?.army_rules || [],
         targetBelowStartingStrength,
         targetBelowHalfStrength,
         defenderBattleshocked,
@@ -17685,8 +17748,32 @@ function App() {
       defenderBattleshocked,
       selectedBattlefieldCombatWeapons,
       selectedBattlefieldCombatant,
+      selectedAttackerDetachment,
+      selectedDefenderDetachment,
+      attackerEnhancementName,
+      defenderEnhancementName,
+      attackerFactionDetails,
+      defenderFactionDetails,
+      getBattlefieldSourceSide,
+      battlefieldBattleShockedUnits,
     ],
   )
+  const battlefieldDefenderAbilityOptions = useMemo(() => {
+    const details = selectedBattlefieldCombatant?.defenderDetails
+    const side = getBattlefieldSourceSide(selectedBattlefieldCombatant?.defenderId)
+    return getCombatActivatedAbilities([details, details?.attached_leader, details?.attached_support], activeGamePhase?.id, selectedBattlefieldCombatWeapons, {
+      targetUnit: selectedBattlefieldCombatant?.attackerDetails,
+      side: 'defender',
+      sourceBattleshocked: Boolean(battlefieldBattleShockedUnits[selectedBattlefieldCombatant?.defenderId]),
+      detachment: side === 'attacker' ? selectedAttackerDetachment : selectedDefenderDetachment,
+      selectedEnhancementName: side === 'attacker' ? attackerEnhancementName : defenderEnhancementName,
+    })
+  }, [selectedBattlefieldCombatant, getBattlefieldSourceSide, battlefieldBattleShockedUnits, activeGamePhase?.id, selectedBattlefieldCombatWeapons,
+    selectedAttackerDetachment, selectedDefenderDetachment, attackerEnhancementName, defenderEnhancementName])
+  useEffect(() => {
+    const availableNames = new Set(battlefieldDefenderAbilityOptions.map((ability) => ability.name))
+    setBattlefieldDefenderActiveAbilityNames((names) => names.filter((name) => availableNames.has(name)))
+  }, [battlefieldDefenderAbilityOptions])
   const selectedBattlefieldCombatWeaponLabels = useMemo(
     () => selectedBattlefieldCombatWeapons.map((weapon) => formatWeaponName(weapon)),
     [selectedBattlefieldCombatWeapons],
@@ -17896,6 +17983,7 @@ function App() {
   const battlefieldStratagemPhaseKey = `${gameBattleRound}:${gameActivePlayer}:${activeGamePhase?.id}`
   const battlefieldStratagemTargetBattleShocked = Boolean(battlefieldBattleShockedUnits[battlefieldStratagemTargetId])
   const battlefieldStratagemViolations = [
+    worldEatersStratagemError(selectedBattlefieldStratagem?.name, battlefieldUnitMap[battlefieldStratagemTargetId], activeGamePhase?.id, battlefieldStratagemSide === activeBattlefieldSide),
     !selectedBattlefieldStratagem ? 'No stratagem is available for this timing.' : '',
     battlefieldCommandPoints[battlefieldStratagemSide] < battlefieldStratagemCost ? 'Not enough CP.' : '',
     battlefieldStratagemTargetBattleShocked ? 'Battle-shocked units cannot be targeted with stratagems.' : '',
@@ -17984,9 +18072,9 @@ function App() {
   const selectedTransportCapacity = Number(battlefieldTransportCapacities[battlefieldTransportId] || 0)
   const selectedTransportOccupiedCapacity = Object.entries(battlefieldEmbarkedUnits)
     .filter(([, transportId]) => transportId === battlefieldTransportId)
-    .reduce((total, [unitId]) => total + (battlefieldUnitMap[unitId]?.modelCount || 1), 0)
+    .reduce((total, [unitId]) => total + worldEatersTransportCost(selectedTransportDetails, battlefieldUnitMap[unitId]), 0)
   const selectedTransportRemainingCapacity = Math.max(0, selectedTransportCapacity - selectedTransportOccupiedCapacity)
-  const selectedEmbarkUnitCapacityNeed = selectedEmbarkUnit?.modelCount || 1
+  const selectedEmbarkUnitCapacityNeed = worldEatersTransportCost(selectedTransportDetails, selectedEmbarkUnit)
   const selectedEmbarkGap = (() => {
     if (!selectedEmbarkUnit || !selectedTransportUnit) {
       return null
@@ -18003,6 +18091,7 @@ function App() {
   const selectedEmbarkUnitEmbarked = Boolean(battlefieldEmbarkedUnits[battlefieldEmbarkUnitId])
   const selectedTransportIsTransport = unitHasKeyword(selectedTransportDetails, 'transport') || selectedTransportCapacity > 0
   const battlefieldEmbarkViolations = [
+    !Number.isFinite(selectedEmbarkUnitCapacityNeed) ? 'This World Eaters Transport cannot carry that unit.' : '',
     gameBattleRound < 1 ? 'Embarking is only available once the first battle round has started.' : '',
     !canMoveOnBattlefield ? 'Embarking is resolved from the Movement phase.' : '',
     !selectedEmbarkUnit || !selectedEmbarkUnitDetails ? 'Select a unit on the battlefield to embark.' : '',
@@ -19496,9 +19585,9 @@ function App() {
         return null
       }
       const moveType = dragState.battlefieldMoveTypes?.[unitId] || 'normal'
-      const advanceRoll = dragState.battlefieldAdvanceRolls?.[unitId] || 1
+      const advanceRoll = (dragState.battlefieldAdvanceRolls?.[unitId] || 1) + (unit.worldEatersEffects?.burningBloodIdol ? 1 : 0)
       const surgeDistance = dragState.battlefieldSurgeDistances?.[unitId] || 3
-      const chargeRoll = dragState.battlefieldChargeRolls?.[unitId] ?? 2
+      const chargeRoll = (dragState.battlefieldChargeRolls?.[unitId] ?? 2) + (unit.worldEatersChargeBonus || 0)
       const takeToSkies = Boolean(dragState.battlefieldTakeToSkies?.[unitId])
       return {
         unit,
@@ -19777,6 +19866,10 @@ function App() {
       battlefieldChargedUnits: cloneForUndo(battlefieldChargedUnits),
       battlefieldChargedTargetUnits: cloneForUndo(battlefieldChargedTargetUnits),
       battlefieldWoundsRemaining: cloneForUndo(battlefieldWoundsRemaining),
+      worldEatersBattleEffects: cloneForUndo(worldEatersBattleEffects),
+      worldEatersArmies: cloneForUndo(worldEatersArmies),
+      battlefieldCommandPoints: cloneForUndo(battlefieldCommandPoints),
+      battlefieldUsedStratagems: cloneForUndo(battlefieldUsedStratagems),
       battlefieldDamageInputs: cloneForUndo(battlefieldDamageInputs),
       battlefieldActions: cloneForUndo(battlefieldActions),
       battlefieldEmbarkedUnits: cloneForUndo(battlefieldEmbarkedUnits),
@@ -19817,6 +19910,10 @@ function App() {
     setBattlefieldChargedUnits(snapshot.battlefieldChargedUnits)
     setBattlefieldChargedTargetUnits(snapshot.battlefieldChargedTargetUnits || {})
     setBattlefieldWoundsRemaining(snapshot.battlefieldWoundsRemaining)
+    setWorldEatersBattleEffects(snapshot.worldEatersBattleEffects || [])
+    if (snapshot.worldEatersArmies) setWorldEatersArmies(snapshot.worldEatersArmies)
+    if (snapshot.battlefieldCommandPoints) setBattlefieldCommandPoints(snapshot.battlefieldCommandPoints)
+    if (snapshot.battlefieldUsedStratagems) setBattlefieldUsedStratagems(snapshot.battlefieldUsedStratagems)
     setBattlefieldDamageInputs(snapshot.battlefieldDamageInputs)
     setBattlefieldActions(snapshot.battlefieldActions)
     setBattlefieldEmbarkedUnits(snapshot.battlefieldEmbarkedUnits)
@@ -20033,6 +20130,36 @@ function App() {
         const currentModels = battlefieldModelGroups[targetId] || []
         const currentModelCount = currentModels.length || battlefieldUnitMap[targetId]?.modelCount || Number(targetDetails?.model_count ?? 1) || 1
         const casualtyCount = Math.max(0, currentModelCount - modelsRemaining)
+        const shootingUnit = battlefieldUnitMap[simulationOptions.battlefieldAttackerId]
+        if (targetUnit && modelsRemaining > 0 && activeGamePhase?.id === 'shooting' && targetUnit.side !== activeBattlefieldSide
+          && !battlefieldBattleShockedUnits[targetId]
+          && !worldEatersBattlefieldNeighbours(targetUnit).some((entry) => entry.unit.side !== targetUnit.side && entry.gap <= 2)) {
+          const surge = worldEatersSurgeAfterShooting(targetUnit, targetUnit.side === 'attacker' ? attackerDetachmentName : defenderDetachmentName,
+            targetUnit.side === 'attacker' ? attackerEnhancementName : defenderEnhancementName, casualtyCount, Math.floor(Math.random() * 6) + 1)
+          if (surge) {
+            addWorldEatersBattleEffect(targetId, surge.name, { reactionMove: true, reactionDistance: surge.distance })
+            setBattlefieldSurgeDistances((current) => ({ ...current, [targetId]: surge.distance }))
+            setBattlefieldMoveTypes((current) => ({ ...current, [targetId]: 'surge' }))
+            setBattlefieldMovedUnits((current) => ({ ...current, [targetId]: false }))
+            setBattlefieldMoveStarts((current) => ({ ...current, [targetId]: battlefieldPositions[targetId] || targetUnit }))
+            setBattlefieldModelMoveStarts((current) => ({ ...current, [targetId]: battlefieldModelOffsets[targetId] }))
+            appendGameLog(`${targetUnit.name} can make a ${surge.distance}" ${surge.name} move. Select that unit to move it.`)
+          }
+        }
+        if (modelsRemaining <= 0 && shootingUnit) {
+          const side = shootingUnit.side
+          const detachment = side === 'attacker' ? attackerDetachmentName : defenderDetachmentName
+          const bloodTitheRoll = Math.floor(Math.random() * 6) + 1
+          setWorldEatersArmies((current) => ({ ...current, [side]: recordWorldEatersKill(current[side], {
+            eventId: `${matrixBatchId}:${targetId}`, unit: shootingUnit, detachment, bloodTitheRoll,
+          }) }))
+          if (detachment === 'KHORNE DAEMONKIN') appendGameLog(`Blood Tithe roll: ${bloodTitheRoll}; ${bloodTitheRoll >= 3 ? 'gained 1 BTP' : 'no BTP gained'}.`)
+        }
+        if (activeGamePhase?.id === 'shooting' && unitHasAbility(shootingUnit, 'Punishing Suppression')
+          && !unitIsMonsterOrVehicle(targetUnit) && Number(runs[0]?.result?.stats?.hit_pool || 0) > 0) {
+          addWorldEatersBattleEffect(targetId, 'Punishing Suppression', { suppressed: true }, 'next_turn', shootingUnit.side)
+          appendGameLog(`${targetUnit?.name} is suppressed until the start of ${shootingUnit.name}'s next turn.`)
+        }
         if (modelsRemaining <= 0) {
           removeAllBattlefieldModels(targetId, { recordUndo: false })
         } else if (casualtyCount > 0 && currentModelCount > 1) {
@@ -20265,6 +20392,58 @@ function App() {
     await executeSimulation(payload, Math.min(MAX_SIMULATION_RUNS, Math.max(1, Number(runCount) || 1)))
   }
 
+  function getWorldEatersBattlefieldGap(left, right) {
+    if (!left || !right) return Infinity
+    if (left.id === right.id) return 0
+    return getMinimumModelGapInches(
+      getBattlefieldUnitModels(left, battlefieldPositions[left.id] || left, battlefieldModelOffsets[left.id]),
+      getBattlefieldUnitModels(right, battlefieldPositions[right.id] || right, battlefieldModelOffsets[right.id]),
+    ) ?? Infinity
+  }
+
+  function worldEatersBattlefieldNeighbours(unit) {
+    return battlefieldUnits.filter((other) => !battlefieldEmbarkedUnits[other.id]
+      && (battlefieldReserveStatuses[other.id] || 'deployed') === 'deployed'
+      && (battlefieldWoundsRemaining[other.id] ?? getUnitStartingWounds(other.unitDetails)) > 0)
+      .map((other) => ({ unit: other, gap: getWorldEatersBattlefieldGap(unit, other) }))
+  }
+
+  function activateWorldEatersArmy(side, name) {
+    try {
+      const next = activateWorldEatersArmyRule(worldEatersArmies[side], name, worldEatersTurn, activeGamePhase?.id, side === activeBattlefieldSide)
+      pushBattlefieldUndo('Activate World Eaters army rule')
+      setWorldEatersArmies((current) => ({ ...current, [side]: next }))
+      appendGameLog(`${side === 'attacker' ? 'Attacker' : 'Defender'} activated ${name}.`)
+    } catch (activationError) {
+      setError(activationError.message)
+    }
+  }
+
+  function addWorldEatersBattleEffect(unitId, name, traits = {}, duration = 'phase', ownerSide = null) {
+    const side = ownerSide || battlefieldUnitMap[unitId]?.side || activeBattlefieldSide
+    const expiresTurn = worldEatersTurn + (duration === 'next_turn' ? (side === activeBattlefieldSide ? 2 : 1) : 1)
+    setWorldEatersBattleEffects((current) => [...current.filter((effect) => effect.unitId !== unitId || effect.name !== name), {
+      unitId, name, traits, turn: worldEatersTurn, phase: duration === 'phase' ? activeGamePhase?.id : null, expiresTurn,
+    }])
+  }
+
+  function getWorldEatersBattlefieldCombatAbilities(attackerId, targetId) {
+    const unit = battlefieldUnitMap[attackerId]
+    const target = battlefieldUnitMap[targetId]
+    if (!unit || !target) return []
+    const neighbours = worldEatersBattlefieldNeighbours(unit)
+    const enemies = neighbours.filter((entry) => entry.unit.side !== unit.side)
+    const gap = getWorldEatersBattlefieldGap(unit, target)
+    return [...worldEatersArmies[unit.side].titheAbilities,
+      ...worldEatersArmyAura(unit, neighbours.filter((entry) => entry.unit.side === unit.side), worldEatersArmies[unit.side], worldEatersTurn),
+      ...worldEatersAutomaticCombatAbilities({
+      unit, target, phase: activeGamePhase?.id, currentWounds: battlefieldWoundsRemaining[unit.id] ?? getUnitStartingWounds(unit.unitDetails), gap,
+      closest: enemies.every((entry) => entry.gap >= gap - 0.001),
+      closestMonsterVehicle: enemies.filter((entry) => unitIsMonsterOrVehicle(entry.unit)).every((entry) => entry.gap >= gap - 0.001),
+      allies: neighbours.filter((entry) => entry.unit.side === unit.side),
+    })]
+  }
+
   async function handleBattlefieldSimulate() {
     if (
       !selectedBattlefieldCombatant
@@ -20311,6 +20490,7 @@ function App() {
       attacker_faction: selectedBattlefieldCombatant.attackerFaction,
       attacker_unit: selectedBattlefieldCombatant.attackerName,
       attacker_detachment_name: battlefieldAttackerDetachmentName || undefined,
+      attacker_enhancement_name: (battlefieldAttackerSide === 'attacker' ? attackerEnhancementName : defenderEnhancementName) || undefined,
       expected_attack_dice: expectedAttackDice,
       attacker_loadout: battlefieldAttackerLoadoutSelections,
       attacker_model_count: battlefieldAttackerModelCount,
@@ -20344,6 +20524,7 @@ function App() {
       defender_faction: selectedBattlefieldCombatant.defenderFaction,
       defender_unit: selectedBattlefieldCombatant.defenderName,
       defender_detachment_name: battlefieldDefenderDetachmentName || undefined,
+      defender_enhancement_name: (battlefieldDefenderSide === 'attacker' ? attackerEnhancementName : defenderEnhancementName) || undefined,
       defender_loadout: battlefieldDefenderLoadoutSelections,
       defender_model_count: battlefieldDefenderModelCount,
       defender_model_counts: battlefieldDefenderModelCounts,
@@ -20550,7 +20731,6 @@ function App() {
         attacker_below_half_strength: battlefieldAttackerSide === 'attacker' && attackerBelowHalfStrength,
         attacker_target_within_12: battlefieldAttackerSide === 'attacker' && attackerTargetWithinTwelve,
         attacker_target_closest_eligible_within_6: battlefieldAttackerSide === 'attacker' && attackerTargetClosestEligibleWithinSix,
-        attacker_disembarked_from_transport: battlefieldAttackerSide === 'attacker' && attackerDisembarkedFromTransport,
         attacker_adrenal_surge_active: battlefieldAttackerSide === 'attacker' && attackerAdrenalSurgeActive,
         attacker_rampaging_monstrosities_active: battlefieldAttackerSide === 'attacker' && attackerRampagingMonstrositiesActive,
         attacker_swarm_guided_salvoes_active: battlefieldAttackerSide === 'attacker' && attackerSwarmGuidedSalvoesActive,
@@ -20583,7 +20763,21 @@ function App() {
         defender_guiding_omens_augury_active: battlefieldDefenderSide === 'defender' && defenderGuidingOmensAuguryActive,
         attacker_saga_completed: Boolean(battleAchievements[battlefieldAttackerSide]?.sagaCompleted),
         attacker_templar_vow: battlefieldAttackerSide === 'attacker' ? attackerTemplarVow || null : null,
-        attacker_active_ability_names: battlefieldActiveAbilityNames,
+        attacker_active_ability_names: [...new Set([...battlefieldActiveAbilityNames,
+          ...getWorldEatersBattlefieldCombatAbilities(selectedBattlefieldCombatant.attackerId, selectedBattlefieldCombatant.defenderId),
+          ...(battlefieldUnitMap[selectedBattlefieldCombatant.attackerId]?.worldEatersActiveAbilities || []),
+        ])],
+        defender_active_ability_names: [...new Set([...battlefieldDefenderActiveAbilityNames,
+          ...worldEatersArmies[battlefieldDefenderSide].titheAbilities,
+          ...worldEatersArmyAura(battlefieldUnitMap[selectedBattlefieldCombatant.defenderId], worldEatersBattlefieldNeighbours(battlefieldUnitMap[selectedBattlefieldCombatant.defenderId]).filter((entry) => entry.unit.side === battlefieldDefenderSide), worldEatersArmies[battlefieldDefenderSide], worldEatersTurn),
+          ...(battlefieldUnitMap[selectedBattlefieldCombatant.defenderId]?.worldEatersActiveAbilities || []),
+        ])],
+        attacker_world_eaters_suppressed: Boolean(battlefieldUnitMap[selectedBattlefieldCombatant.attackerId]?.worldEatersEffects?.suppressed),
+        target_below_starting_strength: getUnitStrengthStatus(getBattlefieldUnitDetails(selectedBattlefieldCombatant.defenderId), battlefieldWoundsRemaining[selectedBattlefieldCombatant.defenderId]).belowStartingStrength,
+        target_below_half_strength: getUnitStrengthStatus(getBattlefieldUnitDetails(selectedBattlefieldCombatant.defenderId), battlefieldWoundsRemaining[selectedBattlefieldCombatant.defenderId]).belowHalfStrength,
+        attacker_disembarked_from_transport: Boolean(battlefieldUnitMap[selectedBattlefieldCombatant.attackerId]?.worldEatersEffects?.disembarked),
+        attacker_battleshocked: Boolean(battlefieldBattleShockedUnits[selectedBattlefieldCombatant.attackerId]),
+        defender_battleshocked: Boolean(battlefieldBattleShockedUnits[selectedBattlefieldCombatant.defenderId]),
         attacker_waaagh_active: battlefieldAttackerWaaaghActive,
         defender_waaagh_active: battlefieldDefenderWaaaghActive,
         attached_character_name: attachedCharacterName || undefined,
@@ -20593,6 +20787,7 @@ function App() {
       },
     }, Math.min(MAX_SIMULATION_RUNS, Math.max(1, Number(runCount) || 1)), {
       battlefieldDamageTargetId,
+      battlefieldAttackerId: selectedBattlefieldCombatant.attackerId,
       battlefieldAttackerSide,
       battlefieldAttackerDetachmentName,
     })
@@ -20604,6 +20799,17 @@ function App() {
     }
 
     const targetUnit = battlefieldUnitMap[battlefieldStratagemTargetId]
+    pushBattlefieldUndo('Use stratagem')
+    if (String(battlefieldStratagemDetachment?.name || '').toLowerCase() === 'berzerker warband'
+      && selectedBattlefieldStratagem.name === 'APOPLECTIC FRENZY') {
+      addWorldEatersBattleEffect(targetUnit.id, selectedBattlefieldStratagem.name, { advanceCharge: true }, 'turn')
+    } else if (['attacker', 'defender'].some((combatSide) => worldEatersAbilitySupported(String(selectedBattlefieldStratagem.name).toLowerCase(), {
+      detachment: battlefieldStratagemDetachment, sourceUnit: targetUnit, units: [targetUnit], phaseId: activeGamePhase?.id,
+      chargedThisTurn: Boolean(battlefieldChargedUnits[targetUnit.id]), selectedEnhancementName: battlefieldStratagemSide === 'attacker' ? attackerEnhancementName : defenderEnhancementName,
+      side: combatSide,
+    }))) {
+      addWorldEatersBattleEffect(targetUnit.id, selectedBattlefieldStratagem.name)
+    }
     setBattlefieldCommandPoints((current) => ({
       ...current,
       [battlefieldStratagemSide]: Math.max(0, Number(current[battlefieldStratagemSide] || 0) - battlefieldStratagemCost),
@@ -20714,6 +20920,10 @@ function App() {
     }
 
     const transportPosition = battlefieldPositions[selectedTransportUnit.id] || selectedTransportUnit
+    const detachment = selectedEmbarkUnit.side === 'attacker' ? attackerDetachmentName : defenderDetachmentName
+    addWorldEatersBattleEffect(selectedEmbarkUnit.id, 'Disembarked this turn', {
+      disembarked: true, rushToTheFray: detachment === 'GORETRACK ONSLAUGHT',
+    }, 'turn')
     const transportInches = battlefieldPercentToInches(transportPosition)
     const distance = (selectedTransportUnit.baseInches / 2) + battlefieldDisembarkDistance + (selectedEmbarkUnit.baseInches / 2)
     const disembarkPercent = battlefieldInchesToPercent({
@@ -22192,6 +22402,9 @@ function App() {
     }
     pushBattlefieldUndo('Commit move')
     commitBattlefieldPositionsAsMoveStarts(battlefieldPositions, { markSelectedMoved: true })
+    if (selectedBattlefieldUnit?.worldEatersEffects?.reactionMove) {
+      setWorldEatersBattleEffects((current) => current.filter((effect) => effect.unitId !== selectedBattlefieldUnit.id || !effect.traits?.reactionMove))
+    }
   }
 
   function completeBattlefieldDeployment() {
@@ -22376,6 +22589,8 @@ function App() {
     setBattlefieldShadowInTheWarpUsed({ attacker: false, defender: false })
     setBattlefieldCommandPoints({ attacker: 0, defender: 0 })
     setBattlefieldUsedStratagems([])
+    setWorldEatersBattleEffects([])
+    setWorldEatersArmies({ attacker: createWorldEatersArmy(), defender: createWorldEatersArmy() })
     setBattlefieldActions([])
     setBattlefieldChargeTargets({})
     setBattlefieldChargedUnits({})
@@ -23477,9 +23692,7 @@ function App() {
                               checked={attackerActiveAbilityNames.includes(ability.name)}
                               onChange={(event) => {
                                 setAttackerActiveAbilityNames((currentNames) => (
-                                  event.target.checked
-                                    ? Array.from(new Set([...currentNames, ability.name]))
-                                    : currentNames.filter((name) => name !== ability.name)
+                                  toggleCombatAbility(currentNames, ability.name, event.target.checked)
                                 ))
                               }}
                             />
@@ -23506,9 +23719,7 @@ function App() {
                               checked={defenderActiveAbilityNames.includes(ability.name)}
                               onChange={(event) => {
                                 setDefenderActiveAbilityNames((currentNames) => (
-                                  event.target.checked
-                                    ? Array.from(new Set([...currentNames, ability.name]))
-                                    : currentNames.filter((name) => name !== ability.name)
+                                  toggleCombatAbility(currentNames, ability.name, event.target.checked)
                                 ))
                               }}
                             />
@@ -28843,7 +29054,7 @@ function App() {
                       <label>
                         <span>Advance Roll</span>
                         <RollableNumberInput
-                          value={selectedBattlefieldAdvanceRoll}
+                          value={battlefieldAdvanceRolls[selectedBattlefieldUnit.id] || 1}
                           min={1}
                           max={6}
                           sides={6}
@@ -28917,7 +29128,7 @@ function App() {
                     <label>
                       <span>Charge Roll</span>
                       <RollableNumberInput
-                        value={selectedBattlefieldChargeRoll}
+                        value={battlefieldChargeRolls[selectedBattlefieldUnit.id] ?? 2}
                         min={2}
                         max={12}
                         sides={6}
@@ -29026,15 +29237,27 @@ function App() {
                                   checked={battlefieldActiveAbilityNames.includes(ability.name)}
                                   onChange={(event) => {
                                     setBattlefieldActiveAbilityNames((currentNames) => (
-                                      event.target.checked
-                                        ? Array.from(new Set([...currentNames, ability.name]))
-                                        : currentNames.filter((name) => name !== ability.name)
+                                      toggleCombatAbility(currentNames, ability.name, event.target.checked)
                                     ))
                                   }}
                                 />
                                 <span>{ability.name}</span>
                               </label>
                             ))}
+                          </div>
+                        ) : null}
+                        {battlefieldDefenderAbilityOptions.length ? (
+                          <div className="weapon-selection-panel battlefield-combat-span">
+                            <div className="weapon-selection-header"><span>Defender Abilities</span></div>
+                            <div className="weapon-selection-grid">
+                              {battlefieldDefenderAbilityOptions.map((ability) => (
+                                <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
+                                  <input type="checkbox" checked={battlefieldDefenderActiveAbilityNames.includes(ability.name)}
+                                    onChange={(event) => setBattlefieldDefenderActiveAbilityNames((names) => toggleCombatAbility(names, ability.name, event.target.checked))} />
+                                  <span>{ability.name}</span>
+                                </label>
+                              ))}
+                            </div>
                           </div>
                         ) : null}
                         <button
@@ -29072,6 +29295,10 @@ function App() {
               </div>
               {selectedBattlefieldTool === 'stratagems' ? (
               <div className="battlefield-stratagem-panel">
+                {['attacker', 'defender'].map((side) => <WorldEatersArmyPanel key={side} side={side}
+                  detachment={side === 'attacker' ? attackerDetachmentName : defenderDetachmentName}
+                  state={worldEatersArmies[side]} turn={worldEatersTurn} phase={activeGamePhase?.id}
+                  ownTurn={side === activeBattlefieldSide} onActivate={activateWorldEatersArmy} />)}
                 <div className="battlefield-cp-grid">
                   <label>
                     <span>Attacker CP</span>
@@ -29584,7 +29811,7 @@ function App() {
                 <label>
                   <span>Charge Roll</span>
                   <RollableNumberInput
-                    value={selectedBattlefieldChargeRoll}
+                    value={battlefieldChargeRolls[selectedBattlefieldUnit.id] ?? 2}
                     min={2}
                     max={12}
                     sides={6}
@@ -29734,7 +29961,7 @@ function App() {
                   <label>
                     <span>Advance Roll</span>
                     <RollableNumberInput
-                      value={selectedBattlefieldAdvanceRoll}
+                      value={battlefieldAdvanceRolls[selectedBattlefieldUnit.id] || 1}
                       min={1}
                       max={6}
                       sides={6}
@@ -30243,9 +30470,7 @@ function App() {
                             checked={battlefieldActiveAbilityNames.includes(ability.name)}
                             onChange={(event) => {
                               setBattlefieldActiveAbilityNames((currentNames) => (
-                                event.target.checked
-                                  ? Array.from(new Set([...currentNames, ability.name]))
-                                  : currentNames.filter((name) => name !== ability.name)
+                                toggleCombatAbility(currentNames, ability.name, event.target.checked)
                               ))
                             }}
                           />
@@ -30256,6 +30481,20 @@ function App() {
                   </div>
                 ) : null}
 
+                {battlefieldDefenderAbilityOptions.length ? (
+                  <div className="weapon-selection-panel battlefield-combat-span">
+                    <div className="weapon-selection-header"><span>Defender Abilities</span></div>
+                    <div className="weapon-selection-grid">
+                      {battlefieldDefenderAbilityOptions.map((ability) => (
+                        <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
+                          <input type="checkbox" checked={battlefieldDefenderActiveAbilityNames.includes(ability.name)}
+                            onChange={(event) => setBattlefieldDefenderActiveAbilityNames((names) => toggleCombatAbility(names, ability.name, event.target.checked))} />
+                          <span>{ability.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
                 <button
                   type="button"
                   className="primary-button battlefield-combat-button"
