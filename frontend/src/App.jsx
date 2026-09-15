@@ -1720,6 +1720,28 @@ function getDetachmentByName(factionDetails, detachmentName) {
   return factionDetails?.detachments?.find((detachment) => detachment.name === detachmentName) || null
 }
 
+const AELDARI_DETACHMENT_NAMES = new Set([
+  'Warhost',
+  'Windrider Host',
+  'Spirit Conclave',
+  'Guardian Battlehost',
+  'Ghosts of the Webway',
+  'Devoted of Ynnead',
+  'Seer Council',
+  'Aspect Host',
+  'Armoured Warhost',
+  'Fateful Performance',
+  'Path of the Outcast',
+  'Twilight Flickers',
+  "Serpent's Brood",
+  'Eldritch Raiders',
+  'Corsair Coterie',
+])
+
+function isAeldariDetachment(detachment) {
+  return AELDARI_DETACHMENT_NAMES.has(detachment?.name)
+}
+
 function unitIsEpicHero(unit) {
   return (unit?.keywords || []).some((keyword) => String(keyword).toLowerCase() === 'epic hero')
 }
@@ -2214,6 +2236,10 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
     ))
   }
 
+  if (isAeldariDetachment(detachment)) {
+    return (detachment.enhancements || []).filter((enhancement) => Boolean(enhancement.implemented))
+  }
+
   return []
 }
 
@@ -2409,6 +2435,10 @@ function getDefenderEnhancementOptions(detachment, enhancementBearerUnit) {
         && unitHasKeyword(enhancementBearerUnit, 'war dog')
       ),
     )
+  }
+
+  if (isAeldariDetachment(detachment)) {
+    return (detachment.enhancements || []).filter((enhancement) => Boolean(enhancement.implemented))
   }
 
   return []
@@ -2826,6 +2856,10 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       return stratagem.name === 'Avenge the Masters!' && unitHasKeyword(unit, 'damned')
     }
 
+    if (isAeldariDetachment(detachment)) {
+      return Boolean(stratagem.implemented)
+    }
+
     return false
   })
 }
@@ -3088,6 +3122,10 @@ function getDefenderStratagemOptions(detachment, selectedWeapon, unit) {
 
     if (detachment.name === LORDS_OF_THE_FORGE) {
       return stratagem.name === 'Scriptural Prognosis' && unitHasKeyword(unit, 'tech-priest')
+    }
+
+    if (isAeldariDetachment(detachment)) {
+      return Boolean(stratagem.implemented)
     }
 
     return false
@@ -6588,6 +6626,50 @@ function weaponNameIncludes(weapon, text) {
 }
 
 const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
+  'alacritous assault': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  "assassins' eye": ({ selectedWeapons, targetUnit }) => selectedWeapons.some((weapon) => weapon.range !== 'Melee') && unitHasKeyword(targetUnit, 'character'),
+  'aspect of murder': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'blades from beyond': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'blitzing firepower': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'boon of the brood': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'borrowed vigour': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'cloak and shadow': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'dance of distortion': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'death from on high': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'defend at all costs': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'emissaries of ynnead': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'exotic munitions': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'fate inescapable': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'focused firepower': ({ selectedWeapons }) => selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'forewarned': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'gaze of ynnead': ({ selectedWeapons }) => selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'eldritch storm')),
+  'guiding presence': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'layered wards': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'lightning-fast reactions': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'macabre resilience': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'mirage field': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'morbid might': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'no prey too big': ({ selectedWeapons, targetUnit }) => (
+    selectedWeapons.length > 0 && (unitHasKeyword(targetUnit, 'monster') || unitHasKeyword(targetUnit, 'vehicle'))
+  ),
+  'outcast ambush': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'pirates due': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  "pirates' due": ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'presaged rehearsal': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'psychic destroyer': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic')),
+  'ruthless killers': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'seersight strike': ({ selectedWeapons }) => selectedWeapons.some((weapon) => weaponHasRawKeyword(weapon, 'Psychic')),
+  'shepherds of the dead': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'shield nodes': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'shimmerstone': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'skilled crews': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'soulsight': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'spiralling evasion': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'voidstone': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'warding salvos': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  "weaver's wail": ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'wraithbone armour': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  "yriel's example": ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
   "destiny's ruin": ({ selectedWeapons }) => selectedWeapons.length > 0,
   "destiny's ruin - empowered": ({ selectedWeapons }) => selectedWeapons.length > 0,
   'doombolt': ({ selectedWeapons }) => selectedWeapons.length > 0,

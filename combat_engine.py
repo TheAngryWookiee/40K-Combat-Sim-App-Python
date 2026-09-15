@@ -5659,6 +5659,11 @@ class CombatSimulator:
             sequence_state["remaining_wound_rerolls"] = 1
             sequence_state["remaining_damage_rerolls"] = 1
             return sequence_state
+        if "soulsight" in attacker_active_ability_names:
+            sequence_state["remaining_hit_rerolls"] = 1
+            sequence_state["remaining_wound_rerolls"] = 1
+            sequence_state["remaining_damage_rerolls"] = 1
+            return sequence_state
         if "seething hatred - hit roll" in attacker_active_ability_names:
             sequence_state["remaining_hit_rerolls"] = 1
             return sequence_state
@@ -5992,6 +5997,113 @@ class CombatSimulator:
             target_state["has_cover"] = False
             for profile in target_state.get("profiles", []):
                 profile["has_cover"] = False
+        if (
+            (
+                attacker_detachment_name == "Armoured Warhost"
+                or "skilled crews" in attacker_active_ability_names
+            )
+            and self.unit_has_keyword(attacker_unit, "vehicle")
+        ):
+            add_keywords_to_matching_weapons(
+                {"Assault"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if (
+            "star engines" in attacker_active_ability_names
+            and self.unit_has_keyword(attacker_unit, "vehicle")
+        ):
+            add_keywords_to_matching_weapons(
+                {"Assault"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if (
+            (
+                attacker_detachment_name == "Serpent's Brood"
+                or "boon of the brood" in attacker_active_ability_names
+            )
+            and (
+                self.unit_has_keyword(attacker_unit, "harlequins")
+                and (
+                    self.unit_has_keyword(attacker_unit, "mounted")
+                    or self.unit_has_keyword(attacker_unit, "vehicle")
+                    or bool(options.get("attacker_disembarked_from_transport", False))
+                )
+            )
+        ):
+            add_keywords_to_matching_weapons(
+                {"SH1"},
+                lambda candidate_weapon: True,
+            )
+        if "blitzing firepower" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"SH1"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if "soulsight" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"LH", "Ignores Cover"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+            target_has_cover = False
+            target_state["has_cover"] = False
+            for profile in target_state.get("profiles", []):
+                profile["has_cover"] = False
+        if "fate inescapable" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Ignores Cover"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+            target_has_cover = False
+            target_state["has_cover"] = False
+            for profile in target_state.get("profiles", []):
+                profile["has_cover"] = False
+        if "outcast ambush" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Ignores Cover", "Rapid Fire 1"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+            target_has_cover = False
+            target_state["has_cover"] = False
+            for profile in target_state.get("profiles", []):
+                profile["has_cover"] = False
+        if "blades from beyond" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"DW"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if "presaged rehearsal" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Lance"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if "alacritous assault" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Lance"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if "aspect of murder" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Precision"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if (
+            "gaze of ynnead" in attacker_active_ability_names
+            and self.weapon_name_contains(weapon, "eldritch storm")
+        ):
+            add_keywords_to_matching_weapons(
+                {"DW"},
+                lambda candidate_weapon: self.weapon_name_contains(candidate_weapon, "eldritch storm"),
+            )
+        if "seersight strike" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Anti-Monster 2+", "Anti-Vehicle 2+"},
+                lambda candidate_weapon: self.weapon_has_keyword(candidate_weapon, "Psychic"),
+            )
+        if "exotic munitions" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Anti-Monster 5+", "Anti-Vehicle 5+"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
         if (
             "psychic dominion" in defender_active_ability_names
             and self.weapon_has_keyword(weapon, "Psychic")
@@ -7833,6 +7945,36 @@ class CombatSimulator:
         if "strength from exile" in attacker_active_ability_names:
             reroll_hit_rolls_of_1 = True
             reroll_wound_rolls_of_1 = True
+        if "death from on high" in attacker_active_ability_names:
+            reroll_all_wound_rolls = True
+        if "warding salvos" in attacker_active_ability_names:
+            reroll_all_wound_rolls = True
+        if "guiding presence" in attacker_active_ability_names:
+            attacker_hit_modifier += 1
+        if "shepherds of the dead" in attacker_active_ability_names:
+            attacker_hit_modifier += 1
+            attacker_outgoing_wound_modifier += 1
+        if "defend at all costs" in attacker_active_ability_names:
+            attacker_hit_modifier += 1
+        if "emissaries of ynnead" in attacker_active_ability_names:
+            if bool(options.get("attacker_below_starting_strength", False)):
+                reroll_all_hit_rolls = True
+            else:
+                reroll_hit_rolls_of_1 = True
+        if "pirates' due" in attacker_active_ability_names or "pirates due" in attacker_active_ability_names:
+            if bool(options.get("defender_on_objective", False)):
+                reroll_all_wound_rolls = True
+            else:
+                reroll_wound_rolls_of_1 = True
+        if "soulsight" in attacker_active_ability_names:
+            reroll_hit_rolls_of_1 = True
+            reroll_wound_rolls_of_1 = True
+        if "no prey too big" in attacker_active_ability_names:
+            effective_attack_strength = int(weapon.get("strength", 0) or 0)
+            if effective_attack_strength < int(target_state.get("toughness", 0) or 0):
+                attacker_outgoing_wound_modifier += 1
+        if "morbid might" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            reroll_all_wound_rolls = True
         if "vengeance of the machine cult" in attacker_active_ability_names:
             reroll_all_wound_rolls = True
         if (
@@ -8904,6 +9046,12 @@ class CombatSimulator:
             and bool(options.get("attacker_target_within_9", False))
         ):
             attacker_ap_modifier += 1
+        if "focused firepower" in attacker_active_ability_names and weapon["range"].lower() != "melee":
+            attacker_ap_modifier += 1
+        if "outcast ambush" in attacker_active_ability_names and weapon["range"].lower() != "melee":
+            attacker_ap_modifier += 1
+        if "assassins' eye" in attacker_active_ability_names and self.unit_has_keyword(target_state, "character"):
+            attacker_ap_modifier += 1
         if (
             bool(options.get("attacker_bigger_shells_active", False))
             and weapon["range"].lower() != "melee"
@@ -8975,6 +9123,20 @@ class CombatSimulator:
         ranged_damage_bonus = 0
         ranged_attack_bonus = 0
         weapon_base_name = current_weapon_base_name
+        if "psychic destroyer" in attacker_active_ability_names and self.weapon_has_keyword(weapon, "Psychic"):
+            ranged_damage_bonus += 1
+        if "aspect of murder" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            melee_damage_bonus += 1
+        if "weaver's wail" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            melee_strength_bonus += 3
+            melee_attack_bonus += 1
+        if "borrowed vigour" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            melee_attack_bonus += 2
+        if "ruthless killers" in attacker_active_ability_names:
+            if weapon["range"].lower() == "melee":
+                melee_damage_bonus += 1
+            else:
+                ranged_damage_bonus += 1
         if shield_host_martial_mastery == "ap" and weapon["range"].lower() == "melee":
             attacker_ap_modifier += 1
         if (
@@ -10487,6 +10649,19 @@ class CombatSimulator:
             attacker_hit_modifier -= 1
         if "capricious reactions" in defender_active_ability_names:
             attacker_hit_modifier -= 1
+        if "mirage field" in defender_active_ability_names:
+            attacker_hit_modifier -= 1
+        if "lightning-fast reactions" in defender_active_ability_names:
+            attacker_hit_modifier -= 1
+        if "forewarned" in defender_active_ability_names:
+            attacker_hit_modifier -= 1
+            target_incoming_wound_modifier -= 1
+        if "macabre resilience" in defender_active_ability_names:
+            target_incoming_wound_modifier -= 1
+        if "shield nodes" in defender_active_ability_names:
+            target_incoming_wound_modifier -= 1
+        if "shimmerstone" in defender_active_ability_names and weapon["range"].lower() != "melee":
+            target_incoming_wound_modifier -= 1
         if "deft parry" in defender_active_ability_names and weapon["range"].lower() == "melee":
             attacker_hit_modifier -= 1
         if "uncanny reactions" in defender_active_ability_names:
@@ -10844,6 +11019,8 @@ class CombatSimulator:
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 3)
         if "protection of the dark prince" in defender_active_ability_names:
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 6)
+        if "yriel's example" in defender_active_ability_names:
+            target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 5)
         target_mortal_feel_no_pain = 0
         if (
             (
@@ -10867,6 +11044,8 @@ class CombatSimulator:
         if "protection of the dark prince" in defender_active_ability_names:
             target_mortal_feel_no_pain = self.combine_feel_no_pain_values(target_mortal_feel_no_pain, 4)
         if "relentless rebirth" in defender_active_ability_names:
+            target_mortal_feel_no_pain = self.combine_feel_no_pain_values(target_mortal_feel_no_pain, 5)
+        if "layered wards" in defender_active_ability_names:
             target_mortal_feel_no_pain = self.combine_feel_no_pain_values(target_mortal_feel_no_pain, 5)
         if self.target_state_has_ability(target_state, "Swallow Energy"):
             target_mortal_feel_no_pain = self.combine_feel_no_pain_values(target_mortal_feel_no_pain, 4)
@@ -11013,6 +11192,10 @@ class CombatSimulator:
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 4)
         if "warped vicissitude" in defender_active_ability_names:
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 4)
+        if "spiralling evasion" in defender_active_ability_names:
+            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 4)
+        if defender_enhancement_name == "Voidstone":
+            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 5)
         if (
             "daemonic illusions (aura)" in defender_active_ability_names
             and weapon["range"].lower() != "melee"
@@ -11107,6 +11290,8 @@ class CombatSimulator:
             target_damage_modifier -= 1
         if "disgustingly resilient" in defender_active_ability_names:
             target_damage_modifier -= 1
+        if "wraithbone armour" in defender_active_ability_names:
+            target_damage_modifier -= 1
         if "implacable guardians" in defender_active_ability_names:
             target_damage_modifier -= 1
         target_damage_max = None
@@ -11159,6 +11344,8 @@ class CombatSimulator:
             }
         ):
             critical_wound_ap_modifier += 2
+        if "fate inescapable" in attacker_active_ability_names and weapon["range"].lower() != "melee":
+            critical_wound_ap_modifier += 1
 
         target_has_stealth = False
         if "storm of darkness" in defender_active_ability_names and weapon["range"].lower() != "melee":
@@ -11281,6 +11468,15 @@ class CombatSimulator:
             target_has_stealth = True
         if (
             self.target_state_has_ability(target_state, "Stealth")
+            and weapon["range"].lower() != "melee"
+        ):
+            target_has_stealth = True
+        if (
+            (
+                defender_detachment_name == "Twilight Flickers"
+                or "dance of distortion" in defender_active_ability_names
+                or "cloak and shadow" in defender_active_ability_names
+            )
             and weapon["range"].lower() != "melee"
         ):
             target_has_stealth = True
@@ -11566,6 +11762,8 @@ class CombatSimulator:
                         5 if "daemon weapon of nurgle" in attacker_active_ability_names
                         and weapon["range"].lower() == "melee" else 6,
                         5 if "blessings of filth" in attacker_active_ability_names else 6,
+                        5 if "blitzing firepower" in attacker_active_ability_names
+                        and weapon["range"].lower() != "melee" else 6,
                     ]
                 ],
             ),

@@ -996,11 +996,12 @@ def apply_simulation_enhancement_modifiers(unit: dict[str, Any], enhancement_nam
         apply_bonus_wounds_to_unit(unit, 2)
         return
 
-    if enhancement_name == "FLOWING FLESH":
+    if enhancement_name.lower() == "flowing flesh":
         apply_feel_no_pain_to_unit(unit, 4)
         current_wounds = int(unit.get("wounds", unit.get("stats", {}).get("wounds", 0)) or 0)
         if current_wounds < 5:
             apply_bonus_wounds_to_unit(unit, 5 - current_wounds)
+        return
 
 
 def load_requested_unit(request: UnitRulesRequest) -> dict[str, Any]:
