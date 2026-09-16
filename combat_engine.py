@@ -5664,6 +5664,10 @@ class CombatSimulator:
             sequence_state["remaining_wound_rerolls"] = 1
             sequence_state["remaining_damage_rerolls"] = 1
             return sequence_state
+        if "crystal matrix" in attacker_active_ability_names:
+            sequence_state["remaining_hit_rerolls"] = 1
+            sequence_state["remaining_wound_rerolls"] = 1
+            return sequence_state
         if "seething hatred - hit roll" in attacker_active_ability_names:
             sequence_state["remaining_hit_rerolls"] = 1
             return sequence_state
@@ -6104,6 +6108,57 @@ class CombatSimulator:
                 {"Anti-Monster 5+", "Anti-Vehicle 5+"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
             )
+        if (
+            "hand of asuryan" in attacker_active_ability_names
+            and self.weapon_name_contains(weapon, "bloody twins")
+        ):
+            add_keywords_to_matching_weapons(
+                {"Anti-Infantry 3+", "DW"},
+                lambda candidate_weapon: self.weapon_name_contains(candidate_weapon, "bloody twins"),
+            )
+        if "spirit mark (psychic)" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons({"SH1"}, lambda candidate_weapon: True)
+        if (
+            self.ability_names_include(attacker_or_attached_ability_names, "piratic hero")
+            or (
+                self.ability_names_include(attacker_ability_names, "storm of blades")
+                and weapon["range"].lower() == "melee"
+            )
+            or (
+                self.ability_names_include(attacker_ability_names, "blade of the clans")
+                and weapon["range"].lower() == "melee"
+            )
+        ):
+            add_keywords_to_matching_weapons(
+                {"SH1"},
+                lambda candidate_weapon: (
+                    weapon["range"].lower() != "melee"
+                    or candidate_weapon["range"].lower() == "melee"
+                ),
+            )
+        if (
+            self.ability_names_include(attacker_ability_names, "bladestorm")
+            and bool(options.get("in_half_range", False))
+        ):
+            add_keywords_to_matching_weapons(
+                {"SH1"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if self.ability_names_include(attacker_ability_names, "runes of battle (psychic)"):
+            add_keywords_to_matching_weapons({"Ignores Cover"}, lambda candidate_weapon: True)
+            if weapon["range"].lower() != "melee":
+                target_has_cover = False
+        if "piratical raiders" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons({"LH", "Precision"}, lambda candidate_weapon: True)
+        if (
+            "faolchu" in attacker_active_ability_names
+            and weapon["range"].lower() != "melee"
+        ):
+            add_keywords_to_matching_weapons(
+                {"Ignores Cover"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+            target_has_cover = False
         if (
             "psychic dominion" in defender_active_ability_names
             and self.weapon_has_keyword(weapon, "Psychic")
@@ -7966,6 +8021,72 @@ class CombatSimulator:
                 reroll_all_wound_rolls = True
             else:
                 reroll_wound_rolls_of_1 = True
+        if (
+            self.ability_names_include(attacker_ability_names, "storm of silence")
+            and self.unit_has_keyword(target_state, "character")
+        ):
+            reroll_all_wound_rolls = True
+        if (
+            self.ability_names_include(attacker_or_attached_ability_names, "cegorach's favour")
+            and weapon["range"].lower() == "melee"
+        ):
+            reroll_hit_rolls_of_1 = True
+            attacker_outgoing_wound_modifier += 1
+        if self.ability_names_include(attacker_or_attached_ability_names, "herald of ynnead"):
+            reroll_wound_rolls_of_1 = True
+        if self.ability_names_include(attacker_or_attached_ability_names, "overlord"):
+            if bool(options.get("attacker_below_starting_strength", False)):
+                reroll_all_wound_rolls = True
+            else:
+                reroll_wound_rolls_of_1 = True
+        if self.ability_names_include(attacker_ability_names, "reavers of the void"):
+            if bool(options.get("defender_on_objective", False)):
+                reroll_all_hit_rolls = True
+            else:
+                reroll_hit_rolls_of_1 = True
+        if (
+            self.ability_names_include(attacker_ability_names, "assured destruction")
+            and weapon["range"].lower() != "melee"
+            and (
+                self.unit_has_keyword(target_state, "monster")
+                or self.unit_has_keyword(target_state, "vehicle")
+            )
+        ):
+            reroll_all_hit_rolls = True
+            reroll_all_wound_rolls = True
+        if (
+            self.ability_names_include(attacker_ability_names, "swift demise")
+            and weapon["range"].lower() != "melee"
+        ):
+            if bool(options.get("attacker_target_closest_eligible", False)):
+                reroll_all_hit_rolls = True
+            else:
+                reroll_hit_rolls_of_1 = True
+        if "battlefield terror" in attacker_active_ability_names:
+            reroll_hit_rolls_of_1 = True
+            reroll_wound_rolls_of_1 = True
+        if "fire support" in attacker_active_ability_names:
+            reroll_all_wound_rolls = True
+        if "doom (psychic)" in attacker_active_ability_names:
+            attacker_outgoing_wound_modifier += 1
+        if "guide (psychic)" in attacker_active_ability_names:
+            attacker_hit_modifier += 1
+        if "fury of the void (psychic)" in attacker_active_ability_names:
+            if weapon["range"].lower() == "melee":
+                melee_strength_bonus += 1
+            else:
+                ranged_strength_bonus += 1
+        if "psychic guidance" in attacker_active_ability_names:
+            attacker_hit_modifier += 1
+        if self.ability_names_include(attacker_or_attached_ability_names, "piratic hero"):
+            attacker_hit_modifier += 1
+        if (
+            self.ability_names_include(attacker_ability_names, "skyhunter")
+            and weapon["range"].lower() != "melee"
+            and self.unit_has_keyword(target_state, "fly")
+        ):
+            attacker_hit_modifier += 1
+            attacker_outgoing_wound_modifier += 1
         if "soulsight" in attacker_active_ability_names:
             reroll_hit_rolls_of_1 = True
             reroll_wound_rolls_of_1 = True
@@ -10432,6 +10553,18 @@ class CombatSimulator:
             and weapon["range"].lower() != "melee"
         ):
             attacker_ap_modifier += 1
+        if (
+            "hand of asuryan" in attacker_active_ability_names
+            and self.weapon_name_contains(weapon, "bloody twins")
+        ):
+            ranged_damage_bonus += max(0, 3 - int(weapon.get("damage", 0)))
+        if (
+            "blitz" in attacker_active_ability_names
+            and self.weapon_name_contains(weapon, "solitaire weapons")
+        ):
+            melee_attack_bonus += 3
+        if "crystalline targeting" in attacker_active_ability_names:
+            attacker_ap_modifier += 1
 
         attacker_feel_no_pain = 0
         if bool(options.get("attacker_pennant_of_remembrance_active", False)):
@@ -10649,6 +10782,13 @@ class CombatSimulator:
             attacker_hit_modifier -= 1
         if "capricious reactions" in defender_active_ability_names:
             attacker_hit_modifier -= 1
+        if "harassment fire" in defender_active_ability_names:
+            attacker_hit_modifier -= 1
+        if (
+            self.target_state_has_ability(target_state, "Acrobatic Grace")
+            and weapon["range"].lower() == "melee"
+        ):
+            attacker_hit_modifier -= 1
         if "mirage field" in defender_active_ability_names:
             attacker_hit_modifier -= 1
         if "lightning-fast reactions" in defender_active_ability_names:
@@ -10661,6 +10801,14 @@ class CombatSimulator:
         if "shield nodes" in defender_active_ability_names:
             target_incoming_wound_modifier -= 1
         if "shimmerstone" in defender_active_ability_names and weapon["range"].lower() != "melee":
+            target_incoming_wound_modifier -= 1
+        if (
+            self.target_state_has_ability(target_state, "Wave Serpent Shield")
+            and weapon["range"].lower() != "melee"
+            and effective_attack_strength_for_defense > target_toughness_for_defense
+        ):
+            target_incoming_wound_modifier -= 1
+        if "protect (psychic)" in defender_active_ability_names:
             target_incoming_wound_modifier -= 1
         if "deft parry" in defender_active_ability_names and weapon["range"].lower() == "melee":
             attacker_hit_modifier -= 1
@@ -11194,6 +11342,8 @@ class CombatSimulator:
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 4)
         if "spiralling evasion" in defender_active_ability_names:
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 4)
+        if self.target_state_has_ability(target_state, "Serpent Shield"):
+            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 5)
         if defender_enhancement_name == "Voidstone":
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 5)
         if (
@@ -11464,6 +11614,14 @@ class CombatSimulator:
             target_has_stealth = True
         if defender_enhancement_name == "Astral Overlap" and weapon["range"].lower() != "melee":
             target_has_stealth = True
+        if (
+            (
+                self.target_state_has_ability(target_state, "Acrobatic Grace")
+                or "hallucinogen grenades" in defender_active_ability_names
+            )
+            and weapon["range"].lower() != "melee"
+        ):
+            target_has_stealth = True
         if defender_enhancement_name == "Chameleonic" and weapon["range"].lower() != "melee":
             target_has_stealth = True
         if (
@@ -11679,6 +11837,13 @@ class CombatSimulator:
                             or self.unit_has_keyword(target_state, "vehicle")
                         )
                     )
+                    or (
+                        self.ability_names_include(attacker_ability_names, "assured destruction")
+                        and (
+                            self.unit_has_keyword(target_state, "monster")
+                            or self.unit_has_keyword(target_state, "vehicle")
+                        )
+                    )
                 )
                 and weapon["range"].lower() != "melee"
             ) or (
@@ -11693,6 +11858,13 @@ class CombatSimulator:
                 *[
                     threshold
                     for threshold in [
+                        5 if (
+                            "whispering web" in attacker_active_ability_names
+                            or (
+                                self.ability_names_include(attacker_ability_names, "mandiblasters")
+                                and bool(options.get("charged_this_turn", False))
+                            )
+                        ) else 6,
                         5 if bool(options.get("attacker_unforgiven_fury_active", False))
                         and bool(options.get("attacker_unforgiven_fury_army_battleshocked", False)) else 6,
                         5 if bool(options.get("attacker_unbridled_carnage_active", False)) else 6,
@@ -11855,7 +12027,10 @@ class CombatSimulator:
             ),
             "target_has_stealth": target_has_stealth,
             "target_damage_modifier": target_damage_modifier,
-            "target_damage_halved": "formidably resilient" in defender_active_ability_names,
+            "target_damage_halved": (
+                "formidably resilient" in defender_active_ability_names
+                or self.target_state_has_ability(target_state, "Molten Form")
+            ),
             "target_damage_max": target_damage_max,
             "critical_wound_ap_modifier": critical_wound_ap_modifier,
             "hazardous_fail_threshold": hazardous_fail_threshold,

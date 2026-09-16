@@ -6626,6 +6626,28 @@ function weaponNameIncludes(weapon, text) {
 }
 
 const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
+  'battlefield terror': ({ selectedWeapons, targetUnit }) => selectedWeapons.length > 0 && (
+    unitHasKeyword(targetUnit, 'infantry')
+    || unitHasKeyword(targetUnit, 'monster')
+    || unitHasKeyword(targetUnit, 'mounted')
+    || unitHasKeyword(targetUnit, 'vehicle')
+  ),
+  'blitz': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'solitaire weapons')),
+  'crystal matrix': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'crystalline targeting': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'doom (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'faolchu': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'fire support': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'fury of the void (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'guide (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'hallucinogen grenades': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'hand of asuryan': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'bloody twins')),
+  'harassment fire': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'piratical raiders': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'protect (psychic)': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'psychic guidance': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'spirit mark (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'whispering web': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'alacritous assault': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
   "assassins' eye": ({ selectedWeapons, targetUnit }) => selectedWeapons.some((weapon) => weapon.range !== 'Melee') && unitHasKeyword(targetUnit, 'character'),
   'aspect of murder': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
@@ -8347,7 +8369,25 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
 }
 
 const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
+  'acrobatic grace',
   'ammo runt',
+  'assured destruction',
+  'bladestorm',
+  'blade of the clans',
+  'cegorach\'s favour',
+  'herald of ynnead',
+  'mandiblasters',
+  'molten form',
+  'overlord',
+  'piratic hero',
+  'reavers of the void',
+  'runes of battle (psychic)',
+  'serpent shield',
+  'skyhunter',
+  'storm of blades',
+  'storm of silence',
+  'swift demise',
+  'wave serpent shield',
   'advanced firepower',
   'angel\'s wrath',
   'annihilator protocols',
