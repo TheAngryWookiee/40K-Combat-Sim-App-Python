@@ -222,9 +222,9 @@ class WorldEatersCombatTests(unittest.TestCase):
         data = load_factions()['World Eaters']['detachments']
         self.assertEqual(len(data), 8)
         by_name = {d['name']: d for d in data}
-        self.assertTrue(by_name['BERZERKER WARBAND']['rule']['implemented'])
-        self.assertFalse(by_name['KHORNE DAEMONKIN']['rule']['implemented'])
-        self.assertEqual(len(by_name['VESSELS OF WRATH']['rule']['options']), 2)
+        self.assertTrue(by_name['Berzerker Warband']['rule']['implemented'])
+        self.assertFalse(by_name['Khorne Daemonkin']['rule']['implemented'])
+        self.assertEqual(len(by_name['Vessels of Wrath']['rule']['options']), 2)
         source = json.loads(Path('World_Eaters.json').read_text(encoding='utf-8'))
         self.assertEqual(source['faction']['detachments'], data)
 

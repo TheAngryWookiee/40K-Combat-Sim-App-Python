@@ -327,23 +327,32 @@ def normalize_weapon_keywords(raw_keywords: list[Any]) -> tuple[list[str], list[
 
 
 def normalize_weapon(weapon_data: dict[str, Any]) -> dict[str, Any]:
+    raw_skill = weapon_data.get("skill", {})
+    if isinstance(raw_skill, dict):
+        skill_type = raw_skill.get("type", "")
+        skill_value = raw_skill.get("value", "0+")
+    else:
+        skill_type = "WS" if str(weapon_data.get("range", "")).lower() == "melee" else "BS"
+        skill_value = raw_skill
+    raw_keywords = weapon_data.get("keywords", weapon_data.get("abilities", []))
     keywords, anti_rules, anti_keyword, anti_value = normalize_weapon_keywords(
-        weapon_data.get("keywords", [])
+        raw_keywords
     )
+    armor_piercing = weapon_data.get("armor_piercing", weapon_data.get("ap", 0))
     return {
         "name": weapon_data["name"],
         "range": weapon_data.get("range", ""),
         "attacks": parse_roll_profile(weapon_data.get("attacks", 0)),
-        "skill_type": weapon_data.get("skill", {}).get("type", ""),
-        "skill": parse_plus_value(weapon_data["skill"]["value"]),
-        "skill_display": weapon_data["skill"]["value"],
+        "skill_type": skill_type,
+        "skill": parse_plus_value(skill_value),
+        "skill_display": skill_value,
         "strength": parse_numeric_value(weapon_data.get("strength", 0)),
-        "ap": parse_ap_value(weapon_data.get("armor_piercing", 0)),
-        "ap_display": str(weapon_data.get("armor_piercing", 0)),
+        "ap": parse_ap_value(armor_piercing),
+        "ap_display": str(armor_piercing),
         "damage": parse_roll_profile(weapon_data.get("damage", 0)),
         "damage_display": str(weapon_data.get("damage", 0)),
         "keywords": keywords,
-        "raw_keywords": [str(keyword) for keyword in weapon_data.get("keywords", [])],
+        "raw_keywords": [str(keyword) for keyword in raw_keywords],
         "anti_rules": anti_rules,
         "anti_keyword": anti_keyword,
         "anti_value": anti_value,
@@ -971,9 +980,29 @@ def apply_unit_loadout(
 
 
 def normalize_unit(unit_data: dict[str, Any], faction_name: str) -> dict[str, Any]:
+    legacy_weapon_data = [
+        *unit_data.get("ranged_weapons", []),
+        *unit_data.get("melee_weapons", []),
+    ]
+    weapon_data = unit_data.get("weapons", []) or [
+        {
+            "name": weapon["name"],
+            "range": weapon.get("range", "Melee"),
+            "attacks": weapon.get("A", 0),
+            "skill": {
+                "type": "WS" if str(weapon.get("range", "")).lower() == "melee" else "BS",
+                "value": weapon.get("WS", weapon.get("BS", "0+")),
+            },
+            "strength": weapon.get("S", 0),
+            "armor_piercing": weapon.get("AP", 0),
+            "damage": weapon.get("D", 0),
+            "keywords": weapon.get("abilities", []),
+        }
+        for weapon in legacy_weapon_data
+    ]
     weapons = {
         weapon["name"]: normalize_weapon(weapon)
-        for weapon in unit_data.get("weapons", [])
+        for weapon in weapon_data
     }
     stats = unit_data.get("stats") or next(
         (
@@ -984,11 +1013,163 @@ def normalize_unit(unit_data: dict[str, Any], faction_name: str) -> dict[str, An
         {},
     )
     unit_composition = unit_data.get("unit_composition", {})
+    if isinstance(unit_composition, list):
+        point_model_counts = [
+            int(match.group(1))
+            for label in unit_data.get("points", {})
+            if (match := re.match(r"^(\d+)\s+models?\b", str(label), re.IGNORECASE))
+        ]
+        unit_composition = {
+            "min_models": min(point_model_counts, default=1),
+            "max_models": max(point_model_counts, default=1),
+            "description": unit_composition,
+        }
+    abilities = unit_data.get("abilities", [])
+    if isinstance(abilities, dict):
+        abilities = [
+            {"name": name, "rules_text": rules_text, "implemented": False}
+            for name, rules_text in abilities.items()
+        ]
+        abilities = [
+            *(
+                {"name": "Core", "rules_text": rules_text, "implemented": True}
+                for rules_text in unit_data.get("core_abilities", [])
+            ),
+            *(
+                {"name": "Faction", "rules_text": rules_text, "implemented": True}
+                for rules_text in unit_data.get("army_rules", [])
+            ),
+            *abilities,
+        ]
+    else:
+        abilities = [
+            {
+                **ability,
+                "rules_text": ability.get("rules_text", ability.get("text", "")),
+            }
+            for ability in abilities
+        ]
+        if unit_data.get("core_abilities") or unit_data.get("army_rules"):
+            abilities = [
+                *(
+                    {"name": "Core", "rules_text": rules_text, "implemented": True}
+                    for rules_text in unit_data.get("core_abilities", [])
+                ),
+                *(
+                    {"name": "Faction", "rules_text": rules_text, "implemented": True}
+                    for rules_text in unit_data.get("army_rules", [])
+                ),
+                *abilities,
+            ]
+    display_keywords = list(unit_data.get("keywords", []))
+    if legacy_weapon_data and not display_keywords:
+        legacy_name = str(unit_data["name"]).lower()
+        vehicle_names = {
+            "raider", "ravager", "razorwing jetfighter", "starfangs", "starweaver", "venom",
+            "voidraven bomber", "voidweaver",
+        }
+        character_names = {
+            "archon", "death jester", "drazhar", "haemonculus", "kharseth", "lady malys",
+            "lelith hesperax", "prince yriel", "shadowseer", "solitaire", "succubus", "troupe master",
+        }
+        display_keywords = ["Vehicle" if legacy_name in vehicle_names else "Infantry", unit_data["name"]]
+        if legacy_name in character_names:
+            display_keywords.append("Character")
+        if legacy_name in {
+            "drazhar", "kharseth", "lady malys", "lelith hesperax", "prince yriel", "solitaire",
+        }:
+            display_keywords.append("Epic Hero")
+        if legacy_name in {"kharseth", "shadowseer"}:
+            display_keywords.append("Psyker")
+        if legacy_name in {"archon", "lady malys"}:
+            display_keywords.append("Kabal")
+        if legacy_name in {"lelith hesperax", "succubus"}:
+            display_keywords.append("Wych Cult")
+        if legacy_name == "haemonculus":
+            display_keywords.append("Haemonculus Covens")
+        if legacy_name == "drazhar":
+            display_keywords.append("Blades for Hire")
+        if legacy_name in {"hand of the archon", "kabalite warriors"}:
+            display_keywords.append("Kabal")
+        if legacy_name == "wyches":
+            display_keywords.append("Wych Cult")
+        if legacy_name == "wracks":
+            display_keywords.append("Haemonculus Covens")
+        if legacy_name in {"incubi", "mandrakes", "scourges with heavy weapons"}:
+            display_keywords.append("Blades for Hire")
+        if legacy_name in {"corsair skyreavers", "corsair voidreavers", "corsair voidscarred"}:
+            display_keywords.append("Anhrathe")
+        if legacy_name in {"raider", "starweaver", "venom"}:
+            display_keywords.extend(["Transport", "Dedicated Transport"])
+        if legacy_name in {"razorwing jetfighter", "voidraven bomber"}:
+            display_keywords.extend(["Aircraft", "Fly"])
+        if legacy_name in {"corsair skyreavers", "scourges with heavy weapons", "starweaver", "venom"}:
+            display_keywords.append("Fly")
+        if legacy_name in {"kabalite warriors", "wyches"}:
+            display_keywords.append("Battleline")
+        if legacy_name in {"cronos", "talos"}:
+            display_keywords = [keyword for keyword in display_keywords if keyword != "Infantry"]
+            display_keywords.extend(["Monster", "Fly", "Haemonculus Covens"])
+        if legacy_name in {"hellions", "reavers", "skyweavers"}:
+            display_keywords = [keyword for keyword in display_keywords if keyword != "Infantry"]
+            display_keywords.extend(["Mounted", "Fly"])
+        if legacy_name in {"hellions", "reavers"}:
+            display_keywords.append("Wych Cult")
+        if legacy_name in {"ravager", "starfangs", "voidweaver"}:
+            display_keywords.append("Fly")
+        if legacy_name == "starfangs":
+            display_keywords.append("Anhrathe")
+    leader = unit_data.get("leader", {})
+    if isinstance(leader, list):
+        leader = {"can_lead": [str(name).title() for name in leader]}
+    support = unit_data.get("support", {})
+    if isinstance(support, list):
+        support = {"can_support": [str(name).title() for name in support]}
+    base_size = unit_data.get("base_size", "")
+    if isinstance(base_size, (int, float)):
+        base_size = f"{base_size:g}mm"
+    if isinstance(base_size, dict):
+        if base_size.get("size_mm"):
+            base_size = f"{base_size['size_mm']}mm"
+        elif base_size.get("width_mm") and base_size.get("height_mm"):
+            base_size = f"{base_size['width_mm']} x {base_size['height_mm']}mm"
+        else:
+            base_size = ""
+        if unit_data.get("base_size", {}).get("flying_base"):
+            base_size = f"{base_size} flying base".strip()
+    selectable_abilities = list(unit_data.get("selectable_abilities", []))
+    generated_combat_options = {
+        "Archon": [
+            ("Soul Trap - Fed", "After destroying an enemy model, add an additional 1 to the Attacks and Strength of the bearer's melee weapons."),
+        ],
+        "Death Jester": [
+            ("Cruel Amusement - Ignores Cover", "The shrieker cannon has [IGNORES COVER]."),
+            ("Cruel Amusement - Precision", "The shrieker cannon has [PRECISION]."),
+            ("Cruel Amusement - Sustained Hits 3", "The shrieker cannon has [SUSTAINED HITS 3]."),
+        ],
+        "Lady Malys": [
+            ("Archon of the Poisoned Tongue - Lethal Hits", "While Empowered, weapons in this unit have [LETHAL HITS]."),
+            ("Archon of the Poisoned Tongue - Sustained Hits 1", "While Empowered, weapons in this unit have [SUSTAINED HITS 1]."),
+        ],
+        "Troupe": [
+            ("Dance of Death - Hero's Prowess", "Re-roll Hit rolls of 1."),
+            ("Dance of Death - Villain's Doom", "Add 1 to Wound rolls."),
+            ("Dance of Death - Trickster's Grace", "Subtract 1 from Hit rolls that target this unit."),
+        ],
+        "Wracks": [
+            ("Experimental Enhancements - Five Attacks", "Non-Character models' melee weapons have Attacks 5."),
+            ("Experimental Enhancements - Four Attacks and Hazardous", "Non-Character models' melee weapons have Attacks 4 and [HAZARDOUS]."),
+        ],
+    }
+    selectable_abilities.extend(
+        {"name": name, "rules_text": rules_text, "implemented": True}
+        for name, rules_text in generated_combat_options.get(unit_data["name"], [])
+    )
     invulnerable_save = stats.get("invulnerable_save", "")
     target_keywords = [
         keyword.lower()
         for keyword in (
-            unit_data.get("keywords", []) + unit_data.get("faction_keywords", [])
+            display_keywords + unit_data.get("faction_keywords", [])
         )
     ]
     return {
@@ -998,19 +1179,19 @@ def normalize_unit(unit_data: dict[str, Any], faction_name: str) -> dict[str, An
         "models_data": unit_data.get("models", []),
         "faction_keywords": unit_data.get("faction_keywords", []),
         "keywords": target_keywords,
-        "display_keywords": unit_data.get("keywords", []),
-        "abilities": unit_data.get("abilities", []),
-        "selectable_abilities": unit_data.get("selectable_abilities", []),
+        "display_keywords": display_keywords,
+        "abilities": abilities,
+        "selectable_abilities": selectable_abilities,
         "wargear_abilities": unit_data.get("wargear_abilities", []),
-        "leader": unit_data.get("leader", {}),
-        "support": unit_data.get("support", {}),
+        "leader": leader,
+        "support": support,
         "wargear_options": unit_data.get("wargear_options", []),
         "loadout_options": unit_data.get("loadout_options", []),
         "strict_weapon_replacements": bool(unit_data.get("strict_weapon_replacements", False)),
-        "base_size": unit_data.get("base_size", ""),
+        "base_size": base_size,
         "stats": stats,
         "weapons": weapons,
-        "effects": extract_unit_effects(unit_data),
+        "effects": extract_unit_effects({**unit_data, "abilities": abilities}),
         "toughness": parse_numeric_value(stats.get("toughness", 0)),
         "wounds": parse_numeric_value(stats.get("wounds", 0)),
         "armor_save": parse_plus_value(stats.get("save", "0+")),

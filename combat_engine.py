@@ -5997,6 +5997,131 @@ class CombatSimulator:
                 {"Ignores Cover"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
             )
+        # Drukhari detachment effects that directly alter weapon keywords.
+        if (
+            "rain of cruelty" in attacker_active_ability_names
+            and bool(options.get("attacker_disembarked_from_transport", False))
+        ):
+            add_keywords_to_matching_weapons(
+                {"Ignores Cover"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+            add_keywords_to_matching_weapons(
+                {"Lance"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
+            )
+        if "dark harvest" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"LH"}, lambda candidate_weapon: candidate_weapon["range"].lower() == "melee"
+            )
+        if "skyborne annihilation" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"SH2" if self.unit_has_keyword(attacker_unit, "kabalite warriors") or self.unit_has_keyword(attacker_unit, "hand of archon") else "SH1"},
+                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
+            )
+        if "deadly debut" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"LH"}, lambda candidate_weapon: candidate_weapon["range"].lower() == "melee"
+            )
+        if "master nemesine" in attacker_active_ability_names:
+            temporary_weapon_keywords.update({"Anti-Beast 2+", "Anti-Monster 4+"})
+        if "sow fear and terror" in attacker_active_ability_names:
+            if self.unit_has_keyword(target_state, "infantry") or self.unit_has_keyword(target_state, "mounted"):
+                temporary_weapon_keywords.add("SH1")
+        if "show of strength" in attacker_active_ability_names:
+            if self.unit_has_keyword(target_state, "monster") or self.unit_has_keyword(target_state, "vehicle"):
+                temporary_weapon_keywords.add("LH")
+        if "malicious frenzy - lethal hits" in attacker_active_ability_names:
+            temporary_weapon_keywords.add("LH")
+        if "malicious frenzy - sustained hits 1" in attacker_active_ability_names:
+            temporary_weapon_keywords.add("SH1")
+        if "planned strikes" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"LH"}, lambda candidate_weapon: candidate_weapon["range"].lower() == "melee"
+            )
+        if "exacting cruelty" in attacker_active_ability_names and self.unit_has_keyword(attacker_unit, "wych cult") and not (
+            self.unit_has_keyword(target_state, "monster") or self.unit_has_keyword(target_state, "vehicle")
+        ):
+            add_keywords_to_matching_weapons(
+                {"LH"}, lambda candidate_weapon: candidate_weapon["range"].lower() == "melee"
+            )
+        if "contracted harvest" in attacker_active_ability_names and (
+            self.unit_has_keyword(attacker_unit, "blades for hire")
+            or self.unit_has_keyword(attacker_unit, "kabal")
+        ) and not (
+            self.unit_has_keyword(target_state, "monster") or self.unit_has_keyword(target_state, "vehicle")
+        ):
+            add_keywords_to_matching_weapons(
+                {"SH1"}, lambda candidate_weapon: candidate_weapon["range"].lower() != "melee"
+            )
+        if "contempt for rivals" in attacker_active_ability_names:
+            temporary_weapon_keywords.add("Precision")
+        if "killers from the dark spires" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Ignores Cover"}, lambda candidate_weapon: candidate_weapon["range"].lower() != "melee"
+            )
+        if "salting the wound" in attacker_active_ability_names and bool(options.get("defender_battleshocked", False)):
+            temporary_weapon_keywords.add("DW")
+        if "cruel amusement - ignores cover" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Ignores Cover"}, lambda candidate_weapon: self.weapon_name_contains(candidate_weapon, "shrieker cannon")
+            )
+        if "cruel amusement - precision" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Precision"}, lambda candidate_weapon: self.weapon_name_contains(candidate_weapon, "shrieker cannon")
+            )
+        if "cruel amusement - sustained hits 3" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Sustained Hits 3"}, lambda candidate_weapon: self.weapon_name_contains(candidate_weapon, "shrieker cannon")
+            )
+        if "archon of the poisoned tongue - lethal hits" in attacker_active_ability_names:
+            temporary_weapon_keywords.add("LH")
+        if "archon of the poisoned tongue - sustained hits 1" in attacker_active_ability_names:
+            temporary_weapon_keywords.add("SH1")
+        if "assassins' poisons (pain)" in attacker_active_ability_names:
+            excluded_poison_weapons = {"blast pistol", "blaster", "dark lance"}
+            add_keywords_to_matching_weapons(
+                {"LH", "Precision"},
+                lambda candidate_weapon: self.normalize_wargear_name(candidate_weapon["name"]).split(" - ", 1)[0]
+                not in excluded_poison_weapons,
+            )
+        if (
+            "decapitating strikes (pain)" in attacker_active_ability_names
+            and self.unit_has_keyword(target_state, "infantry")
+        ):
+            add_keywords_to_matching_weapons(
+                {"DW"}, lambda candidate_weapon: candidate_weapon["range"].lower() == "melee"
+            )
+        if "experimental enhancements - four attacks and hazardous" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Hazardous"}, lambda candidate_weapon: candidate_weapon["range"].lower() == "melee"
+            )
+        if self.target_state_has_ability(target_state, "Treacherous Illusion (Psychic)"):
+            add_keywords_to_matching_weapons(
+                {"Hazardous"}, lambda candidate_weapon: candidate_weapon["range"].lower() == "melee"
+            )
+        if "a perfect ambush" in attacker_active_ability_names:
+            temporary_weapon_keywords.update({"SH1", "Ignores Cover"})
+        if "a chink in their armour" in attacker_active_ability_names or attacker_enhancement_name == "A Chink in Their Armour":
+            add_keywords_to_matching_weapons(
+                {"LH"}, lambda candidate_weapon: candidate_weapon["range"].lower() != "melee"
+            )
+        if "frenzied devotion" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Hazardous"}, lambda candidate_weapon: candidate_weapon["range"].lower() == "melee"
+            )
+        if "transcendent celerity" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"Assault"}, lambda candidate_weapon: candidate_weapon["range"].lower() != "melee"
+            )
+        if "close-range shoot-out" in attacker_active_ability_names:
+            add_keywords_to_matching_weapons(
+                {"LH"}, lambda candidate_weapon: candidate_weapon["range"].lower() != "melee"
+            )
+        if "inhuman integration" in attacker_active_ability_names or attacker_enhancement_name == "Inhuman Integration":
+            temporary_weapon_keywords.add("SH1")
+        if "surging broodworship" in attacker_active_ability_names:
+            temporary_weapon_keywords.add("DW")
             target_has_cover = False
             target_state["has_cover"] = False
             for profile in target_state.get("profiles", []):
@@ -8044,6 +8169,63 @@ class CombatSimulator:
                 reroll_all_hit_rolls = True
             else:
                 reroll_hit_rolls_of_1 = True
+        if "hatred eternal (pain)" in attacker_active_ability_names:
+            reroll_all_hit_rolls = True
+        if (
+            self.ability_names_include(attacker_ability_names, "silent executioner")
+            and bool(options.get("target_below_starting_strength", False))
+        ):
+            reroll_all_hit_rolls = True
+            if bool(options.get("target_below_half_strength", False)):
+                reroll_all_wound_rolls = True
+        if (
+            self.ability_names_include(attacker_ability_names, "bloody spectacle")
+            and weapon["range"].lower() == "melee"
+            and self.unit_has_keyword(target_state, "character")
+        ):
+            reroll_all_hit_rolls = True
+            reroll_all_wound_rolls = True
+        if "dance of death - hero's prowess" in attacker_active_ability_names:
+            reroll_hit_rolls_of_1 = True
+        if "sadistic raiders (pain)" in attacker_active_ability_names:
+            if bool(options.get("defender_on_objective", False)):
+                reroll_all_wound_rolls = True
+            else:
+                reroll_wound_rolls_of_1 = True
+        if "splinter racks (pain)" in attacker_active_ability_names and any(
+            str(keyword).lower().startswith("anti-")
+            for keyword in weapon.get("raw_keywords", [])
+        ):
+            reroll_all_hit_rolls = True
+        if "winged strike (pain)" in attacker_active_ability_names and weapon["range"].lower() != "melee":
+            reroll_all_hit_rolls = True
+        if self.ability_names_include(attacker_ability_names, "eradicate the foe") and not bool(options.get("target_below_starting_strength", False)):
+            reroll_all_hit_rolls = True
+        if "killer reputation" in attacker_active_ability_names and (
+            self.unit_has_keyword(attacker_unit, "killer")
+            or self.unit_has_keyword(attacker_unit, "kelermorph")
+            or self.unit_has_keyword(attacker_unit, "locus")
+            or self.unit_has_keyword(attacker_unit, "reductus saboteur")
+            or self.unit_has_keyword(attacker_unit, "sanctus")
+        ):
+            reroll_hit_rolls_of_1 = True
+            reroll_wound_rolls_of_1 = True
+        if "vengeance for the martyr - standard" in attacker_active_ability_names:
+            reroll_hit_rolls_of_1 = True
+        if "vengeance for the martyr - revered leader" in attacker_active_ability_names:
+            reroll_all_hit_rolls = True
+        if "fanatical hail" in attacker_active_ability_names and weapon["range"].lower() != "melee":
+            reroll_all_hit_rolls = True
+        if "talons of the sire" in attacker_active_ability_names or attacker_enhancement_name == "Talons of the Sire":
+            reroll_wound_rolls_of_1 = True
+        if "symbiotic destruction" in attacker_active_ability_names:
+            reroll_wound_rolls_of_1 = True
+        if "hyperferocity" in attacker_active_ability_names:
+            reroll_wound_rolls_of_1 = True
+        if "hyperferocity - tyranids nearby" in attacker_active_ability_names:
+            reroll_all_wound_rolls = True
+        if ("assault commando" in attacker_active_ability_names or attacker_enhancement_name == "Assault Commando") and bool(options.get("attacker_disembarked_from_transport", False)):
+            reroll_all_hit_rolls = True
         if (
             self.ability_names_include(attacker_ability_names, "assured destruction")
             and weapon["range"].lower() != "melee"
@@ -10191,6 +10373,138 @@ class CombatSimulator:
             attacker_hit_modifier += 1
         if "call to murder" in attacker_active_ability_names and weapon["range"].lower() == "melee":
             melee_attack_bonus += 1
+        if (
+            self.ability_names_include(attacker_ability_names, "soul trap")
+            and weapon["range"].lower() == "melee"
+        ):
+            soul_trap_bonus = 2 if "soul trap - fed" in attacker_active_ability_names else 1
+            melee_attack_bonus += soul_trap_bonus
+            melee_strength_bonus += soul_trap_bonus
+        if "master of blades (pain)" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            attacker_outgoing_wound_modifier += 1
+        if "brides of death (pain)" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            melee_strength_bonus += 1
+            attacker_ap_modifier += 1
+        if "thrilling spectacle" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            if attacker_unit.get("name") == "Lelith Hesperax" and isinstance(weapon.get("attacks"), int):
+                melee_attack_bonus += max(0, 12 - int(weapon["attacks"]))
+        if self.ability_names_include(attacker_ability_names, "tormentors") and bool(options.get("defender_battleshocked", False)):
+            attacker_hit_modifier += 1
+        if "dance of death - villain's doom" in attacker_active_ability_names:
+            attacker_outgoing_wound_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "ground attack craft") and weapon["range"].lower() != "melee" and not self.unit_has_keyword(target_state, "fly"):
+            attacker_hit_modifier += 1
+        if "battlefield butchery (pain)" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            melee_attack_bonus += 1
+            melee_strength_bonus += 1
+        if "experimental enhancements - five attacks" in attacker_active_ability_names and weapon["range"].lower() == "melee" and isinstance(weapon.get("attacks"), int):
+            melee_attack_bonus += max(0, 5 - int(weapon["attacks"]))
+        if "experimental enhancements - four attacks and hazardous" in attacker_active_ability_names and weapon["range"].lower() == "melee" and isinstance(weapon.get("attacks"), int):
+            melee_attack_bonus += max(0, 4 - int(weapon["attacks"]))
+        if ("assassination edict" in attacker_active_ability_names or attacker_enhancement_name == "Assassination Edict") and self.unit_has_keyword(target_state, "character"):
+            attacker_hit_modifier += 1
+        if "coordinated trap" in attacker_active_ability_names:
+            attacker_outgoing_wound_modifier += 1
+        if ("denunciator of tyrants" in attacker_active_ability_names or attacker_enhancement_name == "Denunciator of Tyrants") and self.unit_has_keyword(target_state, "character"):
+            attacker_hit_modifier += 1
+            attacker_outgoing_wound_modifier += 1
+        if (
+            "frenzied devotion" in attacker_active_ability_names
+            and weapon["range"].lower() == "melee"
+            and not self.unit_has_keyword(attacker_unit, "character")
+        ):
+            melee_attack_bonus += 1
+            attacker_hit_modifier += 1
+        if (
+            "hypermorphic fury" in attacker_active_ability_names
+            and (
+                self.unit_has_keyword(attacker_unit, "aberrants")
+                or self.unit_has_keyword(attacker_unit, "biophagus")
+                or self.unit_has_keyword(attacker_unit, "purestrain genestealers")
+            )
+            and bool(options.get("charged_this_turn", False))
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_attack_bonus += 1
+        if "gene-twisted muscle" in attacker_active_ability_names and (
+            self.unit_has_keyword(target_state, "monster") or self.unit_has_keyword(target_state, "vehicle")
+        ):
+            attacker_outgoing_wound_modifier += 1
+        if "integrated tactics" in attacker_active_ability_names and weapon["range"].lower() != "melee":
+            attacker_hit_modifier += 1
+        if ("martial espionage" in attacker_active_ability_names or attacker_enhancement_name == "Martial Espionage") and weapon["range"].lower() != "melee":
+            attacker_ap_modifier += 1
+        if "psionic parasitism" in attacker_active_ability_names or "catalyst (aura)" in attacker_active_ability_names:
+            attacker_hit_modifier += 1
+        if "avenge the star children" in attacker_active_ability_names:
+            attacker_hit_modifier += 1
+            attacker_outgoing_wound_modifier += 1
+        if ("gene-tailored toxins" in attacker_active_ability_names or attacker_enhancement_name == "Gene-Tailored Toxins") and attacker_unit["name"] == attacker_enhancement_bearer_name:
+            if weapon["range"].lower() == "melee":
+                melee_damage_bonus += 1
+            else:
+                ranged_damage_bonus += 1
+        if ("contraband munitions" in attacker_active_ability_names or attacker_enhancement_name == "Contraband Munitions") and weapon["range"].lower() != "melee":
+            ranged_strength_bonus += 2
+        if ("mark of the star children" in attacker_active_ability_names or attacker_enhancement_name == "Mark of the Star Children") and self.unit_has_keyword(attacker_unit, "purestrain genestealers") and weapon["range"].lower() == "melee":
+            melee_strength_bonus += 1
+        if (
+            attacker_enhancement_name == "Biomorph Adaptation"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+            and weapon["range"].lower() == "melee"
+        ):
+            attacker_ap_modifier += 1
+            melee_damage_bonus += 1
+        if (
+            attacker_enhancement_name == "Vanguard Tyrant"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+            and weapon["range"].lower() == "melee"
+        ):
+            melee_strength_bonus += 1
+            attacker_ap_modifier += 1
+        if "adrenalight" in attacker_active_ability_names and self.unit_has_keyword(attacker_unit, "wych cult") and weapon["range"].lower() == "melee":
+            melee_attack_bonus += 1
+        if "serpentin" in attacker_active_ability_names and self.unit_has_keyword(attacker_unit, "wych cult") and weapon["range"].lower() == "melee":
+            attacker_hit_modifier += 1
+        if "grave lotus" in attacker_active_ability_names and self.unit_has_keyword(attacker_unit, "wych cult") and weapon["range"].lower() == "melee":
+            melee_strength_bonus += 1
+        if "splintermind" in attacker_active_ability_names and self.unit_has_keyword(attacker_unit, "wych cult") and weapon["range"].lower() != "melee":
+            attacker_hit_modifier += 1
+        if "sadistic fulcrum" in attacker_active_ability_names:
+            reroll_all_hit_rolls = True
+        if "callous competition - winning" in attacker_active_ability_names:
+            reroll_hit_rolls_of_1 = True
+        if "callous competition - losing" in attacker_active_ability_names:
+            reroll_hit_rolls_of_1 = True
+            reroll_wound_rolls_of_1 = True
+        if "instinctive spite" in attacker_active_ability_names and bool(options.get("target_below_half_strength", False)):
+            attacker_hit_modifier += 1
+        if "instinctive spite - empowered" in attacker_active_ability_names and bool(options.get("target_below_half_strength", False)):
+            attacker_hit_modifier += 1
+            attacker_outgoing_wound_modifier += 1
+        if "taken alive" in attacker_active_ability_names:
+            attacker_hit_modifier += 1
+        if "making a point" in attacker_active_ability_names and weapon["range"].lower() != "melee":
+            attacker_hit_modifier += 1
+            attacker_ap_modifier += 1
+        if (
+            attacker_enhancement_name == "Eye of Spite"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+            and weapon["range"].lower() == "melee"
+        ):
+            attacker_ap_modifier += 2 if "eye of spite - empowered" in attacker_active_ability_names else 1
+        if (
+            attacker_enhancement_name == "Morghenna's Curse"
+            and attacker_unit["name"] == attacker_enhancement_bearer_name
+            and weapon["range"].lower() == "melee"
+        ):
+            attacker_ap_modifier += 1
+            melee_damage_bonus += 1
+        if "deadly debut" in attacker_active_ability_names and self.unit_has_keyword(attacker_unit, "wyches"):
+            attacker_ap_modifier += 1
+        if "prioritised victim" in attacker_active_ability_names and self.unit_has_keyword(target_state, "character"):
+            reroll_hit_rolls_of_1 = True
+            reroll_wound_rolls_of_1 = True
         if attacker_enhancement_name == "Bane-forged Weapons":
             if weapon["range"].lower() == "melee":
                 melee_strength_bonus += 1
@@ -10606,6 +10920,12 @@ class CombatSimulator:
             target_toughness_bonus += 1
         if "enhanced warriors" in defender_active_ability_names:
             target_toughness_bonus += 1
+        if ("mark of the star children" in defender_active_ability_names or defender_enhancement_name == "Mark of the Star Children") and self.unit_has_keyword(target_state, "purestrain genestealers"):
+            target_toughness_bonus += 1
+        if "painbringer" in defender_active_ability_names and self.unit_has_keyword(target_state, "wych cult"):
+            target_toughness_bonus += 1
+        if defender_enhancement_name in {"Master Artisan", "Hyperstim Trafficker"}:
+            target_toughness_bonus += 1
         if (
             "nurgle's gift (aura)" in attacker_active_ability_names
             or "reverberant rancidity" in attacker_active_ability_names
@@ -10643,6 +10963,17 @@ class CombatSimulator:
             else ranged_strength_bonus
         )
         target_toughness_for_defense = int(target_state.get("toughness", 0)) + target_toughness_bonus
+        if (
+            (
+                ("stitchflesh abominations" in defender_active_ability_names and self.unit_has_keyword(target_state, "haemonculus covens"))
+                or ("darkest artifice" in defender_active_ability_names and (
+                    self.unit_has_keyword(target_state, "cronos") or self.unit_has_keyword(target_state, "talos")
+                ))
+                or defender_enhancement_name == "Gnarlskin Experimentor"
+            )
+            and effective_attack_strength_for_defense > target_toughness_for_defense
+        ):
+            target_incoming_wound_modifier -= 1
         if (
             bool(options.get("defender_flawless_construction_active", False))
             and effective_attack_strength_for_defense > target_toughness_for_defense
@@ -10793,6 +11124,14 @@ class CombatSimulator:
             attacker_hit_modifier -= 1
         if "lightning-fast reactions" in defender_active_ability_names:
             attacker_hit_modifier -= 1
+        if "bio-horror revelation" in defender_active_ability_names or "starfall shells" in defender_active_ability_names:
+            attacker_hit_modifier -= 1
+        if "dance of death - trickster's grace" in defender_active_ability_names:
+            attacker_hit_modifier -= 1
+        if "agonising suppression (pain)" in defender_active_ability_names:
+            attacker_hit_modifier -= 1
+        if "fighting shadows" in defender_active_ability_names or "murderer's circus" in defender_active_ability_names:
+            attacker_hit_modifier -= 1
         if "forewarned" in defender_active_ability_names:
             attacker_hit_modifier -= 1
             target_incoming_wound_modifier -= 1
@@ -10910,6 +11249,10 @@ class CombatSimulator:
         ):
             target_armor_save_modifier += 1
         if "empyric dislocation" in defender_active_ability_names:
+            target_ap_modifier -= 1
+        if "connoisseurs of pain" in defender_active_ability_names:
+            target_ap_modifier -= 1
+        if "slunk from the underbelly" in defender_active_ability_names and weapon["range"].lower() != "melee":
             target_ap_modifier -= 1
         if bool(options.get("defender_masters_camouflage_extra_cover_active", False)):
             target_armor_save_modifier -= 1
@@ -11364,6 +11707,14 @@ class CombatSimulator:
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 3)
         if "dark blessings" in defender_active_ability_names:
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 3)
+        if "deft manoeuvring" in defender_active_ability_names or (("mark of the star children" in defender_active_ability_names or defender_enhancement_name == "Mark of the Star Children") and self.unit_has_keyword(target_state, "purestrain genestealers")):
+            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 4)
+        if "thrilling spectacle" in defender_active_ability_names and target_state.get("name") == "Lelith Hesperax":
+            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 3)
+        if "night shield" in defender_active_ability_names:
+            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 4)
+        if "acrobatic display" in defender_active_ability_names or defender_enhancement_name == "Elixir of the Corpse Courts":
+            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 5)
         if defender_enhancement_name == "Sanctuary":
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 5)
         if (
@@ -11444,6 +11795,10 @@ class CombatSimulator:
             target_damage_modifier -= 1
         if "implacable guardians" in defender_active_ability_names:
             target_damage_modifier -= 1
+        if "devoted crew" in defender_active_ability_names:
+            target_damage_modifier -= 1
+        if "insensible to pain" in defender_active_ability_names:
+            target_damage_modifier -= 1
         target_damage_max = None
         if "bastion plate" in defender_active_ability_names:
             target_damage_max = 0
@@ -11497,7 +11852,20 @@ class CombatSimulator:
         if "fate inescapable" in attacker_active_ability_names and weapon["range"].lower() != "melee":
             critical_wound_ap_modifier += 1
 
+        if "nowhere to hide (pain)" in attacker_active_ability_names:
+            target_has_cover = False
+            target_state["has_cover"] = False
+            for profile in target_state.get("profiles", []):
+                profile["has_cover"] = False
+
         target_has_stealth = False
+        if defender_enhancement_name in {"Phantasmal Smoke", "Reaper's Cowl"} and weapon["range"].lower() != "melee":
+            target_has_stealth = True
+            if defender_enhancement_name == "Phantasmal Smoke":
+                target_has_cover = True
+                target_state["has_cover"] = True
+                for profile in target_state.get("profiles", []):
+                    profile["has_cover"] = True
         if "storm of darkness" in defender_active_ability_names and weapon["range"].lower() != "melee":
             target_has_stealth = True
         if (
@@ -11814,6 +12182,8 @@ class CombatSimulator:
             ),
             "reroll_damage_rolls": (
                 (
+                    ("inspired to greatness" in attacker_active_ability_names or attacker_enhancement_name == "Inspired to Greatness")
+                    or
                     bool(options.get("attacker_threat_cogitation_targeters_active", False))
                     or bool(options.get("attacker_titan_killer_active", False))
                     or (
@@ -11892,6 +12262,8 @@ class CombatSimulator:
                         and weapon["range"].lower() != "melee" else 6,
                         5 if bool(options.get("attacker_targeting_override_active", False)) else 6,
                         5 if "appointed hour" in attacker_active_ability_names else 6,
+                        5 if "tailored toxins" in attacker_active_ability_names else 6,
+                        5 if "primed and readied" in attacker_active_ability_names else 6,
                         5 if "drive them out!" in attacker_active_ability_names else 6,
                         5 if self.ability_names_include(attacker_or_attached_ability_names, "inspirational exemplar")
                         and weapon["range"].lower() == "melee" else 6,
@@ -12026,6 +12398,7 @@ class CombatSimulator:
                 and weapon["range"].lower() != "melee"
             ),
             "target_has_stealth": target_has_stealth,
+            "target_has_cover": target_has_cover,
             "target_damage_modifier": target_damage_modifier,
             "target_damage_halved": (
                 "formidably resilient" in defender_active_ability_names

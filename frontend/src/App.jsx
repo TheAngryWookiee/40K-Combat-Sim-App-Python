@@ -1742,6 +1742,64 @@ function isAeldariDetachment(detachment) {
   return AELDARI_DETACHMENT_NAMES.has(detachment?.name)
 }
 
+const DRUKHARI_DETACHMENT_NAMES = new Set([
+  'Realspace Raiders',
+  'Skysplinter Assault',
+  'Spectacle of Spite',
+  'Covenite Coterie',
+  'Kabalite Cartel',
+  "Reaper's Wager",
+  'Exhibition of Slaughter',
+  'Kabalite Agonysts',
+  'Tools of Torment',
+])
+
+function isDrukhariDetachment(detachment) {
+  return DRUKHARI_DETACHMENT_NAMES.has(detachment?.name)
+}
+
+const DRUKHARI_COMBAT_RULE_NAMES = new Set([
+  'Eye of Spite', 'Phantasmal Smoke', 'Sadistic Fulcrum', "Morghenna's Curse",
+  'Master Nemesine', 'Master Artisan', "Reaper's Cowl", 'Hyperstim Trafficker',
+  'Contempt for Rivals', 'Gnarlskin Experimentor', 'Elixir of the Corpse Courts',
+  'Insensible to Pain', 'Fighting Shadows', 'Instinctive Spite', 'Dark Harvest',
+  'Skyborne Annihilation', 'Night Shield', 'Deadly Debut', 'Acrobatic Display',
+  'Distillers of Fear', 'Connoisseurs of Pain', 'Taken Alive', 'Tailored Toxins',
+  'Making a Point', 'Malicious Frenzy', "Murderer's Circus", 'Planned Strikes',
+  'Prioritised Victim', 'Killers from the Dark Spires', 'Salting the Wound',
+])
+
+function isImplementedDrukhariCombatRule(rule) {
+  return Boolean(rule?.implemented) || DRUKHARI_COMBAT_RULE_NAMES.has(rule?.name)
+}
+
+const GENESTEALER_CULTS_DETACHMENT_NAMES = new Set([
+  'Host of Ascension', 'Xenocreed Congregation', 'Biosanctic Broodsurge',
+  'Outlander Claw', 'Brood Brother Auxilia', 'Final Day',
+  'Heroes of the Uprising', 'Purestrain Broodswarm', 'Xenocult Masses',
+])
+
+const GENESTEALER_CULTS_COMBAT_RULE_NAMES = new Set([
+  'A Chink in Their Armour', 'Assassination Edict', 'Coordinated Trap',
+  'Primed and Readied', 'Denunciator of Tyrants', 'Frenzied Devotion',
+  'Transcendent Celerity', 'Biomorph Adaptation', 'Gene-twisted Muscle',
+  'Bio-horror Revelation', 'Assault Commando', 'Devoted Crew',
+  'Close-range Shoot-out', 'Deft Manoeuvring', 'Martial Espionage',
+  'Symbiotic Destruction', 'Vanguard Tyrant', 'Vengeance for the Martyr!',
+  'Inhuman Integration', 'Hyperferocity', 'Avenge the Star Children',
+  'Gene-Tailored Toxins', 'Contraband Munitions', 'Surging Broodworship',
+  'Mark of the Star Children', 'Talons of the Sire', 'Inspired to Greatness',
+  'Fanatical Hail', 'Slunk from the Underbelly',
+])
+
+function isGenestealerCultsDetachment(detachment) {
+  return GENESTEALER_CULTS_DETACHMENT_NAMES.has(detachment?.name)
+}
+
+function isImplementedGenestealerCultsCombatRule(rule) {
+  return Boolean(rule?.implemented) || GENESTEALER_CULTS_COMBAT_RULE_NAMES.has(rule?.name)
+}
+
 function unitIsEpicHero(unit) {
   return (unit?.keywords || []).some((keyword) => String(keyword).toLowerCase() === 'epic hero')
 }
@@ -2236,8 +2294,14 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
     ))
   }
 
-  if (isAeldariDetachment(detachment)) {
-    return (detachment.enhancements || []).filter((enhancement) => Boolean(enhancement.implemented))
+  if (isAeldariDetachment(detachment) || isDrukhariDetachment(detachment) || isGenestealerCultsDetachment(detachment)) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      isGenestealerCultsDetachment(detachment)
+        ? isImplementedGenestealerCultsCombatRule(enhancement)
+        : isDrukhariDetachment(detachment)
+        ? isImplementedDrukhariCombatRule(enhancement)
+        : Boolean(enhancement.implemented)
+    ))
   }
 
   return []
@@ -2437,8 +2501,14 @@ function getDefenderEnhancementOptions(detachment, enhancementBearerUnit) {
     )
   }
 
-  if (isAeldariDetachment(detachment)) {
-    return (detachment.enhancements || []).filter((enhancement) => Boolean(enhancement.implemented))
+  if (isAeldariDetachment(detachment) || isDrukhariDetachment(detachment) || isGenestealerCultsDetachment(detachment)) {
+    return (detachment.enhancements || []).filter((enhancement) => (
+      isGenestealerCultsDetachment(detachment)
+        ? isImplementedGenestealerCultsCombatRule(enhancement)
+        : isDrukhariDetachment(detachment)
+        ? isImplementedDrukhariCombatRule(enhancement)
+        : Boolean(enhancement.implemented)
+    ))
   }
 
   return []
@@ -2449,7 +2519,7 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
     return []
   }
 
-  return (detachment.stratagems || []).filter((stratagem) => {
+  const stratagems = (detachment.stratagems || []).filter((stratagem) => {
     if (detachment.name === UNFORGIVEN_TASK_FORCE) {
       if (stratagem.name === 'Fire Discipline') {
         return isRangedWeapon
@@ -2856,11 +2926,25 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       return stratagem.name === 'Avenge the Masters!' && unitHasKeyword(unit, 'damned')
     }
 
-    if (isAeldariDetachment(detachment)) {
-      return Boolean(stratagem.implemented)
+    if (isAeldariDetachment(detachment) || isDrukhariDetachment(detachment) || isGenestealerCultsDetachment(detachment)) {
+      return isGenestealerCultsDetachment(detachment)
+        ? isImplementedGenestealerCultsCombatRule(stratagem)
+        : isDrukhariDetachment(detachment)
+        ? isImplementedDrukhariCombatRule(stratagem)
+        : Boolean(stratagem.implemented)
     }
 
     return false
+  })
+
+  return stratagems.flatMap((stratagem) => {
+    if (stratagem.name !== 'Vengeance for the Martyr!') {
+      return [stratagem]
+    }
+    return [
+      { ...stratagem, name: 'Vengeance for the Martyr - Standard' },
+      { ...stratagem, name: 'Vengeance for the Martyr - Revered Leader' },
+    ]
   })
 }
 
@@ -3124,8 +3208,12 @@ function getDefenderStratagemOptions(detachment, selectedWeapon, unit) {
       return stratagem.name === 'Scriptural Prognosis' && unitHasKeyword(unit, 'tech-priest')
     }
 
-    if (isAeldariDetachment(detachment)) {
-      return Boolean(stratagem.implemented)
+    if (isAeldariDetachment(detachment) || isDrukhariDetachment(detachment) || isGenestealerCultsDetachment(detachment)) {
+      return isGenestealerCultsDetachment(detachment)
+        ? isImplementedGenestealerCultsCombatRule(stratagem)
+        : isDrukhariDetachment(detachment)
+        ? isImplementedDrukhariCombatRule(stratagem)
+        : Boolean(stratagem.implemented)
     }
 
     return false
@@ -6638,7 +6726,6 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'doom (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'faolchu': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
   'fire support': ({ selectedWeapons }) => selectedWeapons.length > 0,
-  'fury of the void (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'guide (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'hallucinogen grenades': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
   'hand of asuryan': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'bloody twins')),
@@ -8366,6 +8453,82 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   ),
   'seething hatred - hit roll': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'seething hatred - wound roll': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'rain of cruelty': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'dark harvest': ({ phaseId }) => phaseId === 'fight',
+  'skyborne annihilation': ({ phaseId }) => phaseId === 'shooting',
+  'adrenalight': ({ phaseId }) => phaseId === 'fight',
+  'serpentin': ({ phaseId }) => phaseId === 'fight',
+  'painbringer': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'grave lotus': ({ phaseId }) => phaseId === 'fight',
+  'splintermind': ({ phaseId }) => phaseId === 'shooting',
+  'stitchflesh abominations': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'trophy hunters': ({ selectedWeapons, targetUnit }) => selectedWeapons.length > 0 && unitHasKeyword(targetUnit, 'character'),
+  'sow fear and terror': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'show of strength': ({ selectedWeapons, targetUnit }) => selectedWeapons.length > 0 && (unitHasKeyword(targetUnit, 'monster') || unitHasKeyword(targetUnit, 'vehicle')),
+  'callous competition - winning': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'callous competition - losing': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'exacting cruelty': ({ phaseId }) => phaseId === 'fight',
+  'contracted harvest': ({ phaseId }) => phaseId === 'shooting',
+  'darkest artifice': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'hatred eternal (pain)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'soul trap - fed': ({ phaseId }) => phaseId === 'fight',
+  'cruel amusement - ignores cover': ({ phaseId }) => phaseId === 'shooting',
+  'cruel amusement - precision': ({ phaseId }) => phaseId === 'shooting',
+  'cruel amusement - sustained hits 3': ({ phaseId }) => phaseId === 'shooting',
+  'master of blades (pain)': ({ phaseId }) => phaseId === 'fight',
+  'fury of the void (psychic)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'archon of the poisoned tongue - lethal hits': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'archon of the poisoned tongue - sustained hits 1': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'brides of death (pain)': ({ phaseId }) => phaseId === 'fight',
+  'thrilling spectacle': ({ phaseId, side }) => phaseId === 'fight' && ['attacker', 'defender'].includes(side),
+  "assassins' poisons (pain)": ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'decapitating strikes (pain)': ({ phaseId, targetUnit }) => phaseId === 'fight' && unitHasKeyword(targetUnit, 'infantry'),
+  'sadistic raiders (pain)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'splinter racks (pain)': ({ phaseId }) => phaseId === 'shooting',
+  'winged strike (pain)': ({ phaseId }) => phaseId === 'shooting',
+  "dance of death - hero's prowess": ({ phaseId }) => phaseId === 'fight',
+  "dance of death - villain's doom": ({ phaseId }) => phaseId === 'fight',
+  "dance of death - trickster's grace": ({ phaseId, side }) => phaseId === 'fight' && side === 'defender',
+  'nowhere to hide (pain)': ({ phaseId }) => phaseId === 'shooting',
+  'experimental enhancements - five attacks': ({ phaseId }) => phaseId === 'fight',
+  'experimental enhancements - four attacks and hazardous': ({ phaseId }) => phaseId === 'fight',
+  'battlefield butchery (pain)': ({ phaseId }) => phaseId === 'fight',
+  'agonising suppression (pain)': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'a perfect ambush': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'a chink in their armour': ({ phaseId }) => phaseId === 'shooting',
+  'assassination edict': ({ selectedWeapons, targetUnit }) => selectedWeapons.length > 0 && unitHasKeyword(targetUnit, 'character'),
+  'coordinated trap': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'primed and readied': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'denunciator of tyrants': ({ selectedWeapons, targetUnit }) => selectedWeapons.length > 0 && unitHasKeyword(targetUnit, 'character'),
+  'frenzied devotion': ({ phaseId }) => phaseId === 'fight',
+  'transcendent celerity': ({ phaseId }) => phaseId === 'shooting',
+  'hypermorphic fury': ({ phaseId }) => phaseId === 'fight',
+  'gene-twisted muscle': ({ selectedWeapons, targetUnit }) => selectedWeapons.length > 0 && (unitHasKeyword(targetUnit, 'monster') || unitHasKeyword(targetUnit, 'vehicle')),
+  'bio-horror revelation': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'assault commando': ({ phaseId }) => phaseId === 'shooting',
+  'devoted crew': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'close-range shoot-out': ({ phaseId }) => phaseId === 'shooting',
+  'deft manoeuvring': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'integrated tactics': ({ phaseId }) => phaseId === 'shooting',
+  'martial espionage': ({ phaseId }) => phaseId === 'shooting',
+  'symbiotic destruction': ({ phaseId }) => phaseId === 'shooting',
+  'psionic parasitism': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'catalyst (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'inhuman integration': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'hyperferocity': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'hyperferocity - tyranids nearby': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'avenge the star children': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'vengeance for the martyr - standard': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'vengeance for the martyr - revered leader': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'killer reputation': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'gene-tailored toxins': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'contraband munitions': ({ phaseId }) => phaseId === 'shooting',
+  'surging broodworship': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'mark of the star children': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'talons of the sire': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'inspired to greatness': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'fanatical hail': ({ phaseId }) => phaseId === 'shooting',
+  'slunk from the underbelly': ({ phaseId, side }) => phaseId === 'shooting' && side === 'defender',
 }
 
 const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
@@ -8385,6 +8548,13 @@ const SUPPORTED_PASSIVE_COMBAT_ABILITIES = new Set([
   'serpent shield',
   'skyhunter',
   'storm of blades',
+  'soul trap',
+  'silent executioner',
+  'bloody spectacle',
+  'treacherous illusion (psychic)',
+  'tormentors',
+  'ground attack craft',
+  'eradicate the foe',
   'storm of silence',
   'swift demise',
   'wave serpent shield',
