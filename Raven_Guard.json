@@ -116,12 +116,7 @@
       }
     ],
     "category": "Adeptus Astartes",
-    "detachment_filters": {
-      "allow_names": [
-        "Shadowmark Talon"
-      ],
-      "deny_names": []
-    }
+    "detachment_filters": {}
   },
   "units": [
     {

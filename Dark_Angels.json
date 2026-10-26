@@ -372,14 +372,7 @@
         "implemented": false
       }
     ],
-    "detachment_filters": {
-      "allow_names": [
-        "Darkflight Pursuit",
-        "Inner Circle Task Force",
-        "Wrath of the Rock"
-      ],
-      "deny_names": []
-    }
+    "detachment_filters": {}
   },
   "units": [
     {

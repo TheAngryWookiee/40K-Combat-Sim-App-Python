@@ -104,12 +104,7 @@
         ]
       }
     ],
-    "detachment_filters": {
-      "allow_names": [
-        "Marshal's Household"
-      ],
-      "deny_names": []
-    },
+    "detachment_filters": {},
     "unit_filters": {
       "deny_keywords": [
         "Psyker"

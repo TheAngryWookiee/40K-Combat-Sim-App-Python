@@ -161,12 +161,7 @@
         ]
       }
     ],
-    "detachment_filters": {
-      "allow_names": [
-        "Black Spear Task Force"
-      ],
-      "deny_names": []
-    },
+    "detachment_filters": {},
     "unit_filters": {
       "deny_names": [
         "Scout Squad",

@@ -14,6 +14,7 @@ EXPECTED = {
     "Dark Angels": ["Darkflight Pursuit", "Inner Circle Task Force", "Wrath of the Rock"],
     "Deathwatch": ["Black Spear Task Force"],
     "Imperial Fists": ["Ceramite Sentinels"],
+    "Iron Hands": [],
     "Raven Guard": ["Shadowmark Talon"],
     "Salamanders": ["Forgefather's Seekers"],
     "Ultramarines": ["Blade of Ultramar"],
@@ -21,16 +22,29 @@ EXPECTED = {
     "Space Wolves": ["Champions of Fenris", "Saga of the Beastslayer", "Saga of the Great Wolf"],
 }
 
+BASE_DETACHMENTS = EXPECTED["Adeptus Astartes"]
+
 
 class SpaceMarineDetachmentRosterTests(unittest.TestCase):
     def test_loaded_factions_expose_only_current_detachments(self):
         factions = load_factions()
         for faction_name, expected_names in EXPECTED.items():
             with self.subTest(faction=faction_name):
-                self.assertEqual(
-                    [detachment["name"] for detachment in factions[faction_name]["detachments"]],
-                    expected_names,
-                )
+                loaded_names = [detachment["name"] for detachment in factions[faction_name]["detachments"]]
+                if faction_name == "Adeptus Astartes":
+                    self.assertEqual(loaded_names, expected_names)
+                else:
+                    self.assertEqual(loaded_names, [*BASE_DETACHMENTS, *expected_names])
+
+    def test_chapters_do_not_filter_out_base_detachments(self):
+        for file_name in (
+            "Black_Templars.json", "Blood_Angels.json", "Dark_Angels.json", "Deathwatch.json",
+            "Imperial_Fists.json", "Iron_Hands.json", "Raven_Guard.json", "Salamanders.json",
+            "Ultramarines.json", "White_Scars.json", "Space_Wolves.json",
+        ):
+            with self.subTest(file=file_name):
+                data = json.loads(Path(file_name).read_text(encoding="utf-8"))
+                self.assertEqual(data["faction"].get("detachment_filters"), {})
 
     def test_space_wolves_detachment_payloads(self):
         data = json.loads(Path("Space_Wolves.json").read_text(encoding="utf-8"))

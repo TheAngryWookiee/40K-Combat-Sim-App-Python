@@ -116,12 +116,7 @@
       }
     ],
     "category": "Adeptus Astartes",
-    "detachment_filters": {
-      "allow_names": [
-        "Spearpoint Task Force"
-      ],
-      "deny_names": []
-    }
+    "detachment_filters": {}
   },
   "units": [
     {

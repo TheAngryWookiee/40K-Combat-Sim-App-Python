@@ -274,14 +274,7 @@
       }
     ],
     "category": "Adeptus Astartes",
-    "detachment_filters": {
-      "allow_names": [
-        "Champions of Fenris",
-        "Saga of the Beastslayer",
-        "Saga of the Great Wolf"
-      ],
-      "deny_names": []
-    }
+    "detachment_filters": {}
   },
   "units": [
     {

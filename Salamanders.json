@@ -116,12 +116,7 @@
       }
     ],
     "category": "Adeptus Astartes",
-    "detachment_filters": {
-      "allow_names": [
-        "Forgefather's Seekers"
-      ],
-      "deny_names": []
-    }
+    "detachment_filters": {}
   },
   "units": [
     {

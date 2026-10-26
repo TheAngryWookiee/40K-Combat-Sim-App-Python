@@ -6,7 +6,8 @@
     "chapter_rules": [],
     "derived_keywords": [],
     "detachments": [],
-    "category": "Adeptus Astartes"
+    "category": "Adeptus Astartes",
+    "detachment_filters": {}
   },
   "units": [
     {

@@ -132,12 +132,7 @@
     ],
     "army_rules": [],
     "category": "Adeptus Astartes",
-    "detachment_filters": {
-      "allow_names": [
-        "Blade of Ultramar"
-      ],
-      "deny_names": []
-    }
+    "detachment_filters": {}
   },
   "units": [
     {
