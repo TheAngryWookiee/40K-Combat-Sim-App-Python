@@ -6162,7 +6162,7 @@ function buildEffectivenessScores({
   const offensiveReliability = offensiveConsistency * (Math.max(damagePressure, killPressure) / 100)
   const defensiveReliability = defensiveConsistency * (Math.max(damageResistance, survivalChance) / 100)
   const offenseScore = clamp(
-    (0.5 * damagePressure) + (0.35 * killPressure) + (0.15 * offensiveReliability),
+    (0.7 * damagePressure) + (0.2 * killPressure) + (0.1 * offensiveReliability),
     0,
     100,
   )
@@ -31302,7 +31302,8 @@ function App() {
                 <p>
                   Combat Effectiveness Score is a 0-100 offensive rating for a matchup. It blends
                   average damage into the target's wound pool, kill percentage, and result
-                  consistency, so high scores mean the attack is both dangerous and reliable.
+                  consistency. Damage pressure is weighted most heavily, so attacks that remove a
+                  large share of the target's wounds still rate highly even without a frequent kill.
                 </p>
               </article>
               <article className="static-info-block">
