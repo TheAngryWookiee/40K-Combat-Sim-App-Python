@@ -33,6 +33,39 @@
     ],
     "chapter_rules": [],
     "derived_keywords": [],
+    "allies": [
+      {
+        "faction": "Astra Militarum",
+        "units": [
+          "Aegis Defence Line", "Armoured Sentinels", "Artillery Team",
+          "Attilan Rough Riders", "Baneblade", "Banehammer", "Banesword",
+          "Basilisk", "Cadian Castellan", "Cadian Command Squad",
+          "Cadian Heavy Weapons Squad", "Cadian Recon Squad",
+          "Cadian Shock Troops", "Catachan Command Squad",
+          "Catachan Heavy Weapons Squad", "Catachan Jungle Fighters",
+          "Centaur RSV", "Chimera", "Cyclops Demolition Vehicle",
+          "Death Korps of Krieg", "Death Riders", "Deathstrike", "Doomhammer",
+          "Field Ordnance Battery", "Hellhammer", "Hellhound", "Hippogriff AFV",
+          "Hydra", "Kasrkin", "Krieg Combat Engineers", "Krieg Command Squad",
+          "Krieg Heavy Weapons Squad", "Leman Russ Battle Tank",
+          "Leman Russ Commander", "Leman Russ Demolisher", "Leman Russ Eradicator",
+          "Leman Russ Executioner", "Leman Russ Exterminator", "Leman Russ Punisher",
+          "Leman Russ Vanquisher", "Manticore", "Primaris Psyker",
+          "Rogal Dorn Battle Tank", "Rogal Dorn Commander", "Scout Sentinels",
+          "Shadowsword", "Stormlord", "Stormsword", "Taurox", "Taurox Prime",
+          "Valkyrie", "Wyvern"
+        ]
+      },
+      {
+        "faction": "Tyranids",
+        "units": [
+          "Deathleaper", "Gargoyles", "Lictor", "Mawloc", "Neurolictor",
+          "Parasite of Mortrex", "Raveners", "Trygon", "Tyrannocyte",
+          "The Red Terror", "Von Ryan's Leapers", "Winged Hive Tyrant",
+          "Winged Tyranid Prime"
+        ]
+      }
+    ],
     "detachments": [
       {
         "name": "Host of Ascension",
@@ -1996,6 +2029,1301 @@
       "leader": [],
       "support": [],
       "implemented": false
+    },
+    {
+      "name": "Aberrants",
+      "base_size": "32mm",
+      "stats": {
+        "move": "6\"",
+        "toughness": 6,
+        "save": "5+",
+        "wounds": 3,
+        "leadership": "7+",
+        "objective_control": 1
+      },
+      "core_abilities": [
+        "Deep Strike",
+        "Feel No Pain 5+",
+        "Cult Ambush"
+      ],
+      "army_rules": [
+        "Cult Ambush"
+      ],
+      "abilities": [
+        {
+          "name": "Hulking Bodyguards",
+          "text": "While a CHARACTER is leading this unit, each time an attack targets this unit, if the Strength characteristic of that attack is greater than the Toughness characteristic of this unit, subtract 1 from the Wound roll."
+        }
+      ],
+      "unit_composition": [
+        "1 Aberrant Hypermorph",
+        "4-9 Aberrants"
+      ],
+      "starting_equipment": [
+        "Aberrant weapons"
+      ],
+      "points": {
+        "5 models (1st-2nd unit)": 140,
+        "10 models (1st-2nd unit)": 280,
+        "5 models (3rd+ unit)": 150,
+        "10 models (3rd+ unit)": 290
+      },
+      "weapons": {
+        "ranged": [],
+        "melee": [
+          {
+            "name": "Aberrant weapons",
+            "range": "Melee",
+            "attacks": 3,
+            "skill": "3+",
+            "strength": 7,
+            "ap": -2,
+            "damage": 2,
+            "abilities": []
+          }
+        ]
+      },
+      "wargear_options": [],
+      "keywords": [
+        "INFANTRY",
+        "GREAT DEVOURER",
+        "ABERRANTS"
+      ],
+      "faction_keywords": [
+        "GENESTEALER CULTS"
+      ],
+      "leader": []
+    },
+    {
+      "name": "Achilles Ridgerunners",
+      "base_size": "120x92mm",
+      "stats": {
+        "move": "12\"",
+        "toughness": 7,
+        "save": "3+",
+        "wounds": 8,
+        "leadership": "7+",
+        "objective_control": 3
+      },
+      "core_abilities": [
+        "Deadly Demise 1",
+        "Scouts 9\""
+      ],
+      "army_rules": [],
+      "abilities": [
+        {
+          "name": "Crossfire",
+          "text": "In your Shooting phase, after this unit has shot, select one enemy unit hit by one or more of these attacks. Until the end of the turn, each time a friendly GENESTEALER CULTS unit makes an attack that targets that enemy unit, improve the Armour Penetration characteristic of that attack by 1. The same enemy unit can only be affected by this ability once per turn."
+        },
+        {
+          "name": "Flare Launcher",
+          "text": "The bearer’s unit has the SMOKE keyword and you can target it with the Smokescreen Stratagem for 0CP."
+        },
+        {
+          "name": "Spotter",
+          "text": "The bearer’s ranged weapons have a Ballistic Skill characteristic of 3+."
+        },
+        {
+          "name": "Survey Augur",
+          "text": "Each time the bearer’s unit has shot, select one enemy unit hit with one or more attacks made by the bearer this phase. Until the end of the phase, each time a friendly GENESTEALER CULTS model makes an attack against that unit, that attack has the IGNORES COVER ability."
+        }
+      ],
+      "unit_composition": [
+        "1-2 Achilles Ridgerunners"
+      ],
+      "starting_equipment": [
+        "heavy mining laser",
+        "twin heavy stubber",
+        "armoured hull",
+        "flare launcher"
+      ],
+      "points": {
+        "1 model (1st-2nd unit)": 95,
+        "2 models (1st-2nd unit)": 160,
+        "1 model (3rd+ unit)": 105,
+        "2 models (3rd+ unit)": 170,
+        "per heavy mining laser": 10
+      },
+      "weapons": {
+        "ranged": [
+          {
+            "name": "Achilles missile launcher",
+            "range": "36\"",
+            "attacks": 3,
+            "skill": "4+",
+            "strength": 9,
+            "ap": -2,
+            "damage": 3,
+            "abilities": []
+          },
+          {
+            "name": "Heavy mining laser",
+            "range": "36\"",
+            "attacks": "D3",
+            "skill": "4+",
+            "strength": 12,
+            "ap": -3,
+            "damage": "D6+1",
+            "abilities": []
+          },
+          {
+            "name": "Heavy mortar",
+            "range": "48\"",
+            "attacks": "D6+3",
+            "skill": "4+",
+            "strength": 6,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "BLAST",
+              "INDIRECT FIRE"
+            ]
+          },
+          {
+            "name": "Twin heavy stubber",
+            "range": "36\"",
+            "attacks": 4,
+            "skill": "4+",
+            "strength": 4,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "RAPID FIRE 3"
+            ]
+          }
+        ],
+        "melee": [
+          {
+            "name": "Armoured hull",
+            "range": "Melee",
+            "attacks": 3,
+            "skill": "4+",
+            "strength": 5,
+            "ap": 0,
+            "damage": 1,
+            "abilities": []
+          }
+        ]
+      },
+      "wargear_options": [
+        "Any number of models can replace their heavy mining laser with 1 Achilles missile launcher or 1 heavy mortar.",
+        "Any number of models can replace their flare launcher with 1 spotter or 1 survey augur."
+      ],
+      "keywords": [
+        "VEHICLE",
+        "GREAT DEVOURER",
+        "ACHILLES RIDGERUNNERS"
+      ],
+      "faction_keywords": [
+        "GENESTEALER CULTS"
+      ],
+      "leader": []
+    },
+    {
+      "name": "Acolyte Hybrids with Autopistols",
+      "base_size": "32mm",
+      "stats": {
+        "move": "6\"",
+        "toughness": 4,
+        "save": "5+",
+        "wounds": 1,
+        "leadership": "7+",
+        "objective_control": 2
+      },
+      "core_abilities": [
+        "Deep Strike",
+        "Cult Ambush"
+      ],
+      "army_rules": [
+        "Cult Ambush"
+      ],
+      "abilities": [
+        {
+          "name": "Claimed for the Cult",
+          "text": "At the start of your Command phase, roll one D6 for each objective marker you control that has one or more units from your army with this ability within range of it. If one or more of the results is a 4+, you gain 1CP."
+        },
+        {
+          "name": "Cult Icon",
+          "text": "In your Command phase, you can return up to D3 destroyed models to the bearer’s unit. If the bearer’s unit is within range of an objective marker you control, you can return up to 3 destroyed models to that unit instead. This ability cannot be used to return destroyed CHARACTER models to Attached units and any ONE SHOT weapons equipped by returned models that were shot before they were destroyed are still considered to have been shot."
+        }
+      ],
+      "unit_composition": [
+        "1 Acolyte Leader",
+        "4-9 Acolyte Hybrids"
+      ],
+      "starting_equipment": [
+        "autopistol",
+        "cult claws and knife"
+      ],
+      "points": {
+        "5 models": 65,
+        "10 models": 120
+      },
+      "weapons": {
+        "ranged": [
+          {
+            "name": "Autopistol",
+            "range": "12\"",
+            "attacks": 1,
+            "skill": "4+",
+            "strength": 3,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "PISTOL"
+            ]
+          }
+        ],
+        "melee": [
+          {
+            "name": "Cult claws and knife",
+            "range": "Melee",
+            "attacks": 3,
+            "skill": "3+",
+            "strength": 4,
+            "ap": -1,
+            "damage": 1,
+            "abilities": []
+          },
+          {
+            "name": "Leader’s bio-weapons",
+            "range": "Melee",
+            "attacks": 5,
+            "skill": "3+",
+            "strength": 5,
+            "ap": -2,
+            "damage": 1,
+            "abilities": []
+          },
+          {
+            "name": "Heavy mining tool",
+            "range": "Melee",
+            "attacks": 2,
+            "skill": "3+",
+            "strength": 5,
+            "ap": -2,
+            "damage": 3,
+            "abilities": [
+              "ANTI-VEHICLE 4+"
+            ]
+          }
+        ]
+      },
+      "wargear_options": [
+        "One Acolyte Leader’s autopistol can be replaced with 1 cult icon.",
+        "For every 5 models, up to 2 Acolyte Hybrids can each have their autopistol and cult claws and knife replaced with 1 heavy mining tool.",
+        "The Acolyte Leader’s cult claws and knife can be replaced with 1 Leader’s bio-weapons."
+      ],
+      "keywords": [
+        "INFANTRY",
+        "BATTLELINE",
+        "GRENADES",
+        "GREAT DEVOURER",
+        "ACOLYTE HYBRIDS WITH AUTOPISTOLS"
+      ],
+      "faction_keywords": [
+        "GENESTEALER CULTS"
+      ],
+      "leader": []
+    },
+    {
+      "name": "Acolyte Hybrids with Hand Flamers",
+      "base_size": "32mm",
+      "stats": {
+        "move": "6\"",
+        "toughness": 4,
+        "save": "5+",
+        "wounds": 1,
+        "leadership": "7+",
+        "objective_control": 2
+      },
+      "core_abilities": [
+        "Deep Strike",
+        "Cult Ambush"
+      ],
+      "army_rules": [
+        "Cult Ambush"
+      ],
+      "abilities": [
+        {
+          "name": "Industrialised Destruction",
+          "text": "Each time a model in this unit makes an attack, re-roll a Wound roll of 1. If the target of that attack is an enemy unit within range of an objective marker, you can re-roll the Wound roll."
+        },
+        {
+          "name": "Cult Icon",
+          "text": "In your Command phase, you can return up to D3 destroyed models to the bearer’s unit. If the bearer’s unit is within range of an objective marker you control, you can return up to 3 destroyed models to that unit instead. This ability cannot be used to return destroyed CHARACTER models to Attached units and any ONE SHOT weapons equipped by returned models that were shot before they were destroyed are still considered to have been shot."
+        }
+      ],
+      "unit_composition": [
+        "1 Acolyte Leader",
+        "4-9 Acolyte Hybrids"
+      ],
+      "starting_equipment": [
+        "hand flamer",
+        "cult claws and knife"
+      ],
+      "points": {
+        "5 models": 75,
+        "10 models": 140
+      },
+      "weapons": {
+        "ranged": [
+          {
+            "name": "Hand flamer",
+            "range": "12\"",
+            "attacks": "D6",
+            "skill": "- ",
+            "strength": 3,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "IGNORES COVER",
+              "PISTOL",
+              "TORRENT"
+            ]
+          },
+          {
+            "name": "Demolition charges",
+            "range": "8\"",
+            "attacks": "D6",
+            "skill": "5+",
+            "strength": 9,
+            "ap": -2,
+            "damage": 2,
+            "abilities": [
+              "ASSAULT",
+              "BLAST",
+              "HAZARDOUS",
+              "ONE SHOT"
+            ]
+          }
+        ],
+        "melee": [
+          {
+            "name": "Cult claws and knife",
+            "range": "Melee",
+            "attacks": 3,
+            "skill": "3+",
+            "strength": 4,
+            "ap": -1,
+            "damage": 1,
+            "abilities": []
+          },
+          {
+            "name": "Leader’s bio-weapons",
+            "range": "Melee",
+            "attacks": 5,
+            "skill": "3+",
+            "strength": 5,
+            "ap": -2,
+            "damage": 1,
+            "abilities": []
+          }
+        ]
+      },
+      "wargear_options": [
+        "One Acolyte Leader’s hand flamer can be replaced with 1 cult icon.",
+        "For every 5 models, up to 2 Acolyte Hybrids can each have their hand flamer replaced with 1 demolition charges.",
+        "The Acolyte Leader’s cult claws and knife can be replaced with 1 Leader’s bio-weapons."
+      ],
+      "keywords": [
+        "INFANTRY",
+        "BATTLELINE",
+        "GRENADES",
+        "GREAT DEVOURER",
+        "ACOLYTE HYBRIDS WITH HAND FLAMERS"
+      ],
+      "faction_keywords": [
+        "GENESTEALER CULTS"
+      ],
+      "leader": []
+    },
+    {
+      "name": "Atalan Jackals",
+      "base_size": "60x35.5mm Jackal; 60mm Wolfquad",
+      "stats": {
+        "move": "12\"",
+        "toughness": 4,
+        "save": "5+",
+        "wounds": 2,
+        "leadership": "7+",
+        "objective_control": 1
+      },
+      "core_abilities": [
+        "Scouts 9\"",
+        "Stealth",
+        "Cult Ambush"
+      ],
+      "army_rules": [
+        "Cult Ambush"
+      ],
+      "abilities": [
+        {
+          "name": "Outrider Gangs",
+          "text": "Each time you use the Cult Ambush ability to set this unit back up on the battlefield, in addition to the normal rules, all its models must be set up wholly within 9\" of a battlefield edge and at least one of its models must be touching one of your Cult Ambush markers (that marker is then removed from the battlefield). If this cannot be done, this unit cannot be set back up."
+        },
+        {
+          "name": "Demolition Run",
+          "text": "Once per turn, in your Movement phase, when this unit ends a Normal, Advance or Fall Back move, you can select one enemy unit within 6\" of and visible to this unit and roll one D6 for each ATALAN JACKALS model in this unit: for each 4+, that enemy unit suffers 1 mortal wound (to a maximum of 6 mortal wounds)."
+        }
+      ],
+      "unit_composition": [
+        "4-8 Atalan Jackals",
+        "1-2 Atalan Wolfquads",
+        "Maximum 2 Wolfquads if 8 Jackals"
+      ],
+      "starting_equipment": [
+        "Atalan small arms",
+        "close combat weapon",
+        "Wolfquad: heavy stubber"
+      ],
+      "points": {
+        "5 models (1st-2nd unit)": 85,
+        "9 models (1st-2nd unit)": 150,
+        "10 models (1st-2nd unit)": 150,
+        "5 models (3rd+ unit)": 95,
+        "9 models (3rd+ unit)": 160,
+        "10 models (3rd+ unit)": 160
+      },
+      "weapons": {
+        "ranged": [
+          {
+            "name": "Atalan incinerator",
+            "range": "12\"",
+            "attacks": "D6",
+            "skill": "-",
+            "strength": 5,
+            "ap": -1,
+            "damage": 1,
+            "abilities": [
+              "IGNORES COVER",
+              "TORRENT"
+            ]
+          },
+          {
+            "name": "Atalan small arms",
+            "range": "12\"",
+            "attacks": 2,
+            "skill": "4+",
+            "strength": 4,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "PISTOL"
+            ]
+          },
+          {
+            "name": "Grenade launcher – frag",
+            "range": "24\"",
+            "attacks": "D3",
+            "skill": "4+",
+            "strength": 4,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "BLAST"
+            ]
+          },
+          {
+            "name": "Grenade launcher – krak",
+            "range": "24\"",
+            "attacks": 1,
+            "skill": "4+",
+            "strength": 9,
+            "ap": -2,
+            "damage": "D3",
+            "abilities": []
+          },
+          {
+            "name": "Heavy stubber",
+            "range": "36\"",
+            "attacks": 3,
+            "skill": "4+",
+            "strength": 4,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "ASSAULT",
+              "RAPID FIRE 3"
+            ]
+          },
+          {
+            "name": "Mining laser",
+            "range": "24\"",
+            "attacks": 1,
+            "skill": "4+",
+            "strength": 12,
+            "ap": -3,
+            "damage": "D6+1",
+            "abilities": []
+          }
+        ],
+        "melee": [
+          {
+            "name": "Atalan power weapon",
+            "range": "Melee",
+            "attacks": 2,
+            "skill": "4+",
+            "strength": 4,
+            "ap": -2,
+            "damage": 1,
+            "abilities": []
+          },
+          {
+            "name": "Close combat weapon",
+            "range": "Melee",
+            "attacks": 2,
+            "skill": "4+",
+            "strength": 3,
+            "ap": 0,
+            "damage": 1,
+            "abilities": []
+          }
+        ]
+      },
+      "wargear_options": [
+        "For every 2 Atalan Jackals, 1 can replace close combat weapons with 1 Atalan power weapon.",
+        "For every 4 Atalan Jackals, 1 can replace Atalan small arms with 1 grenade launcher.",
+        "Any number of Atalan Wolfquads can replace heavy stubber with 1 Atalan incinerator or 1 mining laser."
+      ],
+      "keywords": [
+        "MOUNTED",
+        "GRENADES",
+        "GREAT DEVOURER",
+        "ATALAN JACKALS"
+      ],
+      "faction_keywords": [
+        "GENESTEALER CULTS"
+      ],
+      "leader": []
+    },
+    {
+      "name": "Goliath Rockgrinder",
+      "base_size": "Use model",
+      "stats": {
+        "move": "12\"",
+        "toughness": 10,
+        "save": "3+",
+        "wounds": 10,
+        "leadership": "7+",
+        "objective_control": 3
+      },
+      "core_abilities": [
+        "Deadly Demise D3",
+        "Firing Deck 6"
+      ],
+      "army_rules": [],
+      "abilities": [
+        {
+          "name": "Grinding Line-breaker",
+          "text": "Each time an enemy unit (excluding MONSTER and VEHICLE units) that is within Engagement Range of this model Falls Back, all models in that enemy unit must take a Desperate Escape test. When doing so, if that enemy unit is Battle-shocked, subtract 1 from each of those tests."
+        }
+      ],
+      "unit_composition": [
+        "1 Goliath Rockgrinder"
+      ],
+      "starting_equipment": [
+        "heavy mining laser",
+        "heavy stubber",
+        "drilldozer blade",
+        "demolition charge cache"
+      ],
+      "points": {
+        "1 model (1st-2nd unit)": 110,
+        "1 model (3rd+ unit)": 120
+      },
+      "weapons": {
+        "ranged": [
+          {
+            "name": "Clearance incinerator",
+            "range": "12\"",
+            "attacks": "2D6",
+            "skill": "-",
+            "strength": 6,
+            "ap": -1,
+            "damage": 1,
+            "abilities": [
+              "IGNORES COVER",
+              "TORRENT"
+            ]
+          },
+          {
+            "name": "Demolition charge cache",
+            "range": "8\"",
+            "attacks": "D6",
+            "skill": "5+",
+            "strength": 9,
+            "ap": -2,
+            "damage": 2,
+            "abilities": [
+              "ASSAULT",
+              "BLAST",
+              "HAZARDOUS"
+            ]
+          },
+          {
+            "name": "Heavy mining laser",
+            "range": "36\"",
+            "attacks": "D3",
+            "skill": "4+",
+            "strength": 12,
+            "ap": -3,
+            "damage": "D6+1",
+            "abilities": []
+          },
+          {
+            "name": "Heavy seismic cannon",
+            "range": "24\"",
+            "attacks": 4,
+            "skill": "4+",
+            "strength": 8,
+            "ap": -2,
+            "damage": "D3",
+            "abilities": [
+              "RAPID FIRE 2"
+            ]
+          },
+          {
+            "name": "Heavy stubber",
+            "range": "36\"",
+            "attacks": 3,
+            "skill": "4+",
+            "strength": 4,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "RAPID FIRE 3"
+            ]
+          }
+        ],
+        "melee": [
+          {
+            "name": "Drilldozer blade",
+            "range": "Melee",
+            "attacks": 8,
+            "skill": "3+",
+            "strength": 10,
+            "ap": -2,
+            "damage": 2,
+            "abilities": []
+          }
+        ]
+      },
+      "wargear_options": [
+        "This model’s heavy mining laser can be replaced with 1 clearance incinerator or 1 heavy seismic cannon."
+      ],
+      "keywords": [
+        "VEHICLE",
+        "TRANSPORT",
+        "FRAME",
+        "GREAT DEVOURER",
+        "GOLIATH ROCKGRINDER"
+      ],
+      "faction_keywords": [
+        "GENESTEALER CULTS"
+      ],
+      "leader": [],
+      "transport": "6 GENESTEALER CULTS INFANTRY models"
+    },
+    {
+      "name": "Goliath Truck",
+      "base_size": "Use model",
+      "stats": {
+        "move": "12\"",
+        "toughness": 9,
+        "save": "3+",
+        "wounds": 10,
+        "leadership": "7+",
+        "objective_control": 2
+      },
+      "core_abilities": [
+        "Deadly Demise D3",
+        "Firing Deck 6"
+      ],
+      "army_rules": [],
+      "abilities": [
+        {
+          "name": "Fire Support",
+          "text": "In your Shooting phase, after this model has shot, select one enemy unit it scored one or more hits against this phase. Until the end of the phase, each time a friendly model that disembarked from this TRANSPORT this turn makes an attack that targets that enemy unit, you can re-roll the Wound roll."
+        }
+      ],
+      "unit_composition": [
+        "1 Goliath Truck"
+      ],
+      "starting_equipment": [
+        "heavy stubber",
+        "twin autocannon",
+        "demolition charge cache",
+        "armoured hull"
+      ],
+      "points": {
+        "1 model (1st-3rd unit)": 75,
+        "1 model (4th+ unit)": 85
+      },
+      "weapons": {
+        "ranged": [
+          {
+            "name": "Demolition charge cache",
+            "range": "8\"",
+            "attacks": "D6",
+            "skill": "5+",
+            "strength": 9,
+            "ap": -2,
+            "damage": 2,
+            "abilities": [
+              "ASSAULT",
+              "BLAST",
+              "HAZARDOUS"
+            ]
+          },
+          {
+            "name": "Heavy stubber",
+            "range": "36\"",
+            "attacks": 3,
+            "skill": "4+",
+            "strength": 4,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "RAPID FIRE 3"
+            ]
+          },
+          {
+            "name": "Twin autocannon",
+            "range": "48\"",
+            "attacks": 2,
+            "skill": "4+",
+            "strength": 9,
+            "ap": -1,
+            "damage": 3,
+            "abilities": [
+              "TWIN-LINKED"
+            ]
+          }
+        ],
+        "melee": [
+          {
+            "name": "Armoured hull",
+            "range": "Melee",
+            "attacks": 3,
+            "skill": "4+",
+            "strength": 6,
+            "ap": 0,
+            "damage": 1,
+            "abilities": []
+          }
+        ]
+      },
+      "wargear_options": [],
+      "keywords": [
+        "VEHICLE",
+        "TRANSPORT",
+        "FRAME",
+        "DEDICATED TRANSPORT",
+        "GREAT DEVOURER",
+        "GOLIATH TRUCK"
+      ],
+      "faction_keywords": [
+        "GENESTEALER CULTS"
+      ],
+      "leader": [],
+      "transport": "12 GENESTEALER CULTS INFANTRY models"
+    },
+    {
+      "name": "Hybrid Metamorphs",
+      "base_size": "32mm",
+      "stats": {
+        "move": "6\"",
+        "toughness": 4,
+        "save": "5+",
+        "wounds": 1,
+        "leadership": "7+",
+        "objective_control": 1
+      },
+      "core_abilities": [
+        "Deep Strike",
+        "Feel No Pain 5+",
+        "Scouts 6\"",
+        "Cult Ambush"
+      ],
+      "army_rules": [
+        "Cult Ambush"
+      ],
+      "abilities": [
+        {
+          "name": "Brood Surge",
+          "text": "In your opponent’s Shooting phase, when an enemy unit has shot, if a model in this unit was destroyed as a result of those attacks, this unit can make a Surge move of up to D6\"."
+        },
+        {
+          "name": "Cult Icon",
+          "text": "In your Command phase, you can return up to D3 destroyed models to the bearer’s unit. If the bearer’s unit is within range of an objective marker you control, you can return up to 3 destroyed models to that unit instead. This ability cannot be used to return destroyed CHARACTER models to Attached units and any ONE SHOT weapons equipped by returned models that were shot before they were destroyed are still considered to have been shot."
+        }
+      ],
+      "unit_composition": [
+        "1 Metamorph Leader",
+        "4-9 Hybrid Metamorphs"
+      ],
+      "starting_equipment": [
+        "autopistol",
+        "Leader’s cult weapons",
+        "Metamorph mutations"
+      ],
+      "points": {
+        "5 models (1st-2nd unit)": 75,
+        "10 models (1st-2nd unit)": 140,
+        "5 models (3rd+ unit)": 85,
+        "10 models (3rd+ unit)": 150
+      },
+      "weapons": {
+        "ranged": [
+          {
+            "name": "Autopistol",
+            "range": "12\"",
+            "attacks": 1,
+            "skill": "4+",
+            "strength": 3,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "PISTOL"
+            ]
+          },
+          {
+            "name": "Hand flamer",
+            "range": "12\"",
+            "attacks": "D6",
+            "skill": "-",
+            "strength": 3,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "IGNORES COVER",
+              "PISTOL",
+              "TORRENT"
+            ]
+          }
+        ],
+        "melee": [
+          {
+            "name": "Leader’s bio-weapons",
+            "range": "Melee",
+            "attacks": 5,
+            "skill": "3+",
+            "strength": 5,
+            "ap": -1,
+            "damage": 2,
+            "abilities": []
+          },
+          {
+            "name": "Metamorph mutations – strike",
+            "range": "Melee",
+            "attacks": 3,
+            "skill": "3+",
+            "strength": 5,
+            "ap": -1,
+            "damage": 2,
+            "abilities": []
+          },
+          {
+            "name": "Metamorph mutations – sweep",
+            "range": "Melee",
+            "attacks": 5,
+            "skill": "3+",
+            "strength": 4,
+            "ap": -1,
+            "damage": 1,
+            "abilities": []
+          }
+        ]
+      },
+      "wargear_options": [
+        "Any number of models can each have their autopistol replaced with 1 hand flamer.",
+        "One Hybrid Metamorph’s autopistol can be replaced with 1 cult icon."
+      ],
+      "keywords": [
+        "INFANTRY",
+        "GRENADES",
+        "GREAT DEVOURER",
+        "HYBRID METAMORPHS"
+      ],
+      "faction_keywords": [
+        "GENESTEALER CULTS"
+      ],
+      "leader": []
+    },
+    {
+      "name": "Jackal Alphus",
+      "base_size": "60x35.5mm",
+      "stats": {
+        "move": "12\"",
+        "toughness": 4,
+        "save": "5+",
+        "wounds": 4,
+        "leadership": "7+",
+        "objective_control": 1
+      },
+      "core_abilities": [
+        "Leader",
+        "Scouts 9\"",
+        "Stealth"
+      ],
+      "army_rules": [],
+      "abilities": [
+        {
+          "name": "Priority Targets",
+          "text": "In your Shooting phase, after this model’s unit has shot, select one enemy unit hit by one or more of those attacks made with a cult sniper rifle. Until the end of the phase, each time a friendly GENESTEALER CULTS model makes an attack that targets that enemy unit, re-roll a Hit roll of 1."
+        },
+        {
+          "name": "Master Outrider",
+          "text": "In your Shooting phase, after this model’s unit has shot, if it is not within Engagement Range of any enemy units, that unit can make a Normal move of up to 6\" as if it were your Movement phase. If it does, until the end of the turn, that unit is not eligible to declare a charge."
+        }
+      ],
+      "unit_composition": [
+        "1 Jackal Alphus"
+      ],
+      "starting_equipment": [
+        "autopistol",
+        "cult sniper rifle",
+        "close combat weapon"
+      ],
+      "points": {
+        "1 model": 55
+      },
+      "weapons": {
+        "ranged": [
+          {
+            "name": "Autopistol",
+            "range": "12\"",
+            "attacks": 1,
+            "skill": "3+",
+            "strength": 3,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "PISTOL"
+            ]
+          },
+          {
+            "name": "Cult sniper rifle",
+            "range": "36\"",
+            "attacks": 1,
+            "skill": "3+",
+            "strength": 5,
+            "ap": -2,
+            "damage": 3,
+            "abilities": [
+              "HEAVY",
+              "PRECISION"
+            ]
+          }
+        ],
+        "melee": [
+          {
+            "name": "Close combat weapon",
+            "range": "Melee",
+            "attacks": 3,
+            "skill": "3+",
+            "strength": 3,
+            "ap": 0,
+            "damage": 1,
+            "abilities": []
+          }
+        ]
+      },
+      "wargear_options": [],
+      "keywords": [
+        "MOUNTED",
+        "CHARACTER",
+        "GRENADES",
+        "GREAT DEVOURER",
+        "JACKAL ALPHUS"
+      ],
+      "faction_keywords": [
+        "GENESTEALER CULTS"
+      ],
+      "leader": [
+        "ATALAN JACKALS"
+      ]
+    },
+    {
+      "name": "Neophyte Hybrids",
+      "base_size": "25mm (32mm if equipped with Heavy Mining Weapon)",
+      "stats": {
+        "move": "6\"",
+        "toughness": 3,
+        "save": "5+",
+        "wounds": 1,
+        "leadership": "7+",
+        "objective_control": 2
+      },
+      "core_abilities": [
+        "Deep Strike",
+        "Cult Ambush"
+      ],
+      "army_rules": [
+        "Cult Ambush"
+      ],
+      "abilities": [
+        {
+          "name": "A Plan Generations in the Making",
+          "text": "At the end of your Command phase, if this unit is within range of an objective marker you control, that objective marker remains under your control until your opponent’s Level of Control over that objective marker is greater than yours at the end of a phase."
+        },
+        {
+          "name": "Cult Icon",
+          "text": "In your Command phase, you can return up to D3 destroyed models to the bearer’s unit. If the bearer’s unit is within range of an objective marker you control, you can return up to 3 destroyed models to that unit instead. This ability cannot be used to return destroyed CHARACTER models to Attached units and any ONE SHOT weapons equipped by returned models that were shot before they were destroyed are still considered to have been shot."
+        }
+      ],
+      "unit_composition": [
+        "1 Neophyte Leader",
+        "9-19 Neophyte Hybrids"
+      ],
+      "starting_equipment": [
+        "autopistol",
+        "Hybrid firearm",
+        "close combat weapon"
+      ],
+      "points": {
+        "10 models": 70,
+        "20 models": 135
+      },
+      "weapons": {
+        "ranged": [
+          {
+            "name": "Anointed pistol",
+            "range": "12\"",
+            "attacks": 1,
+            "skill": "4+",
+            "strength": 4,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "PISTOL"
+            ]
+          },
+          {
+            "name": "Autopistol",
+            "range": "12\"",
+            "attacks": 1,
+            "skill": "4+",
+            "strength": 3,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "PISTOL"
+            ]
+          },
+          {
+            "name": "Hybrid firearm",
+            "range": "24\"",
+            "attacks": 1,
+            "skill": "4+",
+            "strength": 3,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "RAPID FIRE 1"
+            ]
+          },
+          {
+            "name": "Flamer",
+            "range": "12\"",
+            "attacks": "D6",
+            "skill": "-",
+            "strength": 4,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "IGNORES COVER",
+              "TORRENT"
+            ]
+          },
+          {
+            "name": "Grenade launcher – frag",
+            "range": "24\"",
+            "attacks": "D3",
+            "skill": "4+",
+            "strength": 4,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "BLAST"
+            ]
+          },
+          {
+            "name": "Grenade launcher – krak",
+            "range": "24\"",
+            "attacks": 1,
+            "skill": "4+",
+            "strength": 9,
+            "ap": -2,
+            "damage": "D3",
+            "abilities": []
+          },
+          {
+            "name": "Heavy stubber",
+            "range": "36\"",
+            "attacks": 3,
+            "skill": "4+",
+            "strength": 4,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "RAPID FIRE 3"
+            ]
+          },
+          {
+            "name": "Mining laser",
+            "range": "24\"",
+            "attacks": 1,
+            "skill": "5+",
+            "strength": 10,
+            "ap": -3,
+            "damage": "D6+1",
+            "abilities": [
+              "HEAVY"
+            ]
+          },
+          {
+            "name": "Seismic cannon",
+            "range": "24\"",
+            "attacks": 2,
+            "skill": "5+",
+            "strength": 6,
+            "ap": -1,
+            "damage": "D3",
+            "abilities": [
+              "HEAVY",
+              "RAPID FIRE 2"
+            ]
+          },
+          {
+            "name": "Webber",
+            "range": "12\"",
+            "attacks": "D6",
+            "skill": "-",
+            "strength": 2,
+            "ap": 0,
+            "damage": 1,
+            "abilities": [
+              "DEVASTATING WOUNDS",
+              "TORRENT"
+            ]
+          }
+        ],
+        "melee": [
+          {
+            "name": "Chainsword",
+            "range": "Melee",
+            "attacks": 2,
+            "skill": "4+",
+            "strength": 3,
+            "ap": 0,
+            "damage": 1,
+            "abilities": []
+          },
+          {
+            "name": "Power weapon",
+            "range": "Melee",
+            "attacks": 1,
+            "skill": "4+",
+            "strength": 4,
+            "ap": -2,
+            "damage": 1,
+            "abilities": []
+          },
+          {
+            "name": "Close combat weapon",
+            "range": "Melee",
+            "attacks": 1,
+            "skill": "4+",
+            "strength": 3,
+            "ap": 0,
+            "damage": 1,
+            "abilities": []
+          }
+        ]
+      },
+      "wargear_options": [
+        "One Neophyte Hybrid equipped with a Hybrid firearm can be equipped with 1 cult icon.",
+        "For every 10 models, up to 2 Neophyte Hybrids can each have their Hybrid firearm replaced with 1 heavy stubber, 1 mining laser or 1 seismic cannon.",
+        "For every 10 models, up to 2 Neophyte Hybrids can each have their Hybrid firearm replaced with 1 flamer, 1 grenade launcher or 1 webber.",
+        "The Neophyte Leader’s Hybrid firearm and close combat weapon can be replaced with 1 anointed pistol and 1 chainsword or 1 anointed pistol and 1 power weapon."
+      ],
+      "keywords": [
+        "INFANTRY",
+        "BATTLELINE",
+        "GRENADES",
+        "GREAT DEVOURER",
+        "NEOPHYTE HYBRIDS"
+      ],
+      "faction_keywords": [
+        "GENESTEALER CULTS"
+      ],
+      "leader": []
+    },
+    {
+      "name": "Purestrain Genestealers",
+      "base_size": "32mm",
+      "stats": {
+        "move": "8\"",
+        "toughness": 4,
+        "save": "5+",
+        "wounds": 2,
+        "leadership": "7+",
+        "objective_control": 1,
+        "invulnerable_save": "5+"
+      },
+      "core_abilities": [
+        "Deep Strike",
+        "Infiltrators",
+        "Cult Ambush"
+      ],
+      "army_rules": [
+        "Cult Ambush"
+      ],
+      "abilities": [
+        {
+          "name": "Swift and Deadly",
+          "text": "This unit is eligible to declare a charge in a turn in which it Advanced."
+        }
+      ],
+      "unit_composition": [
+        "5-10 Purestrain Genestealers"
+      ],
+      "starting_equipment": [
+        "cult claws and talons"
+      ],
+      "points": {
+        "5 models (1st-2nd unit)": 75,
+        "10 models (1st-2nd unit)": 140,
+        "5 models (3rd+ unit)": 85,
+        "10 models (3rd+ unit)": 150
+      },
+      "weapons": {
+        "ranged": [],
+        "melee": [
+          {
+            "name": "Cult claws and talons",
+            "range": "Melee",
+            "attacks": 4,
+            "skill": "2+",
+            "strength": 4,
+            "ap": -2,
+            "damage": 1,
+            "abilities": []
+          }
+        ]
+      },
+      "wargear_options": [],
+      "keywords": [
+        "INFANTRY",
+        "GREAT DEVOURER",
+        "PURESTRAIN GENESTEALERS"
+      ],
+      "faction_keywords": [
+        "GENESTEALER CULTS"
+      ],
+      "leader": []
     }
   ]
 }

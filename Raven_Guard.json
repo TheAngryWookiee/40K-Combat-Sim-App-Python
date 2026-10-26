@@ -5,10 +5,234 @@
     "army_rules": [],
     "chapter_rules": [],
     "derived_keywords": [],
-    "detachments": [],
-    "category": "Adeptus Astartes"
+    "detachments": [
+      {
+        "name": "Shadowmark Talon",
+        "detachment_points": 2,
+        "rule": {
+          "name": "Shadow Tactics",
+          "rules_text": "Friendly ADEPTUS ASTARTES units have Stealth. Friendly PHOBOS/SCOUT SQUAD units have -3 inches detection range. Friendly AETHON SHAAN units have Unparalleled Tactician: once per battle round, per army, when you use the Into Darkness Stratagem, that use is -1CP.",
+          "implemented": true
+        },
+        "additional_rules": [],
+        "keywords": [],
+        "restrictions": [
+          "Your army can include RAVEN GUARD units, but it cannot include ADEPTUS ASTARTES units drawn from any other Chapter."
+        ],
+        "enhancements": [
+          {
+            "name": "Blackwing Shroud",
+            "points": 25,
+            "rules_text": "ADEPTUS ASTARTES INFANTRY model only. This unit has Infiltrators and -3 inches detection range.",
+            "restrictions": [
+              "ADEPTUS ASTARTES INFANTRY model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Umbral Raptor",
+            "points": 15,
+            "rules_text": "ADEPTUS ASTARTES INFANTRY model only. This model has Fights First and Lone Operative.",
+            "restrictions": [
+              "ADEPTUS ASTARTES INFANTRY model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Hunter's Instincts",
+            "points": 25,
+            "rules_text": "ADEPTUS ASTARTES model only. In your first Movement phase, this unit can make an Ingress move.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Coronal Sussurrant",
+            "points": 30,
+            "rules_text": "PHOBOS model only. Each time an enemy unit (excluding MONSTER/VEHICLE units) engaged with this unit cannot be targeted by controlling player's Stratagems.",
+            "restrictions": [
+              "PHOBOS model only."
+            ],
+            "implemented": false
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Into Darkness",
+            "type": "SHADOWMARK TALON STRATAGEM",
+            "cp_cost": 1,
+            "when": "End of your opponent's Fight phase.",
+            "target": "One unengaged ADEPTUS ASTARTES INFANTRY unit.",
+            "effect": "Place your unit in Strategic Reserves.",
+            "implemented": false
+          },
+          {
+            "name": "Raptorial Vigilance",
+            "type": "SHADOWMARK TALON STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your opponent's Movement phase, when an enemy unit ends a move within 8 inches of a friendly unengaged ADEPTUS ASTARTES INFANTRY unit.",
+            "target": "That ADEPTUS ASTARTES INFANTRY unit.",
+            "effect": "Your unit can make a Normal move of up to D6 inches, or up to 6 inches if it is a PHOBOS/SCOUT SQUAD unit.",
+            "implemented": false
+          },
+          {
+            "name": "Murderous Fusillade",
+            "type": "SHADOWMARK TALON STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your Shooting phase, when a friendly ADEPTUS ASTARTES INFANTRY unit that made an Ingress move this turn is selected to shoot.",
+            "target": "That ADEPTUS ASTARTES INFANTRY unit.",
+            "effect": "Your unit's ranged attacks have +1 BS and +1 AP.",
+            "implemented": true
+          },
+          {
+            "name": "Suppressed Weapons",
+            "type": "SHADOWMARK TALON STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your Shooting phase, when a friendly ADEPTUS ASTARTES INFANTRY unit has shot.",
+            "target": "That ADEPTUS ASTARTES INFANTRY unit.",
+            "effect": "Those attacks do not prevent your unit from being hidden.",
+            "implemented": false
+          },
+          {
+            "name": "Feint and Thrust",
+            "type": "SHADOWMARK TALON STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your Command phase.",
+            "target": "One friendly ADEPTUS ASTARTES INFANTRY unit.",
+            "effect": "The Tactical Doctrine is active for your unit in addition to any other combat doctrine until the start of your next Command phase.",
+            "implemented": false
+          },
+          {
+            "name": "Lay Low the Tyrants",
+            "type": "SHADOWMARK TALON STRATAGEM",
+            "cp_cost": 1,
+            "when": "Fight phase, when a friendly ADEPTUS ASTARTES INFANTRY unit is selected to fight.",
+            "target": "That ADEPTUS ASTARTES INFANTRY unit.",
+            "effect": "Your unit's melee attacks have [PRECISION].",
+            "implemented": true
+          }
+        ]
+      }
+    ],
+    "category": "Adeptus Astartes",
+    "detachment_filters": {
+      "allow_names": [
+        "Shadowmark Talon"
+      ],
+      "deny_names": []
+    }
   },
   "units": [
+    {
+      "name": "Aethon Shaan",
+      "faction": "Adeptus Astartes",
+      "keywords": [
+        "Infantry",
+        "Chapter Master",
+        "Character",
+        "Epic Hero",
+        "Grenades",
+        "Fly",
+        "Imperium",
+        "Jump Pack",
+        "Smoke",
+        "Tacticus",
+        "Aethon Shaan"
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Raven Guard"
+      ],
+      "stats": {
+        "movement": 14,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": "4+",
+        "wounds": 5,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Aethon Shaan",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Heavy bolt pistol",
+            "Claws of Severax"
+          ]
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike, Lone Operative, Stealth",
+          "implemented": true
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Combat Doctrines",
+          "implemented": true
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Transhuman Strategist",
+          "implemented": false
+        },
+        {
+          "name": "Master of Shadows",
+          "rules_text": "In your Command phase, select one friendly ADEPTUS ASTARTES INFANTRY unit. That unit can re-roll Charge rolls until the start of your next Command phase.",
+          "implemented": false
+        },
+        {
+          "name": "Blackwing Mantle",
+          "rules_text": "Once per phase, per army, you can target this unit with the Heroic Intervention Stratagem for -1CP, regardless of other uses, and that use does not prevent further uses.",
+          "implemented": false
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Heavy bolt pistol",
+          "keywords": [
+            "Pistol"
+          ],
+          "range": "18\"",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Claws of Severax",
+          "keywords": [
+            "Twin-linked"
+          ],
+          "range": "Melee",
+          "attacks": "7",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "5",
+          "armor_piercing": "-2",
+          "damage": "2"
+        }
+      ],
+      "implemented": false,
+      "base_size": "50mm",
+      "points": 105
+    },
     {
       "name": "Kayvaan Shrike",
       "unit_composition": {
@@ -46,19 +270,28 @@
       "abilities": [
         {
           "name": "Core",
-          "rules_text": "Deep Strike, Leader, Lone Operative, Stealth"
+          "rules_text": "Deep Strike, Leader, Lone Operative",
+          "implemented": true
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines",
+          "implemented": true
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Transhuman Strategist",
+          "implemented": false
         },
         {
           "name": "Trifold Path of Shadow",
-          "rules_text": "While this model is leading a unit, that unit cannot be targeted by ranged attacks unless the attacking model is within 12\"."
+          "rules_text": "This unit has Stealth and -3 inches detection range.",
+          "implemented": true
         },
         {
           "name": "Echo of the Ravenspire",
-          "rules_text": "At the end of your opponent's turn, if this model's unit is not within Engagement Range of one or more enemy units, you can remove that unit from the battlefield and place it into Strategic Reserves."
+          "rules_text": "At the end of your opponent's Fight phase, if this unit is unengaged, you can place this unit in Strategic Reserves.",
+          "implemented": false
         }
       ],
       "selectable_abilities": [],
@@ -68,7 +301,7 @@
           "Assault Intercessors with Jump Packs",
           "Vanguard Veteran Squad with Jump Packs"
         ],
-        "rules_text": "This model can be attached to the following units: Assault Intercessors with Jump Packs, Vanguard Veteran Squad with Jump Packs."
+        "rules_text": "This model can be attached to Assault Intercessors with Jump Packs and Vanguard Veteran Squad with Jump Packs units."
       },
       "support": null,
       "wargear_options": [],
@@ -115,109 +348,8 @@
           "armor_piercing": "-2",
           "damage": "2"
         }
-      ]
-    },
-    {
-      "name": "Aethon Shaan",
-      "faction": "Adeptus Astartes",
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Fly",
-        "Jump Pack",
-        "Imperium",
-        "Tacticus",
-        "Chapter Master",
-        "Aethon Shaan"
       ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Raven Guard"
-      ],
-      "stats": {
-        "movement": 14,
-        "toughness": 4,
-        "save": "3+",
-        "invulnerable_save": "4+",
-        "wounds": 5,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Aethon Shaan",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Heavy bolt pistol",
-            "Claws of Severax"
-          ]
-        }
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Deep Strike, Lone Operative, Stealth"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Master of Shadows",
-          "rules_text": "In your Command phase, select one unit from your opponent's army. Until the start of your next Command phase, each time an ADEPTUS ASTARTES unit from your army declares a charge while it is within 12\" of that enemy unit, you can re-roll the Charge roll, but it must declare that enemy unit as a target of that charge if possible."
-        },
-        {
-          "name": "Blackwing Mantle",
-          "rules_text": "You can target this unit with the Rapid Ingress/Heroic Intervention Stratagem, regardless of any other uses of that Stratagem this phase. If you do, that use is -1CP and does not prevent further uses of that Stratagem on other units this phase."
-        },
-        {
-          "name": "Chapter Master of the Raven Guard",
-          "rules_text": "At the start of the Declare Battle Formations step, if your army includes Aethon Shaan and Kayvaan Shrike, until the end of the battle, your Kayvaan Shrike unit loses its Lone Operative ability and replaces its Chapter Master keyword with Captain."
-        }
-      ],
-      "weapons": [
-        {
-          "name": "Heavy bolt pistol",
-          "keywords": [
-            "Pistol"
-          ],
-          "range": "18\"",
-          "attacks": "1",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "4",
-          "armor_piercing": "-1",
-          "damage": "1"
-        },
-        {
-          "name": "Claws of Severax",
-          "keywords": [
-            "Sustained Hits 2",
-            "Twin-linked"
-          ],
-          "range": "Melee",
-          "attacks": "7",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "5",
-          "armor_piercing": "-2",
-          "damage": "2"
-        }
-      ],
-      "implemented": false,
-      "base_size": "50mm"
+      "points": 95
     }
   ]
 }

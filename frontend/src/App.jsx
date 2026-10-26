@@ -550,7 +550,9 @@ function filterNamedOptionsByQuery(items, query) {
     return optionList
   }
 
-  return optionList.filter((item) => String(item?.name || '').toLowerCase().includes(normalizedQuery))
+  return optionList.filter((item) => (
+    `${item?.name || ''} ${item?.ally_faction_name || ''}`.toLowerCase().includes(normalizedQuery)
+  ))
 }
 
 function parseMiracleDiceInput(value) {
@@ -573,7 +575,15 @@ function SearchableUnitSelect({
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const selectedLabel = useMemo(
-    () => options.find((option) => option.name === value)?.name || '',
+    () => {
+      const selectedOption = options.find((option) => option.name === value)
+      if (!selectedOption) {
+        return ''
+      }
+      return selectedOption.is_ally
+        ? `${selectedOption.name} (${selectedOption.ally_faction_name})`
+        : selectedOption.name
+    },
     [options, value],
   )
   const filteredOptions = useMemo(
@@ -678,7 +688,7 @@ function SearchableUnitSelect({
                   handleOptionSelect(option.name)
                 }}
               >
-                {option.name}
+                {option.is_ally ? `${option.name} (${option.ally_faction_name})` : option.name}
               </button>
             ))
           ) : (
@@ -1779,6 +1789,12 @@ const GENESTEALER_CULTS_DETACHMENT_NAMES = new Set([
   'Heroes of the Uprising', 'Purestrain Broodswarm', 'Xenocult Masses',
 ])
 
+const GENESTEALER_CULTS = 'Genestealer Cults'
+
+function filterFactionUnitsByAllyVisibility(units, showAllies) {
+  return (units || []).filter((unit) => showAllies || !unit.is_ally)
+}
+
 const GENESTEALER_CULTS_COMBAT_RULE_NAMES = new Set([
   'A Chink in Their Armour', 'Assassination Edict', 'Coordinated Trap',
   'Primed and Readied', 'Denunciator of Tyrants', 'Frenzied Devotion',
@@ -1798,6 +1814,70 @@ function isGenestealerCultsDetachment(detachment) {
 
 function isImplementedGenestealerCultsCombatRule(rule) {
   return Boolean(rule?.implemented) || GENESTEALER_CULTS_COMBAT_RULE_NAMES.has(rule?.name)
+}
+
+const VOTANN_DETACHMENT_NAMES = new Set([
+  'Needgård Oathband', 'Persecution Prospect', 'Dèlve Assault Shift',
+  'Brandfast Oathband', 'Hearthfyre Arsenal', 'Hearthband',
+  'Mercenary Oathband', 'Armoured Trailblazers', 'Farseekers',
+  'Hearthguard Covenant',
+])
+
+const VOTANN_COMBAT_RULE_NAMES = new Set([
+  'Oathbound Speculator', 'Iron Ambassador', 'Eye for Weakness', 'Quake Supervisor',
+  'Piledriver', 'Trivârg Cyber Implant', 'Graviton Vault', 'Bastion Shield',
+  'Etacarn SB9 Targeting Implant', 'Sagitaur Mounds', 'Void Hardened',
+  'Honour of the Hold', 'Ancestral Sentence', "Huntr's Mark", 'Exposed Flaws',
+  'Ranger Tactics', 'Dispersed Formation', 'Cyberstimm Infusion',
+  'Wavewrecker Buttress', 'Illuminated Priority', 'Unwavering Accuracy',
+  'Quake Multigenerator', 'Brêkkeknots', 'Superior Craftsmanship', 'Fury of the Hearth',
+  'Auxiliary Contract', 'Optimal Expenditure', 'Privateer Arsenal',
+  'Coordinated Crossfire', 'Built to Last', 'Scornful Analysis', 'No Shot Wasted',
+])
+
+function isVotannDetachment(detachment) {
+  return VOTANN_DETACHMENT_NAMES.has(detachment?.name)
+}
+
+function isImplementedVotannCombatRule(rule) {
+  return Boolean(rule?.implemented) || VOTANN_COMBAT_RULE_NAMES.has(rule?.name)
+}
+
+const NECRON_DETACHMENT_NAMES = new Set([
+  'Awakened Dynasty', 'Annihilation Legion', 'Canoptek Court', 'Obeisance Phalanx',
+  'Hypercrypt Legion', 'Starshatter Arsenal', 'Cryptek Conclave', 'Cursed Legion',
+  'Pantheon of Woe', 'Hand of the Dynasty', 'Skyshroud Spearhead',
+  "The Phaeron's Armoury",
+])
+
+const NECRON_COMBAT_RULE_NAMES = new Set([
+  'Command Protocols', 'Nether-realm Casket', 'Phasal Subjugator (Aura)',
+  'Enagic Dermal Bond', 'Protocol of the Hungry Void',
+  'Protocol of the Sudden Storm', 'Protocol of the Conquering Tyrant',
+  'Annihilation Protocol', 'Ingrained Superiority', 'Masks of Death',
+  'The Spoor of Frailty', 'Power Matrix', 'Hyperphasic Fulcrum',
+  'Curse of the Cryptek', 'Cynosure of Eradication', 'Solar Pulse',
+  'Worthy Foes', 'Unflinching Will', 'Warrior Noble', 'Eternal Conqueror',
+  'Enslaved Artifice', 'Nanoassembly Protocols', 'Suffer No Rival',
+  'Arisen Tyrant', 'Quantum Deflection', 'Entropic Damping',
+  'Relentless Onslaught', 'Dread Majesty (Aura)', 'Miniaturised Nebuloscope',
+  'Chrono-impedance Fields', 'Merciless Reclamation', 'Unyielding Forms',
+  'Technosorcerous Augmentations', 'Atomic Disintegrators',
+  'Molecular Targeting', 'Microscarab Swarm', 'Animus Curse',
+  'Cold Fervour', 'Destroyer Ankh', 'Mark of the Nekrosor',
+  'Methodical Murder', 'Image of Death', 'Cosmic Distortion',
+  'Animus Damper', 'Entrophasic Aura Targeting', 'Hypermotility Protocols',
+  'Tools of Dominion', 'Transdimensional Deployment', 'Deepening Madness',
+  'Evasive Protocols', 'Relocational Optimiser', 'Subsurface Quantumweave',
+  'Cosmic Storm',
+])
+
+function isNecronDetachment(detachment) {
+  return NECRON_DETACHMENT_NAMES.has(detachment?.name)
+}
+
+function isImplementedNecronCombatRule(rule) {
+  return Boolean(rule?.implemented) || NECRON_COMBAT_RULE_NAMES.has(rule?.name)
 }
 
 function unitIsEpicHero(unit) {
@@ -2018,10 +2098,13 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
     })
   }
 
-  if (detachment.name === FIRESTORM_ASSAULT_FORCE) {
+  if (detachment.name === FIRESTORM_ASSAULT_FORCE || detachment.name === "Forgefather's Seekers") {
     return (detachment.enhancements || []).filter((enhancement) => {
       if (enhancement.name === 'War-tempered Artifice') {
         return selectedWeapon?.range === 'Melee' && unitHasKeyword(enhancementBearerUnit, 'infantry')
+      }
+      if (enhancement.name === 'Immolator') {
+        return selectedWeapon?.range !== 'Melee' && weaponHasKeyword(selectedWeapon, 'torrent')
       }
       return false
     })
@@ -2294,9 +2377,13 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
     ))
   }
 
-  if (isAeldariDetachment(detachment) || isDrukhariDetachment(detachment) || isGenestealerCultsDetachment(detachment)) {
+  if (isAeldariDetachment(detachment) || isDrukhariDetachment(detachment) || isGenestealerCultsDetachment(detachment) || isVotannDetachment(detachment) || isNecronDetachment(detachment)) {
     return (detachment.enhancements || []).filter((enhancement) => (
-      isGenestealerCultsDetachment(detachment)
+      isNecronDetachment(detachment)
+        ? isImplementedNecronCombatRule(enhancement)
+        : isVotannDetachment(detachment)
+        ? isImplementedVotannCombatRule(enhancement)
+        : isGenestealerCultsDetachment(detachment)
         ? isImplementedGenestealerCultsCombatRule(enhancement)
         : isDrukhariDetachment(detachment)
         ? isImplementedDrukhariCombatRule(enhancement)
@@ -2501,9 +2588,13 @@ function getDefenderEnhancementOptions(detachment, enhancementBearerUnit) {
     )
   }
 
-  if (isAeldariDetachment(detachment) || isDrukhariDetachment(detachment) || isGenestealerCultsDetachment(detachment)) {
+  if (isAeldariDetachment(detachment) || isDrukhariDetachment(detachment) || isGenestealerCultsDetachment(detachment) || isVotannDetachment(detachment) || isNecronDetachment(detachment)) {
     return (detachment.enhancements || []).filter((enhancement) => (
-      isGenestealerCultsDetachment(detachment)
+      isNecronDetachment(detachment)
+        ? isImplementedNecronCombatRule(enhancement)
+        : isVotannDetachment(detachment)
+        ? isImplementedVotannCombatRule(enhancement)
+        : isGenestealerCultsDetachment(detachment)
         ? isImplementedGenestealerCultsCombatRule(enhancement)
         : isDrukhariDetachment(detachment)
         ? isImplementedDrukhariCombatRule(enhancement)
@@ -2572,6 +2663,7 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
     if (detachment.name === MARSHALS_HOUSEHOLD) {
       return (
         stratagem.name === 'Slayers of Abominations'
+        && stratagem.implemented === true
         && !isRangedWeapon
         && unitIsSwordBrethren(unit)
       )
@@ -2716,7 +2808,7 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
     }
 
     if (detachment.name === BLACK_SPEAR_TASK_FORCE) {
-      return isRangedWeapon && (
+      return isRangedWeapon && unitHasKeyword(unit, 'kill team') && (
         stratagem.name === 'Hellfire Rounds'
         || stratagem.name === 'Kraken Rounds'
         || stratagem.name === 'Dragonfire Rounds'
@@ -2754,6 +2846,13 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       return stratagem.name === 'Onslaught of Fire' && isRangedWeapon
     }
 
+    if (detachment.name === "Forgefather's Seekers") {
+      if (stratagem.name === 'Crucible of Battle') {
+        return unitHasKeyword(unit, 'infantry')
+      }
+      return stratagem.name === 'Immolation Protocols' && isRangedWeapon && weaponHasKeyword(weapon, 'torrent')
+    }
+
     if (detachment.name === STORMLANCE_TASK_FORCE) {
       if (stratagem.name === 'Blitzing Fusillade') {
         return isRangedWeapon
@@ -2785,11 +2884,15 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
     }
 
     if (detachment.name === SAGA_OF_THE_BEASTSLAYER) {
-      return stratagem.name === 'Unbridled Ferocity' && !isRangedWeapon
+      return (
+        stratagem.name === 'Unbridled Ferocity'
+        && !isRangedWeapon
+        && ['Blood Claws', 'Thunderwolf Cavalry', 'Wulfen', 'Wulfen with Storm Shields'].includes(unit?.name)
+      )
     }
 
     if (detachment.name === SAGA_OF_THE_GREAT_WOLF) {
-      return stratagem.name === 'Eye of the Pack' && isRangedWeapon
+      return stratagem.name === 'Eye of the Pack' && unitHasKeyword(unit, 'infantry')
     }
 
     if (detachment.name === WAR_HORDE) {
@@ -2926,8 +3029,12 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       return stratagem.name === 'Avenge the Masters!' && unitHasKeyword(unit, 'damned')
     }
 
-    if (isAeldariDetachment(detachment) || isDrukhariDetachment(detachment) || isGenestealerCultsDetachment(detachment)) {
-      return isGenestealerCultsDetachment(detachment)
+    if (isAeldariDetachment(detachment) || isDrukhariDetachment(detachment) || isGenestealerCultsDetachment(detachment) || isVotannDetachment(detachment) || isNecronDetachment(detachment)) {
+      return isNecronDetachment(detachment)
+        ? isImplementedNecronCombatRule(stratagem)
+        : isVotannDetachment(detachment)
+        ? isImplementedVotannCombatRule(stratagem)
+        : isGenestealerCultsDetachment(detachment)
         ? isImplementedGenestealerCultsCombatRule(stratagem)
         : isDrukhariDetachment(detachment)
         ? isImplementedDrukhariCombatRule(stratagem)
@@ -3208,8 +3315,12 @@ function getDefenderStratagemOptions(detachment, selectedWeapon, unit) {
       return stratagem.name === 'Scriptural Prognosis' && unitHasKeyword(unit, 'tech-priest')
     }
 
-    if (isAeldariDetachment(detachment) || isDrukhariDetachment(detachment) || isGenestealerCultsDetachment(detachment)) {
-      return isGenestealerCultsDetachment(detachment)
+    if (isAeldariDetachment(detachment) || isDrukhariDetachment(detachment) || isGenestealerCultsDetachment(detachment) || isVotannDetachment(detachment) || isNecronDetachment(detachment)) {
+      return isNecronDetachment(detachment)
+        ? isImplementedNecronCombatRule(stratagem)
+        : isVotannDetachment(detachment)
+        ? isImplementedVotannCombatRule(stratagem)
+        : isGenestealerCultsDetachment(detachment)
         ? isImplementedGenestealerCultsCombatRule(stratagem)
         : isDrukhariDetachment(detachment)
         ? isImplementedDrukhariCombatRule(stratagem)
@@ -5325,6 +5436,8 @@ function validateBattlefieldChargeMove({
   unitEngagedBefore = false,
   advancedThisTurn = false,
   fellBackThisTurn = false,
+  canChargeAfterAdvance = false,
+  canChargeAfterFallBack = false,
   startGapOverride = null,
   endGapOverride = null,
 }) {
@@ -5355,10 +5468,10 @@ function validateBattlefieldChargeMove({
   if (unitEngagedBefore) {
     violations.push('unit_engaged_before_charge')
   }
-  if (advancedThisTurn && !canWorldEaterAdvanceAndCharge(movingUnit)) {
+  if (advancedThisTurn && !canChargeAfterAdvance && !canWorldEaterAdvanceAndCharge(movingUnit)) {
     violations.push('advanced_this_turn')
   }
-  if (fellBackThisTurn) {
+  if (fellBackThisTurn && !canChargeAfterFallBack) {
     violations.push('fell_back_this_turn')
   }
   if (unitHasKeyword(movingUnit, 'aircraft')) {
@@ -5380,8 +5493,8 @@ function validateBattlefieldChargeMove({
   const chargeCanReach = Boolean(
     targetUnit
     && !unitEngagedBefore
-    && !advancedThisTurn
-    && !fellBackThisTurn
+    && (!advancedThisTurn || canChargeAfterAdvance || canWorldEaterAdvanceAndCharge(movingUnit))
+    && (!fellBackThisTurn || canChargeAfterFallBack)
     && !unitHasKeyword(movingUnit, 'aircraft')
     && (!unitHasKeyword(targetUnit, 'aircraft') || unitHasKeyword(movingUnit, 'fly'))
     && startGap !== null
@@ -5470,6 +5583,14 @@ function unitHasAbility(unit, abilityName) {
       const abilityLabel = String(ability.name || '').toLowerCase()
       return abilityLabel === normalizedName || abilityLabel.startsWith(`${normalizedName} `)
     })
+}
+
+function unitHasCombatDoctrines(unit) {
+  return [...(unit?.abilities || []), ...(unit?.wargear_abilities || [])]
+    .some((ability) => (
+      String(ability.name || '').toLowerCase().includes('combat doctrines')
+      || String(ability.rules_text || '').toLowerCase().includes('combat doctrines')
+    ))
 }
 
 function getNamedUnitAbility(unit, abilityName) {
@@ -6714,6 +6835,241 @@ function weaponNameIncludes(weapon, text) {
 }
 
 const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
+  'for the greater good - guided': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'for the greater good - guided by markerlight': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'patient hunter - standard': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'patient hunter - guided': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'precision of the patient hunter - standard': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'precision of the patient hunter - round 3+': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'through unity, devastation': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'a tempting trap': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'point-blank ambush': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'coordinate to engage - standard': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'coordinate to engage - markerlight': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'killing blow - standard': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'killing blow - guided': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'coordinated exploitation': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'pinpoint counter-offensive': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'focused fire': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'combat debarkation': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'counterfire defence systems': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'bonded heroes - within 12': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'bonded heroes - within 8': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'prototype weapon system - lethal hits': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'prototype weapon system - sustained hits 1': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'stimm injectors': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  "the arro'kon protocol - 6-10 models": ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  "the arro'kon protocol - 11+ models": ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'hunter instincts': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'skirmish fighters': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'borthrod gland': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'kroothawk flock': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'nomadic hunter': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'root-carved weapons': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'a trap well laid': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'emp grenades': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'autoreactive camouflage': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'experimental modifications': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'guided by unity': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'thermoneutronic projector': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, "t'au flamer")),
+  'plasma accelerator rifle': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'plasma rifle')),
+  'supernova launcher': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'airbursting fragmentation projector')),
+  'way of the short blade': ({ selectedWeapons, targetWithinTwelve }) => targetWithinTwelve && selectedWeapons.length > 0,
+  'hero of the empire (aura)': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'precise targeting': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'advanced scouting': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'exemplars of mont’ka': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'titan hunter': ({ phaseId, selectedWeapons, targetUnit }) => phaseId === 'shooting' && unitHasKeyword(targetUnit, 'titanic') && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'twin heavy rail cannon') || weaponNameIncludes(weapon, 'seeker missile')),
+  'breach and clear': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'bounty hunters': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'aggressive deployment': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'target uploaded': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'ground strike fighter': ({ phaseId, selectedWeapons, targetUnit }) => phaseId === 'shooting' && !unitHasKeyword(targetUnit, 'fly') && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'forward observers': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'suppressive volley': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'shield generator': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'stealth drones': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'oversight drone': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'coordinated strike': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'armour hunter': ({ selectedWeapons, targetUnit }) => selectedWeapons.length > 0 && (unitHasKeyword(targetUnit, 'monster') || unitHasKeyword(targetUnit, 'vehicle')),
+  'velocity tracker': ({ phaseId, selectedWeapons, targetUnit }) => phaseId === 'shooting' && unitHasKeyword(targetUnit, 'fly') && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'sunforge': ({ phaseId, selectedWeapons, targetUnit }) => phaseId === 'shooting' && (unitHasKeyword(targetUnit, 'monster') || unitHasKeyword(targetUnit, 'vehicle')) && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'nova charge': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'command protocols': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'nether-realm casket': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'phasal subjugator (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'enagic dermal bond': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'protocol of the hungry void - standard': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'protocol of the hungry void - led': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'protocol of the sudden storm': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'protocol of the conquering tyrant - standard': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'protocol of the conquering tyrant - led': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'annihilation protocol': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'ingrained superiority': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'masks of death': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'the spoor of frailty': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'power matrix - standard': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'power matrix - within matrix': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'hyperphasic fulcrum': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'curse of the cryptek': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'cynosure of eradication': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'solar pulse': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'worthy foes': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'unflinching will': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'warrior noble': ({ phaseId, selectedWeapons, side }) => side === 'defender' && phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'eternal conqueror': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'enslaved artifice': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'nanoassembly protocols': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'suffer no rival': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'arisen tyrant - standard': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'arisen tyrant - arrived this turn': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'quantum deflection': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'entropic damping': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'relentless onslaught': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'dread majesty (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'miniaturised nebuloscope': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'chrono-impedance fields': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'merciless reclamation': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'unyielding forms': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'technosorcerous augmentations - anti-infantry 3+': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'technosorcerous augmentations - anti-mounted 4+': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'technosorcerous augmentations - assault': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'technosorcerous augmentations - heavy': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'technosorcerous augmentations - ignores cover': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'atomic disintegrators - anti-monster 5+': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'atomic disintegrators - anti-vehicle 5+': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'molecular targeting - standard': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'molecular targeting - cryptek': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'microscarab swarm': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'animus curse': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'cold fervour': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'destroyer ankh': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'mark of the nekrosor': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'methodical murder': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'image of death': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'cosmic distortion': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'animus damper - passed leadership': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'animus damper - failed leadership': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'entrophasic aura targeting - standard': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'entrophasic aura targeting - unravelling': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'hypermotility protocols': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'tools of dominion': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'transdimensional deployment': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'deepening madness': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'evasive protocols': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'relocational optimiser - lethal hits': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'relocational optimiser - sustained hits 1': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'subsurface quantumweave': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'cosmic storm': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'tesla sphere')),
+  'necrodermis': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'mechanical augmentation (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'infectious murder-madness (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'prophet of destruction': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'nullstone field generator (aura)': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'master chronomancer': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'the stars are right': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'staff of tomorrow')),
+  'phaeron of the stars (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'phaeron of the blades (aura)': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'advanced quantum shielding': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'timesplinter mantle': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'destroyer cult': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'driven by hatred': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'implacable resilience': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'harbinger of destruction': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'united in destruction': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'rites of reanimation': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'harassment swarm (aura)': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'accelerator mandible': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'weapon sentinels': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'bound creation': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'atavistic instigation - stand firm': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'heavy death ray')),
+  'atavistic instigation - duck for cover': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'flesh hunger': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'immortals - standard': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'immortals - target on objective': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'guardian protocols': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'dispersion shield': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'plasmacyte': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'whirling onslaught - standard': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'whirling onslaught - charged': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'fabricator claw array (aura)': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'gloom prism (aura)': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'reanimation nodes (aura)': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'fortification': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'overwhelming obliteration': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'doomsday cannon')),
+  'hard-wired for destruction - closest target': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'hard-wired for destruction - enemy objective': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'optimised for slaughter': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'nebuloscope': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'shadowloom': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'shieldvanes': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'targeting relay': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'break the foe': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'breaching fire': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'defensive destruction': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'fortify (psychic)': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'geomantic hunters': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'breacher ordnance')),
+  'kindred hero': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'multicog targeting': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'multispectral visor': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'overcharge': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weaponNameIncludes(weapon, 'overcharge')),
+  'panspectral scanner': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'panspectral scanning': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'quake multigenerator': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'rampart crest': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'resource transmutation': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'rollbar searchlight': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'scanner uplinks': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'weavefield crest': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'hostile acquisition': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'fortify takeover': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'ancestral sentence - standard': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'ancestral sentence - spend 3yp': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'avatars of the ancestors': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'auxiliary contract': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'bastion shield': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'brekkeknots': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'brêkkeknots': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'built to last': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'coordinated crossfire': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'cyberstimm infusion - standard': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'cyberstimm infusion - spend 2yp': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'dispersed formation': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'etacarn sb9 targeting implant - spend 3yp': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'exposed flaws': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'eye for weakness': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'eye of the hunt': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'fury of the hearth - standard': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'fury of the hearth - spend 1yp': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'graviton vault': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  "huntr's mark": ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'honour of the hold - standard': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'honour of the hold - spend 3yp': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'illuminated priority': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'iron ambassador - spend 1yp': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'iron ambassador - spend 2yp': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'iron ambassador - spend 3yp': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'methodical annihilation': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'mobile sensor relays': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'no shot wasted': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'oathbound speculator - spend 3yp': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'optimal application': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'optimal expenditure - standard': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'optimal expenditure - spend 3yp': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'piledriver - spend 1yp': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'piledriver - spend 2yp': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'privateer arsenal - standard': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'privateer arsenal - spend 3yp': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'quake supervisor': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'ranger tactics': ({ selectedWeapons }) => selectedWeapons.length > 0,
+  'sagitaur mounds': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'scornful analysis': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'superior craftsmanship': ({ phaseId, selectedWeapons }) => phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee'),
+  'trivarg cyber implant': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'trivarg cyber implant - spend 2yp': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'unwavering accuracy': ({ phaseId, selectedWeapons }) => phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee'),
+  'void hardened': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
+  'wavewrecker buttress': ({ selectedWeapons, side }) => side === 'defender' && selectedWeapons.length > 0,
   'battlefield terror': ({ selectedWeapons, targetUnit }) => selectedWeapons.length > 0 && (
     unitHasKeyword(targetUnit, 'infantry')
     || unitHasKeyword(targetUnit, 'monster')
@@ -7210,6 +7566,7 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'banner of macragge': ({ phaseId, selectedWeapons }) => (
     phaseId === 'fight' && selectedWeapons.some((weapon) => weapon.range === 'Melee')
   ),
+  'primarch of the xiii (aura)': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'sigismund\'s heir': ({ phaseId, selectedWeapons, targetUnit }) => (
     phaseId === 'fight'
     && unitHasKeyword(targetUnit, 'character')
@@ -7218,11 +7575,12 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
   'aquila optics': ({ phaseId, selectedWeapons }) => (
     phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
   ),
-  'priority target acquisition': ({ phaseId, selectedWeapons, targetUnit }) => (
+  'priority target acquisition': ({ phaseId, selectedWeapons, targetWithinTwelve }) => (
     phaseId === 'shooting'
-    && (unitHasKeyword(targetUnit, 'monster') || unitHasKeyword(targetUnit, 'vehicle'))
-    && selectedWeaponsIncludeProfileGroup(selectedWeapons, 'twin las-talon')
+    && targetWithinTwelve
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
   ),
+  'forward assault warsuit': ({ selectedWeapons }) => selectedWeapons.length > 0,
   'interception strike': ({ phaseId, selectedWeapons }) => (
     phaseId === 'shooting' && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
   ),
@@ -7266,7 +7624,43 @@ const SUPPORTED_COMBAT_ACTIVATED_ABILITIES = {
     side === 'defender' && selectedWeapons.length > 0
   ),
   'lay low the tyrants': ({ selectedWeapons, detachment }) => (
-    detachment?.name === 'Questoris Companions' && selectedWeapons.length > 0
+    (
+      detachment?.name === 'Questoris Companions'
+      || detachment?.name === 'Shadowmark Talon'
+    ) && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'exemplary vigilance': ({ phaseId, selectedWeapons, detachment }) => (
+    detachment?.name === 'Blade of Ultramar'
+    && phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'courage and honour!': ({ phaseId, selectedWeapons, detachment }) => (
+    detachment?.name === 'Blade of Ultramar'
+    && phaseId === 'fight'
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'tactical foresight': ({ selectedWeapons, side, detachment }) => (
+    side === 'defender' && detachment?.name === 'Blade of Ultramar' && selectedWeapons.length > 0
+  ),
+  'evasive manoeuvres': ({ selectedWeapons, side, detachment }) => (
+    side === 'defender'
+    && detachment?.name === 'Spearpoint Task Force'
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'mobile lethality': ({ phaseId, selectedWeapons, detachment }) => (
+    detachment?.name === 'Spearpoint Task Force'
+    && phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
+  ),
+  'spear thrust and sabre swing': ({ phaseId, selectedWeapons, detachment }) => (
+    detachment?.name === 'Spearpoint Task Force'
+    && phaseId === 'fight'
+    && selectedWeapons.some((weapon) => weapon.range === 'Melee')
+  ),
+  'murderous fusillade': ({ phaseId, selectedWeapons, detachment }) => (
+    detachment?.name === 'Shadowmark Talon'
+    && phaseId === 'shooting'
+    && selectedWeapons.some((weapon) => weapon.range !== 'Melee')
   ),
   'dauntless defenders': ({ selectedWeapons, targetUnit }) => (
     selectedWeapons.length > 0 && targetUnit
@@ -9254,12 +9648,8 @@ function buildAttackerActiveRules({
       || attackerPackageModelCount > defenderPackageModelCount
     )
   const legendarySlayersActive = attackerDetachment?.name === SAGA_OF_THE_BEASTSLAYER
-    && (
-      attackerSagaCompleted
-      || defenderKeywordSet.has('character')
-      || defenderKeywordSet.has('monster')
-      || defenderKeywordSet.has('vehicle')
-    )
+    && ['Blood Claws', 'Thunderwolf Cavalry', 'Wulfen', 'Wulfen with Storm Shields'].includes(attackerUnitDetails?.name)
+    && (defenderKeywordSet.has('character') || defenderKeywordSet.has('monster') || defenderKeywordSet.has('vehicle'))
   const heroesAllActive = attackerDetachment?.name === SAGA_OF_THE_BOLD
     && (
       attackerSagaCompleted
@@ -9304,7 +9694,7 @@ function buildAttackerActiveRules({
     rules.push({
       name: 'Legendary Slayers',
       source: `${attackerDetachment.name} Rule`,
-      text: 'This attack has Lethal Hits because it is targeting a Character, Monster, or Vehicle unit, or because the Saga is completed.',
+      text: 'This attack has Lethal Hits because an eligible unit is targeting a Character, Monster, or Vehicle unit.',
     })
   }
 
@@ -9327,12 +9717,12 @@ function buildAttackerActiveRules({
     })
   }
 
-  if (attackerDetachment?.name === GLADIUS_TASK_FORCE && activeCombatDoctrine?.id) {
-    const detachmentRule = getDetachmentEntry(attackerDetachment, 'rule', 'Combat Doctrines')
+  if (unitHasCombatDoctrines(attackerUnitDetails) && activeCombatDoctrine?.id) {
+    const armyRule = attackerArmyRules.find((rule) => rule.name === 'Combat Doctrines')
     rules.push({
       name: activeCombatDoctrine.label,
-      source: `${attackerDetachment.name} Rule`,
-      text: detachmentRule?.rules_text || `${activeCombatDoctrine.label} is active for this attack.`,
+      source: 'Army Rule',
+      text: armyRule?.rules_text || `${activeCombatDoctrine.label} is active for this attack.`,
     })
   }
 
@@ -9925,18 +10315,28 @@ function buildAttackerActiveRules({
     })
   }
 
-  if (attackerDetachment?.name === BLACK_SPEAR_TASK_FORCE && attackerBlackSpearMissionTactic) {
-    const tactic = BLACK_SPEAR_MISSION_TACTIC_OPTIONS.find((option) => option.id === attackerBlackSpearMissionTactic)
+  if (attackerDetachment?.name === BLACK_SPEAR_TASK_FORCE && unitHasKeyword(attackerUnitDetails, 'kill team')) {
+    const tacticByDoctrine = {
+      devastator: 'furor_tactics',
+      tactical: 'malleus_tactics',
+      assault: 'purgatus_tactics',
+    }
+    const tacticId = tacticByDoctrine[attackerCombatDoctrine]
+    const tactic = BLACK_SPEAR_MISSION_TACTIC_OPTIONS.find((option) => option.id === tacticId)
     const textByTactic = {
       furor_tactics: 'All weapons in this attacking package have Sustained Hits 1 while Furor Tactics is active.',
       malleus_tactics: 'All weapons in this attacking package have Lethal Hits while Malleus Tactics is active.',
-      purgatus_tactics: 'Critical hits from this attacking package gain Precision for that attack while Purgatus Tactics is active.',
+      purgatus_tactics: attackerTargetWithinNine
+        ? 'Attacks targeting an enemy within 9" have Precision while Purgatus Tactics is active.'
+        : 'Purgatus Tactics is active, but the target is not within 9".',
     }
-    rules.push({
-      name: tactic?.label || 'Mission Tactics',
-      source: `${attackerDetachment.name} Rule`,
-      text: textByTactic[attackerBlackSpearMissionTactic] || getDetachmentEntry(attackerDetachment, 'rule', 'Mission Tactics')?.rules_text || '',
-    })
+    if (tacticId) {
+      rules.push({
+        name: tactic?.label || 'Mission Tactics',
+        source: `${attackerDetachment.name} Rule`,
+        text: textByTactic[tacticId] || getDetachmentEntry(attackerDetachment, 'rule', 'Mission Tactics')?.rules_text || '',
+      })
+    }
   }
 
   if (attackerDetachment?.name === CHAMPIONS_OF_FAITH && attackerRighteousActive) {
@@ -10066,7 +10466,7 @@ function buildAttackerActiveRules({
     rules.push({
       name: 'Tactical Instinct',
       source: `${attackerUnitDetails?.name || 'Unit'} Ability`,
-      text: 'This attacking package has Lethal Hits.',
+      text: 'This attacking package has Sustained Hits 1.',
     })
   }
 
@@ -10088,14 +10488,14 @@ function buildAttackerActiveRules({
       source: `${attackerUnitDetails?.name || 'Unit'} Ability`,
       text: selectedWeapon?.range === 'Melee'
         ? (
-          chargedThisTurn
-            ? 'This melee attack gets +2 Strength because the unit charged this turn.'
-            : 'This melee attack gets +2 Strength in a turn in which the unit charged.'
+          targetBelowHalfStrength
+            ? 'This melee attack gets +1 Strength because the target is below Half-strength.'
+            : 'This melee attack gets +1 Strength if the target is below Half-strength.'
         )
         : (
           attackerTargetClosestEligible
-            ? 'This ranged attack gets +2 Strength because the defender is the closest eligible target.'
-            : 'This ranged attack gets +2 Strength if the defender is the closest eligible target.'
+            ? 'This ranged attack gets +1 Strength because the defender is the closest eligible target.'
+            : 'This ranged attack gets +1 Strength if the defender is the closest eligible target.'
         ),
     })
   }
@@ -12238,6 +12638,8 @@ function App() {
   const [factions, setFactions] = useState([])
   const [attackerUnits, setAttackerUnits] = useState([])
   const [defenderUnits, setDefenderUnits] = useState([])
+  const [showAttackerAllies, setShowAttackerAllies] = useState(false)
+  const [showDefenderAllies, setShowDefenderAllies] = useState(false)
   const [attackerFactionDetails, setAttackerFactionDetails] = useState(null)
   const [defenderFactionDetails, setDefenderFactionDetails] = useState(null)
   const [attackerUnitDetails, setAttackerUnitDetails] = useState(null)
@@ -12286,6 +12688,7 @@ function App() {
   const [armyListFactionCategory, setArmyListFactionCategory] = useState('')
   const [armyListFaction, setArmyListFaction] = useState('')
   const [armyListUnits, setArmyListUnits] = useState([])
+  const [showArmyListAllies, setShowArmyListAllies] = useState(false)
   const [armyListUnitName, setArmyListUnitName] = useState('')
   const [expandedArmyListEntries, setExpandedArmyListEntries] = useState({})
   const [turnStructure, setTurnStructure] = useState({ edition: '11th', turn_sequence: DEFAULT_TURN_STRUCTURE })
@@ -13468,7 +13871,7 @@ function App() {
         if (!active) {
           return
         }
-        const items = data.items || []
+        const items = filterFactionUnitsByAllyVisibility(data.items, showAttackerAllies)
         setAttackerUnits(items)
         setAttackerUnit((currentUnit) => (
           items.some((unit) => unit.name === currentUnit)
@@ -13488,7 +13891,7 @@ function App() {
     return () => {
       active = false
     }
-  }, [attackerFaction])
+  }, [attackerFaction, showAttackerAllies])
 
   useEffect(() => {
     if (!battlefieldAddAttackerFaction) {
@@ -13509,7 +13912,7 @@ function App() {
         if (!active) {
           return
         }
-        const items = data.items || []
+        const items = filterFactionUnitsByAllyVisibility(data.items, false)
         setBattlefieldAddAttackerUnits(items)
         setBattlefieldAddAttackerUnitName((currentUnit) => (
           items.some((unit) => unit.name === currentUnit)
@@ -13658,7 +14061,7 @@ function App() {
         if (!active) {
           return
         }
-        const items = data.items || []
+        const items = filterFactionUnitsByAllyVisibility(data.items, showArmyListAllies)
         setArmyListUnits(items)
         setArmyListUnitName((currentUnit) => (
           items.some((unit) => unit.name === currentUnit)
@@ -13678,7 +14081,7 @@ function App() {
     return () => {
       active = false
     }
-  }, [armyListFaction])
+  }, [armyListFaction, showArmyListAllies])
 
   const attackerArmyListDeploymentEntries = useMemo(() => {
     const sideEntries = armyListEntries.filter((entry) => entry.battlefieldRosterSide === 'attacker')
@@ -13776,7 +14179,7 @@ function App() {
         if (!active) {
           return
         }
-        const items = data.items || []
+        const items = filterFactionUnitsByAllyVisibility(data.items, showDefenderAllies)
         setDefenderUnits(items)
         setDefenderUnit((currentUnit) => (
           items.some((unit) => unit.name === currentUnit)
@@ -13796,7 +14199,7 @@ function App() {
     return () => {
       active = false
     }
-  }, [defenderFaction])
+  }, [defenderFaction, showDefenderAllies])
 
   useEffect(() => {
     if (!battlefieldAddDefenderFaction) {
@@ -15029,8 +15432,10 @@ function App() {
     || unitHasWaaagh(attachedSupportUnitDetails)
   )
   const canUseAttackerPrey = selectedAttackerDetachment?.name === DA_BIG_HUNT
-  const canUseAttackerCombatDoctrine = selectedAttackerDetachment?.name === GLADIUS_TASK_FORCE
-  const canUseAttackerTemplarVow = attackerArmyIsBlackTemplars
+  const canUseAttackerCombatDoctrine = unitHasCombatDoctrines(attackerUnitDetails)
+  const canUseAttackerTemplarVow = Boolean(
+    attackerFactionDetails?.army_rules?.some((rule) => rule.name === 'Templar Vows'),
+  )
   const canUseAttackerMartialKatah = attackerArmyIsAdeptusCustodes && isMeleeWeapon
   const canUseAttackerImperialKnightsQuality = attackerArmyIsImperialKnights
   const canUseAttackerChaosKnightsDreadAbility = attackerArmyIsChaosKnights
@@ -15040,7 +15445,7 @@ function App() {
   const canUseDefenderDoctrinaImperative = defenderArmyIsAdeptusMechanicus && isMeleeWeapon
   const canUseDefenderAstraMilitarumOrder = defenderArmyIsAstraMilitarum
   const canUseAttackerHyperAdaptation = selectedAttackerDetachment?.name === INVASION_FLEET
-  const canUseAttackerBlackSpearMissionTactic = selectedAttackerDetachment?.name === BLACK_SPEAR_TASK_FORCE
+  const canUseAttackerBlackSpearMissionTactic = false
   const canUseAttackerPenitentVow = selectedAttackerDetachment?.name === PENITENT_HOST
   const canUseAttackerRighteous = selectedAttackerDetachment?.name === CHAMPIONS_OF_FAITH
   const canUseDefenderRighteous = selectedDefenderDetachment?.name === CHAMPIONS_OF_FAITH
@@ -15152,7 +15557,11 @@ function App() {
     || canUseAttackerMercyIsWeakness
     || unitHasAbility(attackerUnitDetails, 'Fortis Doctrines')
   )
-  const canUseTargetBelowHalfStrength = attackerEnhancementName === "'Eadstompa" || unitHasAbility(attackerUnitDetails, 'Fortis Doctrines')
+  const canUseTargetBelowHalfStrength = (
+    attackerEnhancementName === "'Eadstompa"
+    || unitHasAbility(attackerUnitDetails, 'Fortis Doctrines')
+    || (isMeleeWeapon && unitHasAbility(attackerUnitDetails, 'Indomitor Doctrines'))
+  )
   const canUseParasiticBiomorphologyFed = attackerEnhancementName === 'Parasitic Biomorphology' && isMeleeWeapon
   const canUseAttackerCountsAsTenPlus = selectedAttackerDetachment?.name === GREEN_TIDE && attackerPackageModelCount < 10
   const canUseDefenderCountsAsTenPlus = selectedDefenderDetachment?.name === GREEN_TIDE && defenderPackageModelCount < 10
@@ -15941,7 +16350,7 @@ function App() {
       : '',
   )
   const attackerPreyTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Da Hunt Is On')?.rules_text || ''
-  const attackerCombatDoctrineTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Combat Doctrines')?.rules_text || ''
+  const attackerCombatDoctrineTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Combat Doctrines')?.rules_text || ''
   const attackerTemplarVowTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Templar Vows')?.rules_text || ''
   const attackerImperialKnightsQualityTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Code Chivalric')?.rules_text || ''
   const attackerChaosKnightsDreadTooltip = attackerFactionDetails?.army_rules?.find((rule) => rule.name === 'Harbingers of Dread')?.rules_text || ''
@@ -17689,6 +18098,10 @@ function App() {
       unitEngagedBefore: selectedBattlefieldWasEngagedAtStart,
       advancedThisTurn: selectedBattlefieldMoveType === 'advance',
       fellBackThisTurn: selectedBattlefieldMoveType === 'fall_back',
+      canChargeAfterAdvance: attackerCombatDoctrine === 'assault'
+        && unitHasCombatDoctrines(getBattlefieldUnitDetails(selectedBattlefieldUnit)),
+      canChargeAfterFallBack: attackerCombatDoctrine === 'tactical'
+        && unitHasCombatDoctrines(getBattlefieldUnitDetails(selectedBattlefieldUnit)),
       startGapOverride: getMinimumModelGapInches(startModels, targetModels),
       endGapOverride: getMinimumModelGapInches(endModels, targetModels),
     })
@@ -17696,6 +18109,7 @@ function App() {
     battlefieldModelMoveStarts,
     battlefieldModelOffsets,
     battlefieldPositions,
+    attackerCombatDoctrine,
     selectedBattlefieldChargeRoll,
     selectedBattlefieldChargeTargetUnit,
     selectedBattlefieldMoveStart,
@@ -20048,6 +20462,10 @@ function App() {
             unitEngagedBefore,
             advancedThisTurn: moveType === 'advance',
             fellBackThisTurn: moveType === 'fall_back',
+            canChargeAfterAdvance: attackerCombatDoctrine === 'assault'
+              && unitHasCombatDoctrines(getBattlefieldUnitDetails(unit)),
+            canChargeAfterFallBack: attackerCombatDoctrine === 'tactical'
+              && unitHasCombatDoctrines(getBattlefieldUnitDetails(unit)),
           })
           : validateBattlefieldModelMove({
             start: startInches,
@@ -23543,6 +23961,17 @@ function App() {
                   </select>
                 </label>
 
+                {attackerFaction === GENESTEALER_CULTS ? (
+                  <label className="checkbox-row" title="Include the permitted Astra Militarum and Tyranid allied datasheets.">
+                    <input
+                      type="checkbox"
+                      checked={showAttackerAllies}
+                      onChange={(event) => setShowAttackerAllies(event.target.checked)}
+                    />
+                    <span>Add Allies</span>
+                  </label>
+                ) : null}
+
                 <label>
                   <span>Attacking Unit</span>
                   <SearchableUnitSelect
@@ -23718,6 +24147,17 @@ function App() {
                     ))}
                   </select>
                 </label>
+
+                {defenderFaction === GENESTEALER_CULTS ? (
+                  <label className="checkbox-row" title="Include the permitted Astra Militarum and Tyranid allied datasheets.">
+                    <input
+                      type="checkbox"
+                      checked={showDefenderAllies}
+                      onChange={(event) => setShowDefenderAllies(event.target.checked)}
+                    />
+                    <span>Add Allies</span>
+                  </label>
+                ) : null}
 
                 <label>
                   <span>Defending Unit</span>
@@ -31001,6 +31441,16 @@ function App() {
                 ))}
               </select>
             </label>
+            {armyListFaction === GENESTEALER_CULTS ? (
+              <label className="checkbox-row" title="Include the permitted Astra Militarum and Tyranid allied datasheets.">
+                <input
+                  type="checkbox"
+                  checked={showArmyListAllies}
+                  onChange={(event) => setShowArmyListAllies(event.target.checked)}
+                />
+                <span>Add Allies</span>
+              </label>
+            ) : null}
             <label>
               <span>Unit</span>
               <select
@@ -31010,7 +31460,7 @@ function App() {
               >
                 {armyListUnits.map((unit) => (
                   <option key={unit.name} value={unit.name}>
-                    {unit.name}
+                    {unit.is_ally ? `${unit.name} (${unit.ally_faction_name})` : unit.name}
                   </option>
                 ))}
               </select>

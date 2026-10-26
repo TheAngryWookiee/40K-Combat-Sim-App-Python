@@ -1,0 +1,4360 @@
+{
+    "faction": {
+        "name": "Leagues of Votann",
+        "parent_faction": "",
+        "category": "Xenos",
+        "army_rules": [
+            {
+                "name": "Prioritised Efficiency",
+                "rules_text": "As the Kin truth describes, Luck Has Need Toil earns. The Kinhosts' ability to efficiently switch their strategic footing embodies this wisdom. It results from swift assessments of a foe's possessions, how best to seize them for the Kindred's need and then to stubbornly toil to hold them against counterattacks.\n\nIf your Army Faction is LEAGUES OF VOTANN, LEAGUES OF VOTANN units from your army have one of two abilities: Hostile Acquisition or Fortify Takeover. During the battle, which ability those units have will change depending on how many Yield points (YP) you currently have.\n\nAt the start of the battle, your units have the Hostile Acquisition ability until the start of your next Command phase. At the end of your Command phase, if you have fewer than 7YP, your units have Hostile Acquisition until the start of your next Command phase. At the end of your Command phase, if you have 7YP or more, your units have Fortify Takeover until the start of your next Command phase.\n\nFrom the second battle round onwards, you gain 1 additional YP for each of the following conditions you satisfy: you control one or more objective markers not within your deployment zone; you control two or more objective markers not within your deployment zone; you control more objective markers than your opponent; you control more objective markers than your opponent controlled at the end of their turn.\n\nIn your turn, YP gained in this way are always gained before checking which ability LEAGUES OF VOTANN units from your army have. Whenever a rule allows you to spend YP, reduce the number of YP you have by that amount. You cannot go below 0YP unless that rule states otherwise.",
+                "implemented": false,
+                "options": [
+                    {
+                        "name": "Hostile Acquisition",
+                        "rules_text": "Each time a model in this unit makes an attack that targets an enemy unit within range of one or more objective markers and not within the enemy deployment zone, add 1 to the Hit roll. You can re-roll Advance and Charge rolls made for this unit.",
+                        "implemented": true
+                    },
+                    {
+                        "name": "Fortify Takeover",
+                        "rules_text": "Each time a model in this unit makes an attack that targets an enemy unit, if this unit is within range of one or more objective markers you control, add 1 to the Hit roll. Each time an attack targets this unit, if the Strength characteristic of that attack is greater than this unit's Toughness characteristic and this unit is not a VEHICLE, subtract 1 from the Wound roll.",
+                        "implemented": true
+                    },
+                    {
+                        "name": "Yield Points",
+                        "rules_text": "At the end of each player's Command phase, you gain 1YP if you control one or more objective markers within your deployment zone and one or more objective markers not within your deployment zone. At the end of each player's Command phase, you gain 1YP if you control one or more objective markers not within your deployment zone and not within your opponent's deployment zone.",
+                        "implemented": false
+                    }
+                ]
+            }
+        ],
+        "chapter_rules": [],
+        "derived_keywords": [],
+        "detachments": [
+            {
+                "name": "Needgård Oathband",
+                "rule": {
+                    "name": "Martial Levee",
+                    "rules_text": "Each time an enemy unit is destroyed, you gain 1YP.",
+                    "implemented": false
+                },
+                "additional_rules": [],
+                "keywords": [],
+                "restrictions": [],
+                "enhancements": [
+                    {
+                        "name": "Oathbound Speculator",
+                        "points": 30,
+                        "rules_text": "LEAGUES OF VOTANN model only. Each time a model in the bearer's unit makes an attack, re-roll a Wound roll of 1. Each time the bearer's unit is selected to shoot or fight, you can spend 3YP. If you do, until the end of the phase, each time a model in the bearer's unit makes an attack, add 1 to the Wound roll.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": true,
+                        "options": [
+                            {
+                                "name": "Oathbound Speculator - Spend 3YP",
+                                "rules_text": "Spend 3YP: add 1 to Wound rolls until end of phase.",
+                                "implemented": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Dead Reckoning",
+                        "points": 10,
+                        "rules_text": "LEAGUES OF VOTANN model only. At the end of the turn, if the bearer is on the battlefield and you spent no YP in that turn, you can gain 1YP.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Iron Ambassador",
+                        "points": 5,
+                        "rules_text": "LEAGUES OF VOTANN model equipped with an Autoch-pattern combi-bolter only. Once per battle, when the bearer's unit is selected to shoot, the bearer can use this Enhancement. If it does, spend up to 3YP and, until the end of the phase, add the number of YP you just spent to the Damage characteristic of the bearer's ranged weapons.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model equipped with an Autoch-pattern combi-bolter only."
+                        ],
+                        "implemented": true,
+                        "options": [
+                            {
+                                "name": "Iron Ambassador - Spend 1YP",
+                                "rules_text": "Spend 1YP: add 1 to Damage for the bearer's ranged weapons until end of phase.",
+                                "implemented": true
+                            },
+                            {
+                                "name": "Iron Ambassador - Spend 2YP",
+                                "rules_text": "Spend 2YP: add 2 to Damage for the bearer's ranged weapons until end of phase.",
+                                "implemented": true
+                            },
+                            {
+                                "name": "Iron Ambassador - Spend 3YP",
+                                "rules_text": "Spend 3YP: add 3 to Damage for the bearer's ranged weapons until end of phase.",
+                                "implemented": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Ancestral Crest",
+                        "points": 15,
+                        "rules_text": "LEAGUES OF VOTANN model only. Once per turn, when you target the bearer's unit with the Command Re-roll Stratagem, the bearer can use this Enhancement. If it does, spend 1YP and reduce the CP cost of that use of that Stratagem by 1CP.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": false
+                    }
+                ],
+                "stratagems": [
+                    {
+                        "name": "Void Hardened",
+                        "type": "Wargear",
+                        "cp_cost": 1,
+                        "when": "Your opponent's Shooting phase or the Fight phase, just after an enemy unit has selected its targets, if units from your army have Fortify Takeover.",
+                        "target": "One LEAGUES OF VOTANN unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+                        "effect": "Until the attacking unit has finished making its attacks, each time an attack targets your unit, worsen the Armour Penetration characteristic of that attack by 1.",
+                        "implemented": true
+                    },
+                    {
+                        "name": "Honour of the Hold",
+                        "type": "Battle Tactic",
+                        "cp_cost": 1,
+                        "when": "Fight phase.",
+                        "target": "One LEAGUES OF VOTANN unit from your army that has not been selected to fight this phase.",
+                        "effect": "Each time you use this Stratagem, you can spend 3YP. Select one enemy unit within Engagement Range of your unit. Until the end of the phase, each time a model in your unit makes a melee attack that targets that enemy unit, improve the Armour Penetration characteristic of that attack by 1. If you spent YP during this use of this Stratagem, improve the Armour Penetration characteristic of that attack by 2 instead.",
+                        "implemented": true,
+                        "options": [
+                            {
+                                "name": "Honour of the Hold - Standard",
+                                "rules_text": "Improve melee AP by 1.",
+                                "implemented": true
+                            },
+                            {
+                                "name": "Honour of the Hold - Spend 3YP",
+                                "rules_text": "Spend 3YP: improve melee AP by 2 instead.",
+                                "implemented": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Ordered Retreat",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your Movement phase, just after a LEAGUES OF VOTANN unit from your army Falls Back.",
+                        "target": "That LEAGUES OF VOTANN unit.",
+                        "effect": "Until the end of the turn, your unit is eligible to shoot and declare a charge in a turn in which it Fell Back.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Ancestral Sentence",
+                        "type": "Battle Tactic",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase.",
+                        "target": "One LEAGUES OF VOTANN unit from your army that has not been selected to shoot this phase.",
+                        "effect": "Each time you use this Stratagem, you can spend 3YP. Until the end of the phase, ranged weapons equipped by models in your unit have the [SUSTAINED HITS 1] ability. If you spent YP during this use of this Stratagem, until the end of the phase, those weapons have the [SUSTAINED HITS 2] ability instead.",
+                        "implemented": true,
+                        "options": [
+                            {
+                                "name": "Ancestral Sentence - Standard",
+                                "rules_text": "Ranged weapons gain Sustained Hits 1.",
+                                "implemented": true
+                            },
+                            {
+                                "name": "Ancestral Sentence - Spend 3YP",
+                                "rules_text": "Spend 3YP: ranged weapons gain Sustained Hits 2 instead.",
+                                "implemented": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Huntr's Mark",
+                        "type": "Battle Tactic",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase.",
+                        "target": "One LEAGUES OF VOTANN unit from your army that has not been selected to shoot this phase.",
+                        "effect": "Until the end of the phase, each time a model in your unit makes an attack, re-roll a Hit roll of 1 and re-roll a Wound roll of 1.",
+                        "implemented": true
+                    },
+                    {
+                        "name": "Reactive Reprisal",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 2,
+                        "when": "Your opponent's Shooting phase, just after an enemy unit has shot, if units from your army have Fortify Takeover.",
+                        "target": "One LEAGUES OF VOTANN unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+                        "effect": "Your unit can shoot as if it were your Shooting phase, can only target that enemy unit when doing so, and can only do so if that enemy unit is an eligible target.",
+                        "implemented": false
+                    }
+                ]
+            },
+            {
+                "name": "Persecution Prospect",
+                "rule": {
+                    "name": "Assailed from Every Angle",
+                    "rules_text": "LEAGUES OF VOTANN units from your army have the following ability: Guerrilla Adepts: In your Shooting phase, just after this unit is selected to shoot, this unit can use this ability. If it does, select one enemy unit (excluding MONSTERS and VEHICLES). Until the end of the phase, attacks made by models in this unit can only target that enemy unit (and only if it is an eligible target) and, after resolving those attacks, if one or more of those attacks hit that enemy unit, until the start of your next Shooting phase, that enemy unit is assailed (this simply labels that unit for the purposes of this ability and some Enhancements and Stratagems). If that unit is already assailed, until the start of your next Shooting phase, it is also pinned. While a unit is pinned, subtract 2\" from its Move characteristic and subtract 2 from Charge rolls made for it.",
+                    "implemented": false
+                },
+                "additional_rules": [],
+                "keywords": [],
+                "restrictions": [],
+                "enhancements": [
+                    {
+                        "name": "Eye for Weakness",
+                        "points": 25,
+                        "rules_text": "LEAGUES OF VOTANN model only. Each time a model in the bearer's unit makes an attack that targets an assailed unit, add 1 to the Wound roll.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": true
+                    },
+                    {
+                        "name": "Writ of Acquisition",
+                        "points": 10,
+                        "rules_text": "LEAGUES OF VOTANN model only. In your Shooting phase, after the bearer's unit has shot, you gain 1YP for each assailed enemy unit hit by one or more of those attacks (to a maximum of 3YP).",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Surgical Saboteur",
+                        "points": 10,
+                        "rules_text": "LEAGUES OF VOTANN model only. In your Shooting phase, after the bearer's unit has shot, select one MONSTER or VEHICLE unit hit by one or more of those attacks; until the start of your next Shooting phase, that unit is pinned.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Nomad Strategist",
+                        "points": 20,
+                        "rules_text": "LEAGUES OF VOTANN model only. Once per battle, at the end of your opponent's Fight phase, if the bearer is on the battlefield, it can use this Enhancement. If it does, you can spend up to 4YP. Select one HERNKYN unit from your army, and, for every 2YP you just spent, select up to one additional HERNKYN unit from your army. You can remove those units from the battlefield and place them into Strategic Reserves. You cannot select a unit that is within Engagement Range of one or more enemy units (excluding assailed units).",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": false
+                    }
+                ],
+                "stratagems": [
+                    {
+                        "name": "Adaptable Avarice",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Start of any phase, if units from your army have Fortify Takeover.",
+                        "target": "One LEAGUES OF VOTANN CHARACTER unit from your army.",
+                        "effect": "Each time you use this Stratagem, you can spend any number of YP. Once you have done so, if you have 6 or fewer YP until the start of your next turn, units from your army have Hostile Acquisition instead.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Frontier Momentum",
+                        "type": "Battle Tactic",
+                        "cp_cost": 1,
+                        "when": "Your Movement phase.",
+                        "target": "One HERNKYN unit from your army that has not been selected to move this phase.",
+                        "effect": "Until the end of the phase, if your unit Advances, do not make an Advance roll for it. Instead, until the end of the phase, add 6\" to the Move characteristic of models in your unit.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Exposed Flaws",
+                        "type": "Battle Tactic",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase.",
+                        "target": "One HERNKYN unit from your army that has not been selected to shoot this phase.",
+                        "effect": "Each time you use this Stratagem, you can spend 2YP. Until the end of the phase, each time a model in your unit makes an attack, if you spent YP during this use of this Stratagem and/or if that attack targets an assailed unit, you can re-roll the Wound roll.",
+                        "implemented": true
+                    },
+                    {
+                        "name": "Ranger Tactics",
+                        "type": "Battle Tactic",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase.",
+                        "target": "One LEAGUES OF VOTANN unit from your army that has not been selected to shoot this phase.",
+                        "effect": "Until the end of the phase, each time a model in your unit makes an attack, if that attack targets an assailed unit and/or if your unit has the HERNKYN keyword, you can re-roll the Hit roll.",
+                        "implemented": true
+                    },
+                    {
+                        "name": "Claimstaker Reflex",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your opponent's Movement phase, just after an enemy unit ends a Normal, Advance or Fall Back move.",
+                        "target": "One LEAGUES OF VOTANN unit from your army (excluding ARTILLERY and VEHICLE units) that is within 8\" of that enemy unit.",
+                        "effect": "Each time you use this Stratagem, you can spend 2YP. Your unit can make a Normal move of up to D6\". If you spent YP during this use of this Stratagem, your unit can make a Normal move of up to 6\" instead.",
+                        "restrictions": [
+                            "A unit cannot embark within a TRANSPORT as part of this move."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Dispersed Formation",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your opponent's Shooting phase, just after an enemy unit has selected its targets.",
+                        "target": "One LEAGUES OF VOTANN INFANTRY or LEAGUES OF VOTANN MOUNTED unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+                        "effect": "Until the end of the phase, your unit has the Stealth ability and each time a ranged attack targets your unit, models in your unit have the Benefit of Cover against that attack.",
+                        "implemented": true
+                    }
+                ]
+            },
+            {
+                "name": "Dèlve Assault Shift",
+                "rule": {
+                    "name": "Fury from the Dèlve",
+                    "rules_text": "CHTHONIAN BESERKS units from your army have the Deep Strike ability.",
+                    "implemented": false
+                },
+                "additional_rules": [],
+                "keywords": [
+                    "BATTLELINE"
+                ],
+                "restrictions": [],
+                "enhancements": [
+                    {
+                        "name": "Dèlvewere Navigator",
+                        "points": 25,
+                        "rules_text": "LEAGUES OF VOTANN model only. In the Reinforcements step of your Movement phase, the bearer can use this Enhancement. If it does, select one friendly CTHONIAN BESERKS unit visible to the bearer and then spend any number of YP. Return one destroyed model (excluding CHARACTER models) to that unit and then, for every 2YP you just spent, return up to one additional destroyed model (excluding CHARACTER models) to that unit.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Multiwave System Jammer",
+                        "points": 10,
+                        "rules_text": "LEAGUES OF VOTANN model only. Once per battle, in your Movement phase, if the bearer is on the battlefield, it can use this Enhancement. If it does, select one friendly CTHONIAN unit that is in Reserves. Until the end of the phase, for the purposes of setting up that unit on the battlefield, treat the current battle round number as being one higher than it actually is.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Quake Supervisor",
+                        "points": 20,
+                        "rules_text": "LEAGUES OF VOTANN model only. While the bearer is within 3\" of one or more friendly LEAGUES OF VOTANN ARTILLERY units, the bearer has the Lone Operative ability, and each time one of those ARTILLERY units makes a ranged attack that targets an enemy unit visible to the bearer, add 1 to the Hit roll.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": true
+                    },
+                    {
+                        "name": "Piledriver",
+                        "points": 15,
+                        "rules_text": "LEAGUES OF VOTANN model only. Each time the bearer's unit is selected to fight, the bearer can use this Enhancement. If it does, spend up to 2YP and, until the end of the phase, add the number of YP you just spent to the Damage characteristic of the bearer's melee weapons.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": true,
+                        "options": [
+                            {
+                                "name": "Piledriver - Spend 1YP",
+                                "rules_text": "Spend 1YP: add 1 to Damage for the bearer's melee weapons until end of phase.",
+                                "implemented": true
+                            },
+                            {
+                                "name": "Piledriver - Spend 2YP",
+                                "rules_text": "Spend 2YP: add 2 to Damage for the bearer's melee weapons until end of phase.",
+                                "implemented": true
+                            }
+                        ]
+                    }
+                ],
+                "stratagems": [
+                    {
+                        "name": "Cyberstimm Infusion",
+                        "type": "Battle Tactic",
+                        "cp_cost": 1,
+                        "when": "Fight phase.",
+                        "target": "One CTHONIAN BESERKS unit from your army that has not been selected to fight this phase.",
+                        "effect": "Each time you use this Stratagem, you can spend 2YP. Until the end of the phase, each time a model in your unit makes an attack, re-roll a Wound roll of 1. If you spent YP during this use of this Stratagem, you can re-roll the Wound roll instead.",
+                        "implemented": true,
+                        "options": [
+                            {
+                                "name": "Cyberstimm Infusion - Standard",
+                                "rules_text": "Re-roll Wound rolls of 1.",
+                                "implemented": true
+                            },
+                            {
+                                "name": "Cyberstimm Infusion - Spend 2YP",
+                                "rules_text": "Spend 2YP: re-roll all Wound rolls instead.",
+                                "implemented": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Unstoppable Force",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Fight phase.",
+                        "target": "One LEAGUES OF VOTANN unit from your army that has not been selected to fight this phase.",
+                        "effect": "Until the end of the phase, each time your unit Piles In or Consolidates, each model in that unit can move up to 6\" instead of up to 3\".",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Augmented Assault",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your Movement phase.",
+                        "target": "One CTHONIAN BESERKS unit from your army that has not been selected to move this phase.",
+                        "effect": "Each time you use this Stratagem, you can spend up to 2YP. Until the end of the turn, add X\" to the Move characteristic of models in your unit, where X is the number of YP you spent during this use of this Stratagem, and your unit is eligible to declare a charge in a turn in which it Advanced.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Tectonic Fracture",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase, just after a CTHONIAN EARTHSHAKERS unit from your army has shot.",
+                        "target": "That CTHONIAN EARTHSHAKERS unit.",
+                        "effect": "Each time you use this Stratagem, you can spend 2YP. Select one enemy unit hit by one or more of your unit's attacks this phase. Until the start of your next Shooting phase, subtract 2 from that unit's Move characteristic and, if you spent YP during this use of this Stratagem, subtract 2 from Charge rolls made for that unit.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Wavewrecker Buttress",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your opponent's Shooting phase, just after an enemy unit has selected its targets, if units from your army have Hostile Acquisition.",
+                        "target": "One LEAGUES OF VOTANN INFANTRY unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+                        "effect": "Until the end of the phase, each time an attack targets your unit, subtract 1 from the Wound roll.",
+                        "implemented": true
+                    },
+                    {
+                        "name": "Hidden Accessways",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "End of your opponent's Fight phase.",
+                        "target": "One CTHONIAN BESERKS, HEARTHKYN WARRIORS or HERNKYN YAEGIRS unit from your army that is not within Engagement Range of one or more enemy units.",
+                        "effect": "Remove your unit from the battlefield and place it into Strategic Reserves.",
+                        "implemented": false
+                    }
+                ]
+            },
+            {
+                "name": "Brandfast Oathband",
+                "rule": {
+                    "name": "Mobile Sensor Relays",
+                    "rules_text": "LEAGUES OF VOTANN TRANSPORT units from your army have the following ability:\n\nFirebase Control (Aura): While a friendly LEAGUES OF VOTANN INFANTRY unit is wholly within 6\" of this TRANSPORT, ranged weapons equipped by models in that INFANTRY unit have the [SUSTAINED HITS 1] ability.",
+                    "implemented": true
+                },
+                "additional_rules": [],
+                "keywords": [],
+                "restrictions": [],
+                "enhancements": [
+                    {
+                        "name": "Tactical Alchemy",
+                        "points": 10,
+                        "rules_text": "KÂHL model only. In your Command phase, if the bearer's unit is within range of one or more objective markers you control that are not within your deployment zone, you can spend 1YP. If you do, roll one D6: on a 4+, you gain 1CP.",
+                        "restrictions": [
+                            "KÂHL model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Trivârg Cyber Implant",
+                        "points": 40,
+                        "rules_text": "LEAGUES OF VOTANN model only. In your Shooting phase, each time the bearer's unit is selected to shoot, if it disembarked from a TRANSPORT this turn, or if you spend 2YP, until the end of the phase, ranged weapons equipped by models in that unit have the [SUSTAINED HITS 2] ability.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Precursive Judgement",
+                        "points": 15,
+                        "rules_text": "KÂHL model only. While the bearer's unit is wholly within 6\" of one or more friendly LEAGUES OF VOTANN TRANSPORT units, you can target the bearer's unit with the Fire Overwatch Stratagem for 0CP and hits are scored on unmodified Hit rolls of 5+ while resolving that Stratagem.",
+                        "restrictions": [
+                            "KÂHL model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Signature Restoration",
+                        "points": 5,
+                        "rules_text": "IRON-MASTER model only. Each time a friendly LEAGUES OF VOTANN model is repaired using the bearer's Forgewrought Expertise ability, that model regains 1 additional lost wound.",
+                        "restrictions": [
+                            "IRON-MASTER model only."
+                        ],
+                        "implemented": false
+                    }
+                ],
+                "stratagems": [
+                    {
+                        "name": "Secure Positions",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "End of any of your phases.",
+                        "target": "One LEAGUES OF VOTANN TRANSPORT unit from your army.",
+                        "effect": "One LEAGUES OF VOTANN unit embarked within your TRANSPORT can disembark. When doing so, models in that unit can be set up anywhere on the battlefield wholly within 6\" of your TRANSPORT. That unit cannot declare a charge in the same turn, but can otherwise act normally in the remainder of the turn.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Bastion Running",
+                        "type": "Battle Tactic",
+                        "cp_cost": 1,
+                        "when": "Your Movement phase.",
+                        "target": "One HEKATON LAND FORTRESS unit from your army that has not been selected to move this phase.",
+                        "effect": "Until the end of the phase, each time your unit makes a Normal or Advance move, it can move horizontally through terrain features.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Illuminated Priority",
+                        "type": "Wargear",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase, just after a LEAGUES OF VOTANN VEHICLE unit from your army has shot.",
+                        "target": "That LEAGUES OF VOTANN VEHICLE unit.",
+                        "effect": "Select one enemy unit hit by one or more of those attacks. Until the end of the phase, each time a LEAGUES OF VOTANN INFANTRY model from your army makes an attack that targets that enemy unit, re-roll a Hit roll of 1.",
+                        "implemented": true
+                    },
+                    {
+                        "name": "Inexorable Efficiency",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase.",
+                        "target": "One LEAGUES OF VOTANN unit from your army.",
+                        "effect": "Until the end of the phase, your unit is eligible to shoot in a turn in which it Fell Back.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Opportunistic Escalation",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your opponent's Shooting phase, just after an enemy unit has shot, if units from your army have Hostile Acquisition.",
+                        "target": "One LEAGUES OF VOTANN VEHICLE unit from your army (excluding HEKATON LAND FORTRESS units) that was hit by one or more of those attacks.",
+                        "effect": "Your unit can make a Normal move of up to D6\".",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Vengeance Flare",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 2,
+                        "when": "Your opponent's Shooting phase, just after an enemy unit has shot.",
+                        "target": "One LEAGUES OF VOTANN INFANTRY unit that was hit by one or more of those attacks.",
+                        "effect": "Each time you use this Stratagem, you can spend 2YP. Select one friendly KÂPRICUS or SAGITAUR unit within 6\" of your INFANTRY unit. If you spent YP during this use of this Stratagem, you can select one friendly HEKATON LAND FORTRESS unit within 6\" of your INFANTRY unit instead. The selected unit can shoot as if it were your Shooting phase. When doing so, models in the selected unit can only target that enemy unit (and only if it is an eligible target).",
+                        "implemented": false
+                    }
+                ]
+            },
+            {
+                "name": "Hearthfyre Arsenal",
+                "rule": {
+                    "name": "Optimal Application",
+                    "rules_text": "At the end of your Command phase, you gain 1YP for each objective marker you control that is not within your deployment zone and has one or more IRON-MASTER and/or MEMNYR STRATEGIST models from your army within range of it (to a maximum of 2YP gained from this Detachment rule per turn).\n\nIn your Shooting phase, each time a BRÔKHYR IRONKIN STEELJACKS or ARKANYST EVALUATOR unit from your army is selected to shoot, you can spend 1YP. If you do, until the end of the phase, each time a model in that unit makes an attack, re-roll a Hit roll of 1.",
+                    "implemented": true
+                },
+                "additional_rules": [],
+                "keywords": [],
+                "restrictions": [],
+                "enhancements": [
+                    {
+                        "name": "Fârstrydr Node",
+                        "points": 20,
+                        "rules_text": "IRON-MASTER or MEMNYR STRATEGIST model only. Models in the bearer's unit have the Deep Strike ability.",
+                        "restrictions": [
+                            "IRON-MASTER or MEMNYR STRATEGIST model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Calculated Tenacity",
+                        "points": 15,
+                        "rules_text": "IRON-MASTER or MEMNYR STRATEGIST model only. While the bearer is leading a unit, add 1 to the Objective Control characteristic of models in that unit.",
+                        "restrictions": [
+                            "IRON-MASTER or MEMNYR STRATEGIST model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Mantle of Elders",
+                        "points": 10,
+                        "rules_text": "MEMNYR STRATEGIST model only. Each time the bearer's unit is selected to shoot, if you spend 1YP using the Optimal Application Detachment rule when doing so, you can roll one D6: on a 2+, you gain 1YP.",
+                        "restrictions": [
+                            "MEMNYR STRATEGIST model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Graviton Vault",
+                        "points": 5,
+                        "rules_text": "IRON-MASTER model only. In your Shooting phase, after the bearer has shot, and in the Fight phase, after the bearer has fought, select one enemy MONSTER or VEHICLE unit hit by one or more of those attacks. Until the start of your next turn, that enemy unit is suppressed. While a unit is suppressed, each time a model in that unit makes an attack, subtract 1 from the Hit roll.",
+                        "restrictions": [
+                            "IRON-MASTER model only."
+                        ],
+                        "implemented": true
+                    }
+                ],
+                "stratagems": [
+                    {
+                        "name": "Unwavering Accuracy",
+                        "type": "Battle Tactic",
+                        "cp_cost": 2,
+                        "when": "Your Shooting phase.",
+                        "target": "One BRÔKHYR THUNDERKYN unit from your army that has not been selected to shoot this phase.",
+                        "effect": "Until the end of the phase, each time a model in your unit makes an attack, you can ignore any or all modifiers to the following: that attack's Ballistic Skill characteristic; the Hit roll; the Wound roll; that attack's Armour Penetration characteristic.",
+                        "implemented": true
+                    },
+                    {
+                        "name": "First Concern",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase, just after a BRÔKHYR IRONKIN STEELJACKS or ARKANYST EVALUATOR unit from your army has shot.",
+                        "target": "That BRÔKHYR IRONKIN STEELJACKS or ARKANYST EVALUATOR unit.",
+                        "effect": "If your unit Remained Stationary in your Movement phase this turn, it can make a Normal move.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Delayed-Fire Rounds",
+                        "type": "Wargear",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase, just after a BRÔKHYR IRONKIN STEELJACKS or ARKANYST EVALUATOR unit from your army has shot.",
+                        "target": "That BRÔKHYR IRONKIN STEELJACKS or ARKANYST EVALUATOR unit.",
+                        "effect": "Select one enemy unit (excluding MONSTERS and VEHICLES) hit by one or more of those attacks. Until the start of your next Shooting phase, each time that enemy unit makes a Normal, Advance or Fall Back move, roll one D6 for each model in that unit: for each 1, that unit suffers 1 mortal wound (to a maximum of 6 mortal wounds).",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Wall of Steel",
+                        "type": "Battle Tactic",
+                        "cp_cost": 1,
+                        "when": "Your Charge phase, just after an IRONKIN STEELJACKS unit from your army ends a Charge move.",
+                        "target": "That IRONKIN STEELJACKS unit.",
+                        "effect": "Each time you use this Stratagem, you can spend 2YP. Select one enemy unit (excluding MONSTERS and VEHICLES) within Engagement Range of your unit and roll one D6 for each model in your unit, rolling two additional D6 if you spent YP during this use of this Stratagem: for each 4+, that enemy unit suffers 1 mortal wound (to a maximum of 6 mortal wounds).",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Preventative Purge",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your opponent's Movement phase, just after an enemy unit ends a Fall Back move.",
+                        "target": "One BRÔKHYR THUNDERKYN or IRONKIN STEELJACKS unit from your army.",
+                        "effect": "Your unit can shoot as if it were your Shooting phase. When doing so, models in your unit can only target that enemy unit (and only if it is an eligible target) and each time a model in your unit makes an attack, subtract 1 from the Hit roll.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Cogitated Need",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "End of your opponent's Movement phase.",
+                        "target": "One IRONKIN STEELJACKS unit from your army.",
+                        "effect": "Your unit can make a Normal move. When doing so, your unit must end that move as close as possible to the closest objective marker.",
+                        "implemented": false
+                    }
+                ]
+            },
+            {
+                "name": "Hearthband",
+                "unique": "HEARTHBAND",
+                "rule": {
+                    "name": "Methodical Annihilation",
+                    "rules_text": "Each time a LEAGUES OF VOTANN model from your army makes an attack with a weapon that targets the closest eligible target or a target that is within Engagement Range of that model's unit:\n- Re-roll a Wound roll of 1.\n- If your unit is a KÂHL, EINHYR HEARTHGUARD or ÛTHAR THE DESTINED unit, improve the Armour Penetration characteristic of that attack by 1.",
+                    "implemented": true
+                },
+                "additional_rules": [],
+                "keywords": [],
+                "restrictions": [],
+                "enhancements": [
+                    {
+                        "name": "Bastion Shield",
+                        "points": 25,
+                        "rules_text": "LEAGUES OF VOTANN model only. Each time a ranged attack targets the bearer's unit, if the attacking model is within 12\" of the bearer's unit, worsen the Armour Penetration characteristic of that attack by 1. If you spend 1YP, until the end of the phase, if the attacking model is within 18\" of the bearer's unit, worsen the Armour Penetration characteristic of that attack by 1 instead.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": true
+                    },
+                    {
+                        "name": "Quake Multigenerator",
+                        "points": 15,
+                        "rules_text": "KÂHL model only. In your Shooting phase, after the bearer has shot, select one enemy unit (excluding TITANIC units) hit by one or more of those attacks. Until the start of your next turn, that enemy unit is suppressed. While a unit is suppressed, each time a model in that unit makes an attack, subtract 1 from the Hit roll.",
+                        "restrictions": [
+                            "KÂHL model only."
+                        ],
+                        "implemented": true
+                    },
+                    {
+                        "name": "Ironskin",
+                        "points": 10,
+                        "rules_text": "LEAGUES OF VOTANN model only. Add 2 to the bearer's Wounds characteristic.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "High Kâhl",
+                        "points": 30,
+                        "rules_text": "KÂHL model only. Each time a model in the bearer's unit is destroyed by a melee attack, if it has not fought this phase, roll one D6: on a 4+, do not remove it from play. The destroyed model can fight after the attacking unit has finished making its attacks, and is then removed from play.",
+                        "restrictions": [
+                            "KÂHL model only."
+                        ],
+                        "implemented": false
+                    }
+                ],
+                "stratagems": [
+                    {
+                        "name": "Brêkkeknots",
+                        "type": "Battle Tactic",
+                        "cp_cost": 1,
+                        "when": "Your opponent's Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
+                        "target": "One KÂHL, ÛTHAR THE DESTINED or EINHYR HEARTHGUARD unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
+                        "effect": "Until the end of the phase, models in your unit have a 4+ invulnerable save.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Sure of Purpose",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Fight phase.",
+                        "target": "One LEAGUES OF VOTANN unit from your army that has not been selected to fight this phase.",
+                        "effect": "Until the end of the phase, each time a model in your unit makes a Pile-in or Consolidation move, it can move up to 5\" instead of up to 3\".",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Superior Craftsmanship",
+                        "type": "Battle Tactic",
+                        "cp_cost": 2,
+                        "when": "Fight phase.",
+                        "target": "One LEAGUES OF VOTANN unit from your army that has not been selected to fight this phase.",
+                        "effect": "Until the end of the phase, each time a model in your unit makes an attack that targets a MONSTER or VEHICLE unit, add 1 to the Damage characteristic of that attack.",
+                        "implemented": true
+                    },
+                    {
+                        "name": "Unyielding Aggression",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your Movement phase, just after a LEAGUES OF VOTANN INFANTRY unit from your army Falls Back.",
+                        "target": "That LEAGUES OF VOTANN INFANTRY unit.",
+                        "effect": "Until the end of the turn, your unit is eligible to shoot and declare a charge in a turn in which it Fell Back.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Materialisation Matrices",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "The Reinforcements step of your Movement phase.",
+                        "target": "One LEAGUES OF VOTANN unit from your army that is in Reserves and has the Deep Strike ability.",
+                        "effect": "Until the end of the phase, when your unit is set up on the battlefield using the Deep Strike ability, it can be set up anywhere on the battlefield that is more than 6\" horizontally away from all enemy units.",
+                        "restrictions": [
+                            "Until the end of the turn, your unit is not eligible to declare a charge."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Fury of the Hearth",
+                        "type": "Battle Tactic",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase.",
+                        "target": "One EINHYR HEARTHGUARD unit from your army that has not been selected to shoot this phase.",
+                        "effect": "Until the end of the phase, improve the Strength characteristic of ranged weapons equipped by models in your unit by 1. If you spend 1YP, until the end of the phase, ranged weapons equipped by models in that unit have the [SUSTAINED HITS 1] ability as well.",
+                        "implemented": true,
+                        "options": [
+                            {
+                                "name": "Fury of the Hearth - Standard",
+                                "rules_text": "Add 1 Strength to ranged weapons.",
+                                "implemented": true
+                            },
+                            {
+                                "name": "Fury of the Hearth - Spend 1YP",
+                                "rules_text": "Add 1 Strength and gain Sustained Hits 1.",
+                                "implemented": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Mercenary Oathband",
+                "rule": {
+                    "name": "Ruthless Reinvestment",
+                    "rules_text": "Your LEAGUES OF VOTANN units do not have the Hostile Acquisition or Fortify Takeover abilities except as described in this rule. At the start of the battle, your LEAGUES OF VOTANN units have the Hostile Acquisition ability. At the end of your Command phase, you can spend 3YP. If you do, LEAGUES OF VOTANN units from your army lose the Hostile Acquisition ability and gain the Fortify Takeover ability, or vice versa.",
+                    "implemented": false
+                },
+                "additional_rules": [],
+                "keywords": [],
+                "restrictions": [],
+                "enhancements": [
+                    {
+                        "name": "Mercenary Prospector",
+                        "points": 20,
+                        "rules_text": "KÂHL model only. Each time an enemy unit is destroyed by the bearer's unit, gain 2YP.",
+                        "restrictions": [
+                            "KÂHL model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Metaphysical Brokerage",
+                        "points": 20,
+                        "rules_text": "MEMNYR STRATEGIST model only. At the end of your turn, if the bearer is on the battlefield and you gained fewer than 3YP this turn, you gain an amount of YP equal to the difference.",
+                        "restrictions": [
+                            "MEMNYR STRATEGIST model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Etacarn SB9 Targeting Implant",
+                        "points": 15,
+                        "rules_text": "LEAGUES OF VOTANN model only. Each time a model in the bearer's unit makes an attack, re-roll a Hit roll of 1. Each time the bearer's unit is selected to shoot or fight, you can spend 3YP. If you do, until the end of the phase, each time a model in the bearer's unit makes an attack, that attack has the [SUSTAINED HITS 1] ability.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": true,
+                        "options": [
+                            {
+                                "name": "Etacarn SB9 Targeting Implant - Spend 3YP",
+                                "rules_text": "Spend 3YP: attacks gain Sustained Hits 1.",
+                                "implemented": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Asset Manipulator",
+                        "points": 25,
+                        "rules_text": "LEAGUES OF VOTANN model only. At the start of the Command phase, you can spend 3YP. If you do, until the end of the turn, while an enemy unit is within 3\" of the bearer, subtract 1 from the Objective Control characteristic of models in that enemy unit.",
+                        "restrictions": [
+                            "LEAGUES OF VOTANN model only."
+                        ],
+                        "implemented": false
+                    }
+                ],
+                "stratagems": [
+                    {
+                        "name": "Auxiliary Contract",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase or the Fight phase.",
+                        "target": "One LEAGUES OF VOTANN INFANTRY or LEAGUES OF VOTANN MOUNTED unit from your army that has not been selected to shoot or fight this phase.",
+                        "effect": "Until the end of the phase, weapons equipped by models in your unit have the [PRECISION] ability.",
+                        "implemented": true
+                    },
+                    {
+                        "name": "Optimal Expenditure",
+                        "type": "Wargear",
+                        "cp_cost": 1,
+                        "when": "The Fight phase.",
+                        "target": "One LEAGUES OF VOTANN INFANTRY unit from your army that has not been selected to fight this phase.",
+                        "effect": "Each time you use this Stratagem, you can spend 3YP. Until the end of the phase, each time a model in your unit makes an attack, re-roll a Hit roll of 1 and re-roll a Wound roll of 1. If you spent YP during this usage of this Stratagem, you can re-roll a Hit roll of 1 and re-roll the Wound roll instead.",
+                        "implemented": true,
+                        "options": [
+                            {
+                                "name": "Optimal Expenditure - Standard",
+                                "rules_text": "Re-roll Hit and Wound rolls of 1.",
+                                "implemented": true
+                            },
+                            {
+                                "name": "Optimal Expenditure - Spend 3YP",
+                                "rules_text": "Spend 3YP: re-roll Hit rolls of 1 and all Wound rolls.",
+                                "implemented": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Grand Artifice",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your Movement phase, just after a LEAGUES OF VOTANN unit from your army Falls Back.",
+                        "target": "That LEAGUES OF VOTANN unit.",
+                        "effect": "Until the end of the turn, your unit is eligible to shoot and declare a charge in a turn in which it Fell Back.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Privateer Arsenal",
+                        "type": "Wargear",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase.",
+                        "target": "One LEAGUES OF VOTANN INFANTRY unit from your army that has not been selected to shoot this phase.",
+                        "effect": "Each time you use this Stratagem, you can spend 3YP. Until the end of the phase, each time a model in your unit makes an attack, re-roll a Hit roll of 1 and re-roll a Wound roll of 1. If you spent YP during this usage of this Stratagem, you can re-roll the Hit roll and re-roll a Wound roll of 1 instead.",
+                        "implemented": true,
+                        "options": [
+                            {
+                                "name": "Privateer Arsenal - Standard",
+                                "rules_text": "Re-roll Hit and Wound rolls of 1.",
+                                "implemented": true
+                            },
+                            {
+                                "name": "Privateer Arsenal - Spend 3YP",
+                                "rules_text": "Spend 3YP: re-roll all Hit rolls and Wound rolls of 1.",
+                                "implemented": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "New Horizons",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "End of your opponent's Fight phase.",
+                        "target": "One LEAGUES OF VOTANN INFANTRY unit from your army that is not within Engagement Range of one or more enemy units and one friendly TRANSPORT it is able to embark within.",
+                        "effect": "If your LEAGUES OF VOTANN unit is wholly within 6\" of that TRANSPORT, it can embark within it.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Mobile Exploitation",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "End of your opponent's Fight phase.",
+                        "target": "One HERNKYN unit from your army that is not within Engagement Range of one or more enemy units. Alternatively, you can spend 2YP and target up to two HERNKYN units from your army that are not within Engagement Range of one or more enemy units instead.",
+                        "effect": "Remove your unit from the battlefield and place them into Strategic Reserves.",
+                        "implemented": false
+                    }
+                ]
+            },
+            {
+                "name": "Armoured Trailblazers",
+                "rule": {
+                    "name": "Sagitaur Spearhead",
+                    "rules_text": "Friendly SAGITAUR units have Scouts 6\".",
+                    "implemented": false
+                },
+                "additional_rules": [],
+                "keywords": [],
+                "restrictions": [],
+                "enhancements": [
+                    {
+                        "name": "Sagitaur Mounds",
+                        "points": 15,
+                        "rules_text": "SAGITAUR unit only. This unit's ranged attacks have [IGNORES COVER].",
+                        "restrictions": [
+                            "SAGITAUR unit only."
+                        ],
+                        "implemented": true
+                    },
+                    {
+                        "name": "Optimised Attack Lines",
+                        "points": 15,
+                        "rules_text": "SAGITAUR unit only. This unit has MOBILE.",
+                        "restrictions": [
+                            "SAGITAUR unit only."
+                        ],
+                        "implemented": false
+                    }
+                ],
+                "stratagems": [
+                    {
+                        "name": "Coordinated Crossfire",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Start of your Shooting phase.",
+                        "target": "Up to two friendly SAGITAUR units.",
+                        "effect": "Select one enemy unit. Your units' ranged attacks that target that enemy unit can re-roll Hit rolls of 1 and re-roll Wound rolls of 1.",
+                        "implemented": true
+                    },
+                    {
+                        "name": "Outflanking Armour",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "End of your opponent's Movement phase, from the second battle round onwards.",
+                        "target": "Up to two friendly SAGITAUR units in Strategic Reserves.",
+                        "effect": "Your units each make an ingress move.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Built To Last",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your opponent's Shooting phase, when an enemy unit targets a friendly SAGITAUR unit.",
+                        "target": "That SAGITAUR unit.",
+                        "effect": "Ranged attacks that target your unit with a Strength greater than your unit's Toughness characteristic have -1 to Wound rolls.",
+                        "implemented": true
+                    }
+                ]
+            },
+            {
+                "name": "Farseekers",
+                "rule": {
+                    "name": "Eye of the Hunt",
+                    "rules_text": "Friendly HERNKYN units' ranged attacks that target a unit within 12\" have +1 to Hit rolls.",
+                    "implemented": true
+                },
+                "additional_rules": [],
+                "keywords": [],
+                "restrictions": [],
+                "enhancements": [
+                    {
+                        "name": "Pan-Spectral Lockons",
+                        "points": 10,
+                        "rules_text": "PIONEERS unit only. In your Shooting phase, you can select one visible enemy unit within 12\" of this unit. That enemy unit is spotted. While a unit is spotted, that unit has -3\" detection range.",
+                        "restrictions": [
+                            "PIONEERS unit only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Shroudwerke Talismans",
+                        "points": 15,
+                        "rules_text": "Yaegirs unit only. This unit has -3\" detection range.",
+                        "restrictions": [
+                            "Yaegirs unit only."
+                        ],
+                        "implemented": false
+                    }
+                ],
+                "stratagems": [
+                    {
+                        "name": "Scornful Analysis",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Start of your Shooting phase.",
+                        "target": "One friendly HERNKYN unit.",
+                        "effect": "Select one visible enemy unit within 12\" of your unit. Friendly LEAGUES OF VOTANN units' attacks that target that enemy unit have [IGNORES COVER].",
+                        "implemented": true
+                    },
+                    {
+                        "name": "No Shot Wasted",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase, when a friendly HERNKYN unit is selected to shoot.",
+                        "target": "That HERNKYN unit.",
+                        "effect": "Your unit's ranged attacks have [LETHAL HITS].",
+                        "implemented": true
+                    },
+                    {
+                        "name": "Economy of Motion",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your opponent's Movement phase, when an enemy unit ends a move within 8\" of a friendly unengaged PIONEERS unit.",
+                        "target": "That PIONEERS unit.",
+                        "effect": "Your unit can make a Normal move of up to D3+3\".",
+                        "implemented": false
+                    }
+                ]
+            },
+            {
+                "name": "Hearthguard Covenant",
+                "unique": "HEARTHBAND",
+                "rule": {
+                    "name": "Avatars of the Ancestors",
+                    "rules_text": "Friendly KÂHL/EINHYR CHAMPION/EINHYR HEARTHGUARD/ÛTHAR THE DESTINED units' ranged attacks that target a unit within 9\" can re-roll Wound rolls of 1.",
+                    "implemented": true
+                },
+                "additional_rules": [],
+                "keywords": [],
+                "restrictions": [
+                    "This detachment has the HEARTHGUARD tag and cannot be taken with another HEARTHGUARD detachment."
+                ],
+                "enhancements": [
+                    {
+                        "name": "High Kâhl",
+                        "points": 30,
+                        "rules_text": "KÂHL model only. In the Fight phase, when a model in this unit is destroyed, if this unit has not been selected to fight this phase, roll one D6: on a 4+, do not remove that model from the battlefield; after this unit has fought, or at the end of the phase (whichever comes first), that model is removed from the battlefield.",
+                        "restrictions": [
+                            "KÂHL model only."
+                        ],
+                        "implemented": false
+                    },
+                    {
+                        "name": "Ironskin",
+                        "points": 10,
+                        "rules_text": "KÂHL model only. This model has +2 W.",
+                        "restrictions": [
+                            "KÂHL model only."
+                        ],
+                        "implemented": false
+                    }
+                ],
+                "stratagems": [
+                    {
+                        "name": "Brêkkeknots",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your opponent's Shooting phase or the Fight phase, when an enemy unit targets a friendly EINHYR HEARTHGUARD unit.",
+                        "target": "That EINHYR HEARTHGUARD unit.",
+                        "effect": "Your unit has 4+ InvSv.",
+                        "implemented": false
+                    },
+                    {
+                        "name": "Fury of the Hearth",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your Shooting phase, when a friendly EINHYR HEARTHGUARD unit is selected to shoot.",
+                        "target": "That EINHYR HEARTHGUARD unit.",
+                        "effect": "Your unit's ranged attacks have +1 S. If you spend 1YP, [SUSTAINED HITS 1].",
+                        "implemented": true,
+                        "options": [
+                            {
+                                "name": "Fury of the Hearth - Standard",
+                                "rules_text": "Add 1 Strength to ranged weapons.",
+                                "implemented": true
+                            },
+                            {
+                                "name": "Fury of the Hearth - Spend 1YP",
+                                "rules_text": "Add 1 Strength and gain Sustained Hits 1.",
+                                "implemented": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Materialisation Matrices",
+                        "type": "Strategic Ploy",
+                        "cp_cost": 1,
+                        "when": "Your Movement phase, when a friendly EINHYR HEARTHGUARD unit with Deep Strike is selected to make an ingress move.",
+                        "target": "That EINHYR HEARTHGUARD unit.",
+                        "effect": "Your unit can be set up anywhere on the battlefield that is more than 6\" horizontally from all enemy units, even if that is within your opponent's deployment zone. Your unit is not eligible to declare a charge until the end of the turn.",
+                        "implemented": false
+                    }
+                ]
+            }
+        ]
+    },
+    "units": [
+        {
+            "name": "Arkanyst Evaluator",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 5,
+                "save": "3+",
+                "wounds": 4,
+                "leadership": "7+",
+                "objective_control": 1,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 1,
+                "max_models": 1,
+                "description": [
+                    "1 Arkanyst Evaluator"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Arkanyst Evaluator",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "1 model": 70
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Character",
+                "Arkanyst Evaluator"
+            ],
+            "abilities": [
+                {
+                    "name": "Deadly Demise 1",
+                    "rules_text": "Deadly Demise 1",
+                    "implemented": true
+                },
+                {
+                    "name": "Science Guild Support",
+                    "rules_text": "While this model is within 3\" of one or more other friendly Leagues of Votann Infantry units (excluding units with Lone Operative), this model has Lone Operative.",
+                    "implemented": false
+                },
+                {
+                    "name": "Resource Transmutation",
+                    "rules_text": "Once per turn, in your Shooting phase, one model from your army with this ability can use it when it is selected to shoot. If it does, you must spend 1YP and, until the end of the phase, ranged weapons equipped by that model have [SUSTAINED HITS 1] and after that model has shot this phase, if one or more enemy units were destroyed by those attacks, you can gain up to 2YP.",
+                    "implemented": true
+                },
+                {
+                    "name": "Overcharge",
+                    "rules_text": "Each time the bearer takes a Hazardous test for this weapon profile, subtract 2 from the result.",
+                    "implemented": true
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Transmatter inverter – half charge",
+                    "range": "12\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "2+"
+                    },
+                    "strength": 8,
+                    "armor_piercing": -1,
+                    "damage": 1,
+                    "keywords": [
+                        "Rapid Fire 1"
+                    ]
+                },
+                {
+                    "name": "Transmatter inverter – full charge",
+                    "range": "18\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "2+"
+                    },
+                    "strength": 8,
+                    "armor_piercing": -2,
+                    "damage": 2,
+                    "keywords": [
+                        "Hazardous",
+                        "Rapid Fire 2"
+                    ]
+                },
+                {
+                    "name": "Transmatter inverter – overcharge",
+                    "range": "24\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "2+"
+                    },
+                    "strength": 8,
+                    "armor_piercing": -3,
+                    "damage": 3,
+                    "keywords": [
+                        "Hazardous",
+                        "Overcharge",
+                        "Rapid Fire 3"
+                    ]
+                },
+                {
+                    "name": "Close combat weapon",
+                    "range": "Melee",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 3,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": []
+        },
+        {
+            "name": "Berek Stornbröw",
+            "stats": {
+                "movement": "6\"",
+                "toughness": 6,
+                "save": "5+",
+                "wounds": 5,
+                "leadership": "7+",
+                "objective_control": 1,
+                "invulnerable_save": "5+"
+            },
+            "unit_composition": {
+                "min_models": 1,
+                "max_models": 1,
+                "description": [
+                    "1 Berek Stornbröw – Epic Hero"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Berek Stornbröw – Epic Hero",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "1 model": 85
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Character",
+                "Epic Hero",
+                "Cthonian",
+                "Berek Stornbröw"
+            ],
+            "abilities": [
+                {
+                    "name": "Feel No Pain 4+",
+                    "rules_text": "Feel No Pain 4+",
+                    "implemented": true
+                },
+                {
+                    "name": "Leader",
+                    "rules_text": "Leader",
+                    "implemented": true
+                },
+                {
+                    "name": "Break the Foe",
+                    "rules_text": "Melee weapons equipped by models in this model’s unit have the [SUSTAINED HITS 1] ability.",
+                    "implemented": true
+                },
+                {
+                    "name": "Relentless Avalanche",
+                    "rules_text": "You can target this unit with the Heroic Intervention Stratagem regardless of any other uses of that Stratagem this phase. If you do, that use is -1 CP and does not prevent any uses of that Stratagem on other units this phase.",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Kromlok’s Revenge – graviton strikes",
+                    "range": "Melee",
+                    "attacks": 4,
+                    "skill": {
+                        "type": "WS",
+                        "value": "2+"
+                    },
+                    "strength": 10,
+                    "armor_piercing": -2,
+                    "damage": 4,
+                    "keywords": [
+                        "Anti-Monster 3+",
+                        "Anti-Vehicle 3+"
+                    ]
+                },
+                {
+                    "name": "Kromlok’s Revenge – plasma sweeps",
+                    "range": "Melee",
+                    "attacks": 8,
+                    "skill": {
+                        "type": "WS",
+                        "value": "2+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -2,
+                    "damage": 2,
+                    "keywords": []
+                },
+                {
+                    "name": "Warf orge Gauntlets",
+                    "range": "Melee",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "WS",
+                        "value": "2+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": [
+                        "Extra Attacks"
+                    ]
+                }
+            ],
+            "wargear_options": [],
+            "leader": {
+                "can_lead": [
+                    "Cthonian Beserks"
+                ]
+            },
+            "notes": []
+        },
+        {
+            "name": "Brôkhyr Iron-master",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 5,
+                "save": "4+",
+                "wounds": 4,
+                "leadership": "7+",
+                "objective_control": 1,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 5,
+                "max_models": 5,
+                "description": [
+                    "1 Brôkhyr Iron-master",
+                    "1 Ironkin Assistant",
+                    "3 E-COGs"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Brôkhyr Iron-master",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": [],
+                    "stats_override": {
+                        "movement": "5\"",
+                        "toughness": 5,
+                        "save": "4+",
+                        "wounds": 4,
+                        "leadership": "7+",
+                        "objective_control": 1,
+                        "invulnerable_save": null
+                    }
+                },
+                {
+                    "name": "Ironkin Assistant",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": [],
+                    "stats_override": {
+                        "movement": "5\"",
+                        "toughness": 5,
+                        "save": "4+",
+                        "wounds": 1,
+                        "leadership": "7+",
+                        "objective_control": 1,
+                        "invulnerable_save": null
+                    }
+                },
+                {
+                    "name": "E-COGs",
+                    "count": {
+                        "min": 3,
+                        "max": 3
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "5 models": 70
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Brôkhyr",
+                "Character",
+                "Iron-master"
+            ],
+            "abilities": [
+                {
+                    "name": "Leader",
+                    "rules_text": "Leader",
+                    "implemented": true
+                },
+                {
+                    "name": "Brôkhyr Guild Support",
+                    "rules_text": "While this unit is within 3\" of one or more friendly Leagues of Votann Vehicle, Ironkin Steeljacks or Ironkin units, if this unit is not an Attached unit, it has Lone Operative.",
+                    "implemented": false
+                },
+                {
+                    "name": "Multispectral Visor",
+                    "rules_text": "Each time a model in this unit makes a ranged attack, re-roll a Wound roll of 1.",
+                    "implemented": true
+                },
+                {
+                    "name": "Forge-wrought Expertise",
+                    "rules_text": "At the end of your Movement phase, this unit can repair one friendly Leagues of Votann Vehicle, Ironkin or Ironkin Steeljacks unit within 3\" of it. One model in that unit regains up to D3 lost wounds or up to 3 lost wounds instead if this unit contains an Ironkin Assistant model. Each unit can only be repaired once per turn.",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Autoch-pattern bolt pistol",
+                    "range": "12\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "3+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "Graviton rifle",
+                    "range": "18\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "3+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": -1,
+                    "damage": 3,
+                    "keywords": [
+                        "Anti-Vehicle 3+"
+                    ]
+                },
+                {
+                    "name": "Las-beam cutter",
+                    "range": "6\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -3,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "Close combat weapon",
+                    "range": "Melee",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 3,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "Graviton hammer",
+                    "range": "Melee",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 9,
+                    "armor_piercing": -1,
+                    "damage": 3,
+                    "keywords": [
+                        "Anti-Monster 3+",
+                        "Anti-Vehicle 3+"
+                    ]
+                },
+                {
+                    "name": "Manipulator arms",
+                    "range": "Melee",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 3,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "Plasma torch",
+                    "range": "Melee",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -3,
+                    "damage": 2,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [],
+            "leader": {
+                "can_lead": [
+                    "Brôkhyr Thunderkyn",
+                    "Hearthkyn Warriors"
+                ]
+            },
+            "notes": [
+                "If the Brôkhyr Iron-master model is destroyed, all other models in this unit are also destroyed. When embarking within a Transport and while embarked within a Transport, each E-COG model takes up the space of 0 models."
+            ]
+        },
+        {
+            "name": "Buri Aegnirssen",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 6,
+                "save": "3+",
+                "wounds": 5,
+                "leadership": "6+",
+                "objective_control": 1,
+                "invulnerable_save": "4+"
+            },
+            "unit_composition": {
+                "min_models": 1,
+                "max_models": 1,
+                "description": [
+                    "1 Buri Aegnirssen – Epic Hero"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Buri Aegnirssen – Epic Hero",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "1 model": 85
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Character",
+                "Epic Hero",
+                "Buri Aegnirssen"
+            ],
+            "abilities": [
+                {
+                    "name": "Lone Operative",
+                    "rules_text": "Lone Operative",
+                    "implemented": true
+                },
+                {
+                    "name": "Stealth",
+                    "rules_text": "Stealth",
+                    "implemented": true
+                },
+                {
+                    "name": "Grudge-fuelled Fortitude",
+                    "rules_text": "The first time this model is destroyed, at the end of the phase roll one D6: on a 2+, set this model back up on the battlefield as close as possible to where it was destroyed and not within Engagement Range of one or more enemy units, with its full wounds remaining.",
+                    "implemented": false
+                },
+                {
+                    "name": "Unhinged Vengeance",
+                    "rules_text": "In your opponent’s Shooting phase, when an enemy unit has shot, if this model lost one or more wounds as a result of those attacks, this unit can make a surge move of up to D6+2\".",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Autoch-pattern bolt pistol",
+                    "range": "12\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "2+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Pistol"
+                    ]
+                },
+                {
+                    "name": "Bane – strike",
+                    "range": "Melee",
+                    "attacks": 5,
+                    "skill": {
+                        "type": "WS",
+                        "value": "2+"
+                    },
+                    "strength": 12,
+                    "armor_piercing": -3,
+                    "damage": 3,
+                    "keywords": [
+                        "Precision"
+                    ]
+                },
+                {
+                    "name": "Bane – sweep",
+                    "range": "Melee",
+                    "attacks": 10,
+                    "skill": {
+                        "type": "WS",
+                        "value": "2+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": []
+        },
+        {
+            "name": "Einhyr Champion",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 5,
+                "save": "2+",
+                "wounds": 5,
+                "leadership": "7+",
+                "objective_control": 1,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 1,
+                "max_models": 1,
+                "description": [
+                    "1 Einhyr Champion"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Einhyr Champion",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "1 model": 65
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Character",
+                "Exoarmour",
+                "Einhyr Champion"
+            ],
+            "abilities": [
+                {
+                    "name": "Leader",
+                    "rules_text": "Leader",
+                    "implemented": true
+                },
+                {
+                    "name": "Exemplar of the Einhyr",
+                    "rules_text": "While this model is leading a unit, add 1 to Advance and Charge rolls made for that unit.",
+                    "implemented": false
+                },
+                {
+                    "name": "Mass Driver Accelerators",
+                    "rules_text": "Each time this model ends a Charge move, you can select one enemy unit within Engagement Range of this model and roll one D6: on a 2-5 that enemy unit suffers D3 mortal wounds, on a 6 that enemy unit suffers D3+3 mortal wounds.",
+                    "implemented": false
+                },
+                {
+                    "name": "Teleport Crest",
+                    "rules_text": "While the bearer is leading a unit, models in that unit have Deep Strike.",
+                    "implemented": false
+                },
+                {
+                    "name": "Weavefield Crest",
+                    "rules_text": "The bearer has a 4+ invulnerable save.",
+                    "implemented": true
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Autoch-pattern combi-bolter",
+                    "range": "24\"",
+                    "attacks": 4,
+                    "skill": {
+                        "type": "BS",
+                        "value": "2+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "Darkstar axe",
+                    "range": "Melee",
+                    "attacks": 6,
+                    "skill": {
+                        "type": "WS",
+                        "value": "2+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -3,
+                    "damage": 2,
+                    "keywords": []
+                },
+                {
+                    "name": "Mass hammer",
+                    "range": "Melee",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "WS",
+                        "value": "3+"
+                    },
+                    "strength": 12,
+                    "armor_piercing": -3,
+                    "damage": "D6+1",
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [
+                "Mass hammer can be replaced with 1 darkstar axe.",
+                "Weavefield crest can be replaced with 1 teleport crest."
+            ],
+            "leader": {
+                "can_lead": [
+                    "Einhyr Hearthguard"
+                ]
+            },
+            "notes": []
+        },
+        {
+            "name": "Grimnyr",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 5,
+                "save": "4+",
+                "wounds": 4,
+                "leadership": "6+",
+                "objective_control": 1,
+                "invulnerable_save": "4+"
+            },
+            "unit_composition": {
+                "min_models": 3,
+                "max_models": 3,
+                "description": [
+                    "1 Grimnyr",
+                    "2 CORVs"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Grimnyr",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": [],
+                    "stats_override": {
+                        "movement": "5\"",
+                        "toughness": 5,
+                        "save": "4+",
+                        "wounds": 4,
+                        "leadership": "6+",
+                        "objective_control": 1,
+                        "invulnerable_save": "4+"
+                    }
+                },
+                {
+                    "name": "CORVs",
+                    "count": {
+                        "min": 2,
+                        "max": 2
+                    },
+                    "default_wargear": [],
+                    "stats_override": {
+                        "movement": "5\"",
+                        "toughness": 5,
+                        "save": "4+",
+                        "wounds": 1,
+                        "leadership": "6+",
+                        "objective_control": 1,
+                        "invulnerable_save": "4+"
+                    }
+                }
+            ],
+            "points": {
+                "3 models": 65
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Character",
+                "Psyker",
+                "Grimnyr"
+            ],
+            "abilities": [
+                {
+                    "name": "Leader",
+                    "rules_text": "Leader",
+                    "implemented": true
+                },
+                {
+                    "name": "Fortify (Psychic)",
+                    "rules_text": "While this model is leading a unit, models in that unit have Feel No Pain 5+.",
+                    "implemented": true
+                },
+                {
+                    "name": "Grimnyr’s Regard",
+                    "rules_text": "Once per battle, at the start of any phase, you can select one friendly Leagues of Votann unit that is Battle-shocked and within 12\" of this unit’s Grimnyr model. That unit is no longer Battle-shocked.",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Ancestral Wrath – witchfire",
+                    "range": "24\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "3+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -2,
+                    "damage": "D3",
+                    "keywords": [
+                        "Psychic"
+                    ]
+                },
+                {
+                    "name": "Ancestral Wrath – focused witchfire",
+                    "range": "24\"",
+                    "attacks": 6,
+                    "skill": {
+                        "type": "BS",
+                        "value": "3+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -2,
+                    "damage": "D3",
+                    "keywords": [
+                        "Hazardous",
+                        "Psychic"
+                    ]
+                },
+                {
+                    "name": "Autoch-pattern bolter",
+                    "range": "24\"",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "Ancestral ward stave",
+                    "range": "Melee",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "WS",
+                        "value": "3+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -1,
+                    "damage": "D3",
+                    "keywords": [
+                        "Psychic"
+                    ]
+                },
+                {
+                    "name": "Close combat weapon",
+                    "range": "Melee",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 3,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [],
+            "leader": {
+                "can_lead": [
+                    "Hearthkyn Warriors"
+                ]
+            },
+            "notes": [
+                "If this unit’s Grimnyr model is destroyed, all of this unit’s remaining CORV models are also destroyed. When embarking on a Transport and while embarked within a Transport, each CORV model takes up the space of 0 models."
+            ]
+        },
+        {
+            "name": "Hearthkyn Warriors",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 5,
+                "save": "4+",
+                "wounds": 1,
+                "leadership": "7+",
+                "objective_control": 2,
+                "invulnerable_save": "5+"
+            },
+            "unit_composition": {
+                "min_models": 10,
+                "max_models": 10,
+                "description": [
+                    "1 Theyn",
+                    "9 Hearthkyn Warriors"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Theyn",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                },
+                {
+                    "name": "Hearthkyn Warriors",
+                    "count": {
+                        "min": 9,
+                        "max": 9
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "10 models": 90
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Battleline",
+                "Grenades",
+                "Hearthkyn Warriors"
+            ],
+            "abilities": [
+                {
+                    "name": "Feel No Pain 6+",
+                    "rules_text": "Feel No Pain 6+",
+                    "implemented": true
+                },
+                {
+                    "name": "Luck Has, Need Keeps, Toil Earns",
+                    "rules_text": "At the end of your Command phase, if this unit is within range of an objective marker you control, that objective marker remains under your control until your opponent’s Level of Control over that objective marker is greater than yours at the end of a phase.",
+                    "implemented": false
+                },
+                {
+                    "name": "Panspectral Scanning",
+                    "rules_text": "Each time a model in this unit makes a ranged attack, re-roll a Hit roll of 1.",
+                    "implemented": true
+                },
+                {
+                    "name": "Weavefield Crest",
+                    "rules_text": "Models in the bearer’s unit have a 5+ invulnerable save.",
+                    "implemented": true
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Autoch-pattern bolt pistol",
+                    "range": "12\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Pistol"
+                    ]
+                },
+                {
+                    "name": "Autoch-pattern bolter",
+                    "range": "24\"",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "EtaCarn plasma beamer",
+                    "range": "18\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 8,
+                    "armor_piercing": -3,
+                    "damage": 2,
+                    "keywords": [
+                        "Sustained Hits D3"
+                    ]
+                },
+                {
+                    "name": "HYLas auto rifle",
+                    "range": "24\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -1,
+                    "damage": 1,
+                    "keywords": [
+                        "Assault",
+                        "Rapid Fire 3"
+                    ]
+                },
+                {
+                    "name": "HYLas rotary cannon",
+                    "range": "24\"",
+                    "attacks": 5,
+                    "skill": {
+                        "type": "BS",
+                        "value": "5+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -1,
+                    "damage": 1,
+                    "keywords": [
+                        "Sustained Hits 1"
+                    ]
+                },
+                {
+                    "name": "Ion blaster",
+                    "range": "18\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "L7 missile launcher – blast",
+                    "range": "24\"",
+                    "attacks": "D6",
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Blast"
+                    ]
+                },
+                {
+                    "name": "L7 missile launcher – focused",
+                    "range": "24\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 9,
+                    "armor_piercing": -2,
+                    "damage": "D6",
+                    "keywords": []
+                },
+                {
+                    "name": "Magna-rail rifle",
+                    "range": "18\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "5+"
+                    },
+                    "strength": 12,
+                    "armor_piercing": -3,
+                    "damage": "D3+3",
+                    "keywords": [
+                        "Devastating Wounds",
+                        "Heavy"
+                    ]
+                },
+                {
+                    "name": "Theyn’s pistol",
+                    "range": "12\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "3+"
+                    },
+                    "strength": 8,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": [
+                        "Pistol"
+                    ]
+                },
+                {
+                    "name": "Close combat weapon",
+                    "range": "Melee",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "Plasma knife",
+                    "range": "Melee",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "Theyn’s melee weapon",
+                    "range": "Melee",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": -2,
+                    "damage": 2,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [
+                "Any number of Hearthkyn Warriors can replace their Autoch-pattern bolter with 1 ion blaster.",
+                "Up to 2 Hearthkyn Warriors with an Autoch-pattern bolter or ion blaster can replace it with one of: HYLas auto rifle, HYLas rotary cannon, L7 missile launcher, EtaCarn plasma beamer, magna-rail rifle (duplicates are not allowed).",
+                "Up to 2 Hearthkyn Warriors with an Autoch-pattern bolter or ion blaster can replace it with 1 plasma knife.",
+                "The Theyn’s Autoch-pattern bolter can be replaced with one of: ion blaster, Theyn’s pistol.",
+                "The Theyn can be equipped with 1 Theyn’s melee weapon."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": []
+        },
+        {
+            "name": "Kâhl",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 5,
+                "save": "3+",
+                "wounds": 4,
+                "leadership": "7+",
+                "objective_control": 1,
+                "invulnerable_save": "4+"
+            },
+            "unit_composition": {
+                "min_models": 1,
+                "max_models": 1,
+                "description": [
+                    "1 Kâhl"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Kâhl",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "1 model": 65
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Character",
+                "Kâhl"
+            ],
+            "abilities": [
+                {
+                    "name": "Leader",
+                    "rules_text": "Leader",
+                    "implemented": true
+                },
+                {
+                    "name": "Kindred Hero",
+                    "rules_text": "While this model is leading a unit, weapons equipped by models in that unit have [LETHAL HITS].",
+                    "implemented": true
+                },
+                {
+                    "name": "Seized Opportunity",
+                    "rules_text": "Once per phase, one model from your army with this ability can use it when its unit destroys an enemy unit. If it does, you gain 1YP.",
+                    "implemented": false
+                },
+                {
+                    "name": "Rampart Crest",
+                    "rules_text": "While this model is leading a unit, models in that unit have a 5+ invulnerable save.",
+                    "implemented": true
+                },
+                {
+                    "name": "Teleport Crest",
+                    "rules_text": "While the bearer is leading a unit, models in that unit have Deep Strike.",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Autoch-pattern combi-bolter",
+                    "range": "24\"",
+                    "attacks": 4,
+                    "skill": {
+                        "type": "BS",
+                        "value": "2+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "Volkanite disintegrator",
+                    "range": "24\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "2+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Devastating Wounds"
+                    ]
+                },
+                {
+                    "name": "Forge-wrought plasma axe",
+                    "range": "Melee",
+                    "attacks": 4,
+                    "skill": {
+                        "type": "WS",
+                        "value": "2+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": -2,
+                    "damage": 2,
+                    "keywords": []
+                },
+                {
+                    "name": "Mass gauntlet",
+                    "range": "Melee",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "WS",
+                        "value": "3+"
+                    },
+                    "strength": 8,
+                    "armor_piercing": -3,
+                    "damage": 3,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [
+                "Autoch-pattern combi-bolter can be replaced with 1 volkanite disintegrator.",
+                "Forge-wrought plasma axe can be replaced with 1 mass gauntlet.",
+                "Rampart crest can be replaced with 1 teleport crest."
+            ],
+            "leader": {
+                "can_lead": [
+                    "Einhyr Hearthguard",
+                    "Hearthkyn Warriors"
+                ]
+            },
+            "notes": []
+        },
+        {
+            "name": "Kapricus Carrier",
+            "stats": {
+                "movement": "12\"",
+                "toughness": 7,
+                "save": "4+",
+                "wounds": 7,
+                "leadership": "7+",
+                "objective_control": 2,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 1,
+                "max_models": 1,
+                "description": [
+                    "1 Kapricus Carrier"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Kapricus Carrier",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "1 model (1st–3rd)": 70,
+                "1 model (4th+)": 80
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Vehicle",
+                "Fly",
+                "Transport",
+                "Dedicated Transport",
+                "Hernkyn",
+                "Kapricus Carrier"
+            ],
+            "abilities": [
+                {
+                    "name": "Deadly Demise 1",
+                    "rules_text": "Deadly Demise 1",
+                    "implemented": true
+                },
+                {
+                    "name": "Firing Deck 5",
+                    "rules_text": "Firing Deck 5",
+                    "implemented": true
+                },
+                {
+                    "name": "Scouts 9\"",
+                    "rules_text": "Scouts 9\"",
+                    "implemented": true
+                },
+                {
+                    "name": "Scanner Uplinks",
+                    "rules_text": "In your Shooting phase, after this model has shot, select one enemy unit (excluding Monsters and Vehicles) hit by one or more of those attacks. Until the start of your next turn, that enemy unit is suppressed. While a unit is suppressed, each time a model in that unit makes an attack, subtract 1 from the Hit roll.",
+                    "implemented": true
+                },
+                {
+                    "name": "Smoke Launcher",
+                    "rules_text": "The bearer has the Smoke keyword.",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Magna-coil autocannon",
+                    "range": "24\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -1,
+                    "damage": 2,
+                    "keywords": []
+                },
+                {
+                    "name": "Twin magna-coil autocannon",
+                    "range": "24\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -1,
+                    "damage": 2,
+                    "keywords": [
+                        "Twin-linked"
+                    ]
+                },
+                {
+                    "name": "Armoured hull",
+                    "range": "Melee",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [
+                "This model can be equipped with 1 smoke launcher."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": [],
+            "transport": "Capacity 5 Hernkyn Yaegir models. Before battle, in Declare Battle Formations, one Hernkyn Yaegir unit may split into two units of equal model count (as equal as possible); one must start embarked in this Transport, and the other can start embarked in another Transport or deploy separately."
+        },
+        {
+            "name": "Memnyr Strategist",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 5,
+                "save": "4+",
+                "wounds": 4,
+                "leadership": "7+",
+                "objective_control": 1,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 1,
+                "max_models": 1,
+                "description": [
+                    "1 Memnyr Strategist"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Memnyr Strategist",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "1 model": 45
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Character",
+                "Memnyr Strategist"
+            ],
+            "abilities": [
+                {
+                    "name": "Leader",
+                    "rules_text": "Leader",
+                    "implemented": true
+                },
+                {
+                    "name": "Computational Mastermind",
+                    "rules_text": "At the end of your Command phase, before you determine if units from your army have Hostile Acquisition or Fortify Takeover, for each objective marker you control that has one or more models with this ability within range of it, you can spend 1YP or gain 1YP.",
+                    "implemented": false
+                },
+                {
+                    "name": "Predictive Guidance",
+                    "rules_text": "Once per battle round, when you target this unit with the Fire Overwatch/Heroic Intervention Stratagem, you can use this ability. If you do, that use of that Stratagem is -1CP.",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Autoch-pattern bolt pistol",
+                    "range": "12\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Pistol"
+                    ]
+                },
+                {
+                    "name": "Close combat weapon",
+                    "range": "Melee",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 3,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [],
+            "leader": {
+                "can_lead": [
+                    "Ironkin Steeljacks with Heavy Volkanite Disintegrators",
+                    "Ironkin Steeljacks with Melee Weapons"
+                ]
+            },
+            "notes": []
+        },
+        {
+            "name": "Sagitaur",
+            "stats": {
+                "movement": "12\"",
+                "toughness": 9,
+                "save": "3+",
+                "wounds": 9,
+                "leadership": "7+",
+                "objective_control": 2,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 1,
+                "max_models": 1,
+                "description": [
+                    "1 Sagitaur"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Sagitaur",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "1 model (1st–3rd)": 85,
+                "1 model (4th+)": 95
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Vehicle",
+                "Frame",
+                "Transport",
+                "Dedicated Transport",
+                "Sagitaur"
+            ],
+            "abilities": [
+                {
+                    "name": "Deadly Demise 1",
+                    "rules_text": "Deadly Demise 1",
+                    "implemented": true
+                },
+                {
+                    "name": "Blistering Advance",
+                    "rules_text": "Units can disembark from this Transport after it has Advanced. Units that do so make a shock disembark move (Core Rules, 18.07) for that disembarkation.",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "HYLas beam cannon",
+                    "range": "24\"",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 12,
+                    "armor_piercing": -3,
+                    "damage": "D6+1",
+                    "keywords": []
+                },
+                {
+                    "name": "L7 missile launcher – blast",
+                    "range": "36\"",
+                    "attacks": "D6",
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Blast"
+                    ]
+                },
+                {
+                    "name": "L7 missile launcher – focused",
+                    "range": "36\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 9,
+                    "armor_piercing": -2,
+                    "damage": "D6",
+                    "keywords": []
+                },
+                {
+                    "name": "MATR autocannon",
+                    "range": "24\"",
+                    "attacks": 6,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -1,
+                    "damage": 2,
+                    "keywords": [
+                        "Assault",
+                        "Sustained Hits 1"
+                    ]
+                },
+                {
+                    "name": "Sagitaur missile launcher",
+                    "range": "36\"",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 10,
+                    "armor_piercing": -3,
+                    "damage": 3,
+                    "keywords": []
+                },
+                {
+                    "name": "Twin bolt cannon",
+                    "range": "36\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -1,
+                    "damage": 2,
+                    "keywords": [
+                        "Sustained Hits 2",
+                        "Twin-linked"
+                    ]
+                },
+                {
+                    "name": "Armoured wheels",
+                    "range": "Melee",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [
+                "HYLas beam cannon can be replaced with one of: 1 L7 missile launcher and 1 Sagitaur missile launcher; 1 MATR autocannon."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": [],
+            "transport": "Capacity 6 Leagues of Votann Infantry models. Cannot transport Artillery, Exoarmour, Exoframe or Ironkin Steeljacks models. In Declare Battle Formations, one Hearthkyn Warriors unit may split into two units as equal as possible; one must start embarked in this Transport, and the other can start embarked in another Transport or deploy separately."
+        },
+        {
+            "name": "Ûthar the Destined",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 5,
+                "save": "3+",
+                "wounds": 5,
+                "leadership": "6+",
+                "objective_control": 1,
+                "invulnerable_save": "4+"
+            },
+            "unit_composition": {
+                "min_models": 1,
+                "max_models": 1,
+                "description": [
+                    "1 Ûthar the Destined – Epic Hero"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Ûthar the Destined – Epic Hero",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "1 model": 100
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Character",
+                "Epic Hero",
+                "Kâhl",
+                "Ûthar the Destined"
+            ],
+            "abilities": [
+                {
+                    "name": "Leader",
+                    "rules_text": "Leader",
+                    "implemented": true
+                },
+                {
+                    "name": "Ancestral Fortune",
+                    "rules_text": "Once per turn, you can spend 1YP to change one Hit roll, one Wound roll or one saving throw made for this model to an unmodified 6.",
+                    "implemented": false
+                },
+                {
+                    "name": "Grim Efficiency",
+                    "rules_text": "Once per battle round, when a friendly Leagues of Votann unit within 12\" of this model is targeted with a Stratagem, this model can use this ability. If it does, reduce the CP cost of that use of that Stratagem by 1CP.",
+                    "implemented": false
+                },
+                {
+                    "name": "Rampart Crest",
+                    "rules_text": "While the bearer is leading a unit, models in that unit have a 5+ invulnerable save.",
+                    "implemented": true
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Volkanite disintegrator",
+                    "range": "24\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "2+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Devastating Wounds"
+                    ]
+                },
+                {
+                    "name": "Blade of the Ancestors",
+                    "range": "Melee",
+                    "attacks": 5,
+                    "skill": {
+                        "type": "WS",
+                        "value": "2+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -3,
+                    "damage": 2,
+                    "keywords": [
+                        "Devastating Wounds"
+                    ]
+                }
+            ],
+            "wargear_options": [],
+            "leader": {
+                "can_lead": [
+                    "Einhyr Hearthguard",
+                    "Hearthkyn Warriors"
+                ]
+            },
+            "notes": []
+        },
+        {
+            "name": "Brôkhyr Thunderkyn",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 6,
+                "save": "3+",
+                "wounds": 2,
+                "leadership": "7+",
+                "objective_control": 1,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 3,
+                "max_models": 6,
+                "description": [
+                    "3-6 Brôkhyr Thunderkyn"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Brôkhyr Thunderkyn",
+                    "count": {
+                        "min": 3,
+                        "max": 6
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "3 models": 80,
+                "6 models": 170,
+                "3 models (3rd+)": 90,
+                "6 models (3rd+)": 180
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Exoframe",
+                "Brôkhyr Thunderkyn"
+            ],
+            "abilities": [
+                {
+                    "name": "Breaching Fire",
+                    "rules_text": "In your Shooting phase, after this unit has shot, select one enemy unit hit by one or more of those attacks. Until the start of your next Shooting phase, that enemy unit cannot have the Benefit of Cover.",
+                    "implemented": true
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Bolt cannon",
+                    "range": "36\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -1,
+                    "damage": 2,
+                    "keywords": [
+                        "Sustained Hits 2"
+                    ]
+                },
+                {
+                    "name": "Graviton blast cannon",
+                    "range": "24\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": -2,
+                    "damage": 3,
+                    "keywords": [
+                        "Anti-Vehicle 2+"
+                    ]
+                },
+                {
+                    "name": "SP conversion beamer",
+                    "range": "24\"",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -2,
+                    "damage": 3,
+                    "keywords": [
+                        "Conversion",
+                        "Lethal Hits"
+                    ]
+                },
+                {
+                    "name": "Close combat weapon",
+                    "range": "Melee",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [
+                "All models in this unit can each have their bolt cannon replaced with 1 graviton blast cannon.",
+                "All models in this unit can each have their bolt cannon replaced with 1 SP conversion beamer."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": [
+                "Conversion: Each time an attack made with this weapon targets an enemy unit that is not within 12\", an unmodified Hit roll of 4+ scores a Critical Hit."
+            ]
+        },
+        {
+            "name": "Cthonian Beserks",
+            "stats": {
+                "movement": "6\"",
+                "toughness": 6,
+                "save": "5+",
+                "wounds": 1,
+                "leadership": "7+",
+                "objective_control": 1,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 5,
+                "max_models": 10,
+                "description": [
+                    "5-10 Cthonian Beserks"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Cthonian Beserks",
+                    "count": {
+                        "min": 5,
+                        "max": 10
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "5 models": 90,
+                "10 models": 180
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Cthonian",
+                "Beserks"
+            ],
+            "abilities": [
+                {
+                    "name": "Feel No Pain 4+",
+                    "rules_text": "Feel No Pain 4+",
+                    "implemented": true
+                },
+                {
+                    "name": "Cyberstimms",
+                    "rules_text": "Each time a model in this unit is destroyed by a melee attack, if that model has not fought this phase, roll one D6, adding 1 if the result of this is from your army having a Fortify Takeover on a 2+, do not remove it from play. The destroyed model can fight after the attacking unit has finished making its attacks, and is then removed from play.",
+                    "implemented": false
+                },
+                {
+                    "name": "Subterranean Explosives",
+                    "rules_text": "In your Shooting phase, after this unit has shot, select one enemy unit (excluding MONSTERS and VEHICLES) hit by one or more of those attacks made with a mole grenade launcher. Until the start of your next Shooting phase, that enemy unit cannot be targeted with the Fire Overwatch Stratagem.",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Mole grenade launcher",
+                    "range": "18\"",
+                    "attacks": "D6",
+                    "skill": {
+                        "type": "BS",
+                        "value": "5+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": -1,
+                    "damage": 1,
+                    "keywords": [
+                        "Blast",
+                        "Indirect Fire"
+                    ]
+                },
+                {
+                    "name": "Concussion maul",
+                    "range": "Melee",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": -2,
+                    "damage": 3,
+                    "keywords": [
+                        "Anti-Monster 3+",
+                        "Anti-Vehicle 3+"
+                    ]
+                },
+                {
+                    "name": "Heavy plasma axe",
+                    "range": "Melee",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -2,
+                    "damage": 3,
+                    "keywords": []
+                },
+                {
+                    "name": "Twin concussion gauntlet",
+                    "range": "Melee",
+                    "attacks": 4,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 9,
+                    "armor_piercing": -2,
+                    "damage": 2,
+                    "keywords": [
+                        "Twin-linked"
+                    ]
+                }
+            ],
+            "wargear_options": [
+                "All models in this unit can each have their heavy plasma axe replaced with 1 concussion maul.",
+                "For every 5 models in this unit, 1 model that is not equipped with a mole grenade launcher can have its heavy plasma axe or concussion maul replaced with 1 twin concussion gauntlet.",
+                "For every 5 models in this unit, 1 model equipped with a twin concussion gauntlet or a mole grenade launcher can be equipped with 1 mole grenade launcher."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": [
+                "Designer’s Note: If a Cthonian Beserk is equipped with a mole grenade launcher, it will be accompanied by an L-COG unit; both models should be placed on the same base and together they act as a single model for all rules purposes."
+            ]
+        },
+        {
+            "name": "Cthonian Earthshakers",
+            "stats": {
+                "movement": "4\"",
+                "toughness": 6,
+                "save": "4+",
+                "wounds": 6,
+                "leadership": "7+",
+                "objective_control": 2,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 2,
+                "max_models": 2,
+                "description": [
+                    "2 Cthonian Earthshakers"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Cthonian Earthshakers",
+                    "count": {
+                        "min": 2,
+                        "max": 2
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "2 models": 100
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Artillery",
+                "Cthonian",
+                "Earthshakers"
+            ],
+            "abilities": [
+                {
+                    "name": "Destabilising Quake",
+                    "rules_text": "In your Shooting phase, after this unit has shot, select one enemy unit hit by one or more of those attacks made with its tremor shells. That unit must take a Battle-shock test, subtracting 1 from the result.",
+                    "implemented": false
+                },
+                {
+                    "name": "Geomantic Hunters",
+                    "rules_text": "Up to twice per battle, in your Shooting phase, when this unit is selected to shoot, it can use this ability. If it does, until the end of the phase, each time a model in this unit makes an attack with its breacher ordnance, you can re-roll the Wound roll.",
+                    "implemented": true
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Autoch-pattern bolt pistol",
+                    "range": "12\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Pistol"
+                    ]
+                },
+                {
+                    "name": "Breacher ordnance",
+                    "range": "24\"",
+                    "attacks": "D6+1",
+                    "skill": {
+                        "type": "BS",
+                        "value": "5+"
+                    },
+                    "strength": 10,
+                    "armor_piercing": -1,
+                    "damage": 2,
+                    "keywords": [
+                        "Blast",
+                        "Heavy",
+                        "Indirect Fire"
+                    ]
+                },
+                {
+                    "name": "Tremor shells",
+                    "range": "36\"",
+                    "attacks": "D6+1",
+                    "skill": {
+                        "type": "BS",
+                        "value": "5+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -1,
+                    "damage": 1,
+                    "keywords": [
+                        "Blast",
+                        "Heavy",
+                        "Indirect Fire"
+                    ]
+                },
+                {
+                    "name": "Plasma picks",
+                    "range": "Melee",
+                    "attacks": 4,
+                    "skill": {
+                        "type": "WS",
+                        "value": "3+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [
+                "All models in this unit can each have their breacher ordnance replaced with 1 tremor shells."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": [
+                "Designer’s Note: Place two breacher ordnance tokens next to the unit, removing one each time this ability is used."
+            ]
+        },
+        {
+            "name": "Einhyr Hearthguard",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 5,
+                "save": "2+",
+                "wounds": 2,
+                "leadership": "7+",
+                "objective_control": 1,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 5,
+                "max_models": 10,
+                "description": [
+                    "1 Hesyr",
+                    "4-9 Hearthguard"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Hesyr",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                },
+                {
+                    "name": "Hearthguard",
+                    "count": {
+                        "min": 4,
+                        "max": 9
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "5 models": 130,
+                "10 models": 270,
+                "5 models (3rd+)": 140,
+                "10 models (3rd+)": 280
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Exoarmour",
+                "Einhyr Hearthguard"
+            ],
+            "abilities": [
+                {
+                    "name": "Defensive Destruction",
+                    "rules_text": "Each time a model in this unit makes a ranged attack that targets the closest eligible target, re-roll a Hit roll of 1.",
+                    "implemented": true
+                },
+                {
+                    "name": "Teleport Crest",
+                    "rules_text": "Models in the bearer’s unit have the Deep Strike ability.",
+                    "implemented": false
+                },
+                {
+                    "name": "Weavefield Crest",
+                    "rules_text": "Models in the bearer’s unit have a 5+ invulnerable save.",
+                    "implemented": true
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "EtaCarn plasma gun",
+                    "range": "24\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "3+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -3,
+                    "damage": 2,
+                    "keywords": [
+                        "Rapid Fire 1"
+                    ]
+                },
+                {
+                    "name": "Exoarmour grenade launcher",
+                    "range": "24\"",
+                    "attacks": "D3",
+                    "skill": {
+                        "type": "BS",
+                        "value": "3+"
+                    },
+                    "strength": 3,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Blast"
+                    ]
+                },
+                {
+                    "name": "Volkanite disintegrator",
+                    "range": "24\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "3+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Devastating Wounds"
+                    ]
+                },
+                {
+                    "name": "Concussion gauntlet",
+                    "range": "Melee",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "WS",
+                        "value": "3+"
+                    },
+                    "strength": 8,
+                    "armor_piercing": -2,
+                    "damage": 2,
+                    "keywords": []
+                },
+                {
+                    "name": "Graviton hammer",
+                    "range": "Melee",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 9,
+                    "armor_piercing": -1,
+                    "damage": 3,
+                    "keywords": [
+                        "Anti-Vehicle 3+"
+                    ]
+                },
+                {
+                    "name": "Plasma blade gauntlet",
+                    "range": "Melee",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "WS",
+                        "value": "3+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [
+                "All models in this unit can each have their EtaCarn plasma gun replaced with 1 volkanite disintegrator.",
+                "All models in this unit can each have their concussion gauntlet replaced with 1 plasma blade gauntlet.",
+                "The Hesyr’s concussion gauntlet or plasma blade gauntlet can be replaced with 1 graviton hammer.",
+                "The Hesyr’s weavefield crest can be replaced with 1 teleport crest."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": []
+        },
+        {
+            "name": "Hekaton Land Fortress",
+            "stats": {
+                "movement": "10\"",
+                "toughness": 12,
+                "save": "2+",
+                "wounds": 16,
+                "leadership": "7+",
+                "objective_control": 5,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 1,
+                "max_models": 1,
+                "description": [
+                    "1 Hekaton Land Fortress"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Hekaton Land Fortress",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "1 model": 250,
+                "1 model (2nd+)": 270
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Vehicle",
+                "Transport",
+                "Frame",
+                "Hekaton Land Fortress"
+            ],
+            "abilities": [
+                {
+                    "name": "Deadly Demise D6",
+                    "rules_text": "Deadly Demise D6",
+                    "implemented": true
+                },
+                {
+                    "name": "MultiCOG Targeting",
+                    "rules_text": "Each time this model makes a ranged attack, you can ignore any or all modifiers to the following that attack’s Ballistic Skill characteristic; the Hit roll.",
+                    "implemented": true
+                },
+                {
+                    "name": "Panspectral Scanner",
+                    "rules_text": "Each time a model in the bearer’s unit makes a ranged attack, re-roll a Hit roll of 1.",
+                    "implemented": true
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Cyclic ion cannon",
+                    "range": "24\"",
+                    "attacks": "D6+2",
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -2,
+                    "damage": 2,
+                    "keywords": [
+                        "Blast"
+                    ]
+                },
+                {
+                    "name": "Heavy magna-rail cannon",
+                    "range": "30\"",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 18,
+                    "armor_piercing": -4,
+                    "damage": "D6+4",
+                    "keywords": [
+                        "Devastating Wounds",
+                        "Heavy"
+                    ]
+                },
+                {
+                    "name": "Hekaton warhead",
+                    "range": "36\"",
+                    "attacks": "D6+3",
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -2,
+                    "damage": 2,
+                    "keywords": [
+                        "Blast",
+                        "One Shot"
+                    ]
+                },
+                {
+                    "name": "MATR autocannon",
+                    "range": "24\"",
+                    "attacks": 6,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -1,
+                    "damage": 2,
+                    "keywords": [
+                        "Assault",
+                        "Sustained Hits 1"
+                    ]
+                },
+                {
+                    "name": "SP heavy conversion beamer",
+                    "range": "24\"",
+                    "attacks": 4,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 10,
+                    "armor_piercing": -2,
+                    "damage": 4,
+                    "keywords": [
+                        "Conversion",
+                        "Lethal Hits"
+                    ]
+                },
+                {
+                    "name": "Twin bolt cannon",
+                    "range": "36\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -1,
+                    "damage": 2,
+                    "keywords": [
+                        "Sustained Hits 2",
+                        "Twin-linked"
+                    ]
+                },
+                {
+                    "name": "Twin ion beamer",
+                    "range": "18\"",
+                    "attacks": "D3+1",
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 8,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": [
+                        "Blast",
+                        "Twin-linked"
+                    ]
+                },
+                {
+                    "name": "Armoured wheels",
+                    "range": "Melee",
+                    "attacks": 6,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 8,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [
+                "This model’s 2 twin bolt cannons can be replaced with one of the following: 1 twin bolt cannon and 1 twin ion beamer; 2 twin ion beamers.",
+                "This model’s cyclic ion cannon can be replaced with one of the following: 1 SP heavy conversion beamer; 1 heavy magna-rail cannon.",
+                "This model’s panspectral scanner can be replaced with 1 Hekaton warhead."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": [
+                "Transport: 14 Leagues of Votann Infantry models; each Exoframe, Exoarmour or Ironkin Steeljacks model takes up the space of 2 models. Cannot transport Artillery models.",
+                "Conversion: Against an enemy unit not within 12\", an unmodified Hit roll of 4+ scores a Critical Hit.",
+                "One Shot: The bearer can only shoot with this weapon once per battle.",
+                "Damaged: 1-5 wounds remaining: subtract 1 from the Hit roll each time this model makes an attack."
+            ],
+            "transport": "14 Leagues of Votann Infantry models; each Exoframe, Exoarmour or Ironkin Steeljacks model takes up the space of 2 models. Cannot transport Artillery models."
+        },
+        {
+            "name": "Hernkyn Pioneers",
+            "stats": {
+                "movement": "12\"",
+                "toughness": 6,
+                "save": "4+",
+                "wounds": 3,
+                "leadership": "7+",
+                "objective_control": 2,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 3,
+                "max_models": 6,
+                "description": [
+                    "3-6 Hernkyn Pioneers"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Hernkyn Pioneers",
+                    "count": {
+                        "min": 3,
+                        "max": 6
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "3 models": 85,
+                "6 models": 170,
+                "3 models (3rd+)": 95,
+                "6 models (3rd+)": 180
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Mounted",
+                "Grenades",
+                "Fly",
+                "Hernkyn",
+                "Pioneers"
+            ],
+            "abilities": [
+                {
+                    "name": "Scouts 9\"",
+                    "rules_text": "Scouts 9\"",
+                    "implemented": true
+                },
+                {
+                    "name": "Outflanking Mag-riders",
+                    "rules_text": "At the end of your opponent’s turn, if this unit is wholly within 9\" of one or more battlefield edges and not within Engagement Range of one or more enemy units, you can remove it from the battlefield and place it into Strategic Reserves.",
+                    "implemented": false
+                },
+                {
+                    "name": "Multwave Comms Array",
+                    "rules_text": "Each time you target the bearer’s unit with a Stratagem, roll one D6: on a 5+, you gain 1CP.",
+                    "implemented": false
+                },
+                {
+                    "name": "Panspectral Scanner",
+                    "rules_text": "Each time a model in the bearer’s unit makes a ranged attack, re-roll a Hit roll of 1.",
+                    "implemented": true
+                },
+                {
+                    "name": "Rollbar Searchlight",
+                    "rules_text": "Each time a model in the bearer’s unit makes a ranged attack, you can ignore any or all modifiers to the Hit roll.",
+                    "implemented": true
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Bolt revolver",
+                    "range": "12\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Pistol"
+                    ]
+                },
+                {
+                    "name": "Bolt shotgun",
+                    "range": "18\"",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Assault"
+                    ]
+                },
+                {
+                    "name": "HYLas rotary cannon",
+                    "range": "24\"",
+                    "attacks": 6,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -1,
+                    "damage": 1,
+                    "keywords": [
+                        "Sustained Hits 1"
+                    ]
+                },
+                {
+                    "name": "Ion beamer",
+                    "range": "18\"",
+                    "attacks": "D3+1",
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 8,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": [
+                        "Blast"
+                    ]
+                },
+                {
+                    "name": "Magna-coil autocannon",
+                    "range": "24\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -1,
+                    "damage": 2,
+                    "keywords": []
+                },
+                {
+                    "name": "Plasma knife",
+                    "range": "Melee",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [
+                "For every 3 models in this unit, 1 model can be equipped with one of the following: 1 HYLas rotary cannon; 1 ion beamer.",
+                "1 model that is not equipped with either a HYLas rotary cannon or an ion beamer can be equipped with 1 multiwave comms array.",
+                "1 model that is not equipped with either a HYLas rotary cannon or an ion beamer can be equipped with 1 panspectral scanner.",
+                "1 model that is not equipped with either a HYLas rotary cannon or an ion beamer can be equipped with 1 rollbar searchlight."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": []
+        },
+        {
+            "name": "Hernkyn Yaegirs",
+            "stats": {
+                "movement": "6\"",
+                "toughness": 5,
+                "save": "5+",
+                "wounds": 1,
+                "leadership": "7+",
+                "objective_control": 1,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 10,
+                "max_models": 10,
+                "description": [
+                    "1 Yaegir Theyn",
+                    "9 Hernkyn Yaegirs"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Yaegir Theyn",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                },
+                {
+                    "name": "Hernkyn Yaegirs",
+                    "count": {
+                        "min": 9,
+                        "max": 9
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "10 models": 90
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Grenades",
+                "Hernkyn Yaegirs"
+            ],
+            "abilities": [
+                {
+                    "name": "Infiltrators",
+                    "rules_text": "Infiltrators",
+                    "implemented": true
+                },
+                {
+                    "name": "Pragmatic Hunters",
+                    "rules_text": "In your opponent’s Movement phase, if an enemy unit ends a move within 8\" of this unit, if this unit is not within Engagement Range of one or more enemy units, this unit can make a Normal move of up to D6\".",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "APM launcher",
+                    "range": "24\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -2,
+                    "damage": "D6",
+                    "keywords": [
+                        "Anti-Monster 3+",
+                        "Anti-Vehicle 3+"
+                    ]
+                },
+                {
+                    "name": "Bolt revolver",
+                    "range": "12\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Pistol"
+                    ]
+                },
+                {
+                    "name": "Bolt shotgun",
+                    "range": "18\"",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Assault"
+                    ]
+                },
+                {
+                    "name": "Magna-coil rifle",
+                    "range": "24\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 5,
+                    "armor_piercing": -2,
+                    "damage": 2,
+                    "keywords": [
+                        "Ignores Cover",
+                        "Precision"
+                    ]
+                },
+                {
+                    "name": "Close combat weapon",
+                    "range": "Melee",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "Plasma knife",
+                    "range": "Melee",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [
+                "All models in this unit can each have their bolt shotgun replaced with 1 bolt revolver and 1 plasma knife.",
+                "1 Hernkyn Yaegir can have its bolt revolver and plasma knife or its bolt shotgun replaced with 1 magna-coil rifle.",
+                "1 Hernkyn Yaegir can have its bolt revolver and plasma knife or its bolt shotgun replaced with 1 APM launcher."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": []
+        },
+        {
+            "name": "Ironkin Steeljacks with Heavy Volkanite Disintegrators",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 6,
+                "save": "2+",
+                "wounds": 3,
+                "leadership": "7+",
+                "objective_control": 1,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 3,
+                "max_models": 6,
+                "description": [
+                    "1 Steeljack Theyn",
+                    "2-5 Ironkin Steeljacks"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Steeljack Theyn",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                },
+                {
+                    "name": "Ironkin Steeljacks",
+                    "count": {
+                        "min": 2,
+                        "max": 5
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "3 models": 80,
+                "6 models": 170,
+                "3 models (3rd+)": 90,
+                "6 models (3rd+)": 180
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Ironkin Steeljacks",
+                "Ironkin Steeljacks with Heavy Volkanite Disintegrators"
+            ],
+            "abilities": [
+                {
+                    "name": "Purge Response",
+                    "rules_text": "Each time you target this unit with the Fire Overwatch Stratagem, hits are scored on unmodified Hit rolls of 5+ while resolving that Stratagem. If units from your army have Fortify Takeover, hits are scored on unmodified Hit rolls of 4+ while resolving that Stratagem instead.",
+                    "implemented": false
+                },
+                {
+                    "name": "Preymark Crest",
+                    "rules_text": "Each time a model in the bearer’s unit makes an attack that targets an enemy unit within range of one or more objective markers, on a Critical Wound, that attack has the Precision ability.",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Autoch-pattern bolter",
+                    "range": "24\"",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Pistol"
+                    ]
+                },
+                {
+                    "name": "Heavy volkanite disintegrator",
+                    "range": "24\"",
+                    "attacks": 5,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -1,
+                    "damage": 1,
+                    "keywords": [
+                        "Devastating Wounds"
+                    ]
+                },
+                {
+                    "name": "Plasma knife",
+                    "range": "Melee",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "WS",
+                        "value": "3+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": []
+                },
+                {
+                    "name": "Plasma sword",
+                    "range": "Melee",
+                    "attacks": 5,
+                    "skill": {
+                        "type": "WS",
+                        "value": "3+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": [
+                        "Sustained Hits 1"
+                    ]
+                }
+            ],
+            "wargear_options": [
+                "The Steeljack Theyn’s heavy volkanite disintegrator and plasma knife can be replaced with 1 Autoch-pattern bolter and 1 plasma sword."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": []
+        },
+        {
+            "name": "Ironkin Steeljacks with Melee Weapons",
+            "stats": {
+                "movement": "5\"",
+                "toughness": 6,
+                "save": "2+",
+                "wounds": 3,
+                "leadership": "7+",
+                "objective_control": 1,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 3,
+                "max_models": 6,
+                "description": [
+                    "1 Steeljack Theyn",
+                    "2-5 Ironkin Steeljacks"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Steeljack Theyn",
+                    "count": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "default_wargear": []
+                },
+                {
+                    "name": "Ironkin Steeljacks",
+                    "count": {
+                        "min": 2,
+                        "max": 5
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "3 models": 75,
+                "6 models": 150,
+                "3 models (3rd+)": 85,
+                "6 models (3rd+)": 160
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Infantry",
+                "Ironkin Steeljacks",
+                "Ironkin Steeljacks with Melee Weapons"
+            ],
+            "abilities": [
+                {
+                    "name": "Merciless Eradication",
+                    "rules_text": "Each time an enemy unit (excluding MONSTERS and VEHICLES) that is within Engagement Range of this unit Fails Back, all models in that enemy unit must take a Desperate Escape test. When doing so, if that enemy unit is Battle-shocked, subtract 1 from each of those tests.",
+                    "implemented": false
+                },
+                {
+                    "name": "Preymark Crest",
+                    "rules_text": "Each time a model in the bearer’s unit makes an attack that targets an enemy unit within range of one or more objective markers, on a Critical Wound, that attack has the Precision ability.",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "Autoch-pattern bolter",
+                    "range": "24\"",
+                    "attacks": 2,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 4,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": [
+                        "Pistol"
+                    ]
+                },
+                {
+                    "name": "Concussion gauntlet",
+                    "range": "Melee",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 10,
+                    "armor_piercing": -2,
+                    "damage": 2,
+                    "keywords": [
+                        "Lethal Hits"
+                    ]
+                },
+                {
+                    "name": "Plasma sword",
+                    "range": "Melee",
+                    "attacks": 5,
+                    "skill": {
+                        "type": "WS",
+                        "value": "3+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -2,
+                    "damage": 1,
+                    "keywords": [
+                        "Sustained Hits 1"
+                    ]
+                }
+            ],
+            "wargear_options": [
+                "Any number of models in this unit can each have their plasma sword replaced with 1 concussion gauntlet."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": []
+        },
+        {
+            "name": "Kapricus Defenders",
+            "stats": {
+                "movement": "12\"",
+                "toughness": 7,
+                "save": "4+",
+                "wounds": 7,
+                "leadership": "7+",
+                "objective_control": 2,
+                "invulnerable_save": null
+            },
+            "unit_composition": {
+                "min_models": 1,
+                "max_models": 2,
+                "description": [
+                    "1-2 Kapricus Defenders"
+                ]
+            },
+            "models": [
+                {
+                    "name": "Kapricus Defenders",
+                    "count": {
+                        "min": 1,
+                        "max": 2
+                    },
+                    "default_wargear": []
+                }
+            ],
+            "points": {
+                "1 model": 75,
+                "2 models": 150,
+                "1 model (3rd+)": 95,
+                "2 models (3rd+)": 170
+            },
+            "faction_keywords": [
+                "Leagues of Votann"
+            ],
+            "keywords": [
+                "Vehicle",
+                "Fly",
+                "Hernkyn",
+                "Kapricus Defenders"
+            ],
+            "abilities": [
+                {
+                    "name": "Deadly Demise 1",
+                    "rules_text": "Deadly Demise 1",
+                    "implemented": true
+                },
+                {
+                    "name": "Scouts 9\"",
+                    "rules_text": "Scouts 9\"",
+                    "implemented": true
+                },
+                {
+                    "name": "Opportunistic Manoeuvre",
+                    "rules_text": "In your Shooting phase, after this unit has shot, it can make a Normal move of up to D6\". If it does, until the end of the turn, this unit is not eligible to declare a charge.",
+                    "implemented": false
+                },
+                {
+                    "name": "Smoke Launcher",
+                    "rules_text": "The bearer has the SMOKE keyword.",
+                    "implemented": false
+                }
+            ],
+            "army_rules": [
+                "Prioritised Efficiency"
+            ],
+            "weapons": [
+                {
+                    "name": "HYLas rotary cannon",
+                    "range": "24\"",
+                    "attacks": 6,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": -1,
+                    "damage": 2,
+                    "keywords": [
+                        "Sustained Hits 1"
+                    ]
+                },
+                {
+                    "name": "Magna-rail cannon",
+                    "range": "24\"",
+                    "attacks": 1,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 14,
+                    "armor_piercing": -4,
+                    "damage": "D3+3",
+                    "keywords": [
+                        "Devastating Wounds",
+                        "Heavy"
+                    ]
+                },
+                {
+                    "name": "Twin magna-coil autocannon",
+                    "range": "24\"",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "BS",
+                        "value": "4+"
+                    },
+                    "strength": 7,
+                    "armor_piercing": -1,
+                    "damage": 2,
+                    "keywords": [
+                        "Twin-linked"
+                    ]
+                },
+                {
+                    "name": "Armoured hull",
+                    "range": "Melee",
+                    "attacks": 3,
+                    "skill": {
+                        "type": "WS",
+                        "value": "4+"
+                    },
+                    "strength": 6,
+                    "armor_piercing": 0,
+                    "damage": 1,
+                    "keywords": []
+                }
+            ],
+            "wargear_options": [
+                "Any number of models in this unit can each have their magna-rail cannon replaced with 1 HYLas rotary cannon.",
+                "Any number of models can each be equipped with 1 smoke launcher."
+            ],
+            "leader": {
+                "can_lead": []
+            },
+            "notes": []
+        }
+    ]
+}

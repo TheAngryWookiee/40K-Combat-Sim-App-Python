@@ -15,12 +15,7 @@
     "army_rules": [
       {
         "name": "Curse of the Wulfen",
-        "rules_text": "While this unit is within 6 inches of one or more friendly Space Wolves Character models (excluding Wulfen models) or within 12 inches of one or more friendly Wolf Priest models, if it is not Battle-shocked, add 1 to the Objective Control characteristic of Infantry models in it and add 3 to the Objective Control characteristic of Vehicle models in it.",
-        "implemented": false
-      },
-      {
-        "name": "Sagas",
-        "rules_text": "Each Detachment rule in this book includes a Saga you can complete, with additional effects that apply once you have done so.",
+        "rules_text": "While this unit is within 6\" of a friendly SPACE WOLVES CHARACTER model (excluding WULFEN models) or within 12\" of a friendly WOLF PRIEST model, this unit is not Battle-shocked. If this unit has INFANTRY, this unit has +1 OC. If this unit has VEHICLE, this unit has +3 OC.\n\nBestial Forms: For the purposes of transport capacity, each WULFEN model takes up the space of 2 models.",
         "implemented": false
       }
     ],
@@ -40,441 +35,253 @@
     "derived_keywords": [],
     "detachments": [
       {
-        "name": "Saga of the Hunter",
+        "name": "Champions of Fenris",
+        "detachment_points": 1,
         "rule": {
-          "name": "Pack's Quarry",
-          "rules_text": "Each time a model in a Space Wolves unit from your army makes a melee attack that targets an enemy unit, if that enemy unit is within Engagement Range of one or more other Adeptus Astartes units from your army, or if the attacking unit contains more models than that enemy unit: add 1 to the Hit roll. If your Saga is completed, add 1 to the Wound roll as well.",
-          "saga": {
-            "name": "Saga of the Hunter",
-            "rules_text": "At the start of the first battle round, your Quarry tally is 0. Each time an Adeptus Astartes unit from your army fights, after all of those attacks have been resolved, add 1 to your Quarry tally for each enemy unit destroyed by those attacks. Once your Quarry tally is equal to or greater than the number shown in the table below, your Saga is completed.",
-            "battle_size_thresholds": {
-              "Incursion": 2,
-              "Strike Force": 3,
-              "Onslaught": 4
-            }
-          },
-          "implemented": true
+          "name": "The Great Wolf Watches",
+          "rules_text": "Friendly ADEPTUS ASTARTES CHARACTER units have Countercharge: Once per battle round, per unit, when you target this unit with the Heroic Intervention Stratagem, that use is -1CP.",
+          "implemented": false
         },
+        "additional_rules": [],
+        "keywords": [],
         "restrictions": [
-          "If your army uses any of the Detachments from this book, it can include Space Wolves units, but it cannot include any Adeptus Astartes units drawn from any other Chapter."
+          "Unique: TERMINATOR"
         ],
         "enhancements": [
           {
-            "name": "Swift Hunter",
-            "rules_text": "Space Wolves model only. Models in the bearer's unit have the Scouts 7\" ability.",
+            "name": "Preyslayer",
+            "points": 15,
+            "rules_text": "This unit can re-roll charge rolls.",
             "restrictions": [
-              "Space Wolves model only."
+              "ADEPTUS ASTARTES INFANTRY model only"
             ],
             "implemented": false
           },
           {
-            "name": "Fenrisian Grit",
-            "rules_text": "Adeptus Astartes model only. The bearer has the Feel No Pain 4+ ability.",
+            "name": "A Giant Amongst Giants",
+            "points": 15,
+            "rules_text": "This model has +2 W. This model's melee attacks have +1 S.",
             "restrictions": [
-              "Adeptus Astartes model only."
-            ],
-            "implemented": true
-          },
-          {
-            "name": "Wolf Master",
-            "rules_text": "Space Wolves model only. In your Command phase, select one friendly Space Wolves unit within 9\" of the bearer. Until the start of your next Command phase, teeth and claws and Tyrnak and Fenrir weapons equipped by models in that unit have the [LETHAL HITS] ability.",
-            "restrictions": [
-              "Space Wolves model only."
-            ],
-            "implemented": true
-          },
-          {
-            "name": "Feral Rage",
-            "rules_text": "Adeptus Astartes model only. Add 1 to the Attacks characteristic of melee weapons equipped by the bearer. Each time the bearer ends a Charge move, until the end of the turn, add an additional 1 to the Attacks characteristic of those weapons.",
-            "restrictions": [
-              "Adeptus Astartes model only."
+              "ADEPTUS ASTARTES INFANTRY model only"
             ],
             "implemented": true
           }
         ],
         "stratagems": [
           {
-            "name": "Envelop and Ensnare",
-            "type": "Strategic Ploy",
+            "name": "Champion's Guidance",
+            "type": "STRATAGEM",
             "cp_cost": 1,
-            "turn_timing": "either",
-            "timing_color": "green",
-            "timing": "Fight phase.",
-            "target": "One Space Wolves unit (excluding Monsters and Vehicles) from your army that has not been selected to fight this phase.",
-            "effect": "Until the end of the phase, each time a model in your unit makes a Pile-in or Consolidation move, it can move up to 6\" instead of up to 3\". When doing so, it does not need to end that move closer to the closest enemy model, provided it ends that move as close as possible to the closest enemy unit.",
-            "restrictions": [],
+            "when": "Fight phase, when a friendly ADEPTUS ASTARTES CHARACTER unit is selected to fight",
+            "target": "That ADEPTUS ASTARTES CHARACTER unit",
+            "effect": "Your unit's melee attacks can re-roll Hit rolls of 1 and Wound rolls of 1.",
             "implemented": false
           },
           {
-            "name": "Territorial Advantage",
-            "type": "Strategic Ploy",
-            "cp_cost": 1,
-            "turn_timing": "either",
-            "timing_color": "green",
-            "timing": "Fight phase, just after an enemy unit is destroyed by an Adeptus Astartes unit from your army.",
-            "target": "That Adeptus Astartes unit.",
-            "effect": "Select one objective marker you control that your unit is within range of. That objective marker remains under your control until your opponent's Level of Control over that objective marker is greater than yours at the end of a phase.",
-            "restrictions": [],
+            "name": "Heroic Resolve",
+            "type": "STRATAGEM",
+            "cp_cost": 2,
+            "when": "Opponent's Shooting phase or Fight phase, when an enemy unit targets a friendly ADEPTUS ASTARTES CHARACTER unit",
+            "target": "That ADEPTUS ASTARTES CHARACTER unit",
+            "effect": "Attacks that target your unit have -1 to wound until that enemy unit has attacked.",
             "implemented": false
           },
           {
-            "name": "Overwhelming Onslaught",
-            "type": "Battle Tactic",
+            "name": "Birth of a Saga",
+            "type": "STRATAGEM",
             "cp_cost": 1,
-            "turn_timing": "either",
-            "timing_color": "green",
-            "timing": "Fight phase, just after an enemy unit has selected its targets.",
-            "target": "Two Adeptus Astartes units from your army within Engagement Range of that enemy unit, or one Space Wolves Beasts unit from your army within Engagement Range of that enemy unit.",
-            "effect": "Until the end of the phase, each time a model in that enemy unit makes an attack, subtract 1 from the Hit roll.",
-            "restrictions": [],
-            "implemented": true
-          },
-          {
-            "name": "Chosen Prey",
-            "type": "Strategic Ploy",
-            "cp_cost": 1,
-            "turn_timing": "your_turn",
-            "timing_color": "blue",
-            "timing": "Your Movement phase, just after a Space Wolves unit from your army Falls Back.",
-            "target": "That Space Wolves unit.",
-            "effect": "Until the end of the turn, your unit is eligible to shoot and declare a charge in a turn in which it Fell Back.",
-            "restrictions": [],
+            "when": "Your Command phase",
+            "target": "One friendly ADEPTUS ASTARTES unit (excluding MONSTER/VEHICLE units)",
+            "effect": "Until the start of your next Command phase, your unit has CHARACTER.",
             "implemented": false
-          },
-          {
-            "name": "Bounding Advance",
-            "type": "Strategic Ploy",
-            "cp_cost": 1,
-            "turn_timing": "your_turn",
-            "timing_color": "blue",
-            "timing": "Your Movement phase or your Charge phase.",
-            "target": "One Space Wolves Infantry or Space Wolves Beasts unit from your army that has not been selected to move or declared a charge this phase.",
-            "effect": "Until the end of the phase, each time a model in your unit makes a Normal, Advance, Fall Back or Charge move, it can move through models (excluding Titanic models). When doing so, it can move within Engagement Range of enemy models, but unless it is making a Charge move, it cannot end that move within Engagement Range of them.",
-            "restrictions": [],
-            "implemented": false
-          },
-          {
-            "name": "Marked for Destruction",
-            "type": "Battle Tactic",
-            "cp_cost": 1,
-            "turn_timing": "your_turn",
-            "timing_color": "blue",
-            "timing": "Your Shooting phase.",
-            "target": "Two Adeptus Astartes units from your army (excluding Beasts) that have not been selected to shoot this phase.",
-            "effect": "Select one enemy unit visible to both of your units. Until the end of the phase, models in your units can only target that enemy unit (and only if it is an eligible target) and each time a model in one of your units makes an attack, re-roll a Wound roll of 1.",
-            "restrictions": [],
-            "implemented": true
           }
         ]
       },
       {
         "name": "Saga of the Beastslayer",
+        "detachment_points": 1,
         "rule": {
           "name": "Legendary Slayers",
-          "rules_text": "Some Space Wolves seek only to bring down the most monstrous and deadly foes. With hunting packs of Fenrisian wolves, Thunderwolf Cavalry and rampaging bands of Wulfen, they seek to hunt down and slay mighty champions, towering monstrosities and rumbling war machines, demoralising the foe and earning glorious victories.\n\nEach time an Adeptus Astartes model from your army makes an attack, if that attack targets a Character, Monster or Vehicle unit or if your Saga is completed (see below), that attack has the [LETHAL HITS] ability.",
-          "saga": {
-            "name": "Saga of the Beastslayer",
-            "rules_text": "At the start of the first battle round, your Beastslayer tally is 0, and you determine your Beastslayer target by halving the number of units from your opponent's army that have one or more of the following keywords (rounding up): Character, Monster, Vehicle.\n\nEach time an Adeptus Astartes unit from your army shoots or fights, after all of those attacks have been resolved, add 1 to your Beastslayer tally for each enemy unit with one or more of the following keywords destroyed by those attacks: Character, Monster, Vehicle.\n\nOnce your Beastslayer tally is equal to or greater than your Beastslayer target, your Saga is completed.",
-            "battle_size_thresholds": {},
-            "implemented": false
-          },
+          "rules_text": "Attacks made by friendly BLOOD CLAWS/THUNDERWOLF CAVALRY/WULFEN units have [LETHAL HITS: CHARACTER/MONSTER/VEHICLE].",
           "implemented": true
         },
-        "restrictions": [
-          "If your army uses any of the Detachments from this book, it can include Space Wolves units, but it cannot include any Adeptus Astartes units drawn from any other Chapter."
-        ],
+        "additional_rules": [],
+        "keywords": [],
+        "restrictions": [],
         "enhancements": [
           {
-            "name": "Wolf-Touched",
-            "rules_text": "Whilst the Canis Helix has yet to overcome this champion fully, it is stirred to life by the thrill of battle and the scent of blood.\n\nSpace Wolves model only. Add 2\" to the Move characteristic of the bearer. In the Declare Battle Formations step, the bearer can be attached to a Wulfen or Wulfen with Storm Shields unit.",
-            "restrictions": [
-              "Space Wolves model only."
-            ],
-            "implemented": false
-          },
-          {
             "name": "Hunter's Guile",
-            "rules_text": "This warrior embodies the cunning of the wolf, utilising deception and misdirection to confound his foes.\n\nAdeptus Astartes model only. After both players have deployed their armies, select up to three Thunderwolf Cavalry, Wulfen and/or Blood Claws units from your army and redeploy them. When doing so, you can set those units up in Strategic Reserves if you wish, regardless of how many units are already in Strategic Reserves.",
+            "points": 20,
+            "rules_text": "When both players have deployed their armies, you can redeploy up to three friendly BLOOD CLAWS/THUNDERWOLF CAVALRY/WULFEN units. You can set those units up in Strategic Reserves, regardless of how many units are already in Strategic Reserves.",
             "restrictions": [
-              "Adeptus Astartes model only."
+              "ADEPTUS ASTARTES model only"
             ],
             "implemented": false
           },
           {
-            "name": "Elder's Guidance",
-            "rules_text": "Wily and long of fang, this warrior brings centuries of battlefield experience to the fight, lending focus to the reckless fury of his youthful battle-brothers.\n\nSpace Wolves model only. Once per battle, at the start of the Fight phase, if the bearer is leading a Blood Claws unit, the bearer can use this Enhancement. If it does, until the end of the phase, improve the Armour Penetration characteristic of melee weapons equipped by models in that unit by 1.",
+            "name": "Wolf-touched",
+            "points": 15,
+            "rules_text": "This unit has WULFEN and +2 M.",
             "restrictions": [
-              "Space Wolves model only."
+              "LEADER: WULFEN WITH STORM SHIELDS/WULFEN; ADEPTUS ASTARTES model only"
             ],
-            "implemented": true
-          },
-          {
-            "name": "Helm of the Beastslayer",
-            "rules_text": "Wrought from the carapace of a nameless xenos monstrosity, this helm offers unparalleled protection.\n\nAdeptus Astartes model only. Each time an attack made by a Character, Monster or Vehicle model targets the bearer's unit, reduce the Armour Penetration characteristic of that attack by 1.",
-            "restrictions": [
-              "Adeptus Astartes model only."
-            ],
-            "implemented": true
+            "implemented": false
           }
         ],
         "stratagems": [
           {
             "name": "Unbridled Ferocity",
-            "type": "Battle Tactic",
+            "type": "STRATAGEM",
             "cp_cost": 1,
-            "turn_timing": "either",
-            "timing_color": "green",
-            "timing": "Fight phase.",
-            "target": "One Space Wolves unit from your army that has not been selected to fight this phase.",
-            "effect": "Until the end of the phase, each time a model in your unit makes an attack, add 1 to the Wound roll.",
-            "restrictions": [],
+            "when": "Fight phase, when a friendly BLOOD CLAWS/THUNDERWOLF CAVALRY/WULFEN unit is selected to fight",
+            "target": "That BLOOD CLAWS/THUNDERWOLF CAVALRY/WULFEN unit",
+            "effect": "Your unit's melee attacks have [LANCE].",
             "implemented": true
           },
           {
-            "name": "Thunderous Pursuit",
-            "type": "Strategic Ploy",
+            "name": "Co-ordinated Strike",
+            "type": "STRATAGEM",
             "cp_cost": 1,
-            "turn_timing": "opponent_turn",
-            "timing_color": "red",
-            "timing": "Your opponent's Movement phase, just after an enemy unit ends a Normal, Advance or Fall Back move.",
-            "target": "One Adeptus Astartes unit from your army that is within 9\" of that enemy unit and not within Engagement Range of one or more enemy units.",
-            "effect": "Your unit can make a Normal move of up to D6\". If your unit has the Space Wolves Infantry or Thunderwolf Cavalry keywords, it can make a Normal move of up to 6\" instead.",
-            "restrictions": [],
-            "implemented": false
-          },
-          {
-            "name": "Shock Cavalry",
-            "type": "Strategic Ploy",
-            "cp_cost": 1,
-            "turn_timing": "your_turn",
-            "timing_color": "blue",
-            "timing": "Your Movement phase or your Charge phase.",
-            "target": "One Thunderwolf Cavalry unit from your army that has not been selected to move or declared a charge this phase.",
-            "effect": "Until the end of the phase, each time a model in your unit makes a Normal, Advance, Fall Back or Charge move, it can move through models (excluding Titanic models) and sections of terrain features that are 4\" or less in height. When doing so, it can move within Engagement Range of enemy models, but unless it is making a Charge move, it cannot end that move within Engagement Range of them.",
-            "restrictions": [],
-            "implemented": false
-          },
-          {
-            "name": "Pinning Fire",
-            "type": "Strategic Ploy",
-            "cp_cost": 1,
-            "turn_timing": "your_turn",
-            "timing_color": "blue",
-            "timing": "Your Shooting phase.",
-            "target": "One Adeptus Astartes unit from your army that has not been selected to shoot this phase.",
-            "effect": "Until the end of the phase, after your unit has shot, select one enemy Character, Monster or Vehicle unit hit by one or more of those attacks. Until the start of your next Shooting phase, that unit is pinned. While a unit is pinned, subtract 2\" from its Move characteristic and subtract 2 from Charge rolls made for it.",
-            "restrictions": [],
+            "when": "End of your opponent's Fight phase",
+            "target": "One unengaged BLOOD CLAWS/THUNDERWOLF CAVALRY/WULFEN unit within 9 inches of one or more battlefield edges",
+            "effect": "Place your unit into Strategic Reserves.",
             "implemented": false
           },
           {
             "name": "Impetuosity",
-            "type": "Strategic Ploy",
+            "type": "STRATAGEM",
             "cp_cost": 1,
-            "turn_timing": "opponent_turn",
-            "timing_color": "red",
-            "timing": "Your opponent's Shooting phase, just after an enemy unit has selected its targets.",
-            "target": "One Wulfen Infantry or Blood Claws unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
-            "effect": "Until the end of the phase, after that enemy unit has shot, if one or more models in your unit were destroyed as a result of those attacks, your unit can make an Impetuous move. To do so, roll one D6: your unit can be moved a number of inches up to the result, but your unit must end that move as close as possible to the closest enemy unit (excluding Aircraft). When doing so, those models can be moved within Engagement Range of that enemy unit.",
-            "restrictions": [],
-            "implemented": false
-          },
-          {
-            "name": "Coordinated Strike",
-            "type": "Strategic Ploy",
-            "cp_cost": 1,
-            "turn_timing": "opponent_turn",
-            "timing_color": "red",
-            "timing": "End of your opponent's Fight phase.",
-            "target": "One Space Wolves unit from your army that is wholly within 9\" of one or more battlefield edges and not within Engagement Range of one or more enemy units.",
-            "effect": "Remove your unit from the battlefield and place it into Strategic Reserves.",
-            "restrictions": [],
+            "when": "Opponent's Shooting phase, when an enemy unit that targeted a friendly unengaged BLOOD CLAWS/THUNDERWOLF CAVALRY/WULFEN unit has shot",
+            "target": "That BLOOD CLAWS/THUNDERWOLF CAVALRY/WULFEN unit",
+            "effect": "Your unit can make a surge move of up to D6 inches.",
             "implemented": false
           }
         ]
       },
       {
-        "name": "Saga of the Bold",
+        "name": "Saga of the Great Wolf",
+        "detachment_points": 2,
         "rule": {
-          "name": "Heroes All",
-          "rules_text": "Every Space Wolves warrior seeks to forge a saga worthy of retelling.\n\nEach time an Adeptus Astartes unit from your army is selected to shoot or fight, apply one of the following when resolving those attacks:\n- If your Saga is completed (see below), you can re-roll one Hit roll, one Wound roll and one Damage roll.\n- Otherwise, if that unit is a Space Wolves Character unit, you can re-roll one Hit roll, one Wound roll or one Damage roll.",
-          "saga": {
-            "name": "Saga of the Bold",
-            "rules_text": "Each time a Space Wolves Character unit from your army does one of the following, that unit achieves that Boast. Once three or more different Boasts have been achieved by units from your army, your Saga is completed.\n\nYour Hide as a Trophy: That unit destroys your Oath of Moment target.\nSlay Them All: That unit destroys your Oath of Moment target, and that is the second Oath of Moment target destroyed by that unit in this battle.\nOverrun Their Position: At the end of either player's turn, that unit is wholly within your opponent's deployment zone.\nHold the Line: From the second battle round onwards, at the end of your Command phase, that unit is within range of an objective marker you control that is not within your deployment zone.",
-            "battle_size_thresholds": {},
-            "implemented": false
-          },
+          "name": "Master of Wolves",
+          "rules_text": "Friendly ADEPTUS ASTARTES units (excluding MONSTER/VEHICLE units) with Howling Onslaught gain the following: Encircling Jaws: if Assault doctrine is active, +1 to Advance and Charge rolls; Hunter's Eye: if Devastator doctrine is active, ranged attacks can re-roll Hit rolls of 1; Ferocious Strike: if Tactical doctrine is active, attacks that target an enemy unit with 9 inches have [SUSTAINED HITS 1].",
           "implemented": true
         },
-        "restrictions": [
-          "If your army uses any of the Detachments from this book, it can include Space Wolves units, but it cannot include any Adeptus Astartes units drawn from any other Chapter."
-        ],
-        "enhancements": [
+        "additional_rules": [
           {
-            "name": "Braggart's Steel",
-            "rules_text": "This weapon has graced the hand of many a champion and inspires in its bearers a brazen self-confidence.\n\nSpace Wolves model only. Add 2 to the Strength characteristic of melee weapons equipped by the bearer. If the bearer's unit has achieved one or more Boasts, add 1 to the Damage characteristic of those weapons as well.",
-            "restrictions": [
-              "Space Wolves model only."
-            ],
-            "implemented": true
-          },
-          {
-            "name": "Skjald",
-            "rules_text": "This warrior is well-versed in the Chapter's saga, drawing inspiration and invaluable teachings from their retelling.\n\nAdeptus Astartes model only. Each time a Space Wolves Character unit from your army achieves a Boast, if the bearer is on the battlefield, you gain 1CP.",
-            "restrictions": [
-              "Adeptus Astartes model only."
-            ],
-            "implemented": false
-          },
-          {
-            "name": "Hordeslayer",
-            "rules_text": "Seeking to take a terrible tally of lives, this warrior hurls himself into the heart of the fight, heedless of the numbers arrayed against him.\n\nSpace Wolves model only. At the start of the Fight phase, if there are more enemy models than friendly models wholly within 6\" of the bearer, until the end of the phase, add 2 to the Attacks characteristic of melee weapons equipped by the bearer. If the bearer's unit has achieved one or more Boasts, add 3 to the Attacks characteristic instead.",
-            "restrictions": [
-              "Space Wolves model only."
-            ],
-            "implemented": true
-          },
-          {
-            "name": "Thunderwolf's Fortitude",
-            "rules_text": "Possessed of indomitable fortitude, this champion of Fenris refuses the call of Morkai, fighting beyond the limits of even a Space Marine's endurance.\n\nAdeptus Astartes model only. The first time the bearer is destroyed, remove it from play, then at the end of the phase, roll one D6: on a 2+, set the bearer back up on the battlefield as close as possible to where it was destroyed and not within Engagement Range of one or more enemy units, with 3 wounds remaining.",
-            "restrictions": [
-              "Adeptus Astartes model only."
-            ],
+            "name": "Howling Onslaught",
+            "rules_text": "Friendly LOGAN GRIMNAR units have Howling Onslaught: Once per battle, per army, in your Command phase, you can use this ability. If you do, friendly ADEPTUS ASTARTES MONSTER/VEHICLE units benefit from Master of Wolves until the start of your next Command phase.",
             "implemented": false
           }
         ],
-        "stratagems": []
-      },
-      {
-        "name": "Saga of the Great Wolf",
-        "rule": {
-          "name": "Master of Wolves",
-          "rules_text": "At the start of your Command phase, you can select one of the Hunting Packs listed below. Until the start of your next Command phase, that Hunting Pack is active and its effects apply to all Adeptus Astartes units from your army. You can only select each Hunting Pack once per battle.\n\nEncircling Jaws: This unit can re-roll Advance rolls and Charge rolls.\n\nHunter's Eyes: Each time a model in this unit makes a ranged attack, add 1 to the Hit roll.\n\nFerocious Strike: Each time this unit is selected to fight, select either the [LETHAL HITS] or [SUSTAINED HITS 1] ability. Until the end of the phase, weapons equipped by models in this unit have the selected ability.",
-          "saga": {
-            "name": "Howling Onslaught",
-            "rules_text": "Once per battle, when selecting a Hunting Pack for the Master of Wolves Detachment rule, if a Logan Grimnar model from your army is on the battlefield, you can select a Hunting Pack you have already selected this battle.",
-            "battle_size_thresholds": {},
-            "implemented": false
-          },
-          "implemented": true
-        },
+        "keywords": [],
         "restrictions": [
-          "If your army uses any of the Detachments from this book, it can include Space Wolves units, but it cannot include any Adeptus Astartes units drawn from any other Chapter."
+          "Your army can include SPACE WOLVES units, but cannot include ADEPTUS ASTARTES units drawn from any other Chapter."
         ],
         "enhancements": [
           {
-            "name": "Grimnar's Mark",
-            "rules_text": "Leader: Wolf Guard Terminators. Adeptus Astartes Terminator Captain model only. Once per battle round, from the second battle round onwards, you can target the bearer's unit with the Heroic Intervention Stratagem for 0CP, and can do so even if you have already targeted a different unit with that Stratagem this turn. In the Declare Battle Formations step, the bearer can be attached to a Wolf Guard Terminators unit.",
+            "name": "Howlmaw",
+            "points": 15,
+            "rules_text": "Once per turn, per unit, at the start of the Fight phase, you can select one enemy unit within 6 inches of this model. That unit makes a Battle-shock roll with -1 to the Battle-shock roll.",
             "restrictions": [
-              "Adeptus Astartes Terminator Captain model only."
+              "WOLF PRIEST model only"
             ],
-            "implemented": false,
-            "points": 20
+            "implemented": false
           },
           {
-            "name": "Howlmaw",
-            "rules_text": "Wolf Priest model only. At the start of the Fight phase, you can select one enemy unit within 6\" of the bearer. That unit must take a Battle-shock test, subtracting 1 from the result.",
+            "name": "Grimnar's Mark",
+            "points": 15,
+            "rules_text": "Once per battle round, per army, you can target this unit with the Rapid Ingress/Heroic Intervention Stratagem, regardless of any other uses of that Stratagem this phase. If you do, that use is -1CP and does not prevent any uses of that Stratagem on other units this phase.",
             "restrictions": [
-              "Wolf Priest model only."
+              "ADEPTUS ASTARTES TERMINATOR CAPTAIN model only"
             ],
-            "implemented": false,
-            "points": 15
+            "implemented": false
           },
           {
             "name": "Chariots of the Storm",
-            "rules_text": "Adeptus Astartes model only. After both players have deployed their armies, select up to three Adeptus Astartes units from your army and redeploy them. When doing so, you can set those units up in Strategic Reserves, regardless of how many units are already in Strategic Reserves.",
+            "points": 25,
+            "rules_text": "When both players have deployed their armies, you can redeploy up to three friendly ADEPTUS ASTARTES units. You can set those units up in Strategic Reserves, regardless of how many units are already in Strategic Reserves.",
             "restrictions": [
-              "Adeptus Astartes model only."
+              "ADEPTUS ASTARTES model only"
             ],
-            "implemented": false,
-            "points": 25
+            "implemented": false
           },
           {
             "name": "Skjald's Foretelling",
-            "rules_text": "Wolf Guard Battle Leader model only. While the bearer is leading a unit, weapons equipped by models in that unit have the [LANCE] ability.",
+            "points": 20,
+            "rules_text": "This unit's melee attacks have [LANCE].",
             "restrictions": [
-              "Wolf Guard Battle Leader model only."
+              "Wolf Guard Battle Leader model only"
             ],
-            "implemented": true,
-            "points": 25
+            "implemented": true
           }
         ],
         "stratagems": [
           {
-            "name": "The Foe Foreseen",
-            "type": "Strategic Ploy",
+            "name": "Eye of the Pack",
+            "type": "STRATAGEM",
             "cp_cost": 1,
-            "turn_timing": "opponent_turn",
-            "timing_color": "red",
-            "timing": "Your opponent's Shooting phase or the Fight phase, just after an enemy unit has selected its targets.",
-            "target": "One Adeptus Astartes unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
-            "effect": "Until the attacking unit has finished making its attacks, each time an attack targets your unit, worsen the Armour Penetration characteristic of that attack by 1.",
-            "restrictions": [],
+            "when": "Shooting phase or Fight phase, when a friendly ADEPTUS ASTARTES INFANTRY unit is selected to attack",
+            "target": "That ADEPTUS ASTARTES INFANTRY unit",
+            "effect": "Your unit's attacks can re-roll Wound rolls of 1 and 2.",
             "implemented": true
           },
           {
-            "name": "Grimnar's Command",
-            "type": "Strategic Ploy",
+            "name": "Wolf Totems",
+            "type": "STRATAGEM",
             "cp_cost": 1,
-            "turn_timing": "your_turn",
-            "timing_color": "blue",
-            "timing": "Your Command phase.",
-            "target": "One Adeptus Astartes unit from your army.",
-            "effect": "Select one Hunting Pack from the Master of Wolves Detachment rule. Until the start of your next Command phase, that Hunting Pack is active for your unit instead of any other Hunting Pack that is active, even if you have already selected that Hunting Pack this battle.",
-            "restrictions": [],
+            "when": "Any phase, when a friendly ADEPTUS ASTARTES INFANTRY/MOUNTED unit suffers a mortal wound",
+            "target": "That ADEPTUS ASTARTES INFANTRY/MOUNTED unit",
+            "effect": "Your unit has Feel No Pain 5+ against mortal wounds.",
+            "implemented": false
+          },
+          {
+            "name": "Fangs of the Pack",
+            "type": "STRATAGEM",
+            "cp_cost": 1,
+            "when": "Fight phase, when a friendly ADEPTUS ASTARTES INFANTRY/MOUNTED unit is selected to fight",
+            "target": "That ADEPTUS ASTARTES INFANTRY/MOUNTED unit",
+            "effect": "Your unit's melee attacks have [PRECISION].",
             "implemented": false
           },
           {
             "name": "Fenrisian Ferocity",
-            "type": "Strategic Ploy",
+            "type": "STRATAGEM",
             "cp_cost": 1,
-            "turn_timing": "your_turn",
-            "timing_color": "blue",
-            "timing": "Your Movement phase or your Charge phase.",
-            "target": "One Adeptus Astartes Mounted or Adeptus Astartes Walker unit from your army that has not been selected to move or charge this phase.",
-            "effect": "Until the end of the phase, each time a model in your unit makes a Normal, Advance, Fall Back or Charge move, it can move horizontally through models, excluding Titanic models, and terrain features. When doing so, it can move within Engagement Range of enemy models, but cannot end a Normal, Advance or Fall Back move within Engagement Range of them.",
-            "restrictions": [],
+            "when": "Your Movement/Charge phase, when a friendly ADEPTUS ASTARTES MOUNTED/WALKER unit is selected to move or declares a charge",
+            "target": "That ADEPTUS ASTARTES MOUNTED/WALKER unit",
+            "effect": "Your unit has MOBILE.",
             "implemented": false
           },
           {
-            "name": "Unrelenting Hunters",
-            "type": "Strategic Ploy",
+            "name": "Grimnar's Command",
+            "type": "STRATAGEM",
             "cp_cost": 1,
-            "turn_timing": "your_turn",
-            "timing_color": "blue",
-            "timing": "Your Movement phase.",
-            "target": "One Adeptus Astartes unit from your army that has not been selected to move this phase.",
-            "effect": "Until the end of the turn, your unit is eligible to declare a charge in a turn in which it Fell Back. If your unit is a Space Wolves unit, until the end of the turn it is eligible to declare a charge in a turn in which it Advanced or Fell Back.",
-            "restrictions": [],
+            "when": "Your Command phase",
+            "target": "One ADEPTUS ASTARTES unit (excluding MONSTER/VEHICLE units)",
+            "effect": "Select one combat doctrine. That combat doctrine is active for your unit until the start of your next Command phase.",
             "implemented": false
-          },
-          {
-            "name": "Eye of the Pack",
-            "type": "Strategic Ploy",
-            "cp_cost": 1,
-            "turn_timing": "your_turn",
-            "timing_color": "blue",
-            "timing": "Your Shooting phase.",
-            "target": "One Adeptus Astartes unit from your army that has not been selected to shoot this phase.",
-            "effect": "Until the end of the phase, each time a model in your unit makes an attack, add 1 to the Wound roll.",
-            "restrictions": [],
-            "implemented": true
           },
           {
             "name": "Battle Instincts",
-            "type": "Strategic Ploy",
+            "type": "STRATAGEM",
             "cp_cost": 1,
-            "turn_timing": "opponent_turn",
-            "timing_color": "red",
-            "timing": "Your opponent's Shooting phase, just after an enemy unit has shot.",
-            "target": "One Space Wolves unit from your army that was selected as the target of one or more of the attacking unit's attacks.",
-            "effect": "Your unit can make a Normal move of up to D6\".",
-            "restrictions": [],
+            "when": "Opponent's Shooting phase, when an enemy unit that targeted a friendly unengaged ADEPTUS ASTARTES INFANTRY/MOUNTED unit has shot",
+            "target": "That ADEPTUS ASTARTES INFANTRY/MOUNTED unit",
+            "effect": "Your unit can make a normal move of up to D3+3 inches.",
             "implemented": false
           }
         ]
       }
     ],
-    "category": "Adeptus Astartes"
+    "category": "Adeptus Astartes",
+    "detachment_filters": {
+      "allow_names": [
+        "Champions of Fenris",
+        "Saga of the Beastslayer",
+        "Saga of the Great Wolf"
+      ],
+      "deny_names": []
+    }
   },
   "units": [
     {
@@ -513,32 +320,30 @@
       "abilities": [
         {
           "name": "Core",
-          "rules_text": "Deep Strike, Leader"
+          "rules_text": "Leader"
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines"
         },
         {
           "name": "High King of Fenris",
-          "rules_text": "Once per battle round, in your Movement phase, you can select one friendly Space Wolves unit that is in Strategic Reserves. If you do, until the end of the phase, for the purpose of setting up that unit on the battlefield, treat the current battle round number as being one higher than it actually is."
+          "rules_text": "Once per battle round, in your Movement phase, select one friendly SPACE WOLVES unit in Strategic Reserves; if this unit makes an ingress move, treat the current battle round number as one higher than it actually is."
         },
         {
-          "name": "Guile of the Wolf (Aura)",
-          "rules_text": "Each time your opponent targets a unit from their army with a Stratagem, if that unit is within 12 inches of this model, increase the cost of that usage of that Stratagem by 1CP."
-        },
-        {
-          "name": "Embarking within Transports",
-          "rules_text": "This model can embark within friendly Adeptus Astartes Transport models that can transport Terminator models. When doing so, it takes up the space of 4 Infantry models."
+          "name": "Guile of the Wolf",
+          "rules_text": "At the start of each phase, the assault doctrine, devastator doctrine and tactical doctrine are active for this unit."
         }
       ],
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": {
         "can_lead": [
+          "Terminator Assault Squad",
+          "Terminator Squad",
           "Wolf Guard Terminators"
         ],
-        "rules_text": "This model can be attached to the following unit: Wolf Guard Terminators."
+        "rules_text": "This model can be attached to: Terminator Assault Squad, Terminator Squad, Wolf Guard Terminators."
       },
       "wargear_options": [],
       "stats": {
@@ -607,7 +412,12 @@
           "armor_piercing": "-1",
           "damage": "1"
         }
-      ]
+      ],
+      "unit_costs": [
+        150
+      ],
+      "source_image": "image(20261026-142718).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Njal Stormcaller",
@@ -649,31 +459,46 @@
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines"
         },
         {
-          "name": "Wind Walker (Psychic)",
-          "rules_text": "While this model is leading a unit, ranged weapons equipped by models in that unit have the [ASSAULT] ability and each time that unit Advances, do not make an Advance roll. Instead, until the end of the phase, add 6\" to the Move characteristic of models in this unit."
+          "name": "Wind Walker",
+          "rules_text": "Ranged weapons have ASSAULT; advance rolls of this unit count as 6."
         },
         {
-          "name": "Tempest's Wrath (Psychic)",
-          "rules_text": "In your Shooting phase, after this model's unit has shot, select one enemy unit (excluding MONSTERS and VEHICLES) hit by one or more of those attacks made with this model's Living Lightning weapon. Until the start of your next turn, that enemy unit is stormwracked; while a unit is stormwracked, subtract 6\" from the Range characteristic of ranged weapons equipped by models in that unit (to a minimum of 12\")."
+          "name": "High Rune Priest",
+          "rules_text": "Psyker level 3."
+        },
+        {
+          "name": "Murderous Hurricane",
+          "rules_text": "On 1, battle-shocked; otherwise an enemy within 12 inches cannot make Snap shooting attacks."
+        },
+        {
+          "name": "Storm Caller",
+          "rules_text": "On 1, battle-shocked; otherwise this unit has 3 inch detection range until end of phase."
+        },
+        {
+          "name": "Tempest’s Wrath",
+          "rules_text": "On 1, battle-shocked; otherwise enemy within 18 inches is suppressed until start of next turn; while suppressed attacks have -1 to hit."
         }
       ],
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": {
         "can_lead": [
+          "Assault Intercessor Squad",
+          "Bladeguard Veteran Squad",
+          "Intercessor Squad",
           "Blood Claws",
           "Grey Hunters",
           "Wolf Guard Headtakers"
         ],
-        "rules_text": "This model can be attached to the following units: Blood Claws, Grey Hunters, Wolf Guard Headtakers."
+        "rules_text": "This model can be attached to: Assault Intercessor Squad, Bladeguard Veteran Squad, Intercessor Squad, Blood Claws, Grey Hunters, Wolf Guard Headtakers."
       },
       "wargear_options": [],
       "stats": {
         "movement": 7,
-        "toughness": 4,
+        "toughness": 5,
         "save": "3+",
         "invulnerable_save": "4+",
         "wounds": 4,
@@ -745,7 +570,12 @@
           "armor_piercing": "-1",
           "damage": "D3"
         }
-      ]
+      ],
+      "unit_costs": [
+        100
+      ],
+      "source_image": "image(20261026-142729).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Ulrik the Slayer",
@@ -782,35 +612,38 @@
       "abilities": [
         {
           "name": "Core",
-          "rules_text": "Feel No Pain 6+, Leader"
+          "rules_text": "Leader"
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines"
         },
         {
-          "name": "Slayer's Oath",
-          "rules_text": "At the start of the battle, select one of the following keywords to be this model's Slayer's Oath: CHARACTER, MONSTER, VEHICLE. The first time this model's unit destroys a unit with this model's Slayer's Oath keyword, if your Detachment rule has a Saga, until the end of the battle, this model's unit receives the benefits of that Detachment rule as if that Saga had been completed."
+          "name": "Slayer’s Oath",
+          "rules_text": "At the start of the first battle round select one enemy CHARACTER/MONSTER/VEHICLE; attacks against it ignore modifiers to BS, WS and hit rolls."
         },
         {
           "name": "Oathbound",
-          "rules_text": "While this model is leading a unit, each time a model in that unit makes a melee attack, add 1 to the Hit roll. If that attack targets a unit that has this model's Slayer's Oath keyword (see above), add 1 to the Wound roll as well."
+          "rules_text": "Melee attacks gain +1 to Hit; attacks targeting the selected Slayer's Oath unit also gain +1 to Wound."
         }
       ],
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": {
         "can_lead": [
+          "Assault Intercessor Squad",
+          "Bladeguard Veteran Squad",
+          "Intercessor Squad",
           "Blood Claws",
           "Grey Hunters",
           "Wolf Guard Headtakers"
         ],
-        "rules_text": "This model can be attached to the following units: Blood Claws, Grey Hunters, Wolf Guard Headtakers."
+        "rules_text": "This model can be attached to: Assault Intercessor Squad, Bladeguard Veteran Squad, Intercessor Squad, Blood Claws, Grey Hunters, Wolf Guard Headtakers."
       },
       "wargear_options": [],
       "stats": {
         "movement": 7,
-        "toughness": 4,
+        "toughness": 5,
         "save": "3+",
         "invulnerable_save": "4+",
         "wounds": 4,
@@ -865,7 +698,12 @@
           "armor_piercing": "-2",
           "damage": "2"
         }
-      ]
+      ],
+      "unit_costs": [
+        90
+      ],
+      "source_image": "image(20261026-142750).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Bjorn the Fell-Handed",
@@ -904,25 +742,24 @@
       "abilities": [
         {
           "name": "Core",
-          "rules_text": "Deadly Demise 1, Feel No Pain 5+"
+          "rules_text": "Deadly Demise 1"
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines"
         },
         {
           "name": "Legendary Tenacity",
-          "rules_text": "Each time an attack targets this model, if the Strength characteristic of that attack is greater than this model's Toughness characteristic, subtract 1 from the Wound roll."
+          "rules_text": "Attacks targeting this unit with Strength greater than its Toughness have -1 to Wound."
         },
         {
           "name": "Ancient Tactician",
-          "rules_text": "At the start of your Command phase, if this model is on the battlefield, you gain 1CP."
+          "rules_text": "Once per turn, per army, when targeted with a stratagem, this unit gets -1 CP."
         }
       ],
       "leader": null,
       "wargear_options": [
-        "Assault cannon can be replaced with Helfrost cannon",
-        "Assault cannon can be replaced with Multi-melta"
+        "Assault cannon can be replaced with Helfrost cannon or Multi-melta."
       ],
       "loadout_options": [
         {
@@ -971,7 +808,7 @@
       ],
       "stats": {
         "movement": 9,
-        "toughness": 9,
+        "toughness": 10,
         "save": "2+",
         "invulnerable_save": "5+",
         "wounds": 8,
@@ -1068,7 +905,12 @@
           "armor_piercing": "-2",
           "damage": "3"
         }
-      ]
+      ],
+      "unit_costs": [
+        160
+      ],
+      "source_image": "image(20261026-142803).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Ragnar Blackmane",
@@ -1110,15 +952,15 @@
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "War Howl",
-          "rules_text": "While this model is leading a Blood Claws unit, each time a model in that unit makes a melee attack, you can re-roll the Wound roll. While this model is leading a Wolf Guard Headtakers unit, that unit is eligible to declare a charge in a turn in which it Advanced."
+          "rules_text": "Combat Doctrines"
         },
         {
           "name": "Battle-lust",
-          "rules_text": "Each time this model ends a Charge move, until the end of the turn, add 2 to the Attacks characteristic of this model's Frostfang weapon."
+          "rules_text": "After this unit makes a charge move, melee weapons gain +2 Attacks this turn."
+        },
+        {
+          "name": "War Howl",
+          "rules_text": "While attached to BLOOD CLAWS, melee attacks gain +1 Strength and SUSTAINED HITS 1; while attached to WOLF GUARD HEADTAKERS, unit may advance and charge."
         }
       ],
       "selectable_abilities": [],
@@ -1128,12 +970,12 @@
           "Blood Claws",
           "Wolf Guard Headtakers"
         ],
-        "rules_text": "This model can be attached to the following units: Blood Claws, Wolf Guard Headtakers."
+        "rules_text": "This model can be attached to: Blood Claws, Wolf Guard Headtakers."
       },
       "wargear_options": [],
       "stats": {
         "movement": 7,
-        "toughness": 4,
+        "toughness": 5,
         "save": "3+",
         "invulnerable_save": "4+",
         "wounds": 5,
@@ -1171,7 +1013,12 @@
           "armor_piercing": "-3",
           "damage": "2"
         }
-      ]
+      ],
+      "unit_costs": [
+        100
+      ],
+      "source_image": "image(20261026-142739).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Arjac Rockfist",
@@ -1206,33 +1053,35 @@
       "abilities": [
         {
           "name": "Core",
-          "rules_text": "Deep Strike, Leader"
+          "rules_text": "Leader"
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Anvil of Endurance",
-          "rules_text": "While this model is leading a unit, each time a model in that unit is destroyed by a melee attack, if that model has not fought this phase, roll one D6: on a 4+, do not remove the destroyed model from play. The destroyed model can fight after the attacking unit has finished making its attacks, and is then removed from play."
+          "rules_text": "Combat Doctrines"
         },
         {
           "name": "Champion of the Kingsguard",
-          "rules_text": "Each time this model makes a melee attack that targets a CHARACTER unit, you can re-roll the Hit roll and you can re-roll the Wound roll."
+          "rules_text": "Attacks that target a CHARACTER unit can re-roll Hit rolls of 1 and Wound rolls of 1."
+        },
+        {
+          "name": "Anvil of Endurance",
+          "rules_text": "In the Fight phase, when this model is destroyed, roll one D6; on 4+ do not remove it until the end of the phase."
         }
       ],
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": {
         "can_lead": [
+          "Terminator Assault Squad",
+          "Terminator Squad",
           "Wolf Guard Terminators"
         ],
-        "rules_text": "This model can be attached to the following unit: Wolf Guard Terminators."
+        "rules_text": "This model can be attached to: Terminator Assault Squad, Terminator Squad, Wolf Guard Terminators."
       },
       "wargear_options": [],
       "stats": {
         "movement": 6,
-        "toughness": 5,
+        "toughness": 6,
         "save": "2+",
         "invulnerable_save": "4+",
         "wounds": 6,
@@ -1274,7 +1123,12 @@
           "armor_piercing": "-2",
           "damage": "3"
         }
-      ]
+      ],
+      "unit_costs": [
+        105
+      ],
+      "source_image": "image(20261026-142706).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Wolf Priest",
@@ -1313,31 +1167,34 @@
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines"
         },
         {
           "name": "Healing Balms",
-          "rules_text": "While this model is leading a unit, in your Command phase, you can return 1 destroyed model (excluding CHARACTER models) to that unit."
+          "rules_text": "In Command phase this unit heals D3 lost wounds."
         },
         {
           "name": "Litany of Hate",
-          "rules_text": "While this model is leading a unit, each time a model in that unit makes a melee attack, add 1 to the Wound roll."
+          "rules_text": "Melee attacks gain LANCE."
         }
       ],
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": {
         "can_lead": [
+          "Assault Intercessor Squad",
+          "Bladeguard Veteran Squad",
+          "Intercessor Squad",
           "Blood Claws",
           "Grey Hunters",
           "Wolf Guard Headtakers"
         ],
-        "rules_text": "This model can be attached to the following units: Blood Claws, Grey Hunters, Wolf Guard Headtakers."
+        "rules_text": "This model can be attached to: Assault Intercessor Squad, Bladeguard Veteran Squad, Intercessor Squad, Blood Claws, Grey Hunters, Wolf Guard Headtakers."
       },
       "wargear_options": [],
       "stats": {
         "movement": 7,
-        "toughness": 4,
+        "toughness": 5,
         "save": "3+",
         "invulnerable_save": "4+",
         "wounds": 4,
@@ -1373,7 +1230,12 @@
           "armor_piercing": "-1",
           "damage": "2"
         }
-      ]
+      ],
+      "unit_costs": [
+        75
+      ],
+      "source_image": "image(20261026-142847).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Iron Priest",
@@ -1413,35 +1275,37 @@
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Iron Priest",
-          "rules_text": "While this model is within 3\" of one or more friendly Adeptus Astartes Vehicle units, this model has the Lone Operative ability."
+          "rules_text": "Combat Doctrines"
         },
         {
           "name": "Gift of the Iron Wolf",
-          "rules_text": "In your Command phase, you can select one friendly Adeptus Astartes Vehicle model within 3\" of this model. That model regains up to D3 lost wounds and, until the start of your next Command phase, ranged weapons equipped by that model have the [RAPID FIRE 1] ability. Each model can only be selected for this ability once per turn."
+          "rules_text": "In Movement phase select friendly SPACE WOLVES VEHICLE within 3 inches; heals D3 wounds and attacks can ignore modifiers to hit and wound until next Movement phase."
+        },
+        {
+          "name": "Iron Priest",
+          "rules_text": "Within 3 inches of friendly SPACE WOLVES VEHICLE, this model has Lone Operative."
         },
         {
           "name": "Judgement of the Omnissiah",
-          "rules_text": "Each time this model makes an attack that targets an enemy unit within Engagement Range of one or more friendly Adeptus Astartes Vehicle units, you can re-roll the Wound roll."
+          "rules_text": "Attacks targeting an enemy engaged with friendly SPACE WOLVES VEHICLE re-roll Wound rolls of 1."
         }
       ],
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": {
         "can_lead": [
+          "Assault Intercessor Squad",
+          "Intercessor Squad",
           "Blood Claws",
           "Grey Hunters",
           "Wolf Guard Headtakers"
         ],
-        "rules_text": "This model can be attached to the following units: Blood Claws, Grey Hunters, Wolf Guard Headtakers."
+        "rules_text": "This model can be attached to: Assault Intercessor Squad, Intercessor Squad, Blood Claws, Grey Hunters, Wolf Guard Headtakers."
       },
       "wargear_options": [],
       "stats": {
         "movement": 7,
-        "toughness": 4,
+        "toughness": 5,
         "save": "2+",
         "invulnerable_save": null,
         "wounds": 4,
@@ -1493,7 +1357,12 @@
           "armor_piercing": "-2",
           "damage": "3"
         }
-      ]
+      ],
+      "unit_costs": [
+        60
+      ],
+      "source_image": "image(20261026-142825).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Wolf Guard Battle Leader",
@@ -1533,15 +1402,15 @@
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines"
         },
         {
           "name": "Tempered Ferocity",
-          "rules_text": "While this model is leading a unit, weapons equipped by models in that unit have the [SUSTAINED HITS 1] ability and each time a model in that unit makes an attack that targets an enemy unit within 6\", re-roll a Hit roll of 1."
+          "rules_text": "Attacks gain SUSTAINED HITS 1; when targeting enemy within 6 inches re-roll Hit rolls of 1."
         },
         {
           "name": "Heroic Last Stand",
-          "rules_text": "If this model is destroyed by a melee attack, if it has not fought this phase, roll one D6: on a 2+, do not remove it from play. The destroyed model can fight after the attacking unit has finished making its attacks, and is then removed from play."
+          "rules_text": "On destruction in Fight phase, roll D6; on 2+ fight before removal."
         }
       ],
       "selectable_abilities": [],
@@ -1553,15 +1422,18 @@
       ],
       "leader": {
         "can_lead": [
+          "Assault Intercessor Squad",
+          "Bladeguard Veteran Squad",
+          "Intercessor Squad",
           "Blood Claws",
           "Grey Hunters",
           "Wolf Guard Headtakers"
         ],
-        "rules_text": "This model can be attached to the following units: Blood Claws, Grey Hunters, Wolf Guard Headtakers."
+        "rules_text": "This model can be attached to: Assault Intercessor Squad, Bladeguard Veteran Squad, Intercessor Squad, Blood Claws, Grey Hunters, Wolf Guard Headtakers."
       },
       "wargear_options": [
-        "Master-crafted power weapon can be replaced with 1 thunder hammer",
-        "Storm shield can be replaced with one of the following: master-crafted bolt carbine, master-crafted heavy bolt pistol, plasma pistol"
+        "Master-crafted power weapon can be replaced with Thunder hammer.",
+        "Plasma pistol can be replaced with Storm shield."
       ],
       "loadout_options": [
         {
@@ -1629,7 +1501,7 @@
       ],
       "stats": {
         "movement": 7,
-        "toughness": 4,
+        "toughness": 5,
         "save": "3+",
         "invulnerable_save": "4+",
         "wounds": 5,
@@ -1724,7 +1596,12 @@
           "armor_piercing": "-2",
           "damage": "2"
         }
-      ]
+      ],
+      "unit_costs": [
+        80
+      ],
+      "source_image": "image(20261026-142837).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Blood Claws",
@@ -1771,19 +1648,18 @@
       "abilities": [
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines"
         },
         {
           "name": "Berserk Charge",
-          "rules_text": "This unit is eligible to declare a charge in a turn in which it Advanced."
+          "rules_text": "After Advance move, this unit remains eligible to declare a charge."
         }
       ],
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": null,
       "wargear_options": [
-        "Blood Claw Pack Leader: bolt pistol can be replaced with 1 plasma pistol",
-        "Blood Claw Pack Leader: Astartes chainsword can be replaced with 1 power weapon"
+        "Pack Leader may replace chainsword with power weapon and bolt pistol with plasma pistol."
       ],
       "loadout_options": [
         {
@@ -1842,7 +1718,7 @@
       ],
       "stats": {
         "movement": 7,
-        "toughness": 4,
+        "toughness": 5,
         "save": "3+",
         "invulnerable_save": null,
         "wounds": 2,
@@ -1922,7 +1798,13 @@
           "armor_piercing": "-2",
           "damage": "1"
         }
-      ]
+      ],
+      "unit_costs": [
+        150,
+        290
+      ],
+      "source_image": "image(20261026-142906).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Grey Hunters",
@@ -1971,20 +1853,22 @@
       "abilities": [
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines"
+        },
+        {
+          "name": "Old Greymanes",
+          "rules_text": "At Declare Battle Formations step, may split into two units each containing as equal a number of models as possible."
         },
         {
           "name": "Cunning Hunters",
-          "rules_text": "Each time a model in this unit makes an attack, re-roll a Wound roll of 1. If the target is within range of an objective marker, you can re-roll the Wound roll instead."
+          "rules_text": "While within range of objective, melee attacks gain +1 Strength and +1 AP."
         }
       ],
       "selectable_abilities": [],
       "wargear_abilities": [],
       "leader": null,
       "wargear_options": [
-        "Grey Hunter Pack Leader: bolt carbine can be replaced with 1 plasma pistol",
-        "Grey Hunter Pack Leader: Astartes chainsword can be replaced with 1 power fist",
-        "Grey Hunter Pack Leader: Astartes chainsword can be replaced with 1 power weapon"
+        "Pack Leader may replace chainsword with power weapon and bolt pistol with plasma pistol."
       ],
       "loadout_options": [
         {
@@ -2056,7 +1940,7 @@
       ],
       "stats": {
         "movement": 7,
-        "toughness": 4,
+        "toughness": 5,
         "save": "3+",
         "invulnerable_save": null,
         "wounds": 2,
@@ -2164,7 +2048,12 @@
           "armor_piercing": "-2",
           "damage": "1"
         }
-      ]
+      ],
+      "unit_costs": [
+        180
+      ],
+      "source_image": "image(20261026-142919).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Wolf Guard Headtakers",
@@ -2226,19 +2115,15 @@
       "abilities": [
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Let Loose the Wolves",
-          "rules_text": "At the start of the Declare Battle Formations step, split this unit into two units, one containing all of its Headtakers models and one containing all of its Hunting Wolves models, with new Starting Strengths accordingly."
+          "rules_text": "Combat Doctrines"
         },
         {
           "name": "Headhunters",
-          "rules_text": "At the start of the battle, select one unit from your opponent's army to be this unit's quarry. Weapons equipped by HEADTAKERS models in this unit have the [DEVASTATING WOUNDS] and [PRECISION] abilities while targeting its quarry. Each time this unit's quarry is destroyed, select one new enemy unit to be this unit's quarry."
+          "rules_text": "Select one enemy quarry at start of first battle round; attacks targeting quarry have DEVASTATING WOUNDS and PRECISION; if quarry destroyed select another."
         },
         {
-          "name": "Hunting Hounds",
-          "rules_text": "While this unit is within 6\" of one or more friendly Space Wolves CHARACTER models (excluding Wulfen models), if this unit is not Battle-shocked, Hunting Wolves models in it have an Objective Control characteristic of 1."
+          "name": "Let Loose the Wolves",
+          "rules_text": "At Declare Battle Formations can split into two units with headtakers and hunting wolves."
         }
       ],
       "selectable_abilities": [],
@@ -2250,7 +2135,7 @@
       ],
       "leader": null,
       "wargear_options": [
-        "Any model can replace master-crafted power weapon and storm shield with paired master-crafted power weapons"
+        "Headtakers may replace paired master-crafted power weapons with master-crafted power weapon and storm shield."
       ],
       "loadout_options": [
         {
@@ -2277,7 +2162,7 @@
       ],
       "stats": {
         "movement": 7,
-        "toughness": 4,
+        "toughness": 5,
         "save": "3+",
         "invulnerable_save": "4+",
         "wounds": 3,
@@ -2339,7 +2224,19 @@
           "armor_piercing": "0",
           "damage": "1"
         }
-      ]
+      ],
+      "unit_costs": [
+        85,
+        115,
+        170,
+        230,
+        95,
+        125,
+        180,
+        240
+      ],
+      "source_image": "image(20261026-142951).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Thunderwolf Cavalry",
@@ -2386,11 +2283,15 @@
       "abilities": [
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines"
         },
         {
           "name": "Thunderous Charge",
-          "rules_text": "Each time a model in this unit makes a melee attack with its Wolf Guard weapon, if it made a Charge move this turn, add 1 to the Damage characteristic of that attack."
+          "rules_text": "After charging this turn melee weapons gain +1 Strength and +1 Damage."
+        },
+        {
+          "name": "Storm Shield",
+          "rules_text": "Model has 4+ invulnerable save."
         }
       ],
       "selectable_abilities": [],
@@ -2402,9 +2303,8 @@
       ],
       "leader": null,
       "wargear_options": [
-        "Any number of models can replace bolt pistol with 1 boltgun",
-        "Any number of models can replace bolt pistol with 1 storm shield",
-        "For every 3 models, one bolt pistol can be replaced with 1 plasma pistol"
+        "Pack Leader may replace bolt pistol with plasma pistol.",
+        "Models may replace bolt pistol with boltgun and storm shield."
       ],
       "loadout_options": [
         {
@@ -2550,7 +2450,15 @@
           "armor_piercing": "-2",
           "damage": "2"
         }
-      ]
+      ],
+      "unit_costs": [
+        115,
+        230,
+        145,
+        260
+      ],
+      "source_image": "image(20261026-143057).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Wolf Guard Terminators",
@@ -2600,11 +2508,15 @@
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines"
         },
         {
           "name": "Rugged Resilience",
-          "rules_text": "Each time an attack targets this unit, if the Strength characteristic of that attack is greater than the Toughness characteristic of this unit, subtract 1 from the Wound roll."
+          "rules_text": "Attacks targeting unit with Strength greater than its Toughness have -1 to Wound."
+        },
+        {
+          "name": "Storm Shield",
+          "rules_text": "Model has +1 Wounds."
         }
       ],
       "selectable_abilities": [],
@@ -2616,9 +2528,8 @@
       ],
       "leader": null,
       "wargear_options": [
-        "Any number of models can replace storm bolter with 1 storm shield",
-        "For every 5 models, 1 model can replace storm bolter and master-crafted power weapon with 1 assault cannon and 1 power fist",
-        "Pack Leader can replace wargear with 1 relic greataxe or 1 twin lightning claws"
+        "Pack Leader can exchange storm bolter and master-crafted power weapon for relic greataxe or twin lightning claws.",
+        "Terminator may take assault cannon, storm bolter or storm shield."
       ],
       "loadout_options": [
         {
@@ -2700,7 +2611,7 @@
       ],
       "stats": {
         "movement": 6,
-        "toughness": 5,
+        "toughness": 6,
         "save": "2+",
         "invulnerable_save": "4+",
         "wounds": 3,
@@ -2794,7 +2705,15 @@
           "armor_piercing": "-2",
           "damage": "1"
         }
-      ]
+      ],
+      "unit_costs": [
+        180,
+        365,
+        220,
+        405
+      ],
+      "source_image": "image(20261026-143001).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Fenrisian Wolves",
@@ -2826,15 +2745,15 @@
       "abilities": [
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines"
         },
         {
           "name": "Predatory Instinct",
-          "rules_text": "Once per turn, when an enemy unit ends a Normal, Advance or Fall Back move within 9\" of this unit, it can make a Normal move of up to D6\"."
+          "rules_text": "Once per battle round, per unit, when opponent Movement phase enemy ends move within 8 inches, if unengaged make normal move up to D6 inches."
         },
         {
           "name": "Hunting Hounds",
-          "rules_text": "While this unit is within 6\" of one or more friendly Space Wolves CHARACTER models (excluding Wulfen models), if this unit is not Battle-shocked, models in it have an Objective Control characteristic of 1."
+          "rules_text": "While within 6 inches of friendly SPACE WOLVES CHARACTER (excluding WULFEN), if not battle-shocked, OC +1."
         }
       ],
       "selectable_abilities": [],
@@ -2864,7 +2783,15 @@
           "armor_piercing": "0",
           "damage": "1"
         }
-      ]
+      ],
+      "unit_costs": [
+        45,
+        75,
+        50,
+        80
+      ],
+      "source_image": "image(20261026-142932).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Wulfen",
@@ -2897,11 +2824,15 @@
       "abilities": [
         {
           "name": "Faction",
-          "rules_text": "Curse of the Wulfen, Oath of Moment"
+          "rules_text": "Combat Doctrines, Curse of the Wulfen"
         },
         {
           "name": "Savage Frenzy",
-          "rules_text": "Each time an enemy unit (excluding MONSTERS and VEHICLES) within Engagement Range of this unit Falls Back, all models in that enemy unit must take a Desperate Escape test. When doing so, if that enemy unit is Battle-shocked, subtract 1 from each of those tests."
+          "rules_text": "If enemy engaged with this unit (excluding MONSTER/VEHICLE) makes Fall Back, enemy must take desperate escape test, subtract 1 if battle-shocked and -1 for each failed roll."
+        },
+        {
+          "name": "Death Totem",
+          "rules_text": "Melee attacks re-roll Hit rolls of 1."
         }
       ],
       "selectable_abilities": [],
@@ -2912,7 +2843,9 @@
         }
       ],
       "leader": null,
-      "wargear_options": [],
+      "wargear_options": [
+        "Any model may replace Death Totem with Stormfrag auto-launcher."
+      ],
       "stats": {
         "movement": 9,
         "toughness": 6,
@@ -2954,7 +2887,15 @@
           "armor_piercing": "-2",
           "damage": "2"
         }
-      ]
+      ],
+      "unit_costs": [
+        90,
+        180,
+        105,
+        195
+      ],
+      "source_image": "image(20261026-143024).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Wulfen with Storm Shields",
@@ -2987,11 +2928,15 @@
       "abilities": [
         {
           "name": "Faction",
-          "rules_text": "Curse of the Wulfen, Oath of Moment"
+          "rules_text": "Combat Doctrines, Curse of the Wulfen"
         },
         {
           "name": "Hammer Blow",
-          "rules_text": "In the Fight phase, after this unit has fought, select one enemy MONSTER or VEHICLE unit hit by one or more of those attacks. Until the end of the next turn, that enemy unit is suppressed. While a unit is suppressed, subtract 1 from the Hit roll."
+          "rules_text": "In Fight phase, after unit fought, select one enemy MONSTER/VEHICLE hit by attacks; it is suppressed until start of next turn. While suppressed attacks have -1 to Hit."
+        },
+        {
+          "name": "Death Totem",
+          "rules_text": "Melee attacks re-roll Hit rolls of 1."
         }
       ],
       "selectable_abilities": [],
@@ -3002,7 +2947,9 @@
         }
       ],
       "leader": null,
-      "wargear_options": [],
+      "wargear_options": [
+        "Any model may replace Stormfrag auto-launcher with Death Totem."
+      ],
       "stats": {
         "movement": 9,
         "toughness": 6,
@@ -3045,7 +2992,15 @@
           "armor_piercing": "-2",
           "damage": "3"
         }
-      ]
+      ],
+      "unit_costs": [
+        125,
+        250,
+        155,
+        280
+      ],
+      "source_image": "image(20261026-143042).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Murderfang",
@@ -3084,23 +3039,19 @@
       "abilities": [
         {
           "name": "Core",
-          "rules_text": "Deadly Demise 1, Feel No Pain 6+"
+          "rules_text": "Deadly Demise 1"
         },
         {
           "name": "Faction",
-          "rules_text": "Curse of the Wulfen, Oath of Moment"
+          "rules_text": "Combat Doctrines, Curse of the Wulfen"
         },
         {
-          "name": "Murder-maker (Aura)",
-          "rules_text": "In the Fight phase, each time an attack targets a friendly Wulfen unit within 6\" of this model, if a model in that unit is destroyed as a result of that attack, if that model has not fought this phase, roll one D6: on a 4+, do not remove the destroyed model from play; it can fight after the attacking unit has finished making its attacks, and is then removed from play."
+          "name": "Murder-maker",
+          "rules_text": "When a friendly WULFEN model within 6 inches is destroyed in Fight phase, roll D6; on 4+ it fights before removal."
         },
         {
           "name": "Bestial Fury",
-          "rules_text": "You can re-roll Advance and Charge rolls made for this model."
-        },
-        {
-          "name": "Force of Untamed Destruction",
-          "rules_text": "This model cannot be your WARLORD."
+          "rules_text": "Re-roll Advance rolls and Charge rolls."
         }
       ],
       "selectable_abilities": [],
@@ -3109,7 +3060,7 @@
       "wargear_options": [],
       "stats": {
         "movement": 9,
-        "toughness": 9,
+        "toughness": 10,
         "save": "2+",
         "invulnerable_save": null,
         "wounds": 8,
@@ -3164,7 +3115,12 @@
           "armor_piercing": "-2",
           "damage": "3"
         }
-      ]
+      ],
+      "unit_costs": [
+        150
+      ],
+      "source_image": "image(20261026-142812).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     },
     {
       "name": "Wulfen Dreadnought",
@@ -3204,15 +3160,19 @@
         },
         {
           "name": "Faction",
-          "rules_text": "Curse of the Wulfen, Oath of Moment"
-        },
-        {
-          "name": "Bestial Rage",
-          "rules_text": "Each time an enemy unit is selected to shoot, after that unit has shot, if this model lost one or more wounds as a result of those attacks, this model can make a Bestial Rage move. To do so, roll one D6, adding 2 to the result; this model can be moved a number of inches up to the result, but must finish that move as close as possible to the closest enemy unit (excluding AIRCRAFT). When doing so, this model can be moved within Engagement Range of that enemy unit. Each model can only make one Bestial Rage move per phase."
+          "rules_text": "Curse of the Wulfen, Combat Doctrines"
         },
         {
           "name": "Violent Fury",
-          "rules_text": "If this model is equipped with two melee weapons, those weapon profiles have the [TWIN-LINKED] ability."
+          "rules_text": "If this model is equipped with two melee weapons, melee attacks made by this unit have [TWIN-LINKED]."
+        },
+        {
+          "name": "Bestial Rage",
+          "rules_text": "In your opponent's Shooting phase, when an enemy unit has shot, if this unit lost a wound as a result of those attacks, this unit can make a surge move of up to D6\"."
+        },
+        {
+          "name": "Blizzard Shield",
+          "rules_text": "This model has a 4+ invulnerable save."
         }
       ],
       "selectable_abilities": [],
@@ -3224,8 +3184,8 @@
       ],
       "leader": null,
       "wargear_options": [
-        "Fenrisian greataxe or great wolf claw and storm bolter can be replaced with 1 blizzard shield and 1 heavy flamer",
-        "If not equipped with storm bolter, heavy flamer can be replaced with 1 storm bolter"
+        "This model's Storm Bolter can be replaced with 1 Heavy Flamer.",
+        "This model's Fenrisian Great Axe can be replaced with 1 Blizzard Shield."
       ],
       "loadout_options": [
         {
@@ -3316,76 +3276,79 @@
       },
       "weapons": [
         {
-          "name": "Heavy flamer",
-          "keywords": [
-            "Ignores Cover",
-            "Torrent"
-          ],
-          "range": "12 inches",
-          "attacks": "D6",
-          "skill": {
-            "type": "BS",
-            "value": "N/A"
-          },
-          "strength": "5",
-          "armor_piercing": "-1",
-          "damage": "1"
+          "name": "Heavy Flamer",
+          "type": "ranged",
+          "range": "12\"",
+          "A": "D6",
+          "BS": "N/A",
+          "S": 5,
+          "AP": -1,
+          "D": 1,
+          "abilities": [
+            "IGNORES COVER",
+            "TORRENT"
+          ]
         },
         {
-          "name": "Storm bolter",
-          "keywords": [
-            "Rapid Fire 2"
-          ],
-          "range": "24 inches",
-          "attacks": "2",
-          "skill": {
-            "type": "BS",
-            "value": "3+"
-          },
-          "strength": "4",
-          "armor_piercing": "0",
-          "damage": "1"
+          "name": "Storm Bolter",
+          "type": "ranged",
+          "range": "24\"",
+          "A": 2,
+          "BS": "3+",
+          "S": 5,
+          "AP": -1,
+          "D": 1,
+          "abilities": [
+            "RAPID FIRE 2"
+          ]
         },
         {
-          "name": "Fenrisian greataxe - strike",
-          "keywords": [],
+          "name": "Great Wolf Claw",
+          "type": "melee",
           "range": "Melee",
-          "attacks": "6",
-          "skill": {
-            "type": "WS",
-            "value": "3+"
-          },
-          "strength": "10",
-          "armor_piercing": "-2",
-          "damage": "D6+1"
+          "A": 6,
+          "WS": "3+",
+          "S": 10,
+          "AP": -3,
+          "D": 3,
+          "abilities": []
         },
         {
-          "name": "Fenrisian greataxe - sweep",
-          "keywords": [],
+          "name": "Fenrisian Great Axe - Strike",
+          "type": "melee",
           "range": "Melee",
-          "attacks": "12",
-          "skill": {
-            "type": "WS",
-            "value": "3+"
-          },
-          "strength": "6",
-          "armor_piercing": "-2",
-          "damage": "1"
+          "A": 6,
+          "WS": "3+",
+          "S": 10,
+          "AP": -2,
+          "D": "D3+3",
+          "abilities": []
         },
         {
-          "name": "Great wolf claw",
-          "keywords": [],
+          "name": "Fenrisian Great Axe - Sweep",
+          "type": "melee",
           "range": "Melee",
-          "attacks": "6",
-          "skill": {
-            "type": "WS",
-            "value": "3+"
-          },
-          "strength": "10",
-          "armor_piercing": "-3",
-          "damage": "3"
+          "A": 12,
+          "WS": "3+",
+          "S": 6,
+          "AP": -2,
+          "D": 1,
+          "abilities": []
         }
-      ]
+      ],
+      "unit_costs": [
+        {
+          "models": 1,
+          "points": 140,
+          "tier": "1st to 2nd units"
+        },
+        {
+          "models": 1,
+          "points": 150,
+          "tier": "3rd+ units"
+        }
+      ],
+      "source_image": "image(20261026-143133).png"
     },
     {
       "name": "Venerable Dreadnought",
@@ -3426,11 +3389,15 @@
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines"
         },
         {
-          "name": "Fervour of the Ancients (Aura)",
-          "rules_text": "While a friendly Space Wolves unit is within 6\" of this model, add 1 to Advance and Charge rolls made for that unit."
+          "name": "Fervour of the Ancients",
+          "rules_text": "Friendly SPACE WOLVES within 6 inches have +1 to Advance rolls and +1 to Charge rolls."
+        },
+        {
+          "name": "Blizzard Shield",
+          "rules_text": "Model has 4+ invulnerable save."
         }
       ],
       "selectable_abilities": [],
@@ -3442,10 +3409,9 @@
       ],
       "leader": null,
       "wargear_options": [
-        "Assault cannon can be replaced with Helfrost cannon or Multi-melta",
-        "Storm bolter can be replaced with heavy flamer",
-        "Full loadout can be replaced with Fenrisian greataxe, blizzard shield and storm bolter",
-        "Full loadout can be replaced with Fenrisian greataxe, blizzard shield and heavy flamer"
+        "Assault cannon may be replaced with Helfrost cannon or Multi-melta.",
+        "Storm bolter may be replaced with Heavy flamer.",
+        "Assault cannon and dreadnought combat weapon may be replaced with Fenrisian great axe and Blizzard shield."
       ],
       "loadout_options": [
         {
@@ -3734,7 +3700,265 @@
           "armor_piercing": "-2",
           "damage": "1"
         }
-      ]
+      ],
+      "unit_costs": [
+        130,
+        140
+      ],
+      "source_image": "image(20261026-143112).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
+    },
+    {
+      "name": "Wolf Scouts",
+      "unit_composition": {
+        "min_models": 6,
+        "max_models": 12
+      },
+      "models": [
+        {
+          "name": "Wolf Scout Pack Leader",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Combat knife"
+          ]
+        },
+        {
+          "name": "Hunting Wolf",
+          "count": {
+            "min": 1,
+            "max": 2
+          },
+          "default_wargear": [
+            "Teeth and claws"
+          ]
+        },
+        {
+          "name": "Wolf Scout",
+          "count": {
+            "min": 4,
+            "max": 9
+          },
+          "default_wargear": [
+            "Bolt pistol",
+            "Combat knife"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Space Wolves"
+      ],
+      "keywords": [
+        "Infantry",
+        "Grenades",
+        "Imperium",
+        "Scout Squad",
+        "Wolf Scouts"
+      ],
+      "abilities": [
+        {
+          "name": "Faction",
+          "rules_text": "Combat Doctrines"
+        },
+        {
+          "name": "Deadly Stalkers",
+          "rules_text": "Attacks targeting an enemy within 6 inches or an enemy within range of objective re-roll Hit rolls of 1."
+        },
+        {
+          "name": "Hunting Hounds",
+          "rules_text": "While within 6 inches of friendly SPACE WOLVES CHARACTER (excluding WULFEN), if not battle-shocked, OC +1."
+        },
+        {
+          "name": "Haywire Mine",
+          "rules_text": "Once per battle, in Shooting phase choose enemy within 6 inches; roll D6: 2+ inflict D3 mortal wounds, or 2D3 for VEHICLE."
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": null,
+      "wargear_options": [],
+      "unit_costs": [
+        95,
+        190,
+        105,
+        200
+      ],
+      "stats": {
+        "movement": 8,
+        "toughness": 4,
+        "save": "3+",
+        "invulnerable_save": null,
+        "wounds": 2,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "keywords": [
+            "Pistol"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Instigator bolt carbine",
+          "keywords": [
+            "Precision"
+          ],
+          "range": "24 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Plasma gun - standard",
+          "keywords": [
+            "Rapid Fire 1"
+          ],
+          "range": "24 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma gun - supercharge",
+          "keywords": [
+            "Hazardous",
+            "Rapid Fire 1"
+          ],
+          "range": "24 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "4+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "2"
+        },
+        {
+          "name": "Plasma pistol - standard",
+          "keywords": [
+            "Pistol"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "7",
+          "armor_piercing": "-2",
+          "damage": "1"
+        },
+        {
+          "name": "Plasma pistol - supercharge",
+          "keywords": [
+            "Hazardous",
+            "Pistol"
+          ],
+          "range": "12 inches",
+          "attacks": "1",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "2"
+        },
+        {
+          "name": "Thunderclap",
+          "keywords": [],
+          "range": "0 inches",
+          "attacks": "0",
+          "skill": {
+            "type": "BS",
+            "value": "N/A"
+          },
+          "strength": "0",
+          "armor_piercing": "0",
+          "damage": "0",
+          "profile_pending_verification": true
+        },
+        {
+          "name": "Combat knife",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "6",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        },
+        {
+          "name": "Power weapon",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "4",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-2",
+          "damage": "2"
+        },
+        {
+          "name": "Runic stave",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "0",
+          "skill": {
+            "type": "WS",
+            "value": "N/A"
+          },
+          "strength": "0",
+          "armor_piercing": "0",
+          "damage": "0",
+          "profile_pending_verification": true
+        },
+        {
+          "name": "Teeth and claws",
+          "keywords": [],
+          "range": "Melee",
+          "attacks": "3",
+          "skill": {
+            "type": "WS",
+            "value": "4+"
+          },
+          "strength": "4",
+          "armor_piercing": "0",
+          "damage": "1"
+        }
+      ],
+      "source_image": "image(20261026-143013).png",
+      "notes": "Weapon names and special rules transcribed from supplied image. Full weapon numeric profiles require verification against image."
     }
   ]
 }

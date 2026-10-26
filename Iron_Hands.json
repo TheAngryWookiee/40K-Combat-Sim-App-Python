@@ -10,6 +10,118 @@
   },
   "units": [
     {
+      "name": "Caanok Var",
+      "faction": "Adeptus Astartes",
+      "keywords": [
+        "Infantry",
+        "Character",
+        "Epic Hero",
+        "Imperium",
+        "Terminator",
+        "Captain",
+        "Caanok Var"
+      ],
+      "faction_keywords": [
+        "Adeptus Astartes",
+        "Iron Hands"
+      ],
+      "stats": {
+        "movement": 5,
+        "toughness": 5,
+        "save": "2+",
+        "invulnerable_save": "4+",
+        "wounds": 6,
+        "leadership": "6+",
+        "objective_control": 1
+      },
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Caanok Var",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Storm bolter",
+            "Axiom"
+          ]
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Core",
+          "rules_text": "Deep Strike, Feel No Pain 5+, Leader",
+          "implemented": true
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Combat Doctrines",
+          "implemented": true
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Transhuman Strategist",
+          "implemented": false
+        },
+        {
+          "name": "Cold and Calculating",
+          "rules_text": "In your Shooting phase or the Fight phase, when this unit is selected to attack, select one of the following for this unit's attacks: [LETHAL HITS: NON-MONSTER/VEHICLE] or [SUSTAINED HITS 1: NON-MONSTER/VEHICLE]. If the Tactical Doctrine is active for this unit, those attacks have both abilities.",
+          "implemented": true
+        },
+        {
+          "name": "Cerebrox Logic Engine",
+          "rules_text": "In the Declare Battle Formations step, select one friendly ADEPTUS ASTARTES INFANTRY unit. That unit has Scouts 6 inches.",
+          "implemented": false
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Storm bolter",
+          "keywords": [
+            "Rapid Fire 2"
+          ],
+          "range": "24\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "2+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "1"
+        },
+        {
+          "name": "Axiom",
+          "keywords": [
+            "Cleave 1"
+          ],
+          "range": "Melee",
+          "attacks": "5",
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": "8",
+          "armor_piercing": "-3",
+          "damage": "2"
+        }
+      ],
+      "implemented": false,
+      "base_size": "50mm",
+      "leader": {
+        "can_lead": [
+          "Terminator Assault Squad",
+          "Terminator Squad"
+        ],
+        "rules_text": "This model can be attached to the following units: Terminator Assault Squad, Terminator Squad."
+      },
+      "points": 100
+    },
+    {
       "name": "Iron Father Feirros",
       "unit_composition": {
         "min_models": 1,
@@ -45,23 +157,33 @@
       "abilities": [
         {
           "name": "Core",
-          "rules_text": "Leader"
+          "rules_text": "Feel No Pain 5+, Leader",
+          "implemented": true
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines",
+          "implemented": true
         },
         {
-          "name": "Rites of Tempering",
-          "rules_text": "While this model is leading a unit, models in that unit have the Feel No Pain 5+ ability."
-        },
-        {
-          "name": "Iron Father",
-          "rules_text": "While this model is within 3\" of one or more friendly ADEPTUS ASTARTES VEHICLE units, it has the Lone Operative ability."
+          "name": "Faction",
+          "rules_text": "Transhuman Strategist",
+          "implemented": false
         },
         {
           "name": "Master of the Forge",
-          "rules_text": "In your Command phase, select one friendly ADEPTUS ASTARTES VEHICLE model within 3\" of this model. That model regains up to 3 lost wounds and, until the start of your next Command phase, each time that VEHICLE model makes an attack, add 1 to the Hit roll. You cannot select a unit for this ability that has already been selected for the Blessing of the Omnissiah ability this phase, and vice versa."
+          "rules_text": "In your Movement phase, at the start or end of this unit's move, select one friendly ADEPTUS ASTARTES VEHICLE model within 3 inches. That model heals 3 wounds and can ignore modifiers to its BS, Hit rolls and Wound rolls until the start of your next Movement phase.",
+          "implemented": false
+        },
+        {
+          "name": "Rites of Tempering",
+          "rules_text": "Attacks that target this unit with a Strength greater than this unit's Toughness have -1 to Wound rolls.",
+          "implemented": true
+        },
+        {
+          "name": "Iron Father",
+          "rules_text": "While this model is within 3 inches of a friendly ADEPTUS ASTARTES VEHICLE unit, this model has Lone Operative.",
+          "implemented": false
         }
       ],
       "selectable_abilities": [],
@@ -69,10 +191,11 @@
       "leader": {
         "can_lead": [
           "Aggressor Squad",
-          "Eradicator Squad",
+          "Eradicator Squad with Heavy Bolters",
+          "Eradicator Squad with Melta Rifles",
           "Heavy Intercessor Squad"
         ],
-        "rules_text": "This model can be attached to the following units: Aggressor Squad, Eradicator Squad, Heavy Intercessor Squad."
+        "rules_text": "This model can be attached to Aggressor Squad, Eradicator Squad with Heavy Bolters, Eradicator Squad with Melta Rifles and Heavy Intercessor Squad units."
       },
       "support": null,
       "wargear_options": [],
@@ -145,120 +268,8 @@
           "armor_piercing": "-2",
           "damage": "3"
         }
-      ]
-    },
-    {
-      "name": "Caanok Var",
-      "faction": "Adeptus Astartes",
-      "keywords": [
-        "Infantry",
-        "Character",
-        "Epic Hero",
-        "Imperium",
-        "Terminator",
-        "Captain",
-        "Caanok Var"
       ],
-      "faction_keywords": [
-        "Adeptus Astartes",
-        "Iron Hands"
-      ],
-      "stats": {
-        "movement": 5,
-        "toughness": 5,
-        "save": "2+",
-        "invulnerable_save": "4+",
-        "wounds": 6,
-        "leadership": "6+",
-        "objective_control": 1
-      },
-      "unit_composition": {
-        "min_models": 1,
-        "max_models": 1
-      },
-      "models": [
-        {
-          "name": "Caanok Var",
-          "count": {
-            "min": 1,
-            "max": 1
-          },
-          "default_wargear": [
-            "Storm bolter",
-            "Axiom"
-          ]
-        }
-      ],
-      "abilities": [
-        {
-          "name": "Core",
-          "rules_text": "Deep Strike, Feel No Pain 5+, Leader"
-        },
-        {
-          "name": "Faction",
-          "rules_text": "Oath of Moment"
-        },
-        {
-          "name": "Cold and Calculating",
-          "rules_text": "Each time a model in this model's unit makes an attack that targets a MONSTER or VEHICLE unit, that attack has the [LETHAL HITS] ability. Each time a model in this model's unit makes an attack that targets any other unit, that attack has the [SUSTAINED HITS 1] ability."
-        },
-        {
-          "name": "Cerobex Logic Engine",
-          "rules_text": "At the start of the Declare Battle Formations step, you can select one ADEPTUS ASTARTES INFANTRY unit from your army. Until the end of the battle, that unit gains the Scouts 6\" ability. After both players have deployed their armies, you can select one ADEPTUS ASTARTES unit from your army and redeploy it. When doing so, you can set that unit up in Strategic Reserves if you wish, regardless of how many units are already in Strategic Reserves."
-        }
-      ],
-      "weapons": [
-        {
-          "name": "Storm bolter",
-          "keywords": [
-            "Rapid Fire 2"
-          ],
-          "range": "24\"",
-          "attacks": "2",
-          "skill": {
-            "type": "BS",
-            "value": "2+"
-          },
-          "strength": "4",
-          "armor_piercing": "0",
-          "damage": "1"
-        },
-        {
-          "name": "Axiom \u2013 strike",
-          "keywords": [],
-          "range": "Melee",
-          "attacks": "5",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "8",
-          "armor_piercing": "-2",
-          "damage": "2"
-        },
-        {
-          "name": "Axiom \u2013 sweep",
-          "keywords": [],
-          "range": "Melee",
-          "attacks": "10",
-          "skill": {
-            "type": "WS",
-            "value": "2+"
-          },
-          "strength": "5",
-          "armor_piercing": "-2",
-          "damage": "1"
-        }
-      ],
-      "implemented": false,
-      "base_size": "50mm",
-      "leader": {
-        "can_lead": [
-          "Terminator Assault Squad",
-          "Terminator Squad"
-        ],
-        "rules_text": "This model can be attached to the following units: Terminator Assault Squad, Terminator Squad."
-      }
+      "points": 85
     }
   ]
 }

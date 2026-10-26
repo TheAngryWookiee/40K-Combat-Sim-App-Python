@@ -5,8 +5,123 @@
     "army_rules": [],
     "chapter_rules": [],
     "derived_keywords": [],
-    "detachments": [],
-    "category": "Adeptus Astartes"
+    "detachments": [
+      {
+        "name": "Spearpoint Task Force",
+        "detachment_points": 2,
+        "rule": {
+          "name": "Storm-swift Onslaught",
+          "rules_text": "You can select the Assault Doctrine one additional time per battle. Friendly ADEPTUS ASTARTES MOUNTED/SPEEDER units have +1 to Advance rolls. Friendly SUBODEN KHAN units have Wrath of the First Khan: at the end of the Fight phase, if this unit was eligible to fight, it can make a Normal move if unengaged or a Fall Back move if engaged.",
+          "implemented": false
+        },
+        "additional_rules": [],
+        "keywords": [],
+        "restrictions": [
+          "Your army can include WHITE SCARS units, but it cannot include ADEPTUS ASTARTES units drawn from any other Chapter."
+        ],
+        "enhancements": [
+          {
+            "name": "Stormseer's Wisdom",
+            "points": 15,
+            "rules_text": "ADEPTUS ASTARTES model only. This unit can re-roll Advance rolls.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Chogorian Huntmaster",
+            "points": 20,
+            "rules_text": "ADEPTUS ASTARTES MOUNTED/SPEEDER unit only. When this unit is selected to make an Ingress move, treat the current battle round as one higher than it is.",
+            "restrictions": [
+              "ADEPTUS ASTARTES MOUNTED/SPEEDER unit only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Hunter's Eye",
+            "points": 25,
+            "rules_text": "ADEPTUS ASTARTES model only. This unit's ranged attacks have [IGNORES COVER] and [SUSTAINED HITS 1].",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "Spearpoint Paragon",
+            "points": 25,
+            "rules_text": "ADEPTUS ASTARTES model only. This model's melee attacks have +1 Strength and AP, or +2 Strength and AP if this unit made a Charge move this turn.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": true
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Evasive Manoeuvres",
+            "type": "SPEARPOINT TASK FORCE STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your opponent's Shooting phase, when an enemy unit targets a friendly ADEPTUS ASTARTES MOUNTED/SPEEDER unit.",
+            "target": "That ADEPTUS ASTARTES MOUNTED/SPEEDER unit.",
+            "effect": "Ranged attacks that target your unit have -1 to Wound rolls.",
+            "implemented": true
+          },
+          {
+            "name": "Mobile Lethality",
+            "type": "SPEARPOINT TASK FORCE STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your Movement phase, when a friendly ADEPTUS ASTARTES unit is selected to make an Advance/Fall Back move.",
+            "target": "That ADEPTUS ASTARTES unit.",
+            "effect": "That Fall Back move does not prevent your unit from being eligible to shoot. Your unit's ranged attacks have [ASSAULT].",
+            "implemented": true
+          },
+          {
+            "name": "Flawless Riders",
+            "type": "SPEARPOINT TASK FORCE STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your Movement/Charge phase, when a friendly ADEPTUS ASTARTES MOUNTED unit is selected to move or declare a charge.",
+            "target": "That ADEPTUS ASTARTES MOUNTED unit.",
+            "effect": "Your unit has MOBILE.",
+            "implemented": false
+          },
+          {
+            "name": "Spear Thrust and Sabre Swing",
+            "type": "SPEARPOINT TASK FORCE STRATAGEM",
+            "cp_cost": 1,
+            "when": "Fight phase, when a friendly ADEPTUS ASTARTES unit is selected to fight.",
+            "target": "That ADEPTUS ASTARTES unit.",
+            "effect": "Your unit's melee attacks have [LETHAL HITS] or [LANCE]. If your unit is MOUNTED, they have [LETHAL HITS] and [LANCE].",
+            "implemented": true
+          },
+          {
+            "name": "Withdraw and Regroup",
+            "type": "SPEARPOINT TASK FORCE STRATAGEM",
+            "cp_cost": 1,
+            "when": "End of your opponent's Fight phase.",
+            "target": "One friendly unengaged ADEPTUS ASTARTES MOUNTED/SPEEDER unit.",
+            "effect": "Place your unit in Strategic Reserves.",
+            "implemented": false
+          },
+          {
+            "name": "Hunter's Instincts",
+            "type": "SPEARPOINT TASK FORCE STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your opponent's Movement phase, when an enemy unit ends a move within 6 inches of a friendly unengaged ADEPTUS ASTARTES INFANTRY/MOUNTED/SPEEDER unit.",
+            "target": "That ADEPTUS ASTARTES INFANTRY/MOUNTED/SPEEDER unit.",
+            "effect": "Your unit can make a Normal move of up to D3+3 inches.",
+            "implemented": false
+          }
+        ]
+      }
+    ],
+    "category": "Adeptus Astartes",
+    "detachment_filters": {
+      "allow_names": [
+        "Spearpoint Task Force"
+      ],
+      "deny_names": []
+    }
   },
   "units": [
     {
@@ -34,29 +149,39 @@
       ],
       "keywords": [
         "Infantry",
+        "Captain",
         "Character",
         "Epic Hero",
+        "Explosives",
         "Imperium",
         "Tacticus",
-        "Captain",
         "Kor'sarro Khan"
       ],
       "abilities": [
         {
           "name": "Core",
-          "rules_text": "Leader"
+          "rules_text": "Leader",
+          "implemented": true
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines",
+          "implemented": true
         },
         {
-          "name": "For the Khan!",
-          "rules_text": "While this model is leading a unit, ranged weapons equipped by models in that unit have the [ASSAULT] ability and melee weapons equipped by models in that unit have the [LANCE] ability."
+          "name": "Faction",
+          "rules_text": "Transhuman Strategist",
+          "implemented": false
         },
         {
           "name": "Trophy Taker",
-          "rules_text": "Each time this model destroys an enemy CHARACTER model, you gain 1CP."
+          "rules_text": "This unit's attacks that target a CHARACTER unit can re-roll Hit rolls of 1 and Wound rolls of 1.",
+          "implemented": true
+        },
+        {
+          "name": "For the Khan!",
+          "rules_text": "This unit's ranged attacks have [ASSAULT] and this unit's melee attacks have [LANCE].",
+          "implemented": true
         }
       ],
       "selectable_abilities": [],
@@ -65,18 +190,18 @@
         "can_lead": [
           "Assault Intercessor Squad",
           "Bladeguard Veteran Squad",
-          "Infernus Squad",
-          "Sternguard Veteran Squad",
-          "Tactical Squad"
+          "Company Heroes",
+          "Intercessor Squad",
+          "Sternguard Veteran Squad"
         ],
-        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad, Bladeguard Veteran Squad, Infernus Squad, Sternguard Veteran Squad, Tactical Squad."
+        "rules_text": "This model can be attached to the listed White Scars infantry units."
       },
       "support": null,
       "wargear_options": [],
       "loadout_options": [],
       "stats": {
         "movement": 6,
-        "toughness": 4,
+        "toughness": 5,
         "save": "3+",
         "invulnerable_save": "4+",
         "wounds": 5,
@@ -85,25 +210,43 @@
       },
       "weapons": [
         {
+          "name": "Anzuq",
+          "keywords": [
+            "Devastating Wounds: Infantry",
+            "Close Quarters",
+            "Anti-Infantry 4+"
+          ],
+          "range": "18\"",
+          "attacks": "2",
+          "skill": {
+            "type": "BS",
+            "value": "3+"
+          },
+          "strength": "4",
+          "armor_piercing": "-1",
+          "damage": "2"
+        },
+        {
           "name": "Bolt pistol",
           "keywords": [
-            "Pistol"
+            "Close Quarters"
           ],
-          "range": "12 inches",
+          "range": "12\"",
           "attacks": "1",
           "skill": {
             "type": "BS",
             "value": "2+"
           },
-          "strength": "4",
-          "armor_piercing": "0",
+          "strength": "5",
+          "armor_piercing": "-1",
           "damage": "1"
         },
         {
           "name": "Moonfang",
           "keywords": [
-            "Devastating Wounds",
-            "Precision"
+            "Anti-Character 5+",
+            "Precision",
+            "Devastating Wounds"
           ],
           "range": "Melee",
           "attacks": "6",
@@ -111,22 +254,23 @@
             "type": "WS",
             "value": "2+"
           },
-          "strength": "5",
-          "armor_piercing": "-2",
+          "strength": "6",
+          "armor_piercing": "-3",
           "damage": "2"
         }
-      ]
+      ],
+      "points": 80
     },
     {
       "name": "Suboden Khan",
       "faction": "Adeptus Astartes",
       "keywords": [
         "Mounted",
+        "Captain",
         "Character",
         "Epic Hero",
+        "Explosives",
         "Imperium",
-        "Grenades",
-        "Captain",
         "Suboden Khan"
       ],
       "faction_keywords": [
@@ -135,7 +279,7 @@
       ],
       "stats": {
         "movement": 12,
-        "toughness": 5,
+        "toughness": 6,
         "save": "3+",
         "invulnerable_save": "4+",
         "wounds": 8,
@@ -164,19 +308,28 @@
       "abilities": [
         {
           "name": "Core",
-          "rules_text": "Leader"
+          "rules_text": "Leader",
+          "implemented": true
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines",
+          "implemented": true
+        },
+        {
+          "name": "Faction",
+          "rules_text": "Transhuman Strategist",
+          "implemented": false
         },
         {
           "name": "Spear of Chogoris",
-          "rules_text": "This model's unit is eligible to shoot and declare a charge in a turn in which it Advanced or Fell Back. If that unit is already eligible to shoot and declare a charge in a turn in which it Advanced, add 1 to Advance and Charge rolls made for that unit instead."
+          "rules_text": "This unit's ranged attacks have [ASSAULT]. When this unit is selected to make an Advance move, it remains eligible to declare a charge. If the Assault Doctrine is active, this unit has +1 to Advance and Charge rolls.",
+          "implemented": true
         },
         {
           "name": "Skilled Riders",
-          "rules_text": "Each time a model in this model's unit makes a Normal, Advance, Fall Back or Charge move, it can move horizontally through terrain features."
+          "rules_text": "This unit has MOBILE.",
+          "implemented": false
         }
       ],
       "weapons": [
@@ -223,15 +376,17 @@
             "type": "WS",
             "value": "2+"
           },
-          "strength": "6",
+          "strength": "7",
           "armor_piercing": "-2",
           "damage": "2"
         },
         {
           "name": "Power sword",
-          "keywords": [],
+          "keywords": [
+            "Extra Attacks"
+          ],
           "range": "Melee",
-          "attacks": "8",
+          "attacks": "3",
           "skill": {
             "type": "WS",
             "value": "2+"
@@ -245,12 +400,11 @@
       "base_size": "90 x 52mm",
       "leader": {
         "can_lead": [
-          "Outrider Squad",
-          "Bike Squad",
-          "Company Veterans on Bikes"
+          "Outrider Squad"
         ],
-        "rules_text": "This model can be attached to the following units: Outrider Squad, Bike Squad, Company Veterans on Bikes."
-      }
+        "rules_text": "This model can be attached to an Outrider Squad unit."
+      },
+      "points": 105
     }
   ]
 }

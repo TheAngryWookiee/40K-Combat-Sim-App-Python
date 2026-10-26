@@ -5087,6 +5087,224 @@
         }
       ],
       "implemented": true
+    },
+    {
+      "name": "Lictor",
+      "base_size": "50mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "Lictor",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Lictor claws and talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Infantry",
+        "Great Devourer",
+        "Vanguard Invader",
+        "Lictor"
+      ],
+      "abilities": [
+        {
+          "name": "Fights First",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Infiltrators",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Lone Operative",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Stealth",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Army rule.",
+          "category": "army",
+          "implemented": false
+        },
+        {
+          "name": "Feeder Tendrils",
+          "rules_text": "Each time this model destroys an enemy CHARACTER model, you gain 1CP.",
+          "category": "datasheet",
+          "implemented": false
+        },
+        {
+          "name": "Pheromone Trail",
+          "rules_text": "Once per battle round, you can target one model in this unit with the Rapid Ingress Stratagem for 0CP.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 8,
+        "toughness": 6,
+        "save": "4+",
+        "wounds": 6,
+        "leadership": "7+",
+        "objective_control": 1
+      },
+      "points": {
+        "1 model": 60
+      },
+      "weapons": [
+        {
+          "name": "Lictor claws and talons",
+          "range": "Melee",
+          "attacks": 6,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 7,
+          "armor_piercing": -2,
+          "damage": 2,
+          "keywords": [
+            "PRECISION"
+          ]
+        }
+      ],
+      "implemented": true
+    },
+    {
+      "name": "The Red Terror",
+      "base_size": "100mm",
+      "unit_composition": {
+        "min_models": 1,
+        "max_models": 1
+      },
+      "models": [
+        {
+          "name": "The Red Terror - EPIC HERO",
+          "count": {
+            "min": 1,
+            "max": 1
+          },
+          "default_wargear": [
+            "Gaping maw",
+            "Scything talons"
+          ]
+        }
+      ],
+      "faction_keywords": [
+        "Tyranids"
+      ],
+      "keywords": [
+        "Character",
+        "Epic Hero",
+        "Great Devourer",
+        "Monster",
+        "Mobile",
+        "Burrower",
+        "Vanguard Invader",
+        "The Red Terror"
+      ],
+      "abilities": [
+        {
+          "name": "Deep Strike",
+          "rules_text": "Core ability.",
+          "category": "core",
+          "implemented": false
+        },
+        {
+          "name": "Synapse",
+          "rules_text": "Army rule.",
+          "category": "army",
+          "implemented": false
+        },
+        {
+          "name": "Swallow Whole",
+          "rules_text": "Each time an attack with this model's gaping maw targets an INFANTRY, MOUNTED or BEAST unit, each successful unmodified Wound roll is a Critical Wound. Each time an INFANTRY, MOUNTED or BEAST model is destroyed as a result of an attack made by this model's gaping maw, this model regains up to D3+2 lost wounds.",
+          "category": "datasheet",
+          "implemented": false
+        },
+        {
+          "name": "Subterranean Hunter",
+          "rules_text": "At the end of the Fight phase, if this unit is not within Engagement Range of one or more enemy units, you can remove it from the battlefield and place it into Strategic Reserves.",
+          "category": "datasheet",
+          "implemented": false
+        }
+      ],
+      "selectable_abilities": [],
+      "wargear_abilities": [],
+      "leader": {},
+      "support": {},
+      "wargear_options": [],
+      "loadout_options": [],
+      "stats": {
+        "movement": 10,
+        "toughness": 8,
+        "save": "3+",
+        "wounds": 9,
+        "leadership": "8+",
+        "objective_control": 3
+      },
+      "points": {
+        "1 model": 120
+      },
+      "weapons": [
+        {
+          "name": "Gaping maw",
+          "range": "Melee",
+          "attacks": 1,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 5,
+          "armor_piercing": 0,
+          "damage": "D3+2",
+          "keywords": [
+            "EXTRA ATTACKS",
+            "DEVASTATING WOUNDS",
+            "PRECISION"
+          ]
+        },
+        {
+          "name": "Scything talons",
+          "range": "Melee",
+          "attacks": 12,
+          "skill": {
+            "type": "WS",
+            "value": "2+"
+          },
+          "strength": 7,
+          "armor_piercing": -2,
+          "damage": 2,
+          "keywords": []
+        }
+      ],
+      "implemented": true
     }
   ]
 }

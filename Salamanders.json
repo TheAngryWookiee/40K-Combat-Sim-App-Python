@@ -5,8 +5,123 @@
     "army_rules": [],
     "chapter_rules": [],
     "derived_keywords": [],
-    "detachments": [],
-    "category": "Adeptus Astartes"
+    "detachments": [
+      {
+        "name": "Forgefather's Seekers",
+        "detachment_points": 2,
+        "rule": {
+          "name": "Vulkan's Quest",
+          "rules_text": "You can select the Devastator Doctrine one additional time per battle. Friendly ADEPTUS ASTARTES units' ranged attacks that target a unit within 12 inches have +1 to Wound rolls. If your army includes VULKAN HE'STAN, friendly INFERNUS SQUAD units can start an action after an Advance or Fall Back move and can shoot while starting an action.",
+          "implemented": true
+        },
+        "additional_rules": [],
+        "keywords": [],
+        "restrictions": [
+          "Your army can include SALAMANDERS units, but it cannot include ADEPTUS ASTARTES units drawn from any other Chapter."
+        ],
+        "enhancements": [
+          {
+            "name": "Forged in Battle",
+            "points": 25,
+            "rules_text": "ADEPTUS ASTARTES model only. This unit can ignore modifiers to its BS, WS and Hit rolls.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": false
+          },
+          {
+            "name": "Adamantine Mantle",
+            "points": 20,
+            "rules_text": "ADEPTUS ASTARTES model only. Attacks allocated to this model have -1 Damage.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "War-tempered Artifice",
+            "points": 25,
+            "rules_text": "ADEPTUS ASTARTES model only. This model's melee attacks have +1 Strength and +1 Damage.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": true
+          },
+          {
+            "name": "Immolator",
+            "points": 20,
+            "rules_text": "ADEPTUS ASTARTES model only. This unit's [TORRENT] weapons have +1 Attack.",
+            "restrictions": [
+              "ADEPTUS ASTARTES model only."
+            ],
+            "implemented": true
+          }
+        ],
+        "stratagems": [
+          {
+            "name": "Blazing Earth",
+            "type": "FORGEFATHER'S SEEKERS STRATAGEM",
+            "cp_cost": 1,
+            "when": "Start of your opponent's Charge phase.",
+            "target": "One friendly unengaged ADEPTUS ASTARTES unit equipped with one or more Torrent/Melta weapons.",
+            "effect": "Select one visible enemy unit within 12 inches of your unit. That enemy unit has +1 to Charge rolls.",
+            "implemented": false
+          },
+          {
+            "name": "Wrath and Ruin",
+            "type": "FORGEFATHER'S SEEKERS STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your Command phase.",
+            "target": "One friendly ADEPTUS ASTARTES INFANTRY unit.",
+            "effect": "The Assault Doctrine or Tactical Doctrine is active for your unit until the start of your next Command phase.",
+            "implemented": false
+          },
+          {
+            "name": "Forged in Fire",
+            "type": "FORGEFATHER'S SEEKERS STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your Shooting phase, when a friendly unengaged ADEPTUS ASTARTES unit is selected to shoot.",
+            "target": "That ADEPTUS ASTARTES unit.",
+            "effect": "Your unit's Torrent weapons do not have Blast, have Close Quarters, and have +1 Attack.",
+            "implemented": false
+          },
+          {
+            "name": "Immolation Protocols",
+            "type": "FORGEFATHER'S SEEKERS STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your Shooting phase, when a friendly ADEPTUS ASTARTES INFANTRY unit is selected to attack.",
+            "target": "That ADEPTUS ASTARTES INFANTRY unit.",
+            "effect": "Your unit's ranged Torrent attacks have +1 AP.",
+            "implemented": true
+          },
+          {
+            "name": "Crucible of Battle",
+            "type": "FORGEFATHER'S SEEKERS STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your Shooting phase or the Fight phase, when a friendly ADEPTUS ASTARTES INFANTRY unit is selected to attack an enemy unit within 6 inches.",
+            "target": "That ADEPTUS ASTARTES INFANTRY unit.",
+            "effect": "Your unit's attacks can re-roll Hit rolls of 1 and Wound rolls of 1.",
+            "implemented": true
+          },
+          {
+            "name": "Burning Vengeance",
+            "type": "FORGEFATHER'S SEEKERS STRATAGEM",
+            "cp_cost": 1,
+            "when": "Your opponent's Shooting phase, when an enemy unit has shot a friendly ADEPTUS ASTARTES TRANSPORT unit.",
+            "target": "One friendly ADEPTUS ASTARTES unit embarked within that transport.",
+            "effect": "Your unit can make a Disembark move and shoot using normal shooting, but can only target that enemy unit.",
+            "implemented": false
+          }
+        ]
+      }
+    ],
+    "category": "Adeptus Astartes",
+    "detachment_filters": {
+      "allow_names": [
+        "Forgefather's Seekers"
+      ],
+      "deny_names": []
+    }
   },
   "units": [
     {
@@ -44,19 +159,28 @@
       "abilities": [
         {
           "name": "Core",
-          "rules_text": "Leader"
+          "rules_text": "Leader",
+          "implemented": true
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines",
+          "implemented": true
         },
         {
-          "name": "Unto the Anvil",
-          "rules_text": "While this model is leading a unit, each time a model in that unit makes a melee attack, you can re-roll the Wound roll."
+          "name": "Faction",
+          "rules_text": "Transhuman Strategist",
+          "implemented": false
         },
         {
           "name": "Lord of the Pyroclasts",
-          "rules_text": "While an enemy unit is within Engagement Range of this model, halve the Objective Control characteristic of models in that unit."
+          "rules_text": "While an enemy unit is engaged with this unit, that enemy unit has -1 OC.",
+          "implemented": false
+        },
+        {
+          "name": "Unto the Anvil",
+          "rules_text": "This unit's melee attacks can re-roll Wound rolls of 1. If the Assault Doctrine is active for this unit, those attacks can re-roll Wound rolls.",
+          "implemented": true
         }
       ],
       "selectable_abilities": [],
@@ -116,7 +240,8 @@
           "armor_piercing": "-2",
           "damage": "3"
         }
-      ]
+      ],
+      "points": 90
     },
     {
       "name": "Vulkan He'stan",
@@ -165,23 +290,28 @@
       "abilities": [
         {
           "name": "Core",
-          "rules_text": "Feel No Pain 6+, Leader"
+          "rules_text": "Feel No Pain 6+, Leader",
+          "implemented": true
         },
         {
           "name": "Faction",
-          "rules_text": "Oath of Moment"
+          "rules_text": "Combat Doctrines",
+          "implemented": true
         },
         {
-          "name": "Forgefather",
-          "rules_text": "In your Shooting phase, select one enemy unit within 24\" of and visible to this model. Until the end of the phase, each time a friendly ADEPTUS ASTARTES model makes a ranged attack with a Torrent or Melta weapon that targets that enemy unit, you can re-roll the Wound roll."
+          "name": "Faction",
+          "rules_text": "Transhuman Strategist",
+          "implemented": false
         },
         {
           "name": "Seeker of the Unfound",
-          "rules_text": "The first time this model is set up on the battlefield, select one objective marker on the battlefield. While this model is within range of that objective marker, this model has an Objective Control characteristic of 10, a Leadership characteristic of 5+ and the Feel No Pain 4+ ability."
+          "rules_text": "The first time this model is set up, select one objective. While within range of it, this model has OC 10, Leadership 5+ and Feel No Pain 4+.",
+          "implemented": false
         },
         {
-          "name": "Inspiring Commander",
-          "rules_text": "If you include this model in your army, until the end of the battle, non-CHARACTER models in INFERNUS SQUAD units from your army have an Objective Control characteristic of 2 while they are not Battle-shocked."
+          "name": "Forgefather",
+          "rules_text": "In your Shooting phase, select one visible enemy unit within 24 inches. Friendly ADEPTUS ASTARTES units' [MELTA]/[TORRENT] attacks that target that enemy unit have +2 Strength.",
+          "implemented": true
         }
       ],
       "weapons": [
@@ -238,15 +368,14 @@
       "leader": {
         "can_lead": [
           "Assault Intercessor Squad",
+          "Bladeguard Veteran Squad",
           "Company Heroes",
-          "Infernus Squad",
-          "Tactical Squad",
-          "Assault Squad",
-          "Command Squad",
-          "Vanguard Veteran Squad"
+          "Eradicator Squad with Melta Rifles",
+          "Infernus Squad"
         ],
-        "rules_text": "This model can be attached to the following units: Assault Intercessor Squad, Company Heroes, Infernus Squad, Tactical Squad, Assault Squad, Command Squad, Vanguard Veteran Squad."
-      }
+        "rules_text": "This model can be attached to the listed Salamanders infantry units."
+      },
+      "points": 105
     }
   ]
 }

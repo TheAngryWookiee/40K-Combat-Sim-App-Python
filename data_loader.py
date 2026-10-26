@@ -344,7 +344,7 @@ def normalize_weapon(weapon_data: dict[str, Any]) -> dict[str, Any]:
         "range": weapon_data.get("range", ""),
         "attacks": parse_roll_profile(weapon_data.get("attacks", 0)),
         "skill_type": skill_type,
-        "skill": parse_plus_value(skill_value),
+        "skill": 0 if str(skill_value).strip() == "-" else parse_plus_value(skill_value),
         "skill_display": skill_value,
         "strength": parse_numeric_value(weapon_data.get("strength", 0)),
         "ap": parse_ap_value(armor_piercing),
@@ -984,19 +984,28 @@ def normalize_unit(unit_data: dict[str, Any], faction_name: str) -> dict[str, An
         *unit_data.get("ranged_weapons", []),
         *unit_data.get("melee_weapons", []),
     ]
-    weapon_data = unit_data.get("weapons", []) or [
+    weapon_data = unit_data.get("weapons", [])
+    if isinstance(weapon_data, dict):
+        weapon_data = [
+            *weapon_data.get("ranged", []),
+            *weapon_data.get("melee", []),
+        ]
+    weapon_data = weapon_data or [
         {
             "name": weapon["name"],
             "range": weapon.get("range", "Melee"),
-            "attacks": weapon.get("A", 0),
+            "attacks": weapon.get("attacks", weapon.get("A", 0)),
             "skill": {
                 "type": "WS" if str(weapon.get("range", "")).lower() == "melee" else "BS",
-                "value": weapon.get("WS", weapon.get("BS", "0+")),
+                "value": weapon.get(
+                    "weapon_skill" if str(weapon.get("range", "")).lower() == "melee" else "ballistic_skill",
+                    weapon.get("skill", weapon.get("WS", weapon.get("BS", "0+"))),
+                ),
             },
-            "strength": weapon.get("S", 0),
-            "armor_piercing": weapon.get("AP", 0),
-            "damage": weapon.get("D", 0),
-            "keywords": weapon.get("abilities", []),
+            "strength": weapon.get("strength", weapon.get("S", 0)),
+            "armor_piercing": weapon.get("armour_penetration", weapon.get("ap", weapon.get("AP", 0))),
+            "damage": weapon.get("damage", weapon.get("D", 0)),
+            "keywords": weapon.get("keywords", weapon.get("abilities", [])),
         }
         for weapon in legacy_weapon_data
     ]
@@ -1006,9 +1015,9 @@ def normalize_unit(unit_data: dict[str, Any], faction_name: str) -> dict[str, An
     }
     stats = unit_data.get("stats") or next(
         (
-            model.get("stats_override") or model.get("stats")
+            model.get("stats_override") or model.get("stats") or model
             for model in unit_data.get("models", [])
-            if model.get("stats_override") or model.get("stats")
+            if model.get("stats_override") or model.get("stats") or "toughness" in model
         ),
         {},
     )
@@ -1186,6 +1195,8 @@ def normalize_unit(unit_data: dict[str, Any], faction_name: str) -> dict[str, An
         "leader": leader,
         "support": support,
         "wargear_options": unit_data.get("wargear_options", []),
+        "transport": unit_data.get("transport", ""),
+        "notes": unit_data.get("notes", []),
         "loadout_options": unit_data.get("loadout_options", []),
         "strict_weapon_replacements": bool(unit_data.get("strict_weapon_replacements", False)),
         "base_size": base_size,
@@ -1224,11 +1235,13 @@ def load_faction_file(data_file: Path) -> dict[str, Any] | None:
         "file_name": data_file.name,
         "army_rules": faction.get("army_rules", []),
         "chapter_rules": faction.get("chapter_rules", []),
+        "shared_wargear": faction.get("shared_wargear", []),
         "detachments": faction.get("detachments", []),
         "detachment_filters": faction.get("detachment_filters", {}),
         "inherits": faction.get("inherits", {}),
         "derived_keywords": faction.get("derived_keywords", []),
         "unit_filters": faction.get("unit_filters", {}),
+        "allies": faction.get("allies", []),
         "units": units,
     }
 
@@ -1432,7 +1445,39 @@ def load_factions(data_dir: Path = DATA_DIR, parent_faction: str | None = None) 
                 if unit_can_be_inherited_by_faction(unit, faction_name)
             }
 
+        allied_units: dict[str, Any] = {}
+        for ally_group in faction_entry.get("allies", []):
+            ally_faction_name = str(ally_group.get("faction", "")).strip()
+            if not ally_faction_name:
+                continue
+            if ally_faction_name not in factions:
+                raise ValueError(
+                    f"Faction '{faction_name}' references unknown allied faction "
+                    f"'{ally_faction_name}'"
+                )
+            allowed_names = {
+                str(name).strip()
+                for name in ally_group.get("units", [])
+                if str(name).strip()
+            }
+            source_units = resolve_faction_units(
+                ally_faction_name,
+                (*stack, faction_name),
+            )
+            missing_names = allowed_names.difference(source_units)
+            if missing_names:
+                raise ValueError(
+                    f"Faction '{faction_name}' references unknown {ally_faction_name} "
+                    f"allied units: {', '.join(sorted(missing_names))}"
+                )
+            for unit_name in allowed_names:
+                allied_unit = deepcopy(source_units[unit_name])
+                allied_unit["is_ally"] = True
+                allied_unit["ally_faction_name"] = ally_faction_name
+                allied_units[unit_name] = allied_unit
+
         resolved_units = {
+            **allied_units,
             **{
                 unit_name: unit
                 for unit_name, unit in inherited_units.items()
@@ -1557,6 +1602,8 @@ def list_unit_summaries(faction: dict[str, Any]) -> list[dict[str, Any]]:
             "base_size": resolved_unit.get("base_size", ""),
             "stats": resolved_unit["stats"],
             "weapons": [weapon["name"] for weapon in resolved_unit["weapons"].values()],
+            "is_ally": bool(resolved_unit.get("is_ally", False)),
+            "ally_faction_name": resolved_unit.get("ally_faction_name", ""),
         }
         for resolved_unit in (
             apply_unit_loadout(unit)
@@ -1579,6 +1626,8 @@ def serialize_unit(unit: dict[str, Any]) -> dict[str, Any]:
         "wargear_abilities": unit["wargear_abilities"],
         "leader": unit["leader"],
         "support": unit.get("support", {}),
+        "is_ally": bool(unit.get("is_ally", False)),
+        "ally_faction_name": unit.get("ally_faction_name", ""),
         "base_size": unit.get("base_size", ""),
         "wargear_options": unit["wargear_options"],
         "loadout_options": unit.get("loadout_options", []),
