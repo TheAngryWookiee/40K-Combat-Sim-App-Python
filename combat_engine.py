@@ -2301,6 +2301,70 @@ class CombatSimulator:
         return names
 
     @staticmethod
+    def ability_is_optional(ability: dict[str, Any], ability_group: str = "abilities") -> bool:
+        explicit_kind = str(
+            ability.get("activation_type", ability.get("activation", ""))
+        ).strip().lower()
+        if explicit_kind in {"activated", "optional", "selectable", "contextual"}:
+            return True
+        if explicit_kind in {"triggered", "automatic", "passive", "mandatory"}:
+            return False
+        if ability_group == "selectable_abilities":
+            return True
+
+        text = " ".join(
+            str(ability.get(field, ""))
+            for field in ("name", "rules_text", "timing", "effect")
+        ).lower()
+        return (
+            "(aura)" in text
+            or re.search(r"friendly .{0,80} within \d+", text) is not None
+            or "once per battle" in text
+            or "once per phase" in text
+            or "once per turn" in text
+            or re.search(
+                r"\byou can (?:use|select|choose|activate|attempt|replace|change|set)\b",
+                text,
+            ) is not None
+            or "select one of the following" in text
+        )
+
+    @classmethod
+    def automatic_ability_name_set(cls, unit: dict[str, Any]) -> set[str]:
+        names: set[str] = set()
+        for ability_group in ("abilities", "wargear_abilities"):
+            for ability in unit.get(ability_group, []):
+                if cls.ability_is_optional(ability, ability_group):
+                    continue
+                name = str(ability.get("name", "")).strip().lower()
+                if name:
+                    names.add(name)
+        return names
+
+    @classmethod
+    def with_automatic_ability_names(
+        cls,
+        options: dict[str, Any],
+        attacker_unit: dict[str, Any],
+        defender_unit: dict[str, Any],
+    ) -> dict[str, Any]:
+        return {
+            **options,
+            "attacker_active_ability_names": sorted(
+                {
+                    *(str(name).lower() for name in options.get("attacker_active_ability_names", [])),
+                    *cls.automatic_ability_name_set(attacker_unit),
+                }
+            ),
+            "defender_active_ability_names": sorted(
+                {
+                    *(str(name).lower() for name in options.get("defender_active_ability_names", [])),
+                    *cls.automatic_ability_name_set(defender_unit),
+                }
+            ),
+        }
+
+    @staticmethod
     def ability_names_include(ability_names: set[str], ability_name: str) -> bool:
         normalized_ability_name = ability_name.lower()
         return any(normalized_ability_name in name for name in ability_names)
@@ -2957,6 +3021,11 @@ class CombatSimulator:
         ):
             self.stats["failed_hit_attacks"] += 1
             self.log(f"{unit_name} fails to hit because Indirect Fire with no visibility fails on 1-3")
+            return 0, 0, 0, 0
+
+        if attack_context.get("unmodified_hit_rolls_1_to_3_fail", False) and hit_roll <= 3:
+            self.stats["failed_hit_attacks"] += 1
+            self.log(f"{unit_name} fails to hit because unmodified Hit rolls of 1-3 fail")
             return 0, 0, 0, 0
 
         if (
@@ -5680,6 +5749,11 @@ class CombatSimulator:
             sequence_state["remaining_wound_rerolls"] = 1
             sequence_state["remaining_damage_rerolls"] = 1
             return sequence_state
+        if "advanced firepower" in attacker_active_ability_names:
+            sequence_state["remaining_hit_rerolls"] = 1
+            sequence_state["remaining_wound_rerolls"] = 1
+            sequence_state["remaining_damage_rerolls"] = 1
+            return sequence_state
         if "crystal matrix" in attacker_active_ability_names:
             sequence_state["remaining_hit_rerolls"] = 1
             sequence_state["remaining_wound_rerolls"] = 1
@@ -5749,6 +5823,7 @@ class CombatSimulator:
         attacker_combat_doctrine = str(options.get("attacker_combat_doctrine", "") or "").lower()
         attacker_templar_vow = str(options.get("attacker_templar_vow", "") or "").lower()
         attacker_martial_katah = str(options.get("attacker_martial_katah", "") or "").lower()
+        defender_martial_katah = str(options.get("defender_martial_katah", "") or "").lower()
         attacker_doctrina_imperative = str(options.get("attacker_doctrina_imperative", "") or "").lower()
         defender_doctrina_imperative = str(options.get("defender_doctrina_imperative", "") or "").lower()
         attacker_astra_militarum_order = str(options.get("attacker_astra_militarum_order", "") or "").lower()
@@ -6495,16 +6570,14 @@ class CombatSimulator:
                 {"Precision"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
             )
-        if attacker_martial_katah == "dacatarai" and weapon["range"].lower() == "melee":
-            add_keywords_to_matching_weapons(
-                {"SH1"},
-                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
-            )
         if attacker_martial_katah == "rendax" and weapon["range"].lower() == "melee":
             add_keywords_to_matching_weapons(
-                {"LH"},
+                {"LH: MONSTER/VEHICLE"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
             )
+        if self.ability_names_include(attacker_ability_names, "quicksilver execution") and bool(options.get("charged_this_turn", False)): temporary_melee_weapon_keywords.add("SH1")
+        if self.ability_names_include(attacker_ability_names, "impenetrable defence") and (bool(options.get("attacker_on_objective", False)) or bool(options.get("defender_on_objective", False))) and (self.unit_has_keyword(target_state, "monster") or self.unit_has_keyword(target_state, "vehicle")): temporary_weapon_keywords.add("SH1")
+        if self.ability_names_include(attacker_ability_names, "stand vigil") and (bool(options.get("attacker_on_objective", False)) or bool(options.get("defender_on_objective", False))) and not self.unit_has_keyword(target_state, "monster") and not self.unit_has_keyword(target_state, "vehicle"): temporary_weapon_keywords.add("LH")
         if "master of the stances" in attacker_active_ability_names and weapon["range"].lower() == "melee":
             add_keywords_to_matching_weapons(
                 {"LH", "SH1"},
@@ -7085,6 +7158,12 @@ class CombatSimulator:
                 {"Lance"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
             )
+        if (
+            bool(options.get("attacker_waaagh_active", False))
+            and self.unit_has_waaagh(attacker_unit)
+            and weapon["range"].lower() != "melee"
+        ):
+            temporary_ranged_weapon_keywords.add("Assault")
         if self.ability_names_include(attacker_or_attached_ability_names, "signum array"):
             add_keywords_to_matching_weapons(
                 {"Ignores Cover"},
@@ -7148,38 +7227,17 @@ class CombatSimulator:
         if attacker_enhancement_name == "Wolf Master":
             for weapon_name in ("teeth and claws", "tyrnak and fenrir"):
                 temporary_weapon_keywords_by_weapon_name.setdefault(weapon_name, set()).add("LH")
-        if attacker_detachment_name == "War Horde":
+        if attacker_detachment_name == "Green Tide" and self.unit_has_keyword(attacker_unit, "boyz"):
             add_keywords_to_matching_weapons(
                 {"SH1"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
             )
-        if (
-            attacker_detachment_name == "Dread Mob"
-            and options.get("attacker_try_dat_button_effects")
-        ):
-            button_effect_map = {
-                "sustained_hits_1": {"SH1"},
-                "lethal_hits": {"LH"},
-            }
-            applied_button_keywords = set()
-            for button_effect in options.get("attacker_try_dat_button_effects", []):
-                applied_button_keywords.update(button_effect_map.get(str(button_effect), set()))
-            if applied_button_keywords:
-                add_keywords_to_matching_weapons(
-                    applied_button_keywords,
-                    lambda candidate_weapon: candidate_weapon["range"].lower() == weapon["range"].lower(),
-                )
-        if (
-            attacker_enhancement_name == "Headwoppa's Killchoppa"
-            and attacker_unit["name"] == attacker_enhancement_bearer_name
-        ):
-            add_keywords_to_matching_weapons(
-                {"DW"},
-                lambda candidate_weapon: (
-                    candidate_weapon["range"].lower() == "melee"
-                    and not self.is_extra_attacks_weapon(candidate_weapon)
-                ),
-            )
+        if attacker_detachment_name == "Green Tide" and self.unit_has_keyword(attacker_unit, "infantry") and bool(options.get("charged_this_turn", False)):
+            add_keywords_to_matching_weapons({"LH: non-MONSTER/VEHICLE"}, lambda candidate_weapon: candidate_weapon["range"].lower() == "melee")
+        if attacker_detachment_name == "Taktikal Brigade" and (self.unit_has_keyword(attacker_unit, "kommandos") or self.unit_has_keyword(attacker_unit, "stormboyz")):
+            add_keywords_to_matching_weapons({"LH: non-MONSTER/VEHICLE"}, lambda candidate_weapon: candidate_weapon["range"].lower() == "melee")
+        if attacker_detachment_name == "Bully Boyz" and (self.unit_has_keyword(attacker_unit, "meganobz") or self.unit_has_keyword(attacker_unit, "nobz")):
+            add_keywords_to_matching_weapons({"SH1"}, lambda candidate_weapon: candidate_weapon["range"].lower() == "melee")
         if (
             attacker_enhancement_name == "Master-crafted Weapon"
             and attacker_unit["name"] == attacker_enhancement_bearer_name
@@ -7188,30 +7246,38 @@ class CombatSimulator:
                 {"Precision"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
             )
-        if attacker_enhancement_name == "Gitfinder Gogglez":
+        if attacker_enhancement_name == "Targetin' Gizmos":
             add_keywords_to_matching_weapons(
                 {"Ignores Cover"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
             )
-        if bool(options.get("attacker_drag_it_down_active", False)):
-            add_keywords_to_matching_weapons(
-                {"SH1"},
-                lambda candidate_weapon: candidate_weapon["range"].lower() == "melee",
-            )
-        if bool(options.get("attacker_blitza_fire_active", False)):
-            add_keywords_to_matching_weapons(
-                {"LH"},
-                lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
-            )
         if bool(options.get("attacker_dakkastorm_active", False)):
             add_keywords_to_matching_weapons(
-                (
-                    {"Sustained Hits 2"}
-                    if bool(options.get("attacker_target_within_9", False))
-                    else {"SH1"}
-                ),
+                {"SH1"},
                 lambda candidate_weapon: candidate_weapon["range"].lower() != "melee",
             )
+        if bool(options.get("attacker_never_enough_dakka_active", False)):
+            temporary_ranged_weapon_keywords.add("SH1")
+        if attacker_enhancement_name == "Supa-glowy Fing" and attacker_unit["name"] == attacker_enhancement_bearer_name and weapon["range"].lower() != "melee":
+            temporary_ranged_weapon_keywords.update({"Anti-Infantry 4+", "Devastating Wounds", "Hazardous"})
+        if self.ability_names_include(attacker_ability_names, "tide of muscle") and bool(options.get("charged_this_turn", False)):
+            temporary_melee_weapon_keywords.add("LH")
+        if "makari, hoist dat banner!" in attacker_active_ability_names:
+            temporary_weapon_keywords.add("LH")
+        if "bust 'em" in attacker_active_ability_names and self.unit_has_keyword(attacker_unit, "speed freeks"):
+            temporary_weapon_keywords.add("LH")
+        if "pullsa rokkit" in attacker_active_ability_names:
+            temporary_weapon_keywords.add("LH")
+        if "warpath" in attacker_active_ability_names and weapon["range"].lower() == "melee":
+            temporary_melee_weapon_keywords.add("Psychic")
+        if self.ability_names_include(attacker_ability_names, "more dakka") or self.ability_names_include(attacker_ability_names, "kustom dakka") or self.ability_names_include(attacker_ability_names, "nazdreg's know-wotz"):
+            temporary_ranged_weapon_keywords.add("Ignores Cover")
+        if self.ability_names_include(attacker_ability_names, "more dakka") and bool(options.get("attacker_waaagh_active", False)):
+            temporary_ranged_weapon_keywords.add("SH1")
+        if self.ability_names_include(attacker_ability_names, "even more dakka") and bool(options.get("attacker_waaagh_active", False)):
+            temporary_ranged_weapon_keywords.add("SH1")
+        if self.ability_names_include(attacker_ability_names, "stormboyz") and bool(options.get("charged_this_turn", False)):
+            temporary_melee_weapon_keywords.add("Hazardous")
         if "ammo runt" in attacker_active_ability_names:
             add_keywords_to_matching_weapons(
                 {"LH"},
@@ -7956,6 +8022,15 @@ class CombatSimulator:
         attacker_hit_modifier = 0
         attacker_outgoing_wound_modifier = 0
         attacker_ap_modifier = 0
+        if "pullsa rokkit" in attacker_active_ability_names:
+            attacker_ap_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "finders keepers") and weapon["range"].lower() != "melee" and (bool(options.get("attacker_on_objective", False)) or bool(options.get("defender_on_objective", False))):
+            attacker_ap_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "dread foe") and weapon["range"].lower() == "melee" and not self.unit_has_keyword(target_state, "monster") and not self.unit_has_keyword(target_state, "vehicle"): attacker_ap_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "armoured onslaught") and weapon["range"].lower() != "melee" and not self.unit_has_keyword(target_state, "monster") and not self.unit_has_keyword(target_state, "vehicle"): attacker_ap_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "death blow") and bool(options.get("charged_this_turn", False)) and weapon["range"].lower() == "melee": attacker_ap_modifier += 1
+        if bool(options.get("attacker_glowin_dakka_active", False)) and weapon["range"].lower() != "melee" and bool(options.get("attacker_target_within_9", False)):
+            attacker_ap_modifier += 1
         if (
             bool(options.get("attacker_immolation_protocols_active", False))
             and self.weapon_has_keyword(weapon, "Torrent")
@@ -7967,6 +8042,55 @@ class CombatSimulator:
         reroll_wound_rolls_of_1 = False
         reroll_all_wound_rolls = False
         current_weapon_base_name = self.weapon_base_name(weapon)
+        if attacker_martial_katah == "dacatarai" and weapon["range"].lower() == "melee" and not self.unit_has_keyword(target_state, "monster") and not self.unit_has_keyword(target_state, "vehicle"):
+            reroll_hit_rolls_of_1 = True
+        if attacker_detachment_name == "Might of the Moritoi" and self.unit_has_keyword(attacker_unit, "dreadnought"):
+            if bool(options.get("attacker_below_starting_strength", False)): reroll_hit_rolls_of_1 = True
+            if bool(options.get("attacker_below_half_strength", False)): reroll_wound_rolls_of_1 = True
+        if "honoured interred" in attacker_active_ability_names: reroll_hit_rolls_of_1 = True
+        if attacker_enhancement_name == "Oblivion Knight":
+            attacker_hit_modifier += 1
+            if self.unit_has_keyword(target_state, "psyker") or bool(options.get("defender_battleshocked", False)):
+                attacker_hit_modifier += 1
+                attacker_outgoing_wound_modifier += 1
+        if attacker_detachment_name == "Auric Champions" and self.unit_has_keyword(attacker_unit, "character") and bool(options.get("attacker_dread_foe_active", False)):
+            attacker_outgoing_wound_modifier += 1
+        if bool(options.get("attacker_psy_chaff_volley_active", False)): attacker_ap_modifier += 1
+        if attacker_detachment_name == "Wreckas" and self.normalize_wargear_name(attacker_unit.get("name", "")) in {"breaka boyz", "flash gitz", "tankbustas"} and (bool(options.get("attacker_on_objective", False)) or bool(options.get("defender_on_objective", False))):
+            reroll_hit_rolls_of_1 = True
+        if "captain-general (aura)" in attacker_active_ability_names:
+            reroll_hit_rolls_of_1 = True
+            reroll_wound_rolls_of_1 = True
+        if self.ability_names_include(attacker_ability_names, "reap a terrible tally") and self.unit_has_keyword(target_state, "infantry"):
+            reroll_hit_rolls_of_1 = True
+            reroll_wound_rolls_of_1 = True
+        if "strike from the skies" in attacker_active_ability_names and weapon["range"].lower() != "melee": reroll_all_hit_rolls = True
+        if self.ability_names_include(attacker_ability_names, "slayer of tyrants") and weapon["range"].lower() == "melee" and int(target_state.get("toughness", 0)) > int(attacker_unit.get("toughness", 0) or 0): attacker_outgoing_wound_modifier += 1
+        if "sword of the throne" in attacker_active_ability_names: attacker_outgoing_wound_modifier += 1
+        if "prophet of da great waaagh" in attacker_active_ability_names:
+            attacker_hit_modifier += 1
+            attacker_outgoing_wound_modifier += 1
+        if bool(options.get("attacker_kustom_dakka_stratagem_active", False)) and weapon["range"].lower() != "melee" and not self.unit_has_keyword(target_state, "monster") and not self.unit_has_keyword(target_state, "vehicle"):
+            attacker_outgoing_wound_modifier += 1
+        if "boss ammo runt" in attacker_active_ability_names and weapon["range"].lower() != "melee": attacker_hit_modifier += 1
+        if "ammo runts" in attacker_active_ability_names and weapon["range"].lower() != "melee": attacker_hit_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "sumfin to prove") and weapon["range"].lower() == "melee": attacker_hit_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "krumpin time") and bool(options.get("attacker_waaagh_active", False)): attacker_hit_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "strafing run") and weapon["range"].lower() != "melee" and not self.unit_has_keyword(target_state, "fly"): attacker_hit_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "spiteful power trip") and int(target_state.get("toughness", 0)) < 7: attacker_hit_modifier += 1
+        if "deff from above" in attacker_active_ability_names and weapon["range"].lower() != "melee": attacker_hit_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "nowhere to hide"): attacker_hit_modifier += 1
+        if "clever know-wotz" in attacker_active_ability_names: attacker_hit_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "go fer da weak spot") and weapon["range"].lower() != "melee" and (self.unit_has_keyword(target_state, "monster") or self.unit_has_keyword(target_state, "vehicle")): attacker_outgoing_wound_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "squig barrage") and "squig barrage" in attacker_active_ability_names: attacker_hit_modifier += 1
+        if "warpath" in attacker_active_ability_names and weapon["range"].lower() == "melee": reroll_wound_rolls_of_1 = True
+        if self.ability_names_include(attacker_ability_names, "paired krumpas") and "kustom krumpa" in current_weapon_base_name:
+            reroll_all_hit_rolls = True
+            reroll_all_wound_rolls = True
+        if self.ability_names_include(attacker_ability_names, "big an' stompy") and weapon["range"].lower() == "melee": reroll_hit_rolls_of_1 = True
+        if self.ability_names_include(attacker_ability_names, "big an' shooty") and weapon["range"].lower() != "melee": reroll_hit_rolls_of_1 = True
+        if self.ability_names_include(attacker_ability_names, "mobile arsenal") and weapon["range"].lower() != "melee": reroll_hit_rolls_of_1 = True
+        if self.ability_names_include(attacker_ability_names, "da bigger dey iz") and weapon["range"].lower() == "melee" and (self.unit_has_keyword(target_state, "monster") or self.unit_has_keyword(target_state, "vehicle")): reroll_all_wound_rolls = True
         if bool(options.get("attacker_stubborn_tenacity_active", False)) and bool(options.get("attacker_below_starting_strength", False)):
             attacker_hit_modifier += 1
             if bool(options.get("attacker_battleshocked", False)):
@@ -9671,8 +9795,8 @@ class CombatSimulator:
                 attacker_outgoing_wound_modifier += 1
         if (
             attacker_detachment_name == "Da Big Hunt"
-            and bool(options.get("attacker_prey_active", False))
             and self.unit_has_keyword(attacker_unit, "beast snagga")
+            and (self.unit_has_keyword(target_state, "monster") or self.unit_has_keyword(target_state, "vehicle"))
         ):
             attacker_ap_modifier += 1
         if (
@@ -11286,14 +11410,6 @@ class CombatSimulator:
                 ranged_damage_bonus += 2
             attacker_ap_modifier += 2
         if (
-            self.ability_names_include(attacker_ability_names, "da bigger dey iz")
-            and weapon["range"].lower() == "melee"
-        ):
-            if self.unit_has_keyword(target_state, "titanic"):
-                melee_damage_bonus += 2
-            elif self.unit_has_keyword(target_state, "monster") or self.unit_has_keyword(target_state, "vehicle"):
-                melee_damage_bonus += 1
-        if (
             self.ability_names_include(attacker_or_attached_ability_names, "angel's wrath")
             and bool(options.get("charged_this_turn", False))
             and weapon["range"].lower() == "melee"
@@ -11311,9 +11427,6 @@ class CombatSimulator:
         ):
             melee_attack_bonus += 1
             ranged_attack_bonus += 1
-        if bool(options.get("attacker_waaagh_active", False)) and self.unit_has_waaagh(attacker_unit):
-            melee_attack_bonus += 1
-            melee_strength_bonus += 1
         if (
             "finest hour" in attacker_active_ability_names
             and self.unit_has_ability(attacker_unit, "Finest Hour")
@@ -11371,13 +11484,58 @@ class CombatSimulator:
             and weapon["range"].lower() == "melee"
             and attacker_unit["name"] == attacker_enhancement_bearer_name
         ):
-            melee_damage_bonus += 1
+            reroll_wound_rolls_of_1 = True
         if (
-            attacker_enhancement_name == "Ferocious Show Off"
+            attacker_enhancement_name == "Ferocious Show-off"
             and weapon["range"].lower() == "melee"
             and attacker_unit["name"] == attacker_enhancement_bearer_name
         ):
-            melee_strength_bonus += 3 if attacker_counts_as_ten_plus else 1
+            melee_attack_bonus += 2 if attacker_package_model_count >= 11 else 1
+        if attacker_enhancement_name == "Brutal but Kunnin'" and weapon["range"].lower() == "melee" and attacker_unit["name"] == attacker_enhancement_bearer_name:
+            melee_damage_bonus += 1
+        if attacker_detachment_name == "Green Tide" and bool(options.get("attacker_unbridled_carnage_active", False)) and weapon["range"].lower() == "melee":
+            melee_attack_bonus += 1
+        if attacker_detachment_name == "Wurrband" and self.unit_has_keyword(attacker_unit, "psyker"):
+            strength_bonus = 1 + (attacker_package_model_count // 5)
+            if weapon["range"].lower() == "melee": melee_strength_bonus += strength_bonus
+            else: ranged_strength_bonus += strength_bonus
+        if attacker_enhancement_name == "Memento Moritoi" and weapon["range"].lower() == "melee" and attacker_unit["name"] == attacker_enhancement_bearer_name:
+            melee_attack_bonus += 1
+            melee_strength_bonus += 1
+            melee_damage_bonus += 1
+        if bool(options.get("attacker_purgation_sweep_active", False)) and weapon["range"].lower() != "melee" and self.weapon_has_keyword(weapon, "Torrent"):
+            ranged_attack_bonus += 2 if (self.unit_has_keyword(target_state, "psyker") or bool(options.get("defender_battleshocked", False))) else 1
+        anathema_mode = str(options.get("attacker_anathema_blademastery_mode", "") or "").lower()
+        if anathema_mode == "sustained_hits_1": temporary_weapon_keywords.add("SH1")
+        elif anathema_mode == "lethal_hits": temporary_weapon_keywords.add("LH")
+        if attacker_detachment_name == "Dread Mob":
+            button_effects = {str(effect) for effect in options.get("attacker_try_dat_button_effects", [])}
+            if "attacks_1" in button_effects:
+                if weapon["range"].lower() == "melee": melee_attack_bonus += 1
+                else: ranged_attack_bonus += 1
+            if "strength_2" in button_effects:
+                if weapon["range"].lower() == "melee": melee_strength_bonus += 2
+                else: ranged_strength_bonus += 2
+            if "ap_1" in button_effects:
+                attacker_ap_modifier += 1
+        if self.ability_names_include(attacker_ability_names, "might is right") and bool(options.get("charged_this_turn", False)) and weapon["range"].lower() == "melee":
+            melee_attack_bonus += 3
+            melee_strength_bonus += 2
+        if self.ability_names_include(attacker_ability_names, "rokkit charge") and bool(options.get("charged_this_turn", False)) and weapon["range"].lower() == "melee":
+            melee_attack_bonus += 1
+            temporary_melee_weapon_keywords.add("Hazardous")
+        if self.ability_names_include(attacker_ability_names, "brutal impact") and bool(options.get("charged_this_turn", False)):
+            if weapon["range"].lower() == "melee": melee_damage_bonus += 1
+            else: ranged_damage_bonus += 1
+        if self.ability_names_include(attacker_ability_names, "high-speed carnage") and bool(options.get("charged_this_turn", False)) and weapon["range"].lower() == "melee":
+            melee_strength_bonus += 1
+            melee_damage_bonus += 1
+        if self.ability_names_include(attacker_ability_names, "blitz dem gitz") and "blitz dem gitz" in attacker_active_ability_names:
+            if weapon["range"].lower() == "melee": melee_attack_bonus += 6
+            else: ranged_attack_bonus += 6
+        if self.ability_names_include(attacker_ability_names, "super runts") and current_weapon_base_name == "scavenged shiv":
+            if weapon["range"].lower() == "melee": melee_attack_bonus += 1
+            else: ranged_attack_bonus += 1
         if bool(options.get("attacker_klankin_klaws_active", False)) and weapon["range"].lower() == "melee":
             melee_strength_bonus += 2
             if bool(options.get("attacker_klankin_klaws_pushed", False)):
@@ -11850,6 +12008,8 @@ class CombatSimulator:
             attacker_ap_modifier += 1
         target_ap_modifier = 0
         target_armor_save_modifier = 0
+        if defender_enhancement_name == "'Ardboyz" and self.unit_has_keyword(target_state, "boyz"):
+            target_armor_save_modifier -= 1
         if "autoreactive camouflage" in defender_active_ability_names:
             target_armor_save_modifier -= 1
         if "mechanical augmentation (aura)" in defender_active_ability_names:
@@ -11913,8 +12073,14 @@ class CombatSimulator:
                 target_ap_modifier -= 1
         if bool(options.get("defender_reinforced_hive_node_active", False)):
             target_ap_modifier -= 1
-        if bool(options.get("defender_hulking_brutes_active", False)):
+        if bool(options.get("defender_hulking_brutes_active", False)) and weapon["range"].lower() != "melee" and int(weapon.get("strength", 0) or 0) > int(target_state.get("toughness", 0) or 0):
+            attacker_outgoing_wound_modifier -= 1
+        if self.target_state_has_ability(target_state, "Armoured Invulnerability"):
             target_ap_modifier -= 1
+        if self.target_state_has_ability(target_state, "Living Fortress"): target_ap_modifier -= 1
+        if self.target_state_has_ability(target_state, "Hardy Bioniks") and int(weapon.get("strength", 0) or 0) > int(target_state.get("toughness", 0) or 0):
+            attacker_outgoing_wound_modifier -= 1
+        if (self.target_state_has_ability(target_state, "Unyielding Ancient") or self.target_state_has_ability(target_state, "Praesidium Shield")) and int(weapon.get("strength", 0) or 0) > int(target_state.get("toughness", 0) or 0): attacker_outgoing_wound_modifier -= 1
         if bool(options.get("defender_scriptural_prognosis_active", False)):
             target_ap_modifier -= 1
         if bool(options.get("defender_additional_armour_active", False)):
@@ -11956,6 +12122,8 @@ class CombatSimulator:
         if self.target_state_has_ability(target_state, "Golden Laurels") and weapon["range"].lower() == "melee":
             target_ap_modifier -= 1
         target_feel_no_pain = 0
+        if defender_enhancement_name == "Augury Uplink":
+            target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 5)
         if "stimm injectors" in defender_active_ability_names:
             target_feel_no_pain = self.combine_feel_no_pain_values(target_feel_no_pain, 6)
         if "rites of reanimation" in defender_active_ability_names:
@@ -12167,6 +12335,8 @@ class CombatSimulator:
             target_mortal_feel_no_pain = self.combine_feel_no_pain_values(target_mortal_feel_no_pain, 5)
         if "feral arrogance" in defender_active_ability_names:
             target_mortal_feel_no_pain = self.combine_feel_no_pain_values(target_mortal_feel_no_pain, 5)
+        if self.target_state_has_ability(target_state, "Aegis of the Emperor"):
+            target_mortal_feel_no_pain = self.combine_feel_no_pain_values(target_mortal_feel_no_pain, 5)
         if (
             "rune-cursed stronghold" in defender_active_ability_names
             and self.unit_has_keyword(target_state, "knight tyrant")
@@ -12279,16 +12449,6 @@ class CombatSimulator:
             and bool(options.get("defender_within_synapse_range", False))
         ):
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 5)
-        if (
-            defender_detachment_name == "Green Tide"
-            and self.unit_has_keyword(target_state, "boyz")
-        ):
-            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 5)
-        if bool(options.get("defender_speediest_freeks_active", False)):
-            speediest_freeks_save = 5
-            if self.unit_has_keyword(target_state, "vehicle") and int(target_state.get("toughness", 0)) <= 8:
-                speediest_freeks_save = 4
-            target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, speediest_freeks_save)
         if self.target_state_has_ability(target_state, "Mental Fortress"):
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 4)
         if self.target_state_has_ability(target_state, "Storm Shield") and int(target_state.get("models", 1)) == 1:
@@ -12390,10 +12550,7 @@ class CombatSimulator:
         ):
             target_invulnerable_save = self.combine_invulnerable_save_values(target_invulnerable_save, 4)
 
-        reroll_save_rolls_of_1 = (
-            defender_detachment_name == "Green Tide"
-            and defender_counts_as_ten_plus
-        )
+        reroll_save_rolls_of_1 = False
         reroll_invulnerable_save_rolls_of_1 = "daemonic invulnerability" in defender_active_ability_names
 
         target_damage_modifier = -1 if (
@@ -12517,15 +12674,14 @@ class CombatSimulator:
             target_damage_max = 0
         if self.target_state_has_ability(target_state, "Stimulated by Pain"):
             target_damage_modifier -= 1
+        if self.target_state_has_ability(target_state, "Mobile Fortress") and weapon["range"].lower() != "melee":
+            target_damage_modifier -= 1
+        if self.target_state_has_ability(target_state, "Dread Art"):
+            target_damage_modifier -= 1
+        if self.target_state_has_ability(target_state, "Guardian Eternal") and weapon["range"].lower() != "melee": target_damage_modifier -= 1
+        if bool(options.get("defender_vigil_unending_active", False)) and self.unit_has_keyword(target_state, "terminator"):
+            target_damage_modifier -= 1
         critical_wound_ap_modifier = 0
-        if (
-            attacker_detachment_name == "Dread Mob"
-            and "critical_wound_ap_2" in {
-                str(effect)
-                for effect in options.get("attacker_try_dat_button_effects", [])
-            }
-        ):
-            critical_wound_ap_modifier += 2
         if "fate inescapable" in attacker_active_ability_names and weapon["range"].lower() != "melee":
             critical_wound_ap_modifier += 1
         if "ingrained superiority" in attacker_active_ability_names:
@@ -12783,6 +12939,14 @@ class CombatSimulator:
             attacker_skill_modifier = max(0, attacker_skill_modifier)
             attacker_ap_modifier = max(0, attacker_ap_modifier)
 
+        if defender_martial_katah == "kaptaris" and weapon["range"].lower() == "melee":
+            attacker_hit_modifier -= 1
+        if self.target_state_has_ability(target_state, "Defi Parry") and weapon["range"].lower() == "melee": attacker_hit_modifier -= 1
+        if attacker_martial_katah == "salvis" and weapon["range"].lower() != "melee":
+            attacker_skill_modifier = 0
+            attacker_hit_modifier = 0
+            attacker_outgoing_wound_modifier = 0
+
         attack_context = {
             "in_half_range": (
                 bool(options.get("in_half_range", False))
@@ -12942,7 +13106,6 @@ class CombatSimulator:
                         ) else 6,
                         5 if bool(options.get("attacker_unforgiven_fury_active", False))
                         and bool(options.get("attacker_unforgiven_fury_army_battleshocked", False)) else 6,
-                        5 if bool(options.get("attacker_unbridled_carnage_active", False)) else 6,
                         5 if bool(options.get("attacker_adrenal_surge_active", False))
                         and weapon["range"].lower() == "melee" else 6,
                         5 if shield_host_martial_mastery == "critical_hits_5"
@@ -13102,6 +13265,7 @@ class CombatSimulator:
                 )
             ),
             "attacker_outgoing_wound_modifier": attacker_outgoing_wound_modifier,
+            "unmodified_hit_rolls_1_to_3_fail": bool(options.get("defender_speediest_freeks_active", False)) and weapon["range"].lower() != "melee",
             "attacker_ap_modifier": attacker_ap_modifier,
             "melee_attack_bonus": melee_attack_bonus,
             "melee_strength_bonus": melee_strength_bonus,
@@ -13192,7 +13356,9 @@ class CombatSimulator:
         attached_character_unit: dict[str, Any] | None = None,
         attached_units: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
-        options = options or {}
+        options = self.with_automatic_ability_names(
+            options or {}, attacker_unit, defender_unit
+        )
         options = {
             **options,
             "sequence_state": self.build_sequence_state(options),
@@ -13282,7 +13448,9 @@ class CombatSimulator:
         if not weapons:
             raise CombatSimulationError("At least one weapon is required to run a weapon-set simulation.")
 
-        options = options or {}
+        options = self.with_automatic_ability_names(
+            options or {}, attacker_unit, defender_unit
+        )
         options = {
             **options,
             "sequence_state": self.build_sequence_state(options),
@@ -13371,7 +13539,9 @@ class CombatSimulator:
         if not attack_entries:
             raise CombatSimulationError("At least one attack entry is required to run a simulation.")
 
-        options = options or {}
+        options = self.with_automatic_ability_names(
+            options or {}, attack_entries[0]["attacker_unit"], defender_unit
+        )
         options = {
             **options,
             "sequence_state": self.build_sequence_state(options),

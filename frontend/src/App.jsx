@@ -469,9 +469,13 @@ const TEMPLAR_VOW_OPTIONS = [
   { id: 'uphold_the_honour', label: 'Uphold the Honour of the Emperor' },
 ]
 const MARTIAL_KATAH_OPTIONS = [
-  { id: '', label: 'No stance selected' },
-  { id: 'dacatarai', label: 'Dacatarai Stance' },
-  { id: 'rendax', label: 'Rendax Stance' },
+  { id: '', label: "No Ka'tah selected" },
+  { id: 'conservai', label: 'Conservai' },
+  { id: 'calistus', label: 'Calistus' },
+  { id: 'salvis', label: 'Salvis' },
+  { id: 'dacatarai', label: 'Dacatarai' },
+  { id: 'kaptaris', label: 'Kaptaris' },
+  { id: 'rendax', label: 'Rendax' },
 ]
 const IMPERIAL_KNIGHTS_QUALITY_OPTIONS = [
   { id: '', label: 'No Quality selected' },
@@ -2163,12 +2167,10 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
   }
 
   if (detachment.name === WAR_HORDE) {
-    return (detachment.enhancements || []).filter((enhancement) => {
-      if (enhancement.name === "Headwoppa's Killchoppa") {
-        return selectedWeapon?.range === 'Melee' && !weaponHasExtraAttacks(selectedWeapon)
-      }
-      return enhancement.name === 'Supa-Cybork Body'
-    })
+    return (detachment.enhancements || []).filter((enhancement) => (
+      enhancement.name === "Headwoppa's Killchoppa"
+      && selectedWeapon?.range === 'Melee'
+    ))
   }
 
   if (detachment.name === DA_BIG_HUNT) {
@@ -2197,18 +2199,16 @@ function getAttackerEnhancementOptions(detachment, enhancementBearerUnit, attack
       return []
     }
     return (detachment.enhancements || []).filter((enhancement) => (
-      enhancement.name === 'Ferocious Show Off'
-        ? selectedWeapon?.range === 'Melee'
-        : enhancement.name === 'Raucous Warcaller'
+      enhancement.name === 'Ferocious Show-off' && selectedWeapon?.range === 'Melee'
     ))
   }
 
   if (detachment.name === BULLY_BOYZ) {
-    if (!unitHasKeyword(enhancementBearerUnit, 'warboss') || !unitHasKeyword(enhancementBearerUnit, 'infantry')) {
+    if (!unitHasKeyword(enhancementBearerUnit, 'warboss')) {
       return []
     }
     return (detachment.enhancements || []).filter((enhancement) => (
-      enhancement.name === "'Eadstompa" && selectedWeapon?.range === 'Melee'
+      (enhancement.name === "Brutal but Kunnin'" || enhancement.name === 'Proper Killy') && selectedWeapon?.range === 'Melee'
     ))
   }
 
@@ -2895,7 +2895,7 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
       return stratagem.name === 'Eye of the Pack' && unitHasKeyword(unit, 'infantry')
     }
 
-    if (detachment.name === WAR_HORDE) {
+    if (detachment.name === GREEN_TIDE) {
       return stratagem.name === 'Unbridled Carnage'
     }
 
@@ -2920,7 +2920,7 @@ function getAttackerStratagemOptions(detachment, unit, isRangedWeapon) {
     }
 
     if (detachment.name === GREEN_TIDE) {
-      return stratagem.name === 'Competitive Streak' && !isRangedWeapon
+      return stratagem.name === 'Unbridled Carnage' && !isRangedWeapon
     }
 
     if (detachment.name === BULLY_BOYZ) {
@@ -9299,7 +9299,23 @@ function getNamedActiveRules(units, abilityNames) {
     }))
 }
 
-function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], context = {}) {
+function combatRuleIsOptional(ability, fallback = '') {
+  const explicitKind = String(ability?.activation_type || ability?.activation || '').toLowerCase()
+  if (['activated', 'optional', 'selectable', 'contextual'].includes(explicitKind)) return true
+  if (['triggered', 'automatic', 'passive', 'mandatory'].includes(explicitKind)) return false
+  if (fallback === 'Stratagem' || fallback === 'Selectable Ability') return true
+
+  const text = `${ability?.name || ''} ${ability?.rules_text || ''} ${ability?.timing || ''} ${ability?.effect || ''}`.toLowerCase()
+  return text.includes('(aura)')
+    || /friendly .{0,80} within \d+/.test(text)
+    || text.includes('once per battle')
+    || text.includes('once per phase')
+    || text.includes('once per turn')
+    || /\byou can (?:use|select|choose|activate|attempt|replace|change|set)\b/.test(text)
+    || /\bselect one of the following\b/.test(text)
+}
+
+function getCombatAbilities(units, phaseId, selectedWeapons = [], context = {}, kind = 'activated') {
   const unitList = (Array.isArray(units) ? units : [units]).filter(Boolean)
   if (!unitList.length || !['shooting', 'fight'].includes(phaseId)) {
     return []
@@ -9394,6 +9410,11 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
   const seenAbilityNames = new Set()
 
   return collections
+    .filter(({ ability, fallback }) => (
+      kind === 'activated'
+        ? combatRuleIsOptional(ability, fallback)
+        : !combatRuleIsOptional(ability, fallback)
+    ))
     .filter(({ ability, unit }) => {
       const name = String(ability.name || '').toLowerCase()
       const isSupported = SUPPORTED_COMBAT_ACTIVATED_ABILITIES[name]
@@ -9433,6 +9454,14 @@ function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], conte
       source: unitName ? `${unitName} ${getAbilitySourceLabel(ability, fallback)}` : getAbilitySourceLabel(ability, fallback),
       text: [ability.rules_text || (ability.effect ? formatStratagemTooltip(ability) : ''), ability.activation_hint].filter(Boolean).join('\n\n'),
     }))
+}
+
+function getCombatActivatedAbilities(units, phaseId, selectedWeapons = [], context = {}) {
+  return getCombatAbilities(units, phaseId, selectedWeapons, context, 'activated')
+}
+
+function getCombatTriggeredAbilities(units, phaseId, selectedWeapons = [], context = {}) {
+  return getCombatAbilities(units, phaseId, selectedWeapons, context, 'triggered')
 }
 
 function buildAttackerActiveRules({
@@ -9612,29 +9641,37 @@ function buildAttackerActiveRules({
     ...getRelevantUnitRules(attackerUnitDetails, 'attacker', hasHazardous),
     ...getPassiveCombatAbilityRules([attackerUnitDetails, attackerAttachedLeaderUnitDetails, attackerAttachedSupportUnitDetails]),
   ]
-  const activeAbilityNameSet = new Set((attackerActiveAbilityNames || []).map((name) => String(name).toLowerCase()))
-  getCombatActivatedAbilities(
-    [
-      attackerUnitDetails,
-      attackerAttachedLeaderUnitDetails,
-      attackerAttachedSupportUnitDetails,
-      attackerUnitDetails?.attached_leader,
-      attackerUnitDetails?.attached_support,
-    ],
+  const combatAbilityUnits = [
+    attackerUnitDetails,
+    attackerAttachedLeaderUnitDetails,
+    attackerAttachedSupportUnitDetails,
+    attackerUnitDetails?.attached_leader,
+    attackerUnitDetails?.attached_support,
+  ]
+  const combatAbilityContext = {
+    targetUnit: defenderUnitDetails,
+    targetWithinTwelve: attackerTargetWithinTwelve,
+    waaaghActive: attackerWaaaghActive,
+    chargedThisTurn,
+    detachment: attackerDetachment,
+    selectedEnhancementName: attackerEnhancementName,
+    armyRules: attackerArmyRules,
+    targetBelowStartingStrength,
+    targetBelowHalfStrength,
+    defenderBattleshocked,
+  }
+  rules.push(...getCombatTriggeredAbilities(
+    combatAbilityUnits,
     selectedAttackWeapons.some((weapon) => weapon.range !== 'Melee') ? 'shooting' : 'fight',
     selectedAttackWeapons,
-    {
-      targetUnit: defenderUnitDetails,
-      targetWithinTwelve: attackerTargetWithinTwelve,
-      waaaghActive: attackerWaaaghActive,
-      chargedThisTurn,
-      detachment: attackerDetachment,
-      selectedEnhancementName: attackerEnhancementName,
-      armyRules: attackerArmyRules,
-      targetBelowStartingStrength,
-      targetBelowHalfStrength,
-      defenderBattleshocked,
-    },
+    combatAbilityContext,
+  ))
+  const activeAbilityNameSet = new Set((attackerActiveAbilityNames || []).map((name) => String(name).toLowerCase()))
+  getCombatActivatedAbilities(
+    combatAbilityUnits,
+    selectedAttackWeapons.some((weapon) => weapon.range !== 'Melee') ? 'shooting' : 'fight',
+    selectedAttackWeapons,
+    combatAbilityContext,
   ).forEach((ability) => {
     if (activeAbilityNameSet.has(String(ability.name || '').toLowerCase())) {
       rules.push(ability)
@@ -11748,7 +11785,19 @@ function buildDefenderActiveRules({
   const defenderUnits = [defenderUnitDetails, attachedCharacterUnitDetails, attachedSupportUnitDetails].filter(Boolean)
   const rules = [
     ...getRelevantUnitRules(defenderUnitDetails, 'defender', false),
+    ...getPassiveCombatAbilityRules(defenderUnits),
   ]
+  rules.push(...getCombatTriggeredAbilities(
+    defenderUnits,
+    (selectedAttackWeapons || [selectedWeapon]).filter(Boolean).some((weapon) => weapon.range !== 'Melee') ? 'shooting' : 'fight',
+    (selectedAttackWeapons || [selectedWeapon]).filter(Boolean),
+    {
+      targetUnit: null,
+      side: 'defender',
+      detachment: defenderDetachment,
+      selectedEnhancementName: defenderEnhancementName,
+    },
+  ))
   const psychicWeaponSelected = (selectedAttackWeapons || [selectedWeapon]).filter(Boolean).some((weapon) => (
     weaponHasRawKeyword(weapon, 'Psychic')
   ))
@@ -14871,6 +14920,46 @@ function App() {
       attackerBattleshocked,
     ],
   )
+  const attackerCombatTriggeredAbilityNames = useMemo(
+    () => getCombatTriggeredAbilities([attackerUnitDetails, attackerAttachedLeaderUnitDetails, attackerAttachedSupportUnitDetails], selectedCombatPhaseId, selectedAttackWeapons, {
+      targetUnit: defenderUnitDetails,
+      targetWithinTwelve: attackerTargetWithinTwelve,
+      waaaghActive: attackerWaaaghActive,
+      chargedThisTurn,
+      allowOutOfPhaseAbilities: true,
+      selectedEntries: selectedAttackEntries,
+      side: 'attacker',
+      sourceBattleshocked: attackerBattleshocked,
+      detachment: selectedAttackerDetachment,
+      selectedEnhancementName: attackerEnhancementName,
+      armyRules: attackerFactionDetails?.army_rules || [],
+      targetBelowStartingStrength,
+      targetBelowHalfStrength,
+      defenderBattleshocked,
+    }).map((ability) => ability.name),
+    [attackerUnitDetails, attackerAttachedLeaderUnitDetails, attackerAttachedSupportUnitDetails, selectedCombatPhaseId,
+      selectedAttackWeapons, defenderUnitDetails, attackerTargetWithinTwelve, attackerWaaaghActive, chargedThisTurn,
+      selectedAttackEntries, attackerBattleshocked, selectedAttackerDetachment, attackerEnhancementName,
+      attackerFactionDetails?.army_rules, targetBelowStartingStrength, targetBelowHalfStrength, defenderBattleshocked],
+  )
+  const defenderCombatTriggeredAbilityNames = useMemo(
+    () => getCombatTriggeredAbilities([defenderUnitDetails, attachedCharacterUnitDetails, attachedSupportUnitDetails], selectedCombatPhaseId, defenderTriggerWeapons, {
+      targetUnit: attackerUnitDetails,
+      waaaghActive: defenderWaaaghActive,
+      chargedThisTurn: false,
+      side: 'defender',
+      sourceBattleshocked: defenderBattleshocked,
+      detachment: selectedDefenderDetachment,
+      selectedEnhancementName: defenderEnhancementName,
+      targetBelowStartingStrength: attackerBelowStartingStrength,
+      targetBelowHalfStrength: attackerBelowHalfStrength,
+      defenderBattleshocked: attackerBattleshocked,
+    }).map((ability) => ability.name),
+    [defenderUnitDetails, attachedCharacterUnitDetails, attachedSupportUnitDetails, selectedCombatPhaseId,
+      defenderTriggerWeapons, attackerUnitDetails, defenderWaaaghActive, defenderBattleshocked,
+      selectedDefenderDetachment, defenderEnhancementName, attackerBelowStartingStrength,
+      attackerBelowHalfStrength, attackerBattleshocked],
+  )
   useEffect(() => {
     const availableAbilityNames = new Set(attackerCombatActivatedAbilityOptions.map((ability) => ability.name))
     setAttackerActiveAbilityNames((currentNames) => currentNames.filter((name) => availableAbilityNames.has(name)))
@@ -16340,13 +16429,13 @@ function App() {
   const attackerWaaaghControlTooltip = buildTooltip(
     attackerWaaaghTooltip,
     attackerWaaaghControlledByGame
-      ? 'Sim Game controls this state. Declare Waaagh! during the Start of Turn Step at the start of the battle round.'
+      ? 'Sim Game controls this state. Use War Cry during the Command phase.'
       : '',
   )
   const defenderWaaaghControlTooltip = buildTooltip(
     defenderWaaaghTooltip,
     defenderWaaaghControlledByGame
-      ? 'Sim Game controls this state. Declare Waaagh! during the Start of Turn Step at the start of the battle round.'
+      ? 'Sim Game controls this state. Use War Cry during the Command phase.'
       : '',
   )
   const attackerPreyTooltip = getDetachmentEntry(selectedAttackerDetachment, 'rule', 'Da Hunt Is On')?.rules_text || ''
@@ -17694,8 +17783,7 @@ function App() {
     defender: battlefieldWaaaghBattleRounds.defender === gameBattleRound,
   }
   const canDeclareBattleRoundWaaagh = battlefieldDeploymentComplete
-    && gameActivePlayer === 'Player 1'
-    && activeGamePhase?.id === 'start_of_turn'
+    && activeGamePhase?.id === 'command'
   const battlefieldWaaaghStatusBySide = {
     attacker: {
       armyIsOrks: attackerArmyIsOrks,
@@ -18464,6 +18552,41 @@ function App() {
       battlefieldBattleShockedUnits,
     ],
   )
+  const battlefieldCombatTriggeredAbilityNames = useMemo(
+    () => getCombatTriggeredAbilities(
+      [
+        selectedBattlefieldCombatant?.attackerDetails,
+        selectedBattlefieldCombatant?.attackerDetails?.attached_leader,
+        selectedBattlefieldCombatant?.attackerDetails?.attached_support,
+      ],
+      activeGamePhase?.id,
+      selectedBattlefieldCombatWeapons,
+      {
+        targetUnit: selectedBattlefieldCombatant?.defenderDetails,
+        targetWithinTwelve: attackerTargetWithinTwelve,
+        waaaghActive: battlefieldAttackerWaaaghActive,
+        chargedThisTurn: battlefieldCombatAttackerCharged,
+        allowOutOfPhaseAbilities: true,
+        side: 'attacker',
+        sourceBattleshocked: Boolean(battlefieldBattleShockedUnits[selectedBattlefieldCombatant?.attackerId]),
+        detachment: getBattlefieldSourceSide(selectedBattlefieldCombatant?.attackerId) === 'attacker'
+          ? selectedAttackerDetachment : selectedDefenderDetachment,
+        selectedEnhancementName: getBattlefieldSourceSide(selectedBattlefieldCombatant?.attackerId) === 'attacker'
+          ? attackerEnhancementName : defenderEnhancementName,
+        armyRules: (getBattlefieldSourceSide(selectedBattlefieldCombatant?.attackerId) === 'attacker'
+          ? attackerFactionDetails : defenderFactionDetails)?.army_rules || [],
+        targetBelowStartingStrength,
+        targetBelowHalfStrength,
+        defenderBattleshocked,
+      },
+    ).map((ability) => ability.name),
+    [activeGamePhase?.id, selectedBattlefieldCombatant, selectedBattlefieldCombatWeapons,
+      attackerTargetWithinTwelve, battlefieldAttackerWaaaghActive, battlefieldCombatAttackerCharged,
+      battlefieldBattleShockedUnits, getBattlefieldSourceSide, selectedAttackerDetachment,
+      selectedDefenderDetachment, attackerEnhancementName, defenderEnhancementName,
+      attackerFactionDetails, defenderFactionDetails, targetBelowStartingStrength,
+      targetBelowHalfStrength, defenderBattleshocked],
+  )
   const battlefieldDefenderAbilityOptions = useMemo(() => {
     const details = selectedBattlefieldCombatant?.defenderDetails
     const side = getBattlefieldSourceSide(selectedBattlefieldCombatant?.defenderId)
@@ -18474,6 +18597,18 @@ function App() {
       detachment: side === 'attacker' ? selectedAttackerDetachment : selectedDefenderDetachment,
       selectedEnhancementName: side === 'attacker' ? attackerEnhancementName : defenderEnhancementName,
     })
+  }, [selectedBattlefieldCombatant, getBattlefieldSourceSide, battlefieldBattleShockedUnits, activeGamePhase?.id, selectedBattlefieldCombatWeapons,
+    selectedAttackerDetachment, selectedDefenderDetachment, attackerEnhancementName, defenderEnhancementName])
+  const battlefieldDefenderTriggeredAbilityNames = useMemo(() => {
+    const details = selectedBattlefieldCombatant?.defenderDetails
+    const side = getBattlefieldSourceSide(selectedBattlefieldCombatant?.defenderId)
+    return getCombatTriggeredAbilities([details, details?.attached_leader, details?.attached_support], activeGamePhase?.id, selectedBattlefieldCombatWeapons, {
+      targetUnit: selectedBattlefieldCombatant?.attackerDetails,
+      side: 'defender',
+      sourceBattleshocked: Boolean(battlefieldBattleShockedUnits[selectedBattlefieldCombatant?.defenderId]),
+      detachment: side === 'attacker' ? selectedAttackerDetachment : selectedDefenderDetachment,
+      selectedEnhancementName: side === 'attacker' ? attackerEnhancementName : defenderEnhancementName,
+    }).map((ability) => ability.name)
   }, [selectedBattlefieldCombatant, getBattlefieldSourceSide, battlefieldBattleShockedUnits, activeGamePhase?.id, selectedBattlefieldCombatWeapons,
     selectedAttackerDetachment, selectedDefenderDetachment, attackerEnhancementName, defenderEnhancementName])
   useEffect(() => {
@@ -20964,7 +21099,8 @@ function App() {
       attackerHordeslayerOutnumbered,
       attackerHeroesAllRerollType,
       attackerArmouredWrathRerollType,
-      attackerActiveAbilityNames,
+      attackerActiveAbilityNames: [...new Set([...attackerActiveAbilityNames, ...attackerCombatTriggeredAbilityNames])],
+      defenderActiveAbilityNames: [...new Set([...defenderActiveAbilityNames, ...defenderCombatTriggeredAbilityNames])],
       attackerUnbridledFerocityActive,
       attackerAdrenalSurgeActive,
       attackerTemplarVow,
@@ -21474,10 +21610,12 @@ function App() {
         attacker_saga_completed: Boolean(battleAchievements[battlefieldAttackerSide]?.sagaCompleted),
         attacker_templar_vow: battlefieldAttackerSide === 'attacker' ? attackerTemplarVow || null : null,
         attacker_active_ability_names: [...new Set([...battlefieldActiveAbilityNames,
+          ...battlefieldCombatTriggeredAbilityNames,
           ...getWorldEatersBattlefieldCombatAbilities(selectedBattlefieldCombatant.attackerId, selectedBattlefieldCombatant.defenderId),
           ...(battlefieldUnitMap[selectedBattlefieldCombatant.attackerId]?.worldEatersActiveAbilities || []),
         ])],
         defender_active_ability_names: [...new Set([...battlefieldDefenderActiveAbilityNames,
+          ...battlefieldDefenderTriggeredAbilityNames,
           ...worldEatersArmies[battlefieldDefenderSide].titheAbilities,
           ...worldEatersArmyAura(battlefieldUnitMap[selectedBattlefieldCombatant.defenderId], worldEatersBattlefieldNeighbours(battlefieldUnitMap[selectedBattlefieldCombatant.defenderId]).filter((entry) => entry.unit.side === battlefieldDefenderSide), worldEatersArmies[battlefieldDefenderSide], worldEatersTurn),
           ...(battlefieldUnitMap[selectedBattlefieldCombatant.defenderId]?.worldEatersActiveAbilities || []),
@@ -22848,8 +22986,7 @@ function App() {
   function declareBattlefieldWaaagh(side) {
     if (
       !battlefieldDeploymentComplete
-      || gameActivePlayer !== 'Player 1'
-      || activeGamePhase?.id !== 'start_of_turn'
+      || activeGamePhase?.id !== 'command'
     ) {
       return
     }
@@ -22871,7 +23008,7 @@ function App() {
     }
 
     appendGameLog(
-      `${formatBattlefieldSideLabel(side)} declared Waaagh! at the start of battle round ${gameBattleRound}. It remains active until the start of battle round ${gameBattleRound + 1}.`,
+      `${formatBattlefieldSideLabel(side)} used War Cry in the Command phase. Friendly Orks units are riled up.`,
     )
   }
 
@@ -24406,7 +24543,7 @@ function App() {
             {(attackerCombatActivatedAbilityOptions.length || defenderCombatActivatedAbilityOptions.length) ? (
               <div className="weapon-selection-panel">
                 <div className="weapon-selection-header">
-                  <span>Activated Abilities</span>
+                  <span>Optional / Contextual Abilities</span>
                   <span>{attackerActiveAbilityNames.length + defenderActiveAbilityNames.length} active</span>
                 </div>
                 <div className="combat-side-grid">
@@ -29710,11 +29847,11 @@ function App() {
                     </div>
                   </div>
                 ) : null}
-                {activeGamePhase?.id === 'start_of_turn' && (attackerArmyIsOrks || defenderArmyIsOrks) ? (
+                {activeGamePhase?.id === 'command' && (attackerArmyIsOrks || defenderArmyIsOrks) ? (
                   <div className="phase-inline-controls">
-                    <p className="kicker">Battle Round Declarations</p>
+                    <p className="kicker">Command Ability</p>
                     <h3>Waaagh!</h3>
-                    <p>Declare this at the start of the battle round. It remains active until the start of the next battle round.</p>
+                    <p>Use War Cry once per battle at the start of the Command phase to rile up friendly Orks units.</p>
                     <div className="battlefield-action-summary">
                       {['attacker', 'defender'].map((side) => {
                         const status = battlefieldWaaaghStatusBySide[side]
@@ -29727,14 +29864,12 @@ function App() {
                               <p className="battlefield-action-key"><strong>{formatBattlefieldSideLabel(side)} Waaagh!</strong></p>
                               <p>
                                 {status.active
-                                  ? `Active for battle round ${gameBattleRound}.`
+                                  ? 'Friendly Orks units are riled up.'
                                   : status.used
-                                    ? `Already called in battle round ${status.calledBattleRound}.`
+                                    ? 'War Cry has already been used this battle.'
                                     : canDeclareBattleRoundWaaagh
                                       ? 'Available to declare now.'
-                                      : gameActivePlayer !== 'Player 1'
-                                        ? 'Declarations are only made at the start of the battle round before Player 1 begins.'
-                                        : 'This can only be declared during the Start of Turn Step.'}
+                                      : 'This can only be used during the Command phase.'}
                               </p>
                             </div>
                             <button
@@ -29961,7 +30096,7 @@ function App() {
                           })}
                         </div>
                         {battlefieldCombatActivatedAbilityOptions.length ? (
-                          <div className="phase-inline-weapon-list" aria-label="Activated Abilities">
+                          <div className="phase-inline-weapon-list" aria-label="Optional or contextual abilities">
                             {battlefieldCombatActivatedAbilityOptions.map((ability) => (
                               <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
                                 <input
@@ -29980,7 +30115,7 @@ function App() {
                         ) : null}
                         {battlefieldDefenderAbilityOptions.length ? (
                           <div className="weapon-selection-panel battlefield-combat-span">
-                            <div className="weapon-selection-header"><span>Defender Abilities</span></div>
+                            <div className="weapon-selection-header"><span>Defender Optional / Contextual Abilities</span></div>
                             <div className="weapon-selection-grid">
                               {battlefieldDefenderAbilityOptions.map((ability) => (
                                 <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
@@ -31191,7 +31326,7 @@ function App() {
                 {battlefieldCombatActivatedAbilityOptions.length ? (
                   <div className="weapon-selection-panel battlefield-combat-span">
                     <div className="weapon-selection-header">
-                      <span>Activated Abilities</span>
+                      <span>Optional / Contextual Abilities</span>
                       <span>{battlefieldActiveAbilityNames.length} active</span>
                     </div>
                     <div className="weapon-selection-grid">
@@ -31215,7 +31350,7 @@ function App() {
 
                 {battlefieldDefenderAbilityOptions.length ? (
                   <div className="weapon-selection-panel battlefield-combat-span">
-                    <div className="weapon-selection-header"><span>Defender Abilities</span></div>
+                    <div className="weapon-selection-header"><span>Defender Optional / Contextual Abilities</span></div>
                     <div className="weapon-selection-grid">
                       {battlefieldDefenderAbilityOptions.map((ability) => (
                         <label key={ability.name} className="checkbox-row weapon-checkbox" title={ability.text}>
