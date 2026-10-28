@@ -3771,6 +3771,8 @@ function buildSimulationPayload(state) {
     attacker_attached_support_model_counts: state.attackerAttachedSupportModelCounts || {},
     weapon_names: state.weaponNames || [],
     weapon_model_counts: state.weaponModelCounts || {},
+    defender_weapon_names: state.defenderWeaponNames || [],
+    defender_weapon_model_counts: state.defenderWeaponModelCounts || {},
     fight_back: Boolean(state.fightBack),
     alternate_until_destroyed: Boolean(state.fightBack && state.alternateUntilDestroyed),
     defender_faction: state.defenderFaction,
@@ -12974,6 +12976,8 @@ function App() {
   const [attackerModelCounts, setAttackerModelCounts] = useState(() => combatInitial('attackerModelCounts', {}))
   const [weaponNames, setWeaponNames] = useState(() => combatInitial('weaponNames', []))
   const [weaponModelCounts, setWeaponModelCounts] = useState(() => combatInitial('weaponModelCounts', {}))
+  const [defenderWeaponNames, setDefenderWeaponNames] = useState([])
+  const [defenderWeaponModelCounts, setDefenderWeaponModelCounts] = useState({})
   const [attackerAttachedLeaderName, setAttackerAttachedLeaderName] = useState(() => combatInitial('attackerAttachedLeaderName', ''))
   const [attackerAttachedLeaderLoadoutSelections, setAttackerAttachedLeaderLoadoutSelections] = useState(() => combatInitial('attackerAttachedLeaderLoadoutSelections', {}))
   const [attackerAttachedLeaderModelCount, setAttackerAttachedLeaderModelCount] = useState(() => combatInitial('attackerAttachedLeaderModelCount', ''))
@@ -14858,6 +14862,10 @@ function App() {
       defenderUnitDetails,
     ],
   )
+  const defenderMeleeWeaponOptions = useMemo(
+    () => defenderCombatWeaponOptions.filter((weapon) => weapon.range === 'Melee'),
+    [defenderCombatWeaponOptions],
+  )
   const defenderTriggerWeapons = useMemo(
     () => defenderCombatWeaponOptions.filter((weapon) => (
       selectedCombatPhaseId === 'fight'
@@ -15079,6 +15087,50 @@ function App() {
     combatWeaponOptions,
     weaponModelCounts,
     weaponNames,
+  ])
+
+  useEffect(() => {
+    if (!fightBack) {
+      return
+    }
+    const validWeaponNames = defenderWeaponNames.filter((weaponName) => (
+      defenderMeleeWeaponOptions.some((weapon) => weapon.name === weaponName)
+    ))
+    if (validWeaponNames.length === defenderWeaponNames.length && validWeaponNames.length > 0) {
+      return
+    }
+    setDefenderWeaponNames(
+      validWeaponNames.length > 0
+        ? validWeaponNames
+        : defenderMeleeWeaponOptions.map((weapon) => weapon.name),
+    )
+  }, [defenderMeleeWeaponOptions, defenderWeaponNames, fightBack])
+
+  useEffect(() => {
+    const nextCounts = normalizeWeaponModelCountsForSelection({
+      currentCounts: defenderWeaponModelCounts,
+      weaponNames: defenderWeaponNames,
+      weaponOptions: defenderMeleeWeaponOptions,
+      unitDetails: defenderUnitDetails,
+      attachedLeaderUnitDetails: attachedCharacterUnitDetails,
+      attachedSupportUnitDetails,
+    })
+    const currentKeys = Object.keys(defenderWeaponModelCounts).sort()
+    const nextKeys = Object.keys(nextCounts).sort()
+    if (
+      currentKeys.length === nextKeys.length
+      && currentKeys.every((key, index) => key === nextKeys[index] && defenderWeaponModelCounts[key] === nextCounts[key])
+    ) {
+      return
+    }
+    setDefenderWeaponModelCounts(nextCounts)
+  }, [
+    attachedCharacterUnitDetails,
+    attachedSupportUnitDetails,
+    defenderMeleeWeaponOptions,
+    defenderUnitDetails,
+    defenderWeaponModelCounts,
+    defenderWeaponNames,
   ])
 
   const defenderAttachedLeaderOptions = useMemo(() => {
@@ -19085,6 +19137,7 @@ function App() {
     && defenderFaction
     && defenderUnit
     && !hasMixedAttackModes
+    && (!fightBack || defenderWeaponNames.length > 0)
   )
 
   useEffect(() => {
@@ -21086,6 +21139,8 @@ function App() {
       matrixUserEmail: signedInMatrixUserEmail,
       weaponNames,
       weaponModelCounts,
+      defenderWeaponNames,
+      defenderWeaponModelCounts,
       fightBack,
       alternateUntilDestroyed,
       defenderFaction,
@@ -24582,14 +24637,82 @@ function App() {
                     <span>Defender fights back</span>
                   </label>
                   {fightBack ? (
-                    <label className="checkbox-row weapon-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={alternateUntilDestroyed}
-                        onChange={(event) => setAlternateUntilDestroyed(event.target.checked)}
-                      />
-                      <span>Alternate until one unit is destroyed</span>
-                    </label>
+                    <>
+                      <div className="weapon-selection-header compact">
+                        <span>Defender Weapon Profiles</span>
+                        <span>{defenderWeaponNames.length} selected</span>
+                      </div>
+                      {defenderMeleeWeaponOptions.length ? defenderMeleeWeaponOptions.map((weapon) => {
+                        const checked = defenderWeaponNames.includes(weapon.name)
+                        const bearerCount = getWeaponBearerCountForSelection(
+                          defenderUnitDetails,
+                          attachedCharacterUnitDetails,
+                          attachedSupportUnitDetails,
+                          weapon,
+                        )
+                        const showModelCounter = checked && bearerCount > 1
+                        return (
+                          <div key={weapon.name} className={`checkbox-row weapon-checkbox ${showModelCounter ? 'with-counter' : ''}`}>
+                            <label>
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(event) => {
+                                  setDefenderWeaponNames((currentWeaponNames) => (
+                                    resolveCombatWeaponSelection({
+                                      currentWeaponNames,
+                                      weapon,
+                                      checked: event.target.checked,
+                                      weaponOptions: defenderMeleeWeaponOptions,
+                                      unitDetails: defenderUnitDetails,
+                                      attachedLeaderUnitDetails: attachedCharacterUnitDetails,
+                                      attachedSupportUnitDetails,
+                                    })
+                                  ))
+                                }}
+                              />
+                              <span>{formatWeaponName(weapon)}</span>
+                            </label>
+                            {showModelCounter ? (
+                              <input
+                                type="number"
+                                className="weapon-model-count-input"
+                                min="1"
+                                max={bearerCount}
+                                value={defenderWeaponModelCounts[weapon.name] ?? bearerCount}
+                                aria-label={`${formatWeaponName(weapon)} defender model count`}
+                                title={`${formatWeaponName(weapon)} defender model count`}
+                                onChange={(event) => {
+                                  const nextValue = clamp(Number(event.target.value) || 1, 1, bearerCount)
+                                  setDefenderWeaponModelCounts((currentCounts) => (
+                                    updateWeaponModelCountForSelection({
+                                      currentCounts,
+                                      weaponNames: defenderWeaponNames,
+                                      weaponOptions: defenderMeleeWeaponOptions,
+                                      unitDetails: defenderUnitDetails,
+                                      attachedLeaderUnitDetails: attachedCharacterUnitDetails,
+                                      attachedSupportUnitDetails,
+                                      weapon,
+                                      requestedCount: nextValue,
+                                    })
+                                  ))
+                                }}
+                              />
+                            ) : null}
+                          </div>
+                        )
+                      }) : (
+                        <p className="weapon-selection-warning">The defender has no melee weapon profiles.</p>
+                      )}
+                      <label className="checkbox-row weapon-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={alternateUntilDestroyed}
+                          onChange={(event) => setAlternateUntilDestroyed(event.target.checked)}
+                        />
+                        <span>Alternate until one unit is destroyed</span>
+                      </label>
+                    </>
                   ) : null}
                 </div>
               </div>

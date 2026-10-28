@@ -425,6 +425,8 @@ class SimulationRequest(BaseModel):
     weapon_name: str | None = None
     weapon_names: list[str] = Field(default_factory=list)
     weapon_model_counts: dict[str, int] = Field(default_factory=dict)
+    defender_weapon_names: list[str] = Field(default_factory=list)
+    defender_weapon_model_counts: dict[str, int] = Field(default_factory=dict)
     fight_back: bool = False
     alternate_until_destroyed: bool = False
     defender_faction: str
@@ -2359,11 +2361,13 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
 
     defender_attack_entries: list[dict[str, Any]] = []
     if request.fight_back:
+        defender_weapon_names = request.defender_weapon_names or [ALL_MELEE_WEAPONS]
         defender_attack_entries = resolve_requested_attack_entries(
             defender_unit,
-            [ALL_MELEE_WEAPONS],
+            defender_weapon_names,
             attached_character_unit,
             attached_support_unit,
+            request.defender_weapon_model_counts,
         )
         if not defender_attack_entries:
             raise HTTPException(
