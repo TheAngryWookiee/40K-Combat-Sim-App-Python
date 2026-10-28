@@ -13347,6 +13347,192 @@ class CombatSimulator:
             return
         self.log(f"Defender wound allocation order: {' -> '.join(labels)}")
 
+    @staticmethod
+    def get_target_state_total_wounds(target_state: dict[str, Any]) -> int:
+        profiles = target_state.get("profiles", [])
+        if profiles:
+            return sum(
+                max(0, int(profile.get("models", 0)) - 1) * max(0, int(profile.get("wounds", 0)))
+                + (max(0, int(profile.get("current_wounds", 0))) if int(profile.get("models", 0)) > 0 else 0)
+                for profile in profiles
+            )
+        models = max(0, int(target_state.get("models", 0)))
+        if models <= 0:
+            return 0
+        return (models - 1) * max(0, int(target_state.get("wounds", 0))) + max(
+            0, int(target_state.get("current_wounds", 0))
+        )
+
+    @staticmethod
+    def reverse_combat_options(options: dict[str, Any]) -> dict[str, Any]:
+        reversed_options: dict[str, Any] = {}
+        for key, value in options.items():
+            if key.startswith("attacker_"):
+                reversed_options[f"defender_{key[len('attacker_'):]}"] = value
+            elif key.startswith("defender_"):
+                reversed_options[f"attacker_{key[len('defender_'):]}"] = value
+            else:
+                reversed_options[key] = value
+        reversed_options["charged_this_turn"] = False
+        reversed_options["attacker_in_engagement_range"] = True
+        return reversed_options
+
+    def simulate_melee_duel(
+        self,
+        attacker_entries: list[dict[str, Any]],
+        defender_entries: list[dict[str, Any]],
+        attacker_unit: dict[str, Any],
+        defender_unit: dict[str, Any],
+        options: dict[str, Any] | None = None,
+        attacker_attached_units: list[dict[str, Any]] | None = None,
+        defender_attached_units: list[dict[str, Any]] | None = None,
+        repeat_until_destroyed: bool = False,
+        max_rounds: int = 50,
+    ) -> dict[str, Any]:
+        if not attacker_entries or not defender_entries:
+            raise CombatSimulationError("Both units require at least one melee weapon to fight a duel.")
+        all_weapons = [
+            weapon
+            for entry in [*attacker_entries, *defender_entries]
+            for weapon in entry.get("weapons", [])
+        ]
+        if any(str(weapon.get("range", "")).lower() != "melee" for weapon in all_weapons):
+            raise CombatSimulationError("Fight-back simulations only support melee weapons.")
+
+        base_options = options or {}
+        attacker_state = self.build_target_state(attacker_unit, attached_units=attacker_attached_units)
+        defender_state = self.build_target_state(defender_unit, attached_units=defender_attached_units)
+        self.log_messages = []
+        duel_log: list[str] = []
+        rounds: list[dict[str, Any]] = []
+
+        def resolve_activation(
+            entries: list[dict[str, Any]],
+            target_state: dict[str, Any],
+            activation_options: dict[str, Any],
+            side_label: str,
+        ) -> tuple[int, dict[str, Any]]:
+            before_wounds = self.get_target_state_total_wounds(target_state)
+            self.stats = self.build_empty_stats()
+            activation_options = {
+                **activation_options,
+                "sequence_state": self.build_sequence_state(activation_options),
+            }
+            self.log_messages = [f"{side_label} fights"]
+            for entry in entries:
+                if target_state.get("models", 0) <= 0:
+                    break
+                source_unit = entry["attacker_unit"]
+                eligible_models = sum(
+                    max(0, int(profile.get("models", 0)))
+                    for profile in (
+                        attacker_state.get("profiles", [])
+                        if side_label == "Attacker"
+                        else defender_state.get("profiles", [])
+                    )
+                    if profile.get("unit_name") == source_unit.get("name")
+                )
+                entry_options = {
+                    **activation_options,
+                    "attacker_eligible_model_count": eligible_models or 0,
+                }
+                weapons = entry.get("weapons", [])
+                if not weapons or eligible_models <= 0:
+                    continue
+                context = self.build_attack_context(
+                    source_unit,
+                    weapons[0],
+                    target_state,
+                    entry_options,
+                    None,
+                    False,
+                )
+                self.apply_temporary_target_modifiers(target_state, context)
+                self.resolve_pre_attack_active_abilities(source_unit, weapons[0], target_state, context)
+                if len(weapons) == 1:
+                    self.resolve_unit_attack(source_unit, weapons[0], target_state, context)
+                else:
+                    self.resolve_weapon_set_attack(source_unit, weapons, target_state, context)
+            damage = max(0, before_wounds - self.get_target_state_total_wounds(target_state))
+            duel_log.extend(self.log_messages)
+            return damage, dict(self.stats)
+
+        attacker_options = self.with_automatic_ability_names(base_options, attacker_unit, defender_unit)
+        defender_options = self.with_automatic_ability_names(
+            self.reverse_combat_options(base_options), defender_unit, attacker_unit
+        )
+        attacker_stats_total = self.build_empty_stats()
+        defender_stats_total = self.build_empty_stats()
+        stalemate = False
+
+        for round_number in range(1, max(1, max_rounds) + 1):
+            duel_log.append(f"Combat round {round_number}")
+            attacker_damage, attacker_stats = resolve_activation(
+                attacker_entries, defender_state, attacker_options, "Attacker"
+            )
+            for key, value in attacker_stats.items():
+                if isinstance(value, (int, float)) and isinstance(attacker_stats_total.get(key), (int, float)):
+                    attacker_stats_total[key] += value
+
+            defender_damage = 0
+            defender_stats = self.build_empty_stats()
+            if defender_state.get("models", 0) > 0:
+                defender_damage, defender_stats = resolve_activation(
+                    defender_entries, attacker_state, defender_options, "Defender"
+                )
+                for key, value in defender_stats.items():
+                    if isinstance(value, (int, float)) and isinstance(defender_stats_total.get(key), (int, float)):
+                        defender_stats_total[key] += value
+
+            rounds.append({
+                "round": round_number,
+                "attacker_damage": attacker_damage,
+                "defender_damage": defender_damage,
+                "attacker_models_remaining": max(0, int(attacker_state.get("models", 0))),
+                "defender_models_remaining": max(0, int(defender_state.get("models", 0))),
+                "attacker_wounds_remaining": self.get_target_state_total_wounds(attacker_state),
+                "defender_wounds_remaining": self.get_target_state_total_wounds(defender_state),
+            })
+            if attacker_state.get("models", 0) <= 0 or defender_state.get("models", 0) <= 0:
+                break
+            if not repeat_until_destroyed:
+                break
+            if attacker_damage + defender_damage == 0:
+                stalemate = True
+                break
+            attacker_options["charged_this_turn"] = False
+
+        winner = None
+        if attacker_state.get("models", 0) <= 0 and defender_state.get("models", 0) > 0:
+            winner = "defender"
+        elif defender_state.get("models", 0) <= 0 and attacker_state.get("models", 0) > 0:
+            winner = "attacker"
+        elif attacker_state.get("models", 0) <= 0 and defender_state.get("models", 0) <= 0:
+            winner = "draw"
+
+        self.stats = attacker_stats_total
+        self.log_messages = duel_log
+        return {
+            "log": duel_log,
+            "stats": attacker_stats_total,
+            "target": self.summarize_state(defender_state, "bodyguard"),
+            "attached_character": None,
+            "hazardous_bearer": None,
+            "attack_resolution_plan": [],
+            "duel": {
+                "rounds": rounds,
+                "rounds_completed": len(rounds),
+                "winner": winner,
+                "stalemate": stalemate,
+                "max_rounds_reached": repeat_until_destroyed and len(rounds) >= max_rounds and winner is None and not stalemate,
+                "attacker": self.summarize_state(attacker_state, "bodyguard"),
+                "defender": self.summarize_state(defender_state, "bodyguard"),
+                "attacker_stats": attacker_stats_total,
+                "defender_stats": defender_stats_total,
+            },
+            "context": {"melee_duel": True, "repeat_until_destroyed": repeat_until_destroyed},
+        }
+
     def simulate(
         self,
         attacker_unit: dict[str, Any],

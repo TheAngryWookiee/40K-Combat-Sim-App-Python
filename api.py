@@ -425,6 +425,8 @@ class SimulationRequest(BaseModel):
     weapon_name: str | None = None
     weapon_names: list[str] = Field(default_factory=list)
     weapon_model_counts: dict[str, int] = Field(default_factory=dict)
+    fight_back: bool = False
+    alternate_until_destroyed: bool = False
     defender_faction: str
     defender_unit: str
     defender_detachment_name: str | None = None
@@ -2090,6 +2092,12 @@ def make_hazard_rolls(request: HazardRollRequest) -> dict[str, object]:
 def simulate(request: SimulationRequest) -> dict[str, object]:
     factions = get_factions()
 
+    if request.alternate_until_destroyed and not request.fight_back:
+        raise HTTPException(
+            status_code=400,
+            detail="Alternate-until-destroyed requires the defender fight-back option.",
+        )
+
     try:
         attacker_unit = deepcopy(apply_unit_loadout(
             get_unit(factions, request.attacker_faction, request.attacker_unit),
@@ -2349,15 +2357,45 @@ def simulate(request: SimulationRequest) -> dict[str, object]:
         None,
     )
 
+    defender_attack_entries: list[dict[str, Any]] = []
+    if request.fight_back:
+        defender_attack_entries = resolve_requested_attack_entries(
+            defender_unit,
+            [ALL_MELEE_WEAPONS],
+            attached_character_unit,
+            attached_support_unit,
+        )
+        if not defender_attack_entries:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unit '{request.defender_unit}' has no melee weapons with which to fight back.",
+            )
+
     simulator = CombatSimulator(seed=request.seed)
     try:
-        result = simulator.simulate_attack_sequence(
-            attack_entries,
-            defender_unit,
-            options=simulation_options,
-            attached_character_unit=defender_precision_unit,
-            attached_units=defender_attached_units,
-        )
+        if request.fight_back:
+            result = simulator.simulate_melee_duel(
+                attack_entries,
+                defender_attack_entries,
+                attacker_unit,
+                defender_unit,
+                options=simulation_options,
+                attacker_attached_units=[
+                    unit
+                    for unit in (attacker_attached_character_unit, attacker_attached_support_unit)
+                    if unit is not None
+                ],
+                defender_attached_units=defender_attached_units,
+                repeat_until_destroyed=request.alternate_until_destroyed,
+            )
+        else:
+            result = simulator.simulate_attack_sequence(
+                attack_entries,
+                defender_unit,
+                options=simulation_options,
+                attached_character_unit=defender_precision_unit,
+                attached_units=defender_attached_units,
+            )
     except CombatSimulationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

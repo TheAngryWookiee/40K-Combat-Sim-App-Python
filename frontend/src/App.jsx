@@ -3771,6 +3771,8 @@ function buildSimulationPayload(state) {
     attacker_attached_support_model_counts: state.attackerAttachedSupportModelCounts || {},
     weapon_names: state.weaponNames || [],
     weapon_model_counts: state.weaponModelCounts || {},
+    fight_back: Boolean(state.fightBack),
+    alternate_until_destroyed: Boolean(state.fightBack && state.alternateUntilDestroyed),
     defender_faction: state.defenderFaction,
     defender_unit: state.defenderUnit,
     defender_detachment_name: state.defenderDetachmentName || undefined,
@@ -13000,6 +13002,8 @@ function App() {
   const [attackerEnhancementName, setAttackerEnhancementName] = useState(() => combatInitial('attackerEnhancementName', ''))
   const [defenderEnhancementName, setDefenderEnhancementName] = useState(() => combatInitial('defenderEnhancementName', ''))
   const [runCount, setRunCount] = useState(() => combatInitial('runCount', '1'))
+  const [fightBack, setFightBack] = useState(false)
+  const [alternateUntilDestroyed, setAlternateUntilDestroyed] = useState(false)
 
   const [targetHasCover, setTargetHasCover] = useState(() => combatInitial('target_has_cover', initialOptions.target_has_cover))
   const [attackerInEngagementRange, setAttackerInEngagementRange] = useState(() => combatInitial('attacker_in_engagement_range', initialOptions.attacker_in_engagement_range))
@@ -14819,6 +14823,14 @@ function App() {
     [selectedAttackWeapons, selectedCombatWeaponOptions],
   )
   const selectedCombatPhaseId = selectedAttackWeapons.some((weapon) => weapon.range !== 'Melee') ? 'shooting' : 'fight'
+  useEffect(() => {
+    if (selectedCombatPhaseId !== 'fight') {
+      setFightBack(false)
+      setAlternateUntilDestroyed(false)
+    } else if (!fightBack) {
+      setAlternateUntilDestroyed(false)
+    }
+  }, [selectedCombatPhaseId, fightBack])
   const selectedAttackerDetachment = useMemo(
     () => getDetachmentByName(attackerFactionDetails, attackerDetachmentName),
     [attackerFactionDetails, attackerDetachmentName],
@@ -17351,6 +17363,28 @@ function App() {
     defenderRighteousActive,
   ])
   const summaryStats = useMemo(() => buildRunSummary(simulationRuns), [simulationRuns])
+  const duelSummary = useMemo(() => {
+    const duels = simulationRuns.map((run) => run.result?.duel).filter(Boolean)
+    if (!duels.length) return null
+    const maxRounds = Math.max(...duels.map((duel) => duel.rounds?.length || 0), 0)
+    return {
+      runs: duels.length,
+      averageRounds: duels.reduce((total, duel) => total + Number(duel.rounds_completed || 0), 0) / duels.length,
+      attackerWins: duels.filter((duel) => duel.winner === 'attacker').length,
+      defenderWins: duels.filter((duel) => duel.winner === 'defender').length,
+      draws: duels.filter((duel) => duel.winner === 'draw').length,
+      stalemates: duels.filter((duel) => duel.stalemate || duel.max_rounds_reached).length,
+      rounds: Array.from({ length: maxRounds }, (_, index) => {
+        const present = duels.map((duel) => duel.rounds?.[index]).filter(Boolean)
+        return {
+          round: index + 1,
+          runs: present.length,
+          attackerDamage: present.reduce((total, round) => total + Number(round.attacker_damage || 0), 0) / Math.max(1, present.length),
+          defenderDamage: present.reduce((total, round) => total + Number(round.defender_damage || 0), 0) / Math.max(1, present.length),
+        }
+      }),
+    }
+  }, [simulationRuns])
   const matrixColumns = useMemo(() => [
     { key: 'gameVersion', label: 'Version', width: 118, defaultVisible: false },
     { key: 'attacker', label: 'Attacker', width: 210, defaultVisible: true },
@@ -21052,6 +21086,8 @@ function App() {
       matrixUserEmail: signedInMatrixUserEmail,
       weaponNames,
       weaponModelCounts,
+      fightBack,
+      alternateUntilDestroyed,
       defenderFaction,
       defenderUnit,
       defenderLoadoutSelections: resolvedDefenderLoadoutSelections,
@@ -24530,6 +24566,34 @@ function App() {
                 onChange={(event) => setRunCount(event.target.value)}
               />
             </label>
+
+            {selectedCombatPhaseId === 'fight' ? (
+              <div className="weapon-selection-panel">
+                <div className="weapon-selection-header">
+                  <span>Melee Resolution</span>
+                </div>
+                <div className="weapon-selection-grid single-column">
+                  <label className="checkbox-row weapon-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={fightBack}
+                      onChange={(event) => setFightBack(event.target.checked)}
+                    />
+                    <span>Defender fights back</span>
+                  </label>
+                  {fightBack ? (
+                    <label className="checkbox-row weapon-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={alternateUntilDestroyed}
+                        onChange={(event) => setAlternateUntilDestroyed(event.target.checked)}
+                      />
+                      <span>Alternate until one unit is destroyed</span>
+                    </label>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
 
             {selectedWeapon ? (
               <div className="weapon-card">
@@ -28125,6 +28189,22 @@ function App() {
                     <p>Avg current model wounds: {formatAverage(summaryStats.averageTargetCurrentWounds)}</p>
                   </article>
 
+                  {duelSummary ? (
+                    <article className="result-card">
+                      <p className="kicker">Melee Duel</p>
+                      <h3>{formatAverage(duelSummary.averageRounds)} combat rounds</h3>
+                      <p>Attacker wins: {duelSummary.attackerWins}/{duelSummary.runs}</p>
+                      <p>Defender wins: {duelSummary.defenderWins}/{duelSummary.runs}</p>
+                      {duelSummary.draws ? <p>Mutual destruction: {duelSummary.draws}/{duelSummary.runs}</p> : null}
+                      {duelSummary.stalemates ? <p>Unresolved: {duelSummary.stalemates}/{duelSummary.runs}</p> : null}
+                      {duelSummary.rounds.map((round) => (
+                        <p key={round.round}>
+                          Round {round.round}: attacker {formatAverage(round.attackerDamage)} damage, defender {formatAverage(round.defenderDamage)} damage ({round.runs} runs)
+                        </p>
+                      ))}
+                    </article>
+                  ) : null}
+
                   {renderCombatBreakdownCards(summaryStats, 0, { showEffectivenessScores: true })}
 
                   {summaryStats.attachedCharacterRuns > 0 ? (
@@ -28159,6 +28239,19 @@ function App() {
                     </p>
                     <p>Current model wounds: {activeRun.result.target.current_model_wounds}</p>
                   </article>
+
+                  {activeRun.result.duel ? (
+                    <article className="result-card">
+                      <p className="kicker">Melee Duel</p>
+                      <h3>{activeRun.result.duel.rounds_completed} combat round{activeRun.result.duel.rounds_completed === 1 ? '' : 's'}</h3>
+                      <p>{activeRun.result.duel.winner ? `${activeRun.result.duel.winner} wins` : activeRun.result.duel.stalemate ? 'Stalemate' : 'Unresolved'}</p>
+                      {(activeRun.result.duel.rounds || []).map((round) => (
+                        <p key={round.round}>
+                          Round {round.round}: attacker {round.attacker_damage} damage, defender {round.defender_damage} damage. Remaining wounds: attacker {round.attacker_wounds_remaining}, defender {round.defender_wounds_remaining}.
+                        </p>
+                      ))}
+                    </article>
+                  ) : null}
 
                   {activeRunSummaryStats ? renderCombatBreakdownCards(activeRunSummaryStats) : null}
 
