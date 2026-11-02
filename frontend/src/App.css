@@ -3307,6 +3307,18 @@ textarea:focus {
   flex-direction: column;
 }
 
+.combat-breakdown-heading {
+  display: grid;
+  gap: 3px;
+  padding: 10px 2px 2px;
+  border-top: 1px solid var(--line-strong);
+}
+
+.combat-breakdown-heading h3,
+.combat-breakdown-heading p {
+  margin: 0;
+}
+
 .datasheet-stats {
   display: grid;
   gap: 8px;

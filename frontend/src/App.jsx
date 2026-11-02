@@ -6811,6 +6811,21 @@ function buildRunSummary(runs) {
   }
 }
 
+function buildDuelSideRuns(runs, side) {
+  const statsKey = `${side}_stats`
+  const targetKey = side === 'attacker' ? 'defender' : 'attacker'
+  return runs
+    .filter((run) => run.result?.duel?.[statsKey] && run.result?.duel?.[targetKey])
+    .map((run) => ({
+      ...run,
+      result: {
+        ...run.result,
+        stats: run.result.duel[statsKey],
+        target: run.result.duel[targetKey],
+      },
+    }))
+}
+
 function getRelevantUnitRules(unit, role, hasHazardousWeapon) {
   const relevantEffectTypes = role === 'attacker'
     ? new Set(['outgoing_wound_modifier', ...(hasHazardousWeapon ? ['feel_no_pain'] : [])])
@@ -17415,6 +17430,14 @@ function App() {
     defenderRighteousActive,
   ])
   const summaryStats = useMemo(() => buildRunSummary(simulationRuns), [simulationRuns])
+  const duelAttackerSummaryStats = useMemo(() => {
+    const runs = buildDuelSideRuns(simulationRuns, 'attacker')
+    return runs.length ? buildRunSummary(runs) : null
+  }, [simulationRuns])
+  const duelDefenderSummaryStats = useMemo(() => {
+    const runs = buildDuelSideRuns(simulationRuns, 'defender')
+    return runs.length ? buildRunSummary(runs) : null
+  }, [simulationRuns])
   const duelSummary = useMemo(() => {
     const duels = simulationRuns.map((run) => run.result?.duel).filter(Boolean)
     if (!duels.length) return null
@@ -17573,6 +17596,16 @@ function App() {
   const activeRunSummaryStats = useMemo(() => (
     activeRun ? buildRunSummary([activeRun]) : null
   ), [activeRun])
+  const activeRunDuelAttackerStats = useMemo(() => {
+    if (!activeRun) return null
+    const runs = buildDuelSideRuns([activeRun], 'attacker')
+    return runs.length ? buildRunSummary(runs) : null
+  }, [activeRun])
+  const activeRunDuelDefenderStats = useMemo(() => {
+    if (!activeRun) return null
+    const runs = buildDuelSideRuns([activeRun], 'defender')
+    return runs.length ? buildRunSummary(runs) : null
+  }, [activeRun])
   const activeRunIndex = activeRunView === 'summary' ? 0 : Number(activeRunView) || 0
 
   function renderCombatBreakdownCards(stats, damageFallback = 0, options = {}) {
@@ -28328,7 +28361,22 @@ function App() {
                     </article>
                   ) : null}
 
-                  {renderCombatBreakdownCards(summaryStats, 0, { showEffectivenessScores: true })}
+                  {duelSummary ? (
+                    <>
+                      <div className="combat-breakdown-heading">
+                        <p className="kicker">Attacker Results</p>
+                        <h3>{attackerUnit || 'Attacker'}</h3>
+                      </div>
+                      {duelAttackerSummaryStats
+                        ? renderCombatBreakdownCards(duelAttackerSummaryStats, 0, { showEffectivenessScores: true })
+                        : null}
+                      <div className="combat-breakdown-heading">
+                        <p className="kicker">Defender Results</p>
+                        <h3>{defenderUnit || 'Defender'}</h3>
+                      </div>
+                      {duelDefenderSummaryStats ? renderCombatBreakdownCards(duelDefenderSummaryStats) : null}
+                    </>
+                  ) : renderCombatBreakdownCards(summaryStats, 0, { showEffectivenessScores: true })}
 
                   {summaryStats.attachedCharacterRuns > 0 ? (
                     <article className="result-card">
@@ -28376,7 +28424,20 @@ function App() {
                     </article>
                   ) : null}
 
-                  {activeRunSummaryStats ? renderCombatBreakdownCards(activeRunSummaryStats) : null}
+                  {activeRun.result.duel ? (
+                    <>
+                      <div className="combat-breakdown-heading">
+                        <p className="kicker">Attacker Results</p>
+                        <h3>{attackerUnit || 'Attacker'}</h3>
+                      </div>
+                      {activeRunDuelAttackerStats ? renderCombatBreakdownCards(activeRunDuelAttackerStats) : null}
+                      <div className="combat-breakdown-heading">
+                        <p className="kicker">Defender Results</p>
+                        <h3>{defenderUnit || 'Defender'}</h3>
+                      </div>
+                      {activeRunDuelDefenderStats ? renderCombatBreakdownCards(activeRunDuelDefenderStats) : null}
+                    </>
+                  ) : activeRunSummaryStats ? renderCombatBreakdownCards(activeRunSummaryStats) : null}
 
                   {activeRun.result.attached_character ? (
                     <article className="result-card">
